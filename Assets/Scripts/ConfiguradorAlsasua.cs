@@ -229,6 +229,18 @@ public class ConfiguradorAlsasua : MonoBehaviour
             }
         }
 
+        // Añadir Bing Maps Aerial como raster overlay a todos los tilesets de terreno
+        // que no tengan overlay todavía. Esto soluciona el "terreno blanco" cuando el
+        // usuario añade Cesium World Terrain desde el menú de Cesium sin overlay.
+        foreach (var t in todos)
+        {
+            bool esTerreno2 = t.ionAssetID == 1;
+            if (esTerreno2 && t.gameObject.GetComponent<CesiumIonRasterOverlay>() == null)
+            {
+                AnadirBingMapsOverlay(t.gameObject);
+            }
+        }
+
         Debug.Log($"[Alsasua] ✓ {todos.Length} tileset(s) existentes corregidos.");
     }
 
@@ -435,10 +447,16 @@ public class ConfiguradorAlsasua : MonoBehaviour
     }
 
     /// <summary>
-    /// Carga el terreno real de Cesium World Terrain.
+    /// Carga el terreno real de Cesium World Terrain con textura Bing Maps Aerial.
     /// Física habilitada para que el jugador pueda caminar sobre el suelo.
     /// El warning de PhysX sobre triángulos >500 unidades es NORMAL y esperado
     /// para tiles de terreno real — no afecta al gameplay.
+    ///
+    /// IMPORTANTE — terreno blanco:
+    /// Cesium World Terrain proporciona GEOMETRÍA (relieve 3D) pero no tiene color.
+    /// Para que aparezca con imagen de satélite hay que añadir un CesiumIonRasterOverlay
+    /// (Bing Maps Aerial, asset ID 2) al MISMO GameObject del tileset de terreno.
+    /// Añadirlo como Cesium3DTileset separado no funciona: genera un plano blanco.
     /// </summary>
     private void CargarTilesetTerreno()
     {
@@ -455,7 +473,33 @@ public class ConfiguradorAlsasua : MonoBehaviour
         tileset.preloadSiblings         = true;
         tileset.createPhysicsMeshes     = true;   // NECESARIO: el jugador camina sobre el terreno
 
-        Debug.Log("[Alsasua] Cesium World Terrain cargado (ionAssetID=1). Física habilitada para colisión de suelo.");
+        // Añadir textura de satélite como Raster Overlay (drapeado sobre el terreno).
+        // Bing Maps Aerial (assetID=2) es el overlay recomendado por Cesium, gratuito.
+        AnadirBingMapsOverlay(tilesetTerreno);
+
+        Debug.Log("[Alsasua] Cesium World Terrain cargado (ionAssetID=1) con Bing Maps Aerial overlay. Física habilitada.");
+    }
+
+    /// <summary>
+    /// Añade Bing Maps Aerial como CesiumIonRasterOverlay sobre el GameObject de terreno.
+    /// Esto drapa la imagen de satélite sobre la geometría 3D del terreno, evitando
+    /// el problema del "terreno blanco" que ocurre al cargar Bing Maps como Cesium3DTileset.
+    /// </summary>
+    private void AnadirBingMapsOverlay(GameObject terrenoGO)
+    {
+        // No duplicar si ya existe un overlay
+        if (terrenoGO.GetComponent<CesiumIonRasterOverlay>() != null)
+        {
+            Debug.Log("[Alsasua] Bing Maps overlay ya presente en el tileset de terreno.");
+            return;
+        }
+
+        var overlay = terrenoGO.AddComponent<CesiumIonRasterOverlay>();
+        overlay.ionAssetID = 2;   // Bing Maps Aerial — incluido gratis en Cesium Ion
+        if (!string.IsNullOrEmpty(tokenCesiumIon))
+            overlay.ionAccessToken = tokenCesiumIon;
+
+        Debug.Log("[Alsasua] ✓ Bing Maps Aerial (ionAssetID=2) añadido como RasterOverlay al terreno — terreno con textura de satélite.");
     }
 
     /// <summary>

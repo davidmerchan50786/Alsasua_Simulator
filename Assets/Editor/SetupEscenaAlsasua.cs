@@ -147,7 +147,16 @@ public static class SetupEscenaAlsasua
         var tilesets = Object.FindObjectsByType<Cesium3DTileset>(FindObjectsSortMode.None);
         Debug.Log($"  Tilesets en escena: {tilesets.Length}");
         foreach (var t in tilesets)
-            Debug.Log($"    · {t.gameObject.name}  activo={t.gameObject.activeSelf}");
+        {
+            bool esTerreno = t.ionAssetID == 1;
+            var overlay    = t.GetComponent<CesiumIonRasterOverlay>();
+            string overlayInfo = esTerreno
+                ? (overlay != null
+                    ? $" [overlay Bing Maps assetID={overlay.ionAssetID} ✓]"
+                    : " [⚠ SIN raster overlay → TERRENO BLANCO — re-ejecuta 'Configurar Escena Completa']")
+                : "";
+            Debug.Log($"    · {t.gameObject.name}  activo={t.gameObject.activeSelf}{overlayInfo}");
+        }
 
         Debug.Log("  ── Gameplay ──────────────────────────────────────");
 
