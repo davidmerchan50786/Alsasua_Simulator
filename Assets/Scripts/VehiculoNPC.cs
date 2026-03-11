@@ -122,6 +122,9 @@ public class VehiculoNPC : MonoBehaviour
     {
         if (wpActual >= waypoints.Count) return;
 
+        // BUG FIX: evitar NullReferenceException si el waypoint fue destruido o no fue asignado
+        if (waypoints[wpActual] == null) { wpActual++; return; }
+
         float dist = Vector3.Distance(
             new Vector3(transform.position.x, 0, transform.position.z),
             new Vector3(waypoints[wpActual].position.x, 0, waypoints[wpActual].position.z));

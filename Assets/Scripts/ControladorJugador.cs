@@ -10,6 +10,7 @@
 
 using UnityEngine;
 using UnityEngine.InputSystem;
+using CesiumForUnity;
 
 [RequireComponent(typeof(CharacterController))]
 public class ControladorJugador : MonoBehaviour
@@ -153,10 +154,12 @@ public class ControladorJugador : MonoBehaviour
             Debug.LogWarning("[Jugador] Cámara no encontrada — se creó CamaraTP.");
         }
 
-        // Desacoplar del jugador para orbitar libremente
-        camaraTP.transform.SetParent(null);
+        // Desacoplar del jugador para orbitar libremente.
+        // Se re-parenta bajo CesiumGeoreference para que CesiumGlobeAnchor funcione.
+        var georef = Object.FindFirstObjectByType<CesiumForUnity.CesiumGeoreference>();
+        camaraTP.transform.SetParent(georef != null ? georef.transform : null, worldPositionStays: true);
         camaraTP.nearClipPlane = 0.15f;
-        camaraTP.farClipPlane  = 5000f;
+        camaraTP.farClipPlane  = 1_000_000f;   // 1000 km — Cesium renderiza tiles lejanos
         camaraTP.fieldOfView   = fovNormal;
 
         // Posición inicial detrás del jugador
@@ -292,11 +295,15 @@ public class ControladorJugador : MonoBehaviour
         { Cursor.lockState = CursorLockMode.None; Cursor.visible = true; }
 
         // Órbita de cámara con el ratón
+        // BUG FIX: mouse.delta ya da píxeles/frame — multiplicar por Time.deltaTime
+        // hacía la rotación DEPENDIENTE del framerate (muy lento a 120fps, muy rápido a 30fps).
+        // Solución: usar un factor fijo pequeño para convertir píxeles → grados.
+        // sensibilidadX/Y = 2.8/2.2 equivalen a ~0.14/0.11 °/px — sensación natural.
         if (Cursor.lockState == CursorLockMode.Locked)
         {
             Vector2 delta = m.delta.ReadValue();
-            anguloH += delta.x * sensibilidadX * Time.deltaTime * 45f;
-            anguloV -= delta.y * sensibilidadY * Time.deltaTime * 45f;
+            anguloH += delta.x * sensibilidadX * 0.05f;
+            anguloV -= delta.y * sensibilidadY * 0.05f;
             anguloV  = Mathf.Clamp(anguloV, limVertMin, limVertMax);
         }
 

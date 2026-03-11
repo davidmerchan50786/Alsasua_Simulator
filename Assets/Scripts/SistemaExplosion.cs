@@ -2,6 +2,7 @@
 // Explosión con físicas, daño en radio, fuego y humo
 
 using UnityEngine;
+using System.Collections.Generic;
 
 public class SistemaExplosion : MonoBehaviour
 {
@@ -47,26 +48,37 @@ public class SistemaExplosion : MonoBehaviour
     private void AplicarFisicasYDano()
     {
         Collider[] afectados = Physics.OverlapSphere(transform.position, radio);
+
+        // BUG FIX: usar HashSets para evitar aplicar daño múltiple a la misma entidad
+        // cuando tiene varios colliders hijos (ej. enemigos con cuerpo + cabeza + arma).
+        var rbYaDanados       = new HashSet<Rigidbody>();
+        var enemigosYaDanados = new HashSet<EnemigoPatrulla>();
+        var jugadoresYaDanados= new HashSet<ControladorJugador>();
+        var vehiculosYaDanados= new HashSet<VehiculoNPC>();
+
         foreach (var col in afectados)
         {
-            // Fuerza de explosión a Rigidbodies
+            // Fuerza de explosión a Rigidbodies (una sola vez por objeto físico)
             var rb = col.GetComponent<Rigidbody>();
-            if (rb != null)
+            if (rb != null && rbYaDanados.Add(rb))
                 rb.AddExplosionForce(fuerzaFisica, transform.position, radio, 1f);
 
-            // Daño a enemigos (inverso a la distancia)
+            // Daño basado en la distancia al centro del objeto raíz
             float dist   = Vector3.Distance(transform.position, col.transform.position);
             float factor = 1f - Mathf.Clamp01(dist / radio);
             int   dano   = Mathf.RoundToInt(danoMaximo * factor);
 
             var enemigo  = col.GetComponentInParent<EnemigoPatrulla>();
-            if (enemigo != null) enemigo.RecibirDano(dano);
+            if (enemigo != null && enemigosYaDanados.Add(enemigo))
+                enemigo.RecibirDano(dano);
 
             var jugador  = col.GetComponentInParent<ControladorJugador>();
-            if (jugador  != null) jugador.RecibirDano(dano);
+            if (jugador != null && jugadoresYaDanados.Add(jugador))
+                jugador.RecibirDano(dano);
 
             var vehiculo = col.GetComponentInParent<VehiculoNPC>();
-            if (vehiculo != null) vehiculo.RecibirDano(dano);
+            if (vehiculo != null && vehiculosYaDanados.Add(vehiculo))
+                vehiculo.RecibirDano(dano);
         }
     }
 
@@ -262,10 +274,16 @@ public class SacudidaCamara : MonoBehaviour
 
     public void Sacudir(float intens, float dur)
     {
-        intensidad  = intens;
-        duracion    = dur;
-        timer       = dur;
-        posOriginal = transform.localPosition;
+        // BUG FIX: solo capturar posOriginal cuando NO se está sacudiendo ya.
+        // Si se llama mientras timer > 0, la posición actual ya está desplazada
+        // y capturarla causaría que la cámara derive respecto a su posición real.
+        if (timer <= 0f)
+            posOriginal = transform.localPosition;
+
+        // Acumular la sacudida más intensa de las dos (nueva vs actual)
+        intensidad = Mathf.Max(intensidad, intens);
+        duracion   = Mathf.Max(duracion, dur);
+        timer      = Mathf.Max(timer, dur);
     }
 
     private void Update()
