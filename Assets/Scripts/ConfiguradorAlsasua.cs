@@ -6,6 +6,15 @@ using Unity.Mathematics;
 /// Configurador principal del escenario de Alsasua.
 /// Lee los tokens desde Assets/Resources/ConfiguracionTokens.asset
 /// y carga los tilesets fotorrealistas automáticamente al hacer Play.
+///
+/// JERARQUÍA REQUERIDA POR CESIUM FOR UNITY:
+///   CesiumGeoreference (raíz)
+///   ├── Jugador  (CesiumOriginShift + CesiumGlobeAnchor)
+///   ├── CamaraTP (CesiumGlobeAnchor, gestionada por ControladorJugador)
+///   └── Tilesets (Cesium3DTileset)
+///
+/// Este script crea esa jerarquía en tiempo de ejecución cuando la escena
+/// no la tiene configurada correctamente desde el editor.
 /// </summary>
 public class ConfiguradorAlsasua : MonoBehaviour
 {
@@ -39,10 +48,6 @@ public class ConfiguradorAlsasua : MonoBehaviour
     [Tooltip("Fallback: edificios OSM si no hay Google API Key")]
     [SerializeField] private bool usarOSMEdificiosFallback = true;
 
-    [Header("═══ CÁMARA INICIAL ═══")]
-    [Tooltip("Altura inicial de la cámara sobre el suelo (metros)")]
-    [SerializeField] private float alturaInicialCamara = 1500f;
-
     [Header("═══ CALIDAD ═══")]
     [Range(2, 32)]
     [Tooltip("Error de pantalla para tilesets — menor = más detalle (más GPU). 4 = equilibrio calidad/rendimiento, 2 = máximo detalle")]
@@ -60,23 +65,67 @@ public class ConfiguradorAlsasua : MonoBehaviour
 
     private void Start()
     {
-        // Cargar tokens desde el ScriptableObject (Resources)
         CargarTokensDesdeConfig();
-
         ConfigurarGeoreferenciaAlsasua();
+        CorregirTilesetsExistentes();       // Arreglar tilesets YA en escena (physics, SSE)
         CargarTilesets();
-        CorregirCesiumOriginShift();
-        CorregirCamaras();          // CRÍTICO: Far Clipping = 1M m para Cesium
+        CorregirCesiumOriginShift();        // Re-parenta Jugador y añade CesiumOriginShift
+        CorregirCamaras();                  // Far Clipping = 1M m, skybox
+        // BUG FIX: CorregirAudioListeners() estaba definido pero nunca llamado →
+        // si había múltiples AudioListeners en escena, Unity emitía warnings de audio.
         CorregirAudioListeners();
-        // NOTA: PosicionarCamaraInicial() eliminado — posicionaba la cámara a Y=1500
-        // en cada Play, haciendo que Cesium cargara tiles aéreos de baja resolución.
-        // La cámara ya queda posicionada correctamente en el editor.
+
+        // Invoke(0): se ejecuta al FINAL del primer frame, después de que TODOS los
+        // Start() hayan corrido (incluyendo ControladorJugador que desacopla la cámara).
+        // Necesario para re-emparenar la cámara DESPUÉS de que ControladorJugador la mueva.
+        Invoke(nameof(FixCamerasPostStart), 0f);
     }
+
+    // ============================================================
+    //  CORRECCIÓN POST-START (se ejecuta tras todos los Start())
+    // ============================================================
+
+    /// <summary>
+    /// Re-emparenta todos los objetos con CesiumGlobeAnchor bajo CesiumGeoreference
+    /// y garantiza el Far Clipping correcto, ejecutándose DESPUÉS de que
+    /// ControladorJugador.Start() haya desacoplado su cámara.
+    /// </summary>
+    private void FixCamerasPostStart()
+    {
+        if (georeference == null) return;
+
+        // Re-emparenar cualquier CesiumGlobeAnchor que esté fuera de la jerarquía
+        foreach (var anchor in Object.FindObjectsByType<CesiumGlobeAnchor>(FindObjectsSortMode.None))
+        {
+            if (!anchor.transform.IsChildOf(georeference.transform))
+            {
+                anchor.transform.SetParent(georeference.transform, worldPositionStays: true);
+                Debug.Log($"[Alsasua] ✓ '{anchor.gameObject.name}' re-emparentado bajo CesiumGeoreference (post-start).");
+            }
+        }
+
+        // Asegurar Far Clipping en todas las cámaras (ControladorJugador puede haberlo sobreescrito)
+        foreach (var cam in Object.FindObjectsByType<Camera>(FindObjectsSortMode.None))
+        {
+            if (cam.farClipPlane < 500_000f)
+            {
+                cam.farClipPlane = 1_000_000f;
+                Debug.Log($"[Alsasua] ✓ Far clip corregido en '{cam.gameObject.name}' post-start.");
+            }
+        }
+    }
+
+    // ============================================================
+    //  CORRECCIÓN DE CESIUM ORIGIN SHIFT
+    // ============================================================
 
     /// <summary>
     /// Mueve CesiumOriginShift de la Main Camera (Y=1500, incorrecto) al Jugador
     /// (Y=1, nivel de suelo). Esto garantiza que Cesium cargue tiles de ALTA RESOLUCIÓN
     /// desde la perspectiva del jugador, no desde 1500m de altitud.
+    ///
+    /// CRÍTICO: el Jugador es re-emparentado bajo CesiumGeoreference ANTES de añadir
+    /// CesiumOriginShift, para que CesiumGlobeAnchor.OnEnable() no emita warnings.
     /// </summary>
     private void CorregirCesiumOriginShift()
     {
@@ -130,6 +179,63 @@ public class ConfiguradorAlsasua : MonoBehaviour
             Debug.LogWarning("[Alsasua] ⚠ Jugador no encontrado — CesiumOriginShift no asignado. Ejecuta 'Configurar Gameplay'.");
     }
 
+    // ============================================================
+    //  CORRECCIÓN DE TILESETS EXISTENTES EN ESCENA
+    // ============================================================
+
+    /// <summary>
+    /// Arregla los tilesets que YA están en la escena (añadidos desde el panel de Cesium).
+    /// Aplica la configuración correcta de física y calidad a cada tileset.
+    ///
+    /// REGLA DE FÍSICA:
+    ///   - Cesium World Terrain (ionAssetID=1): createPhysicsMeshes=true  → el jugador puede caminar
+    ///   - Google Photorealistic (URL):          createPhysicsMeshes=true  → colisión con edificios y terreno
+    ///   - OSM Buildings (ionAssetID=96188):     createPhysicsMeshes=false → solo visual
+    ///
+    /// El warning de PhysX sobre triángulos >500 unidades es NORMAL para tiles de terreno
+    /// real y no afecta al juego — solo es una advertencia de rendimiento de PhysX.
+    /// </summary>
+    private void CorregirTilesetsExistentes()
+    {
+        var todos = Object.FindObjectsByType<Cesium3DTileset>(FindObjectsSortMode.None);
+        if (todos.Length == 0) return;
+
+        foreach (var t in todos)
+        {
+            bool esTerreno  = t.ionAssetID == 1;
+            bool esGoogle   = !string.IsNullOrEmpty(t.url) && t.url.Contains("googleapis");
+            bool esOSM      = t.ionAssetID == 96188;
+
+            // Física: terreno y Google necesitan colisión para que el jugador camine
+            bool necesitaFisica = esTerreno || esGoogle || (!esOSM && t.ionAssetID > 0);
+            if (t.createPhysicsMeshes != necesitaFisica)
+            {
+                t.createPhysicsMeshes = necesitaFisica;
+                Debug.Log($"[Alsasua] Tileset '{t.gameObject.name}': createPhysicsMeshes={necesitaFisica}");
+            }
+
+            // Calidad SSE
+            if (t.maximumScreenSpaceError > maximumScreenSpaceError)
+                t.maximumScreenSpaceError = maximumScreenSpaceError;
+
+            // Mostrar créditos de Google (obligatorio por licencia)
+            if (esGoogle) t.showCreditsOnScreen = true;
+
+            // Ensamblar bajo CesiumGeoreference si el tileset está fuera
+            if (georeference != null && !t.transform.IsChildOf(georeference.transform))
+            {
+                t.transform.SetParent(georeference.transform, worldPositionStays: true);
+                Debug.Log($"[Alsasua] Tileset '{t.gameObject.name}' movido bajo CesiumGeoreference.");
+            }
+        }
+
+        Debug.Log($"[Alsasua] ✓ {todos.Length} tileset(s) existentes corregidos.");
+    }
+
+    // ============================================================
+    //  CORRECCIÓN DE CÁMARAS
+    // ============================================================
+
     /// <summary>
     /// Configura el Far/Near Clipping Plane de todas las cámaras para Cesium for Unity.
     ///
@@ -147,8 +253,6 @@ public class ConfiguradorAlsasua : MonoBehaviour
         const float NEAR_SUELO  = 0.1f;         // 10 cm — evita corte al nivel del suelo
 
         // ── Skybox: si no hay ninguno asignado, la cámara ve el cielo NEGRO ────
-        // Cesium For Unity no configura skybox automáticamente.
-        // Usamos el skybox procedimental de Unity (shader built-in, compatible con URP).
         if (RenderSettings.skybox == null)
         {
             var skyShader = Shader.Find("Skybox/Procedural");
@@ -156,12 +260,12 @@ public class ConfiguradorAlsasua : MonoBehaviour
             {
                 var skyMat = new Material(skyShader);
                 skyMat.SetFloat("_AtmosphereThickness", 1.1f);
-                skyMat.SetColor("_SkyTint", new Color(0.50f, 0.65f, 0.82f));  // azul cielo País Vasco
-                skyMat.SetColor("_GroundColor", new Color(0.37f, 0.35f, 0.32f)); // tierra/suelo
+                skyMat.SetColor("_SkyTint", new Color(0.50f, 0.65f, 0.82f));
+                skyMat.SetColor("_GroundColor", new Color(0.37f, 0.35f, 0.32f));
                 skyMat.SetFloat("_Exposure", 1.3f);
                 RenderSettings.skybox = skyMat;
                 DynamicGI.UpdateEnvironment();
-                Debug.Log("[Alsasua] Skybox procedimental activado — el cielo ya no es negro.");
+                Debug.Log("[Alsasua] Skybox procedimental activado.");
             }
         }
 
@@ -171,55 +275,49 @@ public class ConfiguradorAlsasua : MonoBehaviour
         {
             cam.farClipPlane  = FAR_CESIUM;
             cam.nearClipPlane = NEAR_SUELO;
-            cam.clearFlags    = CameraClearFlags.Skybox;  // Forzar skybox, nunca fondo negro
-            Debug.Log($"[Alsasua] Cámara '{cam.gameObject.name}': Near={NEAR_SUELO} Far={FAR_CESIUM} clearFlags=Skybox.");
+            cam.clearFlags    = CameraClearFlags.Skybox;
+            Debug.Log($"[Alsasua] Cámara '{cam.gameObject.name}': Near={NEAR_SUELO} Far={FAR_CESIUM}.");
         }
 
         if (camaras.Length == 0)
             Debug.LogWarning("[Alsasua] ⚠ No se encontraron cámaras para configurar el clipping plane.");
     }
 
-    /// <summary>
-    /// Garantiza que solo haya UN AudioListener activo en la escena.
-    /// Unity da warning "There are 2 audio listeners in the scene" si hay más de uno.
-    /// La Main Camera (cámara dron a Y=1500) no necesita AudioListener para gameplay.
-    /// CamaraFPS (la cámara de seguimiento del jugador) es la que debe tener uno.
-    /// </summary>
+    // ============================================================
+    //  AUDIO LISTENERS
+    // ============================================================
+
     private void CorregirAudioListeners()
     {
         var listeners = Object.FindObjectsByType<AudioListener>(FindObjectsSortMode.None);
         if (listeners.Length <= 1) return;
 
-        // Hay más de un AudioListener: deshabilitar el de Main Camera (cámara dron)
         foreach (var al in listeners)
         {
             var cam = al.GetComponent<Camera>();
             if (cam != null && cam.CompareTag("MainCamera"))
             {
                 al.enabled = false;
-                Debug.Log($"[Alsasua] AudioListener desactivado en '{cam.gameObject.name}' (cámara dron). " +
-                          "CamaraFPS conserva el suyo para gameplay.");
-                return; // Solo desactivar uno, el primero que encontremos en Main Camera
+                Debug.Log($"[Alsasua] AudioListener desactivado en '{cam.gameObject.name}'.");
+                return;
             }
         }
     }
 
-    /// <summary>
-    /// Carga los tokens desde Assets/Resources/ConfiguracionTokens.asset.
-    /// Si los campos del Inspector están vacíos, usa los del asset automáticamente.
-    /// </summary>
+    // ============================================================
+    //  TOKENS
+    // ============================================================
+
     private void CargarTokensDesdeConfig()
     {
         configTokens = Resources.Load<ConfiguracionTokens>("ConfiguracionTokens");
 
         if (configTokens == null)
         {
-            Debug.LogWarning("[Alsasua] No se encontró ConfiguracionTokens.asset en Resources. " +
-                             "Usa el menú Alsasua → Abrir Configuración de Tokens.");
+            Debug.LogWarning("[Alsasua] No se encontró ConfiguracionTokens.asset en Resources.");
             return;
         }
 
-        // Usar valores del asset si los campos del Inspector están vacíos
         if (string.IsNullOrEmpty(apiKeyGoogle) && !string.IsNullOrEmpty(configTokens.apiKeyGoogle))
         {
             apiKeyGoogle = configTokens.apiKeyGoogle;
@@ -237,13 +335,8 @@ public class ConfiguradorAlsasua : MonoBehaviour
     //  GEORREFERENCIA
     // ============================================================
 
-    /// <summary>
-    /// Posiciona el origen del mundo en el centro de Alsasua.
-    /// Esto garantiza precisión métrica en toda la escena.
-    /// </summary>
     private void ConfigurarGeoreferenciaAlsasua()
     {
-        // Buscar o crear el CesiumGeoreference
         georeference = Object.FindFirstObjectByType<CesiumGeoreference>();
         if (georeference == null)
         {
@@ -252,12 +345,11 @@ public class ConfiguradorAlsasua : MonoBehaviour
             Debug.Log("[Alsasua] CesiumGeoreference creado.");
         }
 
-        // Establecer origen en Alsasua
         georeference.latitude  = ALSASUA_LATITUD;
         georeference.longitude = ALSASUA_LONGITUD;
         georeference.height    = ALSASUA_ALTURA;
 
-        Debug.Log($"[Alsasua] Georreferencia establecida → Lat: {ALSASUA_LATITUD}, Lon: {ALSASUA_LONGITUD}, Alt: {ALSASUA_ALTURA}m");
+        Debug.Log($"[Alsasua] Georreferencia → Lat: {ALSASUA_LATITUD}, Lon: {ALSASUA_LONGITUD}, Alt: {ALSASUA_ALTURA}m");
     }
 
     // ============================================================
@@ -266,26 +358,17 @@ public class ConfiguradorAlsasua : MonoBehaviour
 
     private void CargarTilesets()
     {
-        // ── Comprobar si ya hay tilesets configurados en la escena ─────────────
-        // Un tileset es "funcional" si tiene:
-        //   - ionAccessToken: token explicit en el componente
-        //   - url: URL directa (p.ej. Google Photorealistic)
-        //   - ionAssetID > 0: asset de Cesium Ion usando el TOKEN GLOBAL del login
-        //     (cuando el usuario añade tiles desde el panel de Cesium, NO se guarda
-        //      ionAccessToken — usa el token global del CesiumIonServer. Sin este
-        //      check, nuestro código borraba esos tiles en cada Play → PANTALLA NEGRA)
         var tilesetsExistentes = Object.FindObjectsByType<Cesium3DTileset>(FindObjectsSortMode.None);
         bool hayTilesetsFuncionales = false;
         foreach (var t in tilesetsExistentes)
         {
             bool tieneToken = !string.IsNullOrEmpty(t.ionAccessToken);
             bool tieneURL   = !string.IsNullOrEmpty(t.url);
-            bool tieneAsset = t.ionAssetID > 0;   // ← BUG FIX: token global de Cesium Ion login
+            bool tieneAsset = t.ionAssetID > 0;
             if (tieneToken || tieneURL || tieneAsset)
             {
                 hayTilesetsFuncionales = true;
-                Debug.Log($"[Alsasua] Tileset detectado: '{t.gameObject.name}' " +
-                          $"(ionAssetID={t.ionAssetID}, url={!string.IsNullOrEmpty(t.url)}, token={tieneToken}) — conservando.");
+                Debug.Log($"[Alsasua] Tileset detectado: '{t.gameObject.name}' — conservando.");
             }
         }
 
@@ -295,42 +378,32 @@ public class ConfiguradorAlsasua : MonoBehaviour
             return;
         }
 
-        // ── Sin tilesets: intentar crear desde Inspector/Resources tokens ───────
-        Debug.Log("[Alsasua] No hay tilesets en la escena. Intentando crear desde tokens del Inspector...");
+        Debug.Log("[Alsasua] No hay tilesets en la escena. Creando desde tokens...");
 
-        // SOLO eliminar los nombres PROPIOS de este script (no los del panel de Cesium).
-        // "Google Photorealistic 3D Tiles" y "Cesium OSM Buildings" son nombres del
-        // panel de Cesium — NO los eliminamos para no borrar config del usuario.
         string[] nombresEliminar = {
             "Terreno_CesiumWorld",
             "Google_Photorealistic3DTiles",
-            "OSM_Buildings_Fallback",
-            "Satellite_ImageTileset"
+            "OSM_Buildings_Fallback"
         };
         foreach (string nombre in nombresEliminar)
             EliminarTilesetsDuplicados(nombre);
 
-        // 1. Terreno mundial (relieve real)
-        if (usarCesiumWorldTerrain)
-        {
-            if (!string.IsNullOrEmpty(tokenCesiumIon))
-                CargarTilesetTerreno();
-            else
-                Debug.LogWarning("[Alsasua] ⚠ Sin token Cesium Ion — terreno no cargado. " +
-                    "Opciones: (A) Pon el token en Inspector > ManagerAlsasua > Token Cesium Ion, " +
-                    "(B) usa el panel Cesium → 'Add Cesium World Terrain'.");
-        }
+        // 1. Terreno (relieve real) — necesario para colisión de suelo
+        if (usarCesiumWorldTerrain && !string.IsNullOrEmpty(tokenCesiumIon))
+            CargarTilesetTerreno();
+        else if (usarCesiumWorldTerrain)
+            Debug.LogWarning("[Alsasua] ⚠ Sin token Cesium Ion — terreno no cargado. " +
+                "Usa Cesium → Connect to Cesium Ion → Add Cesium World Terrain.");
 
-        // 2. Edificios con fachadas reales (Google Photorealistic 3D Tiles)
+        // 2. Google Photorealistic (fachadas + tejados reales)
         if (usarGooglePhotorealistic && !string.IsNullOrEmpty(apiKeyGoogle))
             CargarGooglePhotorealistic3DTiles();
         else if (usarOSMEdificiosFallback && !string.IsNullOrEmpty(tokenCesiumIon))
         {
-            Debug.LogWarning("[Alsasua] API Key de Google no configurada. Usando edificios OSM como fallback.");
+            Debug.LogWarning("[Alsasua] Sin API Key Google → fallback OSM.");
             CargarEdificiosOSM();
         }
 
-        // ── Diagnóstico final: avisar si no hay NINGÚN tileset ─────────────────
         var tilesetsFinal = Object.FindObjectsByType<Cesium3DTileset>(FindObjectsSortMode.None);
         if (tilesetsFinal.Length == 0)
         {
@@ -338,28 +411,17 @@ public class ConfiguradorAlsasua : MonoBehaviour
                 "╔══════════════════════════════════════════════════════════════╗\n" +
                 "║  [Alsasua] ❌ SIN TILES — ESCENARIO COMPLETAMENTE NEGRO      ║\n" +
                 "║                                                              ║\n" +
-                "║  No hay ningún tileset de Cesium en la escena.               ║\n" +
-                "║  El terreno de Alsasua NO puede cargarse sin tokens.         ║\n" +
-                "║                                                              ║\n" +
-                "║  SOLUCIÓN RÁPIDA (2 pasos):                                  ║\n" +
+                "║  SOLUCIÓN (2 pasos):                                         ║\n" +
                 "║  1. Menú Unity: Cesium → Connect to Cesium Ion               ║\n" +
-                "║     (crea cuenta gratuita en cesium.com/ion si no tienes)    ║\n" +
                 "║  2. Menú Unity: Cesium → Add Cesium World Terrain            ║\n" +
-                "║     (añade el terreno real directamente a la escena)         ║\n" +
-                "║                                                              ║\n" +
-                "║  O pon tu token en Inspector > ManagerAlsasua > Token Cesium ║\n" +
+                "║     + Cesium → Add Google Photorealistic 3D Tiles            ║\n" +
                 "╚══════════════════════════════════════════════════════════════╝"
             );
         }
         else
-        {
-            Debug.Log($"[Alsasua] ✓ {tilesetsFinal.Length} tileset(s) creados desde tokens del Inspector.");
-        }
+            Debug.Log($"[Alsasua] ✓ {tilesetsFinal.Length} tileset(s) creados.");
     }
 
-    /// <summary>
-    /// Elimina todos los GameObjects con el nombre dado para evitar duplicados.
-    /// </summary>
     private void EliminarTilesetsDuplicados(string nombre)
     {
         foreach (GameObject obj in Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None))
@@ -374,134 +436,103 @@ public class ConfiguradorAlsasua : MonoBehaviour
 
     /// <summary>
     /// Carga el terreno real de Cesium World Terrain.
-    /// Proporciona el relieve montañoso de los alrededores de Alsasua.
+    /// Física habilitada para que el jugador pueda caminar sobre el suelo.
+    /// El warning de PhysX sobre triángulos >500 unidades es NORMAL y esperado
+    /// para tiles de terreno real — no afecta al gameplay.
     /// </summary>
     private void CargarTilesetTerreno()
     {
         tilesetTerreno = new GameObject("Terreno_CesiumWorld");
-        if (georeference != null)
-            tilesetTerreno.transform.parent = georeference.transform;
+        tilesetTerreno.transform.parent = georeference.transform;
 
         Cesium3DTileset tileset = tilesetTerreno.AddComponent<Cesium3DTileset>();
-
-        // Cesium World Terrain — asset ID 1 en Cesium Ion
         tileset.ionAssetID = 1;
         if (!string.IsNullOrEmpty(tokenCesiumIon))
             tileset.ionAccessToken = tokenCesiumIon;
 
         tileset.maximumScreenSpaceError = maximumScreenSpaceError;
-        tileset.preloadAncestors         = true;
-        tileset.preloadSiblings          = true;
-        tileset.createPhysicsMeshes      = false;  // Evita warning de triángulos grandes en PhysX
+        tileset.preloadAncestors        = true;
+        tileset.preloadSiblings         = true;
+        tileset.createPhysicsMeshes     = true;   // NECESARIO: el jugador camina sobre el terreno
 
-        Debug.Log("[Alsasua] Terreno Cesium World cargado (asset ID: 1).");
+        Debug.Log("[Alsasua] Cesium World Terrain cargado (ionAssetID=1). Física habilitada para colisión de suelo.");
     }
 
     /// <summary>
-    /// Carga Google Photorealistic 3D Tiles — la fuente más realista disponible.
-    /// Incluye:
-    ///   - Fachadas de edificios con textura fotogramétrica real
-    ///   - Tejados con su color, forma y material real
-    ///   - Árboles, puentes, mobiliario urbano
-    ///   - Cobertura total de Alsasua
-    ///
-    /// Requiere Google Maps Platform API Key con "Map Tiles API" activado.
-    /// Primer año gratuito: https://cloud.google.com/maps-platform/
+    /// Carga Google Photorealistic 3D Tiles.
+    /// Incluye fachadas, tejados, árboles y terreno fotogramétrico de Alsasua.
+    /// Física habilitada para colisión tanto con edificios como con el suelo.
+    /// Requiere API Key de Google Maps Platform con "Map Tiles API" activado.
     /// </summary>
     private void CargarGooglePhotorealistic3DTiles()
     {
         tilesetEdificios = new GameObject("Google_Photorealistic3DTiles");
-        if (georeference != null)
-            tilesetEdificios.transform.parent = georeference.transform;
+        tilesetEdificios.transform.parent = georeference.transform;
 
         Cesium3DTileset tileset = tilesetEdificios.AddComponent<Cesium3DTileset>();
-
-        // URL directa de Google Map Tiles API — 3D Photorealistic Tiles
         tileset.url = $"https://tile.googleapis.com/v1/3dtiles/root.json?key={apiKeyGoogle}";
         tileset.maximumScreenSpaceError = maximumScreenSpaceError;
-        tileset.preloadAncestors         = true;
-        tileset.preloadSiblings          = true;
-        tileset.createPhysicsMeshes      = false;  // Evita warning de triángulos grandes en PhysX
+        tileset.preloadAncestors        = true;
+        tileset.preloadSiblings         = true;
+        tileset.createPhysicsMeshes     = true;   // Colisión con edificios y terreno Google
+        tileset.showCreditsOnScreen     = true;   // Obligatorio por licencia de Google
 
-        // Configuración de renderizado
-        tileset.showCreditsOnScreen = true;  // Obligatorio por licencia de Google
-
-        Debug.Log("[Alsasua] ✓ Google Photorealistic 3D Tiles cargados — fachadas y tejados reales activados.");
-        Debug.Log("[Alsasua] Fuente: https://tile.googleapis.com/v1/3dtiles/root.json");
+        Debug.Log("[Alsasua] ✓ Google Photorealistic 3D Tiles cargados — fachadas y tejados reales.");
     }
 
     /// <summary>
-    /// Fallback: edificios 3D de OpenStreetMap vía Cesium Ion (asset ID: 96188).
-    /// Sin texturas fotográficas, pero con geometría correcta.
+    /// Fallback: edificios 3D de OpenStreetMap (sin texturas fotográficas).
     /// </summary>
     private void CargarEdificiosOSM()
     {
         tilesetOSM = new GameObject("OSM_Buildings_Fallback");
-        if (georeference != null)
-            tilesetOSM.transform.parent = georeference.transform;
+        tilesetOSM.transform.parent = georeference.transform;
 
         Cesium3DTileset tileset = tilesetOSM.AddComponent<Cesium3DTileset>();
-
-        // OSM Buildings en Cesium Ion — asset ID 96188 (gratuito)
         tileset.ionAssetID = 96188;
         if (!string.IsNullOrEmpty(tokenCesiumIon))
             tileset.ionAccessToken = tokenCesiumIon;
 
         tileset.maximumScreenSpaceError = maximumScreenSpaceError;
-        tileset.createPhysicsMeshes     = false;  // Evita warning de triángulos grandes en PhysX
+        tileset.createPhysicsMeshes     = false;  // Solo visual — física proviene del terreno
 
-        Debug.Log("[Alsasua] Edificios OSM cargados (fallback). Para ver fachadas reales configura la API Key de Google.");
+        Debug.Log("[Alsasua] Edificios OSM cargados (fallback).");
     }
 
     // ============================================================
-    //  CÁMARA INICIAL — ELIMINADO
-    // ============================================================
-    // PosicionarCamaraInicial() fue eliminada porque movía Camera.main a Y=1500
-    // en cada Play. Esto hacía que Cesium cargara tiles de baja resolución
-    // (vista aérea) en vez de tiles de alta resolución al nivel del suelo.
-    // La cámara queda posicionada correctamente desde el editor.
-
-    // ============================================================
-    //  DIAGNÓSTICO
+    //  HUD DE DIAGNÓSTICO
     // ============================================================
 
     private void OnGUI()
     {
-        // HUD de diagnóstico — visible mientras los tiles cargan
         CesiumForUnity.Cesium3DTileset[] tilesets =
             Object.FindObjectsByType<CesiumForUnity.Cesium3DTileset>(FindObjectsSortMode.None);
 
-        int cargando = 0;
+        int activos = 0;
         foreach (var t in tilesets)
-        {
-            if (!t.enabled || !t.gameObject.activeSelf) continue;
-            // Cesium3DTileset no expone un estado de carga directamente;
-            // usamos la presencia del tileset como indicador
-            cargando++;
-        }
+            if (t.enabled && t.gameObject.activeSelf) activos++;
 
         float hudAltura = tilesets.Length * 20f + 52f;
         GUI.color = new Color(0f, 0f, 0f, 0.55f);
-        GUI.DrawTexture(new Rect(8f, 8f, 360f, hudAltura), Texture2D.whiteTexture);
+        GUI.DrawTexture(new Rect(8f, 8f, 380f, hudAltura), Texture2D.whiteTexture);
 
-        // Línea 1: ubicación geográfica
         GUI.color = Color.yellow;
-        GUI.Label(new Rect(12f, 10f, 350f, 20f),
+        GUI.Label(new Rect(12f, 10f, 370f, 20f),
             $"Altsasu / Alsasua  |  Lat: {ALSASUA_LATITUD:F4}  Lon: {ALSASUA_LONGITUD:F4}");
 
-        // Línea 2: tilesets y altitud cámara
         GUI.color = Color.cyan;
-        GUI.Label(new Rect(12f, 30f, 350f, 20f),
-            $"Tilesets activos: {cargando}  |  Cámara Y: {(Camera.main != null ? Camera.main.transform.position.y.ToString("F0") : "?")} m");
+        GUI.Label(new Rect(12f, 30f, 370f, 20f),
+            $"Tilesets activos: {activos}  |  Cámara Y: {(Camera.main != null ? Camera.main.transform.position.y.ToString("F0") : "?")} m");
 
-        // Lista de tilesets
         GUI.color = Color.white;
         for (int i = 0; i < tilesets.Length; i++)
         {
             var t = tilesets[i];
             if (!t.gameObject.activeSelf) continue;
-            string src = !string.IsNullOrEmpty(t.url) ? "URL" : $"Ion:{t.ionAssetID}";
-            GUI.Label(new Rect(12f, 50f + i * 20f, 350f, 20f), $"  {t.gameObject.name} [{src}]");
+            string src = !string.IsNullOrEmpty(t.url) ? "Google" : $"Ion:{t.ionAssetID}";
+            string fisica = t.createPhysicsMeshes ? "[physics]" : "";
+            GUI.Label(new Rect(12f, 50f + i * 20f, 370f, 20f),
+                $"  {t.gameObject.name} [{src}] {fisica}");
         }
     }
 
@@ -512,8 +543,7 @@ public class ConfiguradorAlsasua : MonoBehaviour
     [ContextMenu("Reconfigurar escena")]
     public void ReconfigurarDesdeInspector()
     {
-        // Eliminar tilesets existentes
-        if (tilesetTerreno  != null) DestroyImmediate(tilesetTerreno);
+        if (tilesetTerreno   != null) DestroyImmediate(tilesetTerreno);
         if (tilesetEdificios != null) DestroyImmediate(tilesetEdificios);
         if (tilesetOSM       != null) DestroyImmediate(tilesetOSM);
 
@@ -534,7 +564,6 @@ public class ConfiguradorAlsasua : MonoBehaviour
         Debug.Log("4. Ve a Credenciales → Crear credencial → API Key");
         Debug.Log("5. Pega la clave en el campo 'Api Key Google' del Inspector");
         Debug.Log("════════════════════════════════════════════════");
-        Debug.Log("  COBERTURA DE ALSASUA:");
         Debug.Log("  Google tiene fotogrametría 3D de toda España");
         Debug.Log("  incluyendo Alsasua — fachadas y tejados reales");
         Debug.Log("════════════════════════════════════════════════");

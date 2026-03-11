@@ -98,7 +98,8 @@ public class EnemigoPatrulla : MonoBehaviour
 
     private void ActualizarPatrulla()
     {
-        if (waypointsPatrulla.Length == 0 || esperandoWP) return;
+        // BUG FIX: evitar NullReferenceException si el array no está asignado en el Inspector
+        if (waypointsPatrulla == null || waypointsPatrulla.Length == 0 || esperandoWP) return;
 
         var wp = waypointsPatrulla[wpActual];
         if (wp == null) { wpActual = 0; return; }
@@ -323,13 +324,21 @@ public class EnemigoPatrulla : MonoBehaviour
         foreach (var r in GetComponentsInChildren<Renderer>())
             r.material.color = Color.red;
         yield return new WaitForSeconds(0.15f);
-        foreach (var r in GetComponentsInChildren<Renderer>())
-            r.material.color = colorUniforme;
+        // BUG FIX: no restaurar color si el enemigo ya ha muerto durante el flash
+        if (Estado != EstadoIA.Muerto)
+        {
+            foreach (var r in GetComponentsInChildren<Renderer>())
+                r.material.color = colorUniforme;
+        }
     }
 
     private void Morir()
     {
         Estado = EstadoIA.Muerto;
+
+        // BUG FIX: detener todas las coroutines al morir para evitar que
+        // FlashDano() restaure el color verde encima del color de "muerto"
+        StopAllCoroutines();
 
         // Caer
         transform.rotation = Quaternion.Euler(90f, transform.eulerAngles.y, 0f);

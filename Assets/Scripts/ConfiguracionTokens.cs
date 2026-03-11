@@ -12,7 +12,10 @@ public class ConfiguracionTokens : ScriptableObject
 {
     [Header("Google Maps Platform")]
     [Tooltip("API Key de Google Maps Platform — Map Tiles API")]
-    public string apiKeyGoogle = "AIzaSyAIXBPGknxIOof5odgqXI4_mHYDtO93esY";
+    // SEGURIDAD: NO hardcodear la API Key aquí. Introdúcela en el Inspector y
+    // asegúrate de que ConfiguracionTokens.asset está en el .gitignore para no
+    // subir credenciales a repositorios públicos.
+    public string apiKeyGoogle = "";
 
     [Header("Cesium Ion")]
     [Tooltip("Token de Cesium Ion — https://cesium.com/ion/tokens")]
