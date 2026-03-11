@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: ConfiguracionTokens
   m_EditorClassIdentifier: Assembly-CSharp::ConfiguracionTokens
   apiKeyGoogle: AIzaSyAIXBPGknxIOof5odgqXI4_mHYDtO93esY
-  tokenCesiumIon: 
+  tokenCesiumIon: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9

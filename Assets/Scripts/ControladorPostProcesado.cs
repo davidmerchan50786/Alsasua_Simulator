@@ -1,338 +1,482 @@
+// Assets/Scripts/ControladorPostProcesado.cs
+// Post-procesado fotorrealista para Alsasua Simulator (URP)
+// Efectos: ACES Tonemapping · Color Grading · White Balance · Bloom ·
+//          Vignette · Depth of Field · Motion Blur · Film Grain ·
+//          Shadows/Midtones/Highlights · Chromatic Aberration
+
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
-/// <summary>
-/// Controlador de Post-Procesado para Alsasua Simulator.
-/// Aplica efectos visuales URP que hacen que las fachadas y el entorno
-/// se vean más fotorrealistas, simulando la atmósfera del País Vasco.
-///
-/// INSTRUCCIONES:
-/// 1. Añade este script a la cámara principal
-/// 2. Añade un componente "Volume" (Global) a un GameObject en la escena
-/// 3. Asigna el Volume al campo "volumenGlobal" del Inspector
-/// 4. El script ajusta automáticamente los efectos según la hora del día
-/// </summary>
 [RequireComponent(typeof(Camera))]
 public class ControladorPostProcesado : MonoBehaviour
 {
-    // ============================================================
+    // ═══════════════════════════════════════════════════════════════════════
     //  REFERENCIAS
-    // ============================================================
+    // ═══════════════════════════════════════════════════════════════════════
+
     [Header("═══ VOLUME URP ═══")]
     [Tooltip("GameObject con el componente Volume Global de la escena")]
     [SerializeField] private Volume volumenGlobal;
 
-    // ============================================================
-    //  CONFIGURACIÓN VISUAL
-    // ============================================================
-    [Header("═══ WHITE BALANCE ═══")]
-    [Tooltip("Temperatura de color — positivo = cálido/amarillo, negativo = frío/azulado (clima norteño)")]
-    [Range(-100f, 100f)]
-    [SerializeField] private float temperaturaColor = -15f;   // Ligeramente frío
+    // ═══════════════════════════════════════════════════════════════════════
+    //  TONEMAPPING (lo más importante para aspecto fotográfico)
+    // ═══════════════════════════════════════════════════════════════════════
 
-    [Tooltip("Tinte (Tint) del balance de blancos")]
-    [Range(-100f, 100f)]
-    [SerializeField] private float tintColor = 0f;
+    [Header("═══ TONEMAPPING ═══")]
+    [Tooltip("ACES = aspecto de cine. Neutral = más fiel al color original.")]
+    [SerializeField] private TonemappingMode modoTonemapping = TonemappingMode.ACES;
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  COLOR GRADING
+    // ═══════════════════════════════════════════════════════════════════════
 
     [Header("═══ COLOR GRADING ═══")]
-    [Tooltip("Saturación del color — 100% = colores naturales")]
-    [Range(0f, 200f)]
-    [SerializeField] private float saturacion = 85f;
-
-    [Tooltip("Contraste de la imagen")]
     [Range(-100f, 100f)]
-    [SerializeField] private float contraste = 10f;
+    [Tooltip("Temperatura — negativo=frío/azulado (clima norteño Alsasua), positivo=cálido")]
+    [SerializeField] private float temperaturaColor = -10f;
 
-    [Header("═══ NIEBLA ATMOSFÉRICA ═══")]
-    [Tooltip("Activar niebla volumétrica (característica del clima de Alsasua)")]
-    [SerializeField] private bool activarNiebla = true;
+    [Range(-100f, 100f)]
+    [SerializeField] private float tintColor = 3f;
 
-    [Tooltip("Color de la niebla atmosférica")]
-    [SerializeField] private Color colorNiebla = new Color(0.75f, 0.8f, 0.85f, 1f);
+    [Range(0f, 200f)]
+    [Tooltip("Saturación: 100 = natural, >100 = más vívido")]
+    [SerializeField] private float saturacion = 90f;
 
-    [Tooltip("Densidad de la niebla")]
-    [Range(0f, 0.001f)]
-    [SerializeField] private float densidadNiebla = 0.00015f;
+    [Range(-100f, 100f)]
+    [Tooltip("Contraste: +10 = ligeramente más dramático")]
+    [SerializeField] private float contraste = 12f;
 
-    [Tooltip("Distancia a la que empieza la niebla (metros)")]
-    [SerializeField] private float inicioNiebla = 2000f;
+    [Range(-5f, 5f)]
+    [Tooltip("Exposición post-proceso (stops)")]
+    [SerializeField] private float exposicion = 0f;
 
-    [Tooltip("Distancia máxima de la niebla (metros)")]
-    [SerializeField] private float finNiebla = 25000f;
+    // ═══════════════════════════════════════════════════════════════════════
+    //  SHADOWS / MIDTONES / HIGHLIGHTS
+    // ═══════════════════════════════════════════════════════════════════════
+
+    [Header("═══ SHADOWS / MIDTONES / HIGHLIGHTS ═══")]
+    [Tooltip("Tinte en las sombras (azulado para exteriores)")]
+    [SerializeField] private Vector4 sombras   = new Vector4(0.97f, 0.97f, 1.03f, 0f);
+    [Tooltip("Tinte en los medios tonos")]
+    [SerializeField] private Vector4 mediosTonos = new Vector4(1f, 1f, 1f, 0f);
+    [Tooltip("Tinte en las luces altas (ligeramente cálido)")]
+    [SerializeField] private Vector4 lucesAltas = new Vector4(1.02f, 1.01f, 0.98f, 0f);
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  BLOOM
+    // ═══════════════════════════════════════════════════════════════════════
+
+    [Header("═══ BLOOM ═══")]
+    [Range(0f, 1f)]
+    [Tooltip("Umbral de brillo — 0.9 = sólo las partes muy brillantes")]
+    [SerializeField] private float bloomThreshold = 0.9f;
+
+    [Range(0f, 2f)]
+    [Tooltip("Intensidad del bloom — mantener bajo para realismo")]
+    [SerializeField] private float bloomIntensidad = 0.25f;
+
+    [Range(0f, 1f)]
+    [SerializeField] private float bloomScatter = 0.65f;
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  VIGNETTE
+    // ═══════════════════════════════════════════════════════════════════════
+
+    [Header("═══ VIGNETTE ═══")]
+    [Range(0f, 1f)]
+    [Tooltip("Oscurecimiento de los bordes — 0.25 es muy sutil y realista")]
+    [SerializeField] private float vignetteIntensidad = 0.25f;
+
+    [Range(0f, 1f)]
+    [SerializeField] private float vignetteSuavizado = 0.45f;
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  DEPTH OF FIELD
+    // ═══════════════════════════════════════════════════════════════════════
+
+    [Header("═══ DEPTH OF FIELD ═══")]
+    [Tooltip("Activa desenfoque de profundidad (realismo de lente)")]
+    [SerializeField] private bool dofActivo = true;
+
+    [Range(100f, 10000f)]
+    [Tooltip("Distancia de enfoque desde la cámara (metros)")]
+    [SerializeField] private float dofFocusDistance = 800f;
+
+    [Range(0f, 10f)]
+    [Tooltip("Apertura de lente — mayor = más desenfoque en el fondo")]
+    [SerializeField] private float dofApertura = 2.5f;
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  MOTION BLUR
+    // ═══════════════════════════════════════════════════════════════════════
+
+    [Header("═══ MOTION BLUR ═══")]
+    [Tooltip("Activa desenfoque de movimiento cuando la cámara gira rápido")]
+    [SerializeField] private bool motionBlurActivo = true;
+
+    [Range(0f, 0.5f)]
+    [Tooltip("Intensidad del motion blur — 0.15 = sutil y realista")]
+    [SerializeField] private float motionBlurIntensidad = 0.15f;
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  FILM GRAIN
+    // ═══════════════════════════════════════════════════════════════════════
+
+    [Header("═══ FILM GRAIN ═══")]
+    [Tooltip("Añade un grano de película muy sutil para aspecto cinematográfico")]
+    [SerializeField] private bool grainActivo = true;
+
+    [Range(0f, 0.5f)]
+    [Tooltip("Intensidad del grano — 0.05 es casi imperceptible")]
+    [SerializeField] private float grainIntensidad = 0.06f;
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  CHROMATIC ABERRATION
+    // ═══════════════════════════════════════════════════════════════════════
+
+    [Header("═══ CHROMATIC ABERRATION ═══")]
+    [Range(0f, 0.5f)]
+    [Tooltip("Separación de colores en los bordes (lente imperfecta) — mantener < 0.1")]
+    [SerializeField] private float chromaticIntensidad = 0.04f;
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  ANTI-ALIASING
+    // ═══════════════════════════════════════════════════════════════════════
 
     [Header("═══ ANTI-ALIASING ═══")]
-    [Tooltip("Modo de anti-aliasing para suavizar los bordes de las fachadas")]
-    [SerializeField] private AntialiasingMode modoAntialiasing = AntialiasingMode.SubpixelMorphologicalAntiAliasing;
+    [SerializeField] private AntialiasingMode modoAA = AntialiasingMode.SubpixelMorphologicalAntiAliasing;
 
-    [Header("═══ CICLO HORARIO ═══")]
-    [Tooltip("Simular cambios de luz según hora del día")]
-    [SerializeField] private bool simularHoraDia = false;
+    // ═══════════════════════════════════════════════════════════════════════
+    //  SINCRONÍA CON HORA DEL DÍA
+    // ═══════════════════════════════════════════════════════════════════════
 
-    [Range(0f, 24f)]
-    [Tooltip("Hora actual (0-24)")]
-    [SerializeField] private float horaActual = 12f;
+    [Header("═══ CICLO DÍA/NOCHE ═══")]
+    [Tooltip("Sincroniza la temperatura de color con SistemaAtmosfera")]
+    [SerializeField] private bool sincronizarConAtmosfera = true;
 
-    // Referencias a efectos de post-procesado
-    private ColorAdjustments colorAdjustments;
-    private WhiteBalance      whiteBalance;
-    private Bloom             bloom;
-    private Camera            camaraComponent;
+    // ═══════════════════════════════════════════════════════════════════════
+    //  ESTADO INTERNO
+    // ═══════════════════════════════════════════════════════════════════════
+
+    private Camera                     cam;
     private UniversalAdditionalCameraData cameraData;
+    private SistemaAtmosfera           atmosfera;
 
-    // ============================================================
-    //  INICIALIZACIÓN
-    // ============================================================
+    // Efectos del volume
+    private Tonemapping                 tonemapping;
+    private ColorAdjustments            colorAdjustments;
+    private WhiteBalance                whiteBalance;
+    private ShadowsMidtonesHighlights   smh;
+    private Bloom                       bloom;
+    private Vignette                    vignette;
+    private DepthOfField                dof;
+    private MotionBlur                  motionBlur;
+    private FilmGrain                   filmGrain;
+    private ChromaticAberration         chromaticAberration;
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  UNITY
+    // ═══════════════════════════════════════════════════════════════════════
 
     private void Awake()
     {
-        camaraComponent = GetComponent<Camera>();
-        cameraData      = camaraComponent.GetUniversalAdditionalCameraData();
+        cam        = GetComponent<Camera>();
+        cameraData = cam.GetUniversalAdditionalCameraData();
+        atmosfera  = Object.FindFirstObjectByType<SistemaAtmosfera>();
     }
 
     private void Start()
     {
-        ConfigurarAntiAliasing();
-        ConfigurarNiebla();
+        ConfigurarCamara();
 
-        if (volumenGlobal != null)
+        if (volumenGlobal == null)
         {
-            ObtenerEfectosDelVolumen();
-            AplicarWhiteBalance();
-            AplicarColorGrading();
-            AplicarBloom();
+            // Buscar automáticamente
+            volumenGlobal = Object.FindFirstObjectByType<Volume>();
+            if (volumenGlobal == null)
+            {
+                Debug.LogWarning("[PostProcesado] No hay Volume en la escena. " +
+                                 "Ejecuta Alsasua → ⚙ Configurar Escena Completa.");
+                return;
+            }
         }
-        else
-        {
-            Debug.LogWarning("[PostProcesado] No se asignó un Volume Global. " +
-                             "Crea un GameObject con componente 'Volume' (modo Global) y asígnalo al script.");
-        }
+
+        ObtenerEfectos();
+        AplicarTodos();
     }
 
     private void Update()
     {
-        if (simularHoraDia)
-        {
-            // 1 segundo real = 6 minutos en juego (ciclo de 4 minutos reales)
-            horaActual = (horaActual + Time.deltaTime * 0.1f) % 24f;
-            ActualizarLuzSegunHora();
-        }
+        if (sincronizarConAtmosfera && atmosfera != null)
+            SincronizarTemperatura(atmosfera.HoraDelDia);
     }
 
-    // ============================================================
-    //  CONFIGURACIÓN DE EFECTOS
-    // ============================================================
+    // ═══════════════════════════════════════════════════════════════════════
+    //  CONFIGURACIÓN DE CÁMARA
+    // ═══════════════════════════════════════════════════════════════════════
 
-    private void ConfigurarAntiAliasing()
+    private void ConfigurarCamara()
     {
-        if (cameraData != null)
-        {
-            cameraData.antialiasing        = modoAntialiasing;
-            cameraData.antialiasingQuality = AntialiasingQuality.High;
-            Debug.Log($"[PostProcesado] Anti-aliasing: {modoAntialiasing}");
-        }
+        if (cameraData == null) return;
+
+        // SMAA High = antialiasing sin artefactos de TAA para escenas estáticas
+        cameraData.antialiasing        = modoAA;
+        cameraData.antialiasingQuality = AntialiasingQuality.High;
+
+        // Habilitar post-procesado en esta cámara
+        cameraData.renderPostProcessing = true;
+
+        cam.nearClipPlane = 0.5f;
+        cam.farClipPlane  = 300000f;
+        cam.usePhysicalProperties = false;
+
+        Debug.Log("[PostProcesado] Cámara configurada.");
     }
 
-    private void ConfigurarNiebla()
+    // ═══════════════════════════════════════════════════════════════════════
+    //  OBTENER / CREAR EFECTOS DEL VOLUME
+    // ═══════════════════════════════════════════════════════════════════════
+
+    private void ObtenerEfectos()
     {
-        if (!activarNiebla)
+        var p = volumenGlobal.profile;
+
+        ObtenerOCrear(ref tonemapping);
+        ObtenerOCrear(ref colorAdjustments);
+        ObtenerOCrear(ref whiteBalance);
+        ObtenerOCrear(ref smh);
+        ObtenerOCrear(ref bloom);
+        ObtenerOCrear(ref vignette);
+        ObtenerOCrear(ref dof);
+        ObtenerOCrear(ref motionBlur);
+        ObtenerOCrear(ref filmGrain);
+        ObtenerOCrear(ref chromaticAberration);
+
+        void ObtenerOCrear<T>(ref T efecto) where T : VolumeComponent
         {
-            RenderSettings.fog = false;
-            return;
+            if (!p.TryGet(out efecto))
+                efecto = p.Add<T>(true);
         }
 
-        RenderSettings.fog              = true;
-        RenderSettings.fogMode          = FogMode.Linear;
-        RenderSettings.fogColor         = colorNiebla;
-        RenderSettings.fogStartDistance = inicioNiebla;
-        RenderSettings.fogEndDistance   = finNiebla;
-        RenderSettings.fogDensity       = densidadNiebla;
-
-        Debug.Log($"[PostProcesado] Niebla atmosférica configurada ({inicioNiebla}m - {finNiebla}m).");
+        Debug.Log("[PostProcesado] Efectos obtenidos del Volume profile.");
     }
 
-    private void ObtenerEfectosDelVolumen()
+    // ═══════════════════════════════════════════════════════════════════════
+    //  APLICAR TODOS LOS EFECTOS
+    // ═══════════════════════════════════════════════════════════════════════
+
+    private void AplicarTodos()
     {
-        volumenGlobal.profile.TryGet(out colorAdjustments);
-        volumenGlobal.profile.TryGet(out whiteBalance);
-        volumenGlobal.profile.TryGet(out bloom);
-
-        if (colorAdjustments == null)
-        {
-            colorAdjustments = volumenGlobal.profile.Add<ColorAdjustments>(true);
-            Debug.Log("[PostProcesado] ColorAdjustments añadido al perfil.");
-        }
-
-        if (whiteBalance == null)
-        {
-            whiteBalance = volumenGlobal.profile.Add<WhiteBalance>(true);
-            Debug.Log("[PostProcesado] WhiteBalance añadido al perfil.");
-        }
-
-        if (bloom == null)
-        {
-            bloom = volumenGlobal.profile.Add<Bloom>(true);
-            Debug.Log("[PostProcesado] Bloom añadido al perfil.");
-        }
+        AplicarTonemapping();
+        AplicarColorGrading();
+        AplicarWhiteBalance();
+        AplicarSMH();
+        AplicarBloom();
+        AplicarVignette();
+        AplicarDOF();
+        AplicarMotionBlur();
+        AplicarFilmGrain();
+        AplicarChromaticAberration();
+        Debug.Log("[PostProcesado] ✓ Todos los efectos aplicados (modo fotorrealista).");
     }
 
-    /// <summary>
-    /// Aplica temperatura de color usando el efecto WhiteBalance de URP.
-    /// WhiteBalance.temperature: -100 (frío/azul) a +100 (cálido/amarillo).
-    /// </summary>
-    private void AplicarWhiteBalance()
+    // ───────────────────────────────────────────────────────────────────────
+
+    private void AplicarTonemapping()
     {
-        if (whiteBalance == null) return;
-
-        whiteBalance.active = true;
-
-        whiteBalance.temperature.value         = temperaturaColor;
-        whiteBalance.temperature.overrideState = true;
-
-        whiteBalance.tint.value         = tintColor;
-        whiteBalance.tint.overrideState = true;
-
-        Debug.Log($"[PostProcesado] WhiteBalance aplicado (temp: {temperaturaColor}, tint: {tintColor}).");
+        if (tonemapping == null) return;
+        tonemapping.active = true;
+        tonemapping.mode.value         = modoTonemapping;
+        tonemapping.mode.overrideState = true;
     }
 
     private void AplicarColorGrading()
     {
         if (colorAdjustments == null) return;
-
         colorAdjustments.active = true;
 
-        // colorFilter = Color.white significa sin tinte adicional
-        colorAdjustments.colorFilter.value         = Color.white;
-        colorAdjustments.colorFilter.overrideState = true;
+        Set(colorAdjustments.postExposure, exposicion);
+        Set(colorAdjustments.contrast,     contraste);
+        Set(colorAdjustments.saturation,   saturacion - 100f); // URP: -100 a +100
+        Set(colorAdjustments.colorFilter,  Color.white);
+    }
 
-        // Saturación: en URP va de -100 a +100; el inspector muestra 0-200 para facilidad
-        colorAdjustments.saturation.value         = saturacion - 100f;
-        colorAdjustments.saturation.overrideState = true;
+    private void AplicarWhiteBalance()
+    {
+        if (whiteBalance == null) return;
+        whiteBalance.active = true;
 
-        colorAdjustments.contrast.value         = contraste;
-        colorAdjustments.contrast.overrideState = true;
+        Set(whiteBalance.temperature, temperaturaColor);
+        Set(whiteBalance.tint,        tintColor);
+    }
 
-        Debug.Log("[PostProcesado] Color grading aplicado.");
+    private void AplicarSMH()
+    {
+        if (smh == null) return;
+        smh.active = true;
+
+        // Sombras ligeramente azuladas (exterior, cielo)
+        smh.shadows.value         = sombras;
+        smh.shadows.overrideState = true;
+
+        smh.midtones.value         = mediosTonos;
+        smh.midtones.overrideState = true;
+
+        smh.highlights.value         = lucesAltas;
+        smh.highlights.overrideState = true;
     }
 
     private void AplicarBloom()
     {
         if (bloom == null) return;
-
         bloom.active = true;
-        bloom.threshold.value = 0.9f;   // Solo objetos muy brillantes (ventanas iluminadas)
-        bloom.intensity.value = 0.3f;   // Sutil
-        bloom.scatter.value   = 0.7f;
 
-        bloom.threshold.overrideState = true;
-        bloom.intensity.overrideState = true;
-        bloom.scatter.overrideState   = true;
-
-        Debug.Log("[PostProcesado] Bloom configurado.");
+        Set(bloom.threshold, bloomThreshold);
+        Set(bloom.intensity,  bloomIntensidad);
+        Set(bloom.scatter,    bloomScatter);
     }
 
-    // ============================================================
-    //  CICLO DÍA / NOCHE
-    // ============================================================
+    private void AplicarVignette()
+    {
+        if (vignette == null) return;
+        vignette.active = true;
 
-    private void ActualizarLuzSegunHora()
+        Set(vignette.intensity,  vignetteIntensidad);
+        Set(vignette.smoothness, vignetteSuavizado);
+        vignette.rounded.value         = true;
+        vignette.rounded.overrideState = true;
+    }
+
+    private void AplicarDOF()
+    {
+        if (dof == null) return;
+        dof.active = dofActivo;
+
+        // Modo Bokeh = más realista (más GPU). Gaussian = más rápido.
+        dof.mode.value         = DepthOfFieldMode.Bokeh;
+        dof.mode.overrideState = true;
+
+        Set(dof.focusDistance,  dofFocusDistance);
+        Set(dof.aperture,       dofApertura);
+
+        // Longitud focal equivalente a un teleobjetivo 50mm para dron
+        dof.focalLength.value         = 50f;
+        dof.focalLength.overrideState = true;
+    }
+
+    private void AplicarMotionBlur()
+    {
+        if (motionBlur == null) return;
+        motionBlur.active = motionBlurActivo;
+
+        motionBlur.mode.value         = MotionBlurMode.CameraAndObjects;
+        motionBlur.mode.overrideState = true;
+
+        motionBlur.quality.value         = MotionBlurQuality.High;
+        motionBlur.quality.overrideState = true;
+
+        Set(motionBlur.intensity,   motionBlurIntensidad);
+        Set(motionBlur.clamp,       0.05f);
+    }
+
+    private void AplicarFilmGrain()
+    {
+        if (filmGrain == null) return;
+        filmGrain.active = grainActivo;
+
+        filmGrain.type.value         = FilmGrainLookup.Thin1;
+        filmGrain.type.overrideState = true;
+
+        Set(filmGrain.intensity,  grainIntensidad);
+        Set(filmGrain.response,   0.8f);
+    }
+
+    private void AplicarChromaticAberration()
+    {
+        if (chromaticAberration == null) return;
+        chromaticAberration.active = true;
+
+        Set(chromaticAberration.intensity, chromaticIntensidad);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  SINCRONÍA CON HORA DEL DÍA
+    // ═══════════════════════════════════════════════════════════════════════
+
+    private void SincronizarTemperatura(float hora)
     {
         if (whiteBalance == null) return;
 
-        // Temperatura según hora:
-        // Amanecer (6-9h): cálido naranja → blanco
-        // Día (9-17h): neutro a ligeramente frío
-        // Atardecer (17-21h): cálido → frío
-        // Noche (21-6h): azul frío
+        // Temperatura de color por hora (igual que el sol real):
+        // Amanecer/atardecer: cálido  (+40 a +60)
+        // Mediodía despejado: ligeramente frío (-10 a -20)
+        // Noche: frío azulado (-40 a -60)
+        float temp;
+        if      (hora >= 5f  && hora < 8f)  temp = Mathf.Lerp(60f, 15f,  (hora - 5f)  / 3f);   // Amanecer
+        else if (hora >= 8f  && hora < 17f) temp = Mathf.Lerp(15f, -10f, (hora - 8f)  / 9f);   // Día
+        else if (hora >= 17f && hora < 21f) temp = Mathf.Lerp(-10f, 50f, (hora - 17f) / 4f);   // Atardecer
+        else if (hora >= 21f || hora < 5f)  temp = -40f;                                          // Noche
+        else                                temp = -10f;
 
-        float tempHora;
-
-        if (horaActual >= 6f && horaActual < 9f)
-        {
-            float t = (horaActual - 6f) / 3f;
-            tempHora = Mathf.Lerp(50f, 10f, t);         // Naranja → blanco cálido
-        }
-        else if (horaActual >= 9f && horaActual < 17f)
-        {
-            float t = (horaActual - 9f) / 8f;
-            tempHora = Mathf.Lerp(10f, -15f, t);        // Blanco → ligeramente frío
-        }
-        else if (horaActual >= 17f && horaActual < 21f)
-        {
-            float t = (horaActual - 17f) / 4f;
-            tempHora = Mathf.Lerp(-15f, -50f, t);       // Atardecer → noche fría
-        }
-        else
-        {
-            tempHora = -50f;                              // Noche: azul frío
-        }
-
-        whiteBalance.temperature.value = tempHora;
+        whiteBalance.temperature.value = temp;
     }
 
-    // ============================================================
-    //  INSPECTOR HELPERS
-    // ============================================================
+    // ═══════════════════════════════════════════════════════════════════════
+    //  HELPERS
+    // ═══════════════════════════════════════════════════════════════════════
+
+    // Setters genéricos con override automático
+    private static void Set(FloatParameter p,  float  v) { p.value = v; p.overrideState = true; }
+    private static void Set(ColorParameter p,  Color  v) { p.value = v; p.overrideState = true; }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  PRESETS (botones en Inspector → clic derecho sobre el script)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    [ContextMenu("Preset: Día nublado (típico Alsasua)")]
+    private void PresetNublado()
+    {
+        temperaturaColor = -20f; saturacion = 75f; contraste = 8f;
+        bloomIntensidad  = 0.1f; vignetteIntensidad = 0.3f;
+        grainIntensidad  = 0.08f;
+        AplicarTodos();
+    }
+
+    [ContextMenu("Preset: Día soleado de verano")]
+    private void PresetSoleado()
+    {
+        temperaturaColor = 15f; saturacion = 100f; contraste = 18f;
+        bloomIntensidad  = 0.3f; vignetteIntensidad = 0.2f;
+        grainIntensidad  = 0.04f;
+        AplicarTodos();
+    }
+
+    [ContextMenu("Preset: Amanecer / Atardecer")]
+    private void PresetAtardecer()
+    {
+        temperaturaColor = 50f; saturacion = 95f; contraste = 15f;
+        bloomIntensidad  = 0.5f; vignetteIntensidad = 0.35f;
+        grainIntensidad  = 0.07f;
+        AplicarTodos();
+    }
+
+    [ContextMenu("Preset: Noche")]
+    private void PresetNoche()
+    {
+        temperaturaColor = -50f; saturacion = 60f; contraste = 20f;
+        bloomIntensidad  = 0.8f; vignetteIntensidad = 0.5f;
+        grainIntensidad  = 0.15f;
+        AplicarTodos();
+    }
 
     [ContextMenu("Aplicar configuración actual")]
     public void AplicarConfiguracion()
     {
-        ConfigurarNiebla();
         if (volumenGlobal != null)
         {
-            ObtenerEfectosDelVolumen();
-            AplicarWhiteBalance();
-            AplicarColorGrading();
-            AplicarBloom();
+            ObtenerEfectos();
+            AplicarTodos();
         }
-        Debug.Log("[PostProcesado] Configuración aplicada.");
-    }
-
-    [ContextMenu("Preset: Día nublado (típico Alsasua)")]
-    private void PresetDiaNublado()
-    {
-        temperaturaColor = -20f;
-        tintColor        = 5f;
-        saturacion       = 75f;
-        contraste        = 8f;
-        activarNiebla    = true;
-        densidadNiebla   = 0.0002f;
-        inicioNiebla     = 1500f;
-        finNiebla        = 15000f;
-        colorNiebla      = new Color(0.7f, 0.75f, 0.8f);
-        AplicarConfiguracion();
-        Debug.Log("[PostProcesado] Preset 'Día nublado' aplicado.");
-    }
-
-    [ContextMenu("Preset: Día soleado (verano)")]
-    private void PresetDiaSoleado()
-    {
-        temperaturaColor = 15f;
-        tintColor        = 0f;
-        saturacion       = 95f;
-        contraste        = 15f;
-        activarNiebla    = true;
-        densidadNiebla   = 0.00008f;
-        inicioNiebla     = 5000f;
-        finNiebla        = 40000f;
-        colorNiebla      = new Color(0.85f, 0.9f, 0.95f);
-        AplicarConfiguracion();
-        Debug.Log("[PostProcesado] Preset 'Día soleado' aplicado.");
-    }
-
-    [ContextMenu("Preset: Amanecer")]
-    private void PresetAmanecer()
-    {
-        temperaturaColor = 50f;
-        tintColor        = 10f;
-        saturacion       = 90f;
-        contraste        = 12f;
-        activarNiebla    = true;
-        densidadNiebla   = 0.0003f;
-        inicioNiebla     = 500f;
-        finNiebla        = 8000f;
-        colorNiebla      = new Color(0.95f, 0.75f, 0.6f);
-        AplicarConfiguracion();
-        Debug.Log("[PostProcesado] Preset 'Amanecer' aplicado.");
     }
 }

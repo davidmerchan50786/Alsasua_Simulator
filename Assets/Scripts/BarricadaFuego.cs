@@ -1,0 +1,244 @@
+// Assets/Scripts/BarricadaFuego.cs
+// Barricada con fuego y humo — obstáculo en la escena
+// Se crea por código, no necesita assets externos
+
+using UnityEngine;
+
+public class BarricadaFuego : MonoBehaviour
+{
+    [Header("═══ BARRICADA ═══")]
+    [SerializeField] private bool  fuegoPrendido  = true;
+    [SerializeField] private float intensidadFuego = 1f;  // 0-1
+    [SerializeField] private int   vida            = 200;
+    [SerializeField] private float radioBloqueo    = 2.5f;
+
+    private ParticleSystem psFuego;
+    private ParticleSystem psHumo;
+    private ParticleSystem psChispas;
+    private Light          luzFuego;
+    private float          timerParpadeo = 0f;
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  UNITY
+    // ═══════════════════════════════════════════════════════════════════════
+
+    private void Start()
+    {
+        CrearEstructura();
+        if (fuegoPrendido) PrenderFuego();
+    }
+
+    private void Update()
+    {
+        if (!fuegoPrendido || luzFuego == null) return;
+
+        // Parpadeo de llama
+        timerParpadeo += Time.deltaTime * 8f;
+        luzFuego.intensity = Mathf.Lerp(2.5f, 5.5f, (Mathf.Sin(timerParpadeo) + 1f) / 2f)
+                           * intensidadFuego;
+        luzFuego.range     = Mathf.Lerp(6f, 10f, (Mathf.Sin(timerParpadeo * 1.3f) + 1f) / 2f);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  ESTRUCTURA VISUAL (por código)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    private void CrearEstructura()
+    {
+        // Palés / contenedor de basura (cajas apiladas)
+        CrearCaja(new Vector3(0f,    0.25f, 0f),    new Vector3(2.5f, 0.5f, 0.8f), new Color(0.45f, 0.32f, 0.18f));
+        CrearCaja(new Vector3(0.2f,  0.75f, 0.1f),  new Vector3(1.8f, 0.5f, 0.7f), new Color(0.40f, 0.28f, 0.15f));
+        CrearCaja(new Vector3(-0.2f, 1.15f, -0.05f),new Vector3(1.4f, 0.4f, 0.65f),new Color(0.35f, 0.24f, 0.12f));
+
+        // Neumáticos
+        CrearCilindro(new Vector3(-0.8f, 0.25f, 0.5f),  new Vector3(0.55f, 0.25f, 0.55f), new Color(0.08f, 0.08f, 0.08f));
+        CrearCilindro(new Vector3(0.8f,  0.25f, 0.45f), new Vector3(0.55f, 0.25f, 0.55f), new Color(0.08f, 0.08f, 0.08f));
+        CrearCilindro(new Vector3(0f,    0.55f, 0.5f),  new Vector3(0.55f, 0.25f, 0.55f), new Color(0.1f,  0.1f,  0.1f));
+
+        // Varillas/palo metálico
+        CrearCaja(new Vector3(1.1f, 1f, 0f), new Vector3(0.08f, 2f, 0.08f), new Color(0.4f, 0.4f, 0.4f));
+    }
+
+    // Crea un Material compatible con URP (evita el magenta por shader incorrecto)
+    private static Material MatURP(Color color)
+    {
+        var shader = Shader.Find("Universal Render Pipeline/Lit")
+                  ?? Shader.Find("Standard");
+        var mat = new Material(shader);
+        mat.color = color;
+        return mat;
+    }
+
+    private void CrearCaja(Vector3 pos, Vector3 scale, Color color)
+    {
+        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        go.transform.SetParent(transform);
+        go.transform.localPosition = pos;
+        go.transform.localScale    = scale;
+        go.transform.localRotation = Quaternion.Euler(0f, Random.Range(-5f, 5f), 0f);
+        go.GetComponent<Renderer>().material = MatURP(color);
+
+        // Rigidbody para que las explosiones la muevan
+        // FreezeRotationX/Z evita que las cajas se vuelquen solas al iniciarse
+        var rb = go.AddComponent<Rigidbody>();
+        rb.mass        = 40f;
+        rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+    }
+
+    private void CrearCilindro(Vector3 pos, Vector3 scale, Color color)
+    {
+        var go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        go.transform.SetParent(transform);
+        go.transform.localPosition = pos;
+        go.transform.localScale    = scale;
+        go.GetComponent<Renderer>().material = MatURP(color);
+
+        var rb = go.AddComponent<Rigidbody>();
+        rb.mass        = 15f;
+        rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  FUEGO Y HUMO
+    // ═══════════════════════════════════════════════════════════════════════
+
+    public void PrenderFuego()
+    {
+        fuegoPrendido = true;
+        CrearFuego();
+        CrearHumo();
+        CrearChispas();
+        CrearLuzFuego();
+    }
+
+    private void CrearFuego()
+    {
+        var go = new GameObject("Fuego");
+        go.transform.SetParent(transform);
+        go.transform.localPosition = new Vector3(0f, 1.2f, 0f);
+        psFuego = go.AddComponent<ParticleSystem>();
+
+        var main          = psFuego.main;
+        main.loop          = true;
+        main.startLifetime = new ParticleSystem.MinMaxCurve(0.6f, 1.2f);
+        main.startSpeed    = new ParticleSystem.MinMaxCurve(1.5f, 4.0f);
+        main.startSize     = new ParticleSystem.MinMaxCurve(0.4f, 1.2f) ;
+        main.startColor    = new ParticleSystem.MinMaxGradient(
+                                 new Color(1.0f, 0.55f, 0.1f, 0.9f),
+                                 new Color(1.0f, 0.2f,  0.0f, 0.7f));
+        main.gravityModifier = -0.15f;
+        main.maxParticles    = 80;
+
+        var em = psFuego.emission;
+        em.rateOverTime = 35f * intensidadFuego;
+
+        var shape      = psFuego.shape;
+        shape.shapeType = ParticleSystemShapeType.Circle;
+        shape.radius   = 0.6f;
+
+        var sizeOL = psFuego.sizeOverLifetime;
+        sizeOL.enabled = true;
+        var curva = new AnimationCurve();
+        curva.AddKey(0f, 0.3f); curva.AddKey(0.5f, 1f); curva.AddKey(1f, 0f);
+        sizeOL.size = new ParticleSystem.MinMaxCurve(1f, curva);
+
+        psFuego.Play();
+    }
+
+    private void CrearHumo()
+    {
+        var go = new GameObject("Humo");
+        go.transform.SetParent(transform);
+        go.transform.localPosition = new Vector3(0f, 2.5f, 0f);
+        psHumo = go.AddComponent<ParticleSystem>();
+
+        var main          = psHumo.main;
+        main.loop          = true;
+        main.startLifetime = new ParticleSystem.MinMaxCurve(3f, 6f);
+        main.startSpeed    = new ParticleSystem.MinMaxCurve(0.5f, 2f);
+        main.startSize     = new ParticleSystem.MinMaxCurve(1f, 3.5f);
+        main.startColor    = new ParticleSystem.MinMaxGradient(
+                                 new Color(0.12f, 0.10f, 0.09f, 0.7f),
+                                 new Color(0.30f, 0.25f, 0.20f, 0.4f));
+        main.gravityModifier = -0.3f;
+        main.maxParticles    = 40;
+
+        var em = psHumo.emission;
+        em.rateOverTime = 10f;
+
+        var shape      = psHumo.shape;
+        shape.shapeType = ParticleSystemShapeType.Circle;
+        shape.radius   = 0.4f;
+
+        psHumo.Play();
+    }
+
+    private void CrearChispas()
+    {
+        var go = new GameObject("Chispas");
+        go.transform.SetParent(transform);
+        go.transform.localPosition = new Vector3(0f, 1.4f, 0f);
+        psChispas = go.AddComponent<ParticleSystem>();
+
+        var main           = psChispas.main;
+        main.loop           = true;
+        main.startLifetime  = new ParticleSystem.MinMaxCurve(0.5f, 1.5f);
+        main.startSpeed     = new ParticleSystem.MinMaxCurve(2f, 6f);
+        main.startSize      = new ParticleSystem.MinMaxCurve(0.03f, 0.08f);
+        main.startColor     = new ParticleSystem.MinMaxGradient(
+                                  new Color(1f, 0.9f, 0.4f), new Color(1f, 0.5f, 0.1f));
+        main.gravityModifier = 0.3f;
+        main.maxParticles    = 60;
+
+        var em = psChispas.emission;
+        em.rateOverTime = 15f;
+
+        var shape      = psChispas.shape;
+        shape.shapeType = ParticleSystemShapeType.Cone;
+        shape.angle    = 40f;
+        shape.radius   = 0.3f;
+
+        psChispas.Play();
+    }
+
+    private void CrearLuzFuego()
+    {
+        var go = new GameObject("LuzFuego");
+        go.transform.SetParent(transform);
+        go.transform.localPosition = new Vector3(0f, 1f, 0f);
+        luzFuego           = go.AddComponent<Light>();
+        luzFuego.type      = LightType.Point;
+        luzFuego.color     = new Color(1f, 0.55f, 0.15f);
+        luzFuego.intensity = 4f;
+        luzFuego.range     = 8f;
+        luzFuego.shadows   = LightShadows.Soft;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  DAÑO (explosiones pueden destruirla)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    public void RecibirDano(int cantidad)
+    {
+        vida -= cantidad;
+        if (vida <= 0)
+        {
+            if (psFuego  != null) psFuego.Stop();
+            if (psHumo   != null) psHumo.Stop();
+            if (psChispas!= null) psChispas.Stop();
+            if (luzFuego != null) luzFuego.enabled = false;
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  CREACIÓN ESTÁTICA
+    // ═══════════════════════════════════════════════════════════════════════
+
+    public static BarricadaFuego Crear(Vector3 posicion, float rotacionY = 0f)
+    {
+        var go = new GameObject("Barricada");
+        go.transform.position = posicion;
+        go.transform.rotation = Quaternion.Euler(0f, rotacionY, 0f);
+        return go.AddComponent<BarricadaFuego>();
+    }
+}
