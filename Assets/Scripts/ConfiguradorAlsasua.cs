@@ -21,9 +21,18 @@ public class ConfiguradorAlsasua : MonoBehaviour
     // ============================================================
     //  COORDENADAS DE ALSASUA (Nafarroa / Navarra, España)
     // ============================================================
-    private const double ALSASUA_LATITUD   =  42.9037;  // 42°54'13" N
+    private const double ALSASUA_LATITUD   =  42.9037;  // 42°54'13" N  (plaza / centro urbano)
     private const double ALSASUA_LONGITUD  =  -2.1668;  // 2°10'0" W
-    private const double ALSASUA_ALTURA    = 530.0;     // ~530 m sobre el mar
+
+    // ALTURA WGS84 ELIPSOIDAL — Cesium usa el elipsoide WGS84, NO la altura ortométrica.
+    //   Altura ortométrica (IGN/MSL):  ~530 m
+    //   Ondulación del geoide EGM96 en 42.9°N -2.17°W: ~+44 m
+    //   Altura WGS84 elipsoidal:       ~574 m
+    //
+    // Con 530 m (ortométrico), Unity Y=0 queda ~44 m bajo el terreno real → el jugador
+    // aparece enterrado. Con 574 m, Unity Y=0 coincide con la superficie del terreno y
+    // el jugador en Y=1 está 1 m sobre el suelo (correcto).
+    private const double ALSASUA_ALTURA    = 574.0;
 
     // ============================================================
     //  INSPECTOR
@@ -185,63 +194,114 @@ public class ConfiguradorAlsasua : MonoBehaviour
 
     /// <summary>
     /// Arregla los tilesets que YA están en la escena (añadidos desde el panel de Cesium).
-    /// Aplica la configuración correcta de física y calidad a cada tileset.
+    ///
+    /// COMBINACIONES VÁLIDAS Y CONFLICTOS:
+    ///
+    ///   MODO A — Google Photorealistic activo:
+    ///     · Solo Google 3D Tiles: terreno + edificios + texturas fotogramétricas reales.
+    ///     · Cesium World Terrain DEBE desactivarse → si ambos están activos simultáneamente
+    ///       dos mallas de terreno se superponen → z-fighting (parpadeo continuo en el suelo).
+    ///     · OSM Buildings DEBE desactivarse → duplica edificios ya incluidos en Google.
+    ///     · Bing Maps overlay NO se añade al terreno (CWT está desactivado y Google ya
+    ///       incluye la imagen de satélite embebida en la fotogrametría).
+    ///
+    ///   MODO B — Sin Google (fallback CWT + OSM):
+    ///     · Cesium World Terrain (ionAssetID=1): geometría 3D del relieve real.
+    ///     · Bing Maps Aerial (ionAssetID=2) como CesiumIonRasterOverlay sobre CWT:
+    ///       drapa la imagen de satélite sobre el terreno → terreno con textura.
+    ///       (Añadirlo como Cesium3DTileset separado causa terreno blanco.)
+    ///     · OSM Buildings (ionAssetID=96188): geometría de edificios + TexturizadorFachadasOSM.
     ///
     /// REGLA DE FÍSICA:
-    ///   - Cesium World Terrain (ionAssetID=1): createPhysicsMeshes=true  → el jugador puede caminar
-    ///   - Google Photorealistic (URL):          createPhysicsMeshes=true  → colisión con edificios y terreno
-    ///   - OSM Buildings (ionAssetID=96188):     createPhysicsMeshes=false → solo visual
-    ///
-    /// El warning de PhysX sobre triángulos >500 unidades es NORMAL para tiles de terreno
-    /// real y no afecta al juego — solo es una advertencia de rendimiento de PhysX.
+    ///   · Cesium World Terrain: createPhysicsMeshes=true  (el jugador camina sobre el suelo)
+    ///   · Google Photorealistic: createPhysicsMeshes=true (colisión con edificios y terreno)
+    ///   · OSM Buildings:        createPhysicsMeshes=false (solo visual, la física viene del CWT)
     /// </summary>
     private void CorregirTilesetsExistentes()
     {
         var todos = Object.FindObjectsByType<Cesium3DTileset>(FindObjectsSortMode.None);
         if (todos.Length == 0) return;
 
+        // ── Paso 1: detectar si Google Photorealistic está presente y activo ──────
+        bool hayGoogle = false;
         foreach (var t in todos)
         {
-            bool esTerreno  = t.ionAssetID == 1;
-            bool esGoogle   = !string.IsNullOrEmpty(t.url) && t.url.Contains("googleapis");
-            bool esOSM      = t.ionAssetID == 96188;
-
-            // Física: terreno y Google necesitan colisión para que el jugador camine
-            bool necesitaFisica = esTerreno || esGoogle || (!esOSM && t.ionAssetID > 0);
-            if (t.createPhysicsMeshes != necesitaFisica)
+            bool esGoogleURL = !string.IsNullOrEmpty(t.url) && t.url.Contains("googleapis");
+            bool esGoogleIon = t.ionAssetID == 2275207;
+            if ((esGoogleURL || esGoogleIon) && t.gameObject.activeSelf)
             {
-                t.createPhysicsMeshes = necesitaFisica;
-                Debug.Log($"[Alsasua] Tileset '{t.gameObject.name}': createPhysicsMeshes={necesitaFisica}");
+                hayGoogle = true;
+                break;
+            }
+        }
+
+        // ── Paso 2: configurar cada tileset según el modo detectado ───────────────
+        foreach (var t in todos)
+        {
+            bool esTerreno = t.ionAssetID == 1;
+            bool esGoogle  = (!string.IsNullOrEmpty(t.url) && t.url.Contains("googleapis"))
+                             || t.ionAssetID == 2275207;
+            bool esOSM     = t.ionAssetID == 96188;
+
+            // MODO A — Google activo: desactivar CWT y OSM para evitar conflictos
+            if (hayGoogle)
+            {
+                if (esTerreno && t.gameObject.activeSelf)
+                {
+                    t.gameObject.SetActive(false);
+                    Debug.Log($"[Alsasua] CWT '{t.gameObject.name}' desactivado — Google Photorealistic " +
+                              "ya proporciona el terreno. Ambos activos provocan z-fighting (parpadeo).");
+                    continue;
+                }
+                if (esOSM && t.gameObject.activeSelf)
+                {
+                    t.gameObject.SetActive(false);
+                    Debug.Log($"[Alsasua] OSM '{t.gameObject.name}' desactivado — Google Photorealistic activo.");
+                    continue;
+                }
+            }
+
+            // Parenterlo bajo CesiumGeoreference si está fuera de la jerarquía
+            if (georeference != null && !t.transform.IsChildOf(georeference.transform))
+            {
+                t.transform.SetParent(georeference.transform, worldPositionStays: true);
+                Debug.Log($"[Alsasua] Tileset '{t.gameObject.name}' movido bajo CesiumGeoreference.");
             }
 
             // Calidad SSE
             if (t.maximumScreenSpaceError > maximumScreenSpaceError)
                 t.maximumScreenSpaceError = maximumScreenSpaceError;
 
-            // Mostrar créditos de Google (obligatorio por licencia)
+            // Física: solo el tileset que actúa de terreno necesita physics meshes
+            bool necesitaFisica = esTerreno || esGoogle;  // OSM es solo visual
+            if (t.createPhysicsMeshes != necesitaFisica)
+            {
+                t.createPhysicsMeshes = necesitaFisica;
+                Debug.Log($"[Alsasua] '{t.gameObject.name}': createPhysicsMeshes={necesitaFisica}");
+            }
+
+            // Créditos Google (obligatorio por licencia de Google Maps Platform)
             if (esGoogle) t.showCreditsOnScreen = true;
-
-            // Ensamblar bajo CesiumGeoreference si el tileset está fuera
-            if (georeference != null && !t.transform.IsChildOf(georeference.transform))
-            {
-                t.transform.SetParent(georeference.transform, worldPositionStays: true);
-                Debug.Log($"[Alsasua] Tileset '{t.gameObject.name}' movido bajo CesiumGeoreference.");
-            }
         }
 
-        // Añadir Bing Maps Aerial como raster overlay a todos los tilesets de terreno
-        // que no tengan overlay todavía. Esto soluciona el "terreno blanco" cuando el
-        // usuario añade Cesium World Terrain desde el menú de Cesium sin overlay.
-        foreach (var t in todos)
+        // ── Paso 3: overlay de Bing Maps solo en MODO B (sin Google) ─────────────
+        // Si Google está activo, CWT está desactivado → no tiene sentido añadir el overlay.
+        // Si CWT es el único terreno → necesita el overlay de Bing Maps para tener textura.
+        if (!hayGoogle)
         {
-            bool esTerreno2 = t.ionAssetID == 1;
-            if (esTerreno2 && t.gameObject.GetComponent<CesiumIonRasterOverlay>() == null)
+            foreach (var t in todos)
             {
-                AnadirBingMapsOverlay(t.gameObject);
+                if (t.ionAssetID == 1
+                    && t.gameObject.activeSelf
+                    && t.GetComponent<CesiumIonRasterOverlay>() == null)
+                {
+                    AnadirBingMapsOverlay(t.gameObject);
+                }
             }
         }
 
-        Debug.Log($"[Alsasua] ✓ {todos.Length} tileset(s) existentes corregidos.");
+        string modo = hayGoogle ? "Google Photorealistic" : "CWT + OSM (fallback)";
+        Debug.Log($"[Alsasua] ✓ {todos.Length} tileset(s) configurados en modo: {modo}");
     }
 
     // ============================================================

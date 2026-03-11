@@ -93,14 +93,20 @@ public class GestionTilesets : MonoBehaviour
 
     private void ConfigurarTilesetsIniciales()
     {
-        // Buscar tilesets dinámicamente si no están asignados en Inspector
+        // Buscar tilesets dinámicamente si no están asignados en Inspector.
+        // BUG FIX: la detección de Google usaba !string.IsNullOrEmpty(t.url), que atrapaba
+        // CUALQUIER tileset con URL (incluyendo otros servicios WMS/WMTS), asignándolos
+        // erróneamente como "Google Photorealistic". Ahora se exige que la URL contenga
+        // "googleapis" o que el ionAssetID sea el de Google (2275207).
         if (tilesetGooglePhotorealistic == null || tilesetTerreno == null)
         {
             var todos = Object.FindObjectsByType<Cesium3DTileset>(FindObjectsSortMode.None);
             foreach (var t in todos)
             {
-                if (tilesetGooglePhotorealistic == null &&
-                    (!string.IsNullOrEmpty(t.url) || t.ionAssetID == 2275207))
+                bool esGoogleURL = !string.IsNullOrEmpty(t.url) && t.url.Contains("googleapis");
+                bool esGoogleIon = t.ionAssetID == 2275207;
+
+                if (tilesetGooglePhotorealistic == null && (esGoogleURL || esGoogleIon))
                     tilesetGooglePhotorealistic = t;
                 else if (tilesetTerreno == null && t.ionAssetID == 1)
                     tilesetTerreno = t;
@@ -109,7 +115,11 @@ public class GestionTilesets : MonoBehaviour
             }
         }
 
-        // Configurar Google Photorealistic
+        // ── Modo Google Photorealistic ────────────────────────────────────────────
+        // Google 3D Tiles incluye terreno + edificios + texturas fotogramétricas.
+        // Si está activo, Cesium World Terrain y OSM provocan conflictos graves:
+        //   · CWT superpone terreno extra → z-fighting (parpadeo en el suelo)
+        //   · OSM Buildings duplica edificios ya incluidos en Google
         if (tilesetGooglePhotorealistic != null)
         {
             tilesetGooglePhotorealistic.maximumScreenSpaceError = sseCercano;
@@ -117,22 +127,34 @@ public class GestionTilesets : MonoBehaviour
             tilesetGooglePhotorealistic.preloadAncestors        = true;
             tilesetGooglePhotorealistic.preloadSiblings         = true;
             Debug.Log("[GestionTilesets] Google Photorealistic configurado (SSE inicial: " + sseCercano + ").");
+
+            // Desactivar CWT — Google ya provee el terreno fotogramétrico.
+            // Tener ambos activos causa z-fighting (dos mallas de terreno superpuestas).
+            if (tilesetTerreno != null && tilesetTerreno.gameObject.activeSelf)
+            {
+                tilesetTerreno.gameObject.SetActive(false);
+                tilesetTerreno = null;   // Limpiar referencia para que AplicarSSE no la use
+                Debug.Log("[GestionTilesets] Cesium World Terrain desactivado — Google Photorealistic ya proporciona el terreno (evita z-fighting).");
+            }
+
+            // Desactivar OSM — Google ya incluye los edificios con texturas reales.
+            if (tilesetOSM != null && tilesetOSM.gameObject.activeSelf)
+            {
+                tilesetOSM.gameObject.SetActive(false);
+                Debug.Log("[GestionTilesets] OSM Buildings desactivado — Google Photorealistic activo.");
+            }
+
+            return; // No configurar CWT ni OSM — están desactivados
         }
 
-        // Configurar terreno
+        // ── Modo CWT + OSM (fallback cuando no hay Google) ───────────────────────
         if (tilesetTerreno != null)
         {
             tilesetTerreno.maximumScreenSpaceError = sseCercano;
             tilesetTerreno.preloadAncestors        = true;
-            Debug.Log("[GestionTilesets] Terreno configurado.");
+            Debug.Log("[GestionTilesets] Cesium World Terrain configurado (modo sin Google).");
         }
-
-        // Ocultar OSM si tenemos Google (evitar doble geometría)
-        if (tilesetOSM != null && tilesetGooglePhotorealistic != null)
-        {
-            tilesetOSM.gameObject.SetActive(false);
-            Debug.Log("[GestionTilesets] OSM desactivado — usando Google Photorealistic.");
-        }
+        // OSM Buildings permanece activo en este modo (edificios + TexturizadorFachadasOSM)
     }
 
     // ============================================================

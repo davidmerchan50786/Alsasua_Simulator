@@ -21,7 +21,9 @@ public static class SetupEscenaAlsasua
 {
     const double LAT        = 42.9037;
     const double LON        = -2.1668;
-    const double ALT_GEO   = 530.0;   // altura geográfica de Alsasua (m s.n.m.)
+    // Altura WGS84 elipsoidal: 530 m ortométrico + ~44 m ondulación geoide EGM96 = 574 m
+    // Cesium trabaja en WGS84; usar la ortométrica (530) deja el origen ~44 m bajo tierra.
+    const double ALT_GEO   = 574.0;
     const float  CAM_ALTURA = 1500f;   // altura inicial de la cámara dron sobre el origen
 
     // Posiciones locales (metros desde el origen = centro de Alsasua)
