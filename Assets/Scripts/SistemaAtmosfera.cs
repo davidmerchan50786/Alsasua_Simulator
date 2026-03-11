@@ -1,0 +1,301 @@
+// Assets/Scripts/SistemaAtmosfera.cs
+// Sistema de atmósfera realista para Alsasua Simulator
+// - Posición solar calculada astronómicamente (lat 42.9037° N)
+// - Ciclo día/noche con colores correctos
+// - Niebla atmosférica exponencial adaptada a la hora
+// - Iluminación ambiente dinámica
+
+using UnityEngine;
+using UnityEngine.Rendering;
+
+/// <summary>
+/// Simula el sol, la niebla y la iluminación ambiente de Alsasua con cálculo astronómico real.
+/// Ejecutar antes que otros scripts (DefaultExecutionOrder -50).
+/// </summary>
+[DefaultExecutionOrder(-50)]
+public class SistemaAtmosfera : MonoBehaviour
+{
+    // ═══════════════════════════════════════════════════════════════════════
+    //  TIEMPO
+    // ═══════════════════════════════════════════════════════════════════════
+
+    [Header("═══ TIEMPO Y FECHA ═══")]
+    [Range(0f, 24f)]
+    [Tooltip("Hora solar actual (0 = medianoche, 12 = mediodía)")]
+    [SerializeField] private float horaDelDia = 12f;
+
+    [Range(1, 365)]
+    [Tooltip("Día del año (1=1 Ene, 172=21 Jun verano, 355=21 Dic invierno)")]
+    [SerializeField] private int diaDelAnio = 172;   // Solsticio de verano → máxima luz
+
+    [SerializeField]
+    [Tooltip("Animar el paso del tiempo automáticamente")]
+    private bool tiempoAnimado = false;
+
+    [Range(1f, 7200f)]
+    [Tooltip("Velocidad del tiempo: 3600 = 1 hora real dura 1 segundo")]
+    [SerializeField] private float velocidadTiempo = 120f;   // 1 min real = 2 h juego
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  SOL
+    // ═══════════════════════════════════════════════════════════════════════
+
+    [Header("═══ SOL ═══")]
+    [Tooltip("La Directional Light de la escena (se detecta automáticamente si está vacío)")]
+    [SerializeField] private Light luzSolar;
+
+    [Range(0f, 8f)]
+    [Tooltip("Intensidad máxima al mediodía despejado")]
+    [SerializeField] private float intensidadMaximaSol = 1.8f;
+
+    [Range(0f, 0.5f)]
+    [Tooltip("Luz residual nocturna (luna/estrellas)")]
+    [SerializeField] private float intensidadNoche = 0.04f;
+
+    [Tooltip("Degradado de color solar: noche→amanecer→mediodía→atardecer→noche")]
+    [SerializeField] private Gradient colorDelSol;
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  NIEBLA ATMOSFÉRICA
+    // ═══════════════════════════════════════════════════════════════════════
+
+    [Header("═══ NIEBLA ATMOSFÉRICA ═══")]
+    [SerializeField] private bool nieblaActiva = true;
+
+    [Tooltip("Color base de la niebla (azul-gris del País Vasco)")]
+    [SerializeField] private Color colorNieblaBase = new Color(0.74f, 0.80f, 0.87f);
+
+    [Range(0.000001f, 0.002f)]
+    [Tooltip("Densidad exponencial — 0.00015 = niebla ligera, 0.001 = niebla densa")]
+    [SerializeField] private float densidadNiebla = 0.00018f;
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  ILUMINACIÓN AMBIENTE
+    // ═══════════════════════════════════════════════════════════════════════
+
+    [Header("═══ ILUMINACIÓN AMBIENTE ═══")]
+    [Tooltip("Degradado de color ambiente a lo largo del día")]
+    [SerializeField] private Gradient colorAmbiente;
+
+    [Range(0f, 3f)]
+    [SerializeField] private float intensidadAmbiente = 1.1f;
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  PROPIEDADES PÚBLICAS (para otros scripts)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    public float HoraDelDia    => horaDelDia;
+    public float ElevacionSolar => elevacionSolar;
+    public bool  EsDeDia       => elevacionSolar > 0f;
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  ESTADO INTERNO
+    // ═══════════════════════════════════════════════════════════════════════
+
+    // Latitud de Alsasua en radianes
+    private const float LAT_RAD = 42.9037f * Mathf.Deg2Rad;
+
+    private float elevacionSolar;  // grados sobre el horizonte
+    private float azimutSolar;     // grados (0=N, 90=E, 180=S, 270=O)
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  UNITY
+    // ═══════════════════════════════════════════════════════════════════════
+
+    private void Awake()
+    {
+        if (luzSolar == null)
+            luzSolar = BuscarLuzDirectional();
+
+        if (colorDelSol  == null || colorDelSol.colorKeys.Length  < 3) colorDelSol  = GradienteSolar();
+        if (colorAmbiente == null || colorAmbiente.colorKeys.Length < 3) colorAmbiente = GradienteAmbiente();
+    }
+
+    private void Start()
+    {
+        ConfigurarNiebla();
+        ActualizarAtmosfera();
+    }
+
+    private void Update()
+    {
+        if (tiempoAnimado)
+        {
+            horaDelDia = (horaDelDia + Time.deltaTime * velocidadTiempo / 3600f) % 24f;
+        }
+        ActualizarAtmosfera();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  LÓGICA PRINCIPAL
+    // ═══════════════════════════════════════════════════════════════════════
+
+    private void ActualizarAtmosfera()
+    {
+        CalcularPosicionSolar();
+        AplicarLuzSolar();
+        AplicarAmbiente();
+        AplicarNiebla();
+    }
+
+    /// <summary>
+    /// Cálculo astronómico simplificado de la posición solar para lat 42.9037° N.
+    /// Referencias: NOAA Solar Position Algorithms (simplificado).
+    /// </summary>
+    private void CalcularPosicionSolar()
+    {
+        // Declinación solar: varía de -23.45° (invierno) a +23.45° (verano)
+        float declRad = -23.45f * Mathf.Cos(2f * Mathf.PI * (diaDelAnio + 10) / 365f) * Mathf.Deg2Rad;
+
+        // Ángulo horario: 0° al mediodía solar, ±15° por hora
+        float anguloHRad = (horaDelDia - 12f) * 15f * Mathf.Deg2Rad;
+
+        // Elevación solar (altitud sobre el horizonte)
+        float sinElev = Mathf.Sin(LAT_RAD) * Mathf.Sin(declRad)
+                      + Mathf.Cos(LAT_RAD) * Mathf.Cos(declRad) * Mathf.Cos(anguloHRad);
+        elevacionSolar = Mathf.Asin(Mathf.Clamp(sinElev, -1f, 1f)) * Mathf.Rad2Deg;
+
+        // Azimut solar (dirección horizontal)
+        float cosElev = Mathf.Cos(elevacionSolar * Mathf.Deg2Rad);
+        if (cosElev < 0.001f)
+        {
+            azimutSolar = 180f;  // Zénit — apuntar al Sur
+        }
+        else
+        {
+            float cosAz = (Mathf.Sin(declRad) - Mathf.Sin(LAT_RAD) * sinElev) /
+                          (Mathf.Cos(LAT_RAD) * cosElev);
+            azimutSolar = Mathf.Acos(Mathf.Clamp(cosAz, -1f, 1f)) * Mathf.Rad2Deg;
+            if (horaDelDia > 12f) azimutSolar = 360f - azimutSolar;
+        }
+    }
+
+    private void AplicarLuzSolar()
+    {
+        if (luzSolar == null) return;
+
+        // Rotación: Unity Directional Light "brilla hacia abajo" por defecto
+        // Elevation = -X (hacia arriba), Azimuth = Y (girar en horizontal)
+        luzSolar.transform.rotation = Quaternion.Euler(-elevacionSolar, azimutSolar, 0f);
+
+        // Intensidad: sube progresivamente cuando el sol sale
+        float factorElevacion = Mathf.Clamp01((elevacionSolar + 8f) / 20f);
+        luzSolar.intensity = Mathf.Lerp(intensidadNoche, intensidadMaximaSol,
+                                        factorElevacion * factorElevacion);
+
+        // Color solar según hora del día
+        float t = horaDelDia / 24f;
+        luzSolar.color = colorDelSol.Evaluate(t);
+
+        // Sombras blandas solo cuando el sol está bien alto
+        luzSolar.shadows = elevacionSolar > 8f ? LightShadows.Soft : LightShadows.None;
+    }
+
+    private void AplicarAmbiente()
+    {
+        float t = horaDelDia / 24f;
+        RenderSettings.ambientMode  = AmbientMode.Flat;
+        RenderSettings.ambientLight = colorAmbiente.Evaluate(t) * intensidadAmbiente;
+    }
+
+    private void AplicarNiebla()
+    {
+        if (!nieblaActiva) return;
+
+        float t = horaDelDia / 24f;
+
+        // Tinte cálido al amanecer y atardecer
+        float calidez = Mathf.Max(
+            Mathf.InverseLerp(0.22f, 0.27f, t),   // amanecer
+            Mathf.InverseLerp(0.78f, 0.73f, t)    // atardecer
+        );
+        Color colorFinal = Color.Lerp(colorNieblaBase,
+                                      new Color(0.95f, 0.65f, 0.40f),
+                                      calidez * 0.45f);
+
+        // Niebla más densa de noche
+        float factorNoche = 1f - Mathf.Clamp01((elevacionSolar + 5f) / 15f);
+        float densidadFinal = densidadNiebla * (1f + factorNoche * 1.5f);
+
+        RenderSettings.fogColor   = colorFinal;
+        RenderSettings.fogDensity = densidadFinal;
+    }
+
+    private void ConfigurarNiebla()
+    {
+        RenderSettings.fog        = nieblaActiva;
+        RenderSettings.fogMode    = FogMode.ExponentialSquared;
+        RenderSettings.fogColor   = colorNieblaBase;
+        RenderSettings.fogDensity = densidadNiebla;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  UTILIDADES
+    // ═══════════════════════════════════════════════════════════════════════
+
+    private Light BuscarLuzDirectional()
+    {
+        foreach (var l in Object.FindObjectsByType<Light>(FindObjectsSortMode.None))
+            if (l.type == LightType.Directional) return l;
+        Debug.LogWarning("[Atmósfera] No se encontró Directional Light. El sol no funcionará.");
+        return null;
+    }
+
+    // ─── Degradados predeterminados ──────────────────────────────────────
+
+    private static Gradient GradienteSolar()
+    {
+        // MÁXIMO 8 color keys en Unity — la clave t=1.00 (duplicado de t=0.00) fue eliminada.
+        var g = new Gradient();
+        g.SetKeys(
+            new GradientColorKey[]
+            {
+                new GradientColorKey(new Color(0.06f, 0.06f, 0.18f), 0.00f),  // Medianoche
+                new GradientColorKey(new Color(0.14f, 0.09f, 0.22f), 0.23f),  // Pre-amanecer
+                new GradientColorKey(new Color(1.00f, 0.45f, 0.15f), 0.27f),  // Amanecer
+                new GradientColorKey(new Color(1.00f, 0.82f, 0.60f), 0.33f),  // Post-amanecer
+                new GradientColorKey(new Color(1.00f, 0.96f, 0.88f), 0.50f),  // Mediodía
+                new GradientColorKey(new Color(1.00f, 0.85f, 0.62f), 0.67f),  // Pre-atardecer
+                new GradientColorKey(new Color(1.00f, 0.42f, 0.12f), 0.73f),  // Atardecer
+                new GradientColorKey(new Color(0.06f, 0.06f, 0.18f), 0.78f),  // Post-atardecer → noche
+            },
+            new GradientAlphaKey[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(1f, 1f) }
+        );
+        return g;
+    }
+
+    private static Gradient GradienteAmbiente()
+    {
+        // MÁXIMO 8 color keys en Unity — la clave t=1.00 (duplicado de t=0.00) fue eliminada.
+        var g = new Gradient();
+        g.SetKeys(
+            new GradientColorKey[]
+            {
+                new GradientColorKey(new Color(0.03f, 0.03f, 0.09f), 0.00f),  // Medianoche
+                new GradientColorKey(new Color(0.10f, 0.07f, 0.18f), 0.23f),  // Pre-amanecer
+                new GradientColorKey(new Color(0.55f, 0.33f, 0.22f), 0.27f),  // Amanecer
+                new GradientColorKey(new Color(0.55f, 0.60f, 0.72f), 0.35f),  // Mañana
+                new GradientColorKey(new Color(0.52f, 0.60f, 0.74f), 0.50f),  // Mediodía
+                new GradientColorKey(new Color(0.58f, 0.53f, 0.68f), 0.67f),  // Tarde
+                new GradientColorKey(new Color(0.48f, 0.26f, 0.20f), 0.73f),  // Atardecer
+                new GradientColorKey(new Color(0.03f, 0.03f, 0.09f), 0.78f),  // Post-atardecer → noche
+            },
+            new GradientAlphaKey[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(1f, 1f) }
+        );
+        return g;
+    }
+
+    // ─── Inspector helpers ───────────────────────────────────────────────
+
+    [ContextMenu("Preset: Mediodía soleado")]
+    private void PresetMediodiaSoleado() { horaDelDia = 12f; diaDelAnio = 172; }
+
+    [ContextMenu("Preset: Amanecer de verano")]
+    private void PresetAmanecer() { horaDelDia = 6.5f; diaDelAnio = 172; }
+
+    [ContextMenu("Preset: Atardecer de otoño")]
+    private void PresetAtardecer() { horaDelDia = 19f; diaDelAnio = 280; }
+
+    [ContextMenu("Preset: Noche de invierno")]
+    private void PresetNoche() { horaDelDia = 1f; diaDelAnio = 355; }
+}
