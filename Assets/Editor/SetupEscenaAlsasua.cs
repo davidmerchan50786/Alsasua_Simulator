@@ -47,6 +47,7 @@ public static class SetupEscenaAlsasua
         AsegurarVolumenPostProcesado();
         AsegurarManager();
         AsegurarGestorTexturas();
+        AsegurarFachadasOSM();
         AsegurarAtmosfera();
         AsegurarClima();
         AsegurarJugador();
@@ -143,6 +144,18 @@ public static class SetupEscenaAlsasua
 
         var tex = Object.FindFirstObjectByType<TexturizadorEdificiosReales>();
         Debug.Log(tex != null ? "  ✓ TexturizadorEdificiosReales" : "  ✗ TexturizadorEdificiosReales: FALTA");
+
+        var fachadasOSM = Object.FindFirstObjectByType<TexturizadorFachadasOSM>();
+        if (fachadasOSM != null)
+            Debug.Log("  ✓ TexturizadorFachadasOSM — fachadas realistas en edificios OSM activas");
+        else
+            Debug.Log("  ✗ TexturizadorFachadasOSM: FALTA — re-ejecuta '⚙ Configurar Escena Completa' " +
+                      "para añadir texturas de ventanas a los edificios OSM");
+
+        var shaderFachadas = Shader.Find("Alsasua/FachadasEdificios");
+        if (shaderFachadas == null)
+            Debug.LogWarning("  ⚠ Shader 'Alsasua/FachadasEdificios' no encontrado. " +
+                             "Comprueba que Assets/Shaders/FachadasEdificios.shader existe y Unity lo ha importado.");
 
         var tilesets = Object.FindObjectsByType<Cesium3DTileset>(FindObjectsSortMode.None);
         Debug.Log($"  Tilesets en escena: {tilesets.Length}");
@@ -468,6 +481,34 @@ public static class SetupEscenaAlsasua
         Undo.RegisterCreatedObjectUndo(go, "Crear GestorTexturas");
         go.AddComponent<TexturizadorEdificiosReales>();
         Debug.Log("[Setup] ✓ GestorTexturas CREADO con TexturizadorEdificiosReales");
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  8b. TexturizadorFachadasOSM — texturas realistas en edificios OSM
+    //
+    //  Aplica un material con shader triplanar world-space a los edificios
+    //  OSM (ionAssetID=96188) para que muestren ventanas y fachadas realistas
+    //  en lugar de geometría gris/blanca.
+    //  Si está activo Google Photorealistic, los edificios ya tienen texturas
+    //  reales de fotogrametría y este componente es un fallback inactivo.
+    // ═══════════════════════════════════════════════════════════════════════
+    static void AsegurarFachadasOSM()
+    {
+        if (Object.FindFirstObjectByType<TexturizadorFachadasOSM>() != null)
+        { Debug.Log("[Setup]   TexturizadorFachadasOSM ya existe"); return; }
+
+        // Añadir al Manager (mismo GameObject que ConfiguradorAlsasua)
+        var config = Object.FindFirstObjectByType<ConfiguradorAlsasua>();
+        if (config == null)
+        {
+            Debug.LogWarning("[Setup] ✗ TexturizadorFachadasOSM: ManagerAlsasua no encontrado. " +
+                             "Ejecuta 'Configurar Escena Completa' completo.");
+            return;
+        }
+
+        Undo.AddComponent<TexturizadorFachadasOSM>(config.gameObject);
+        EditorUtility.SetDirty(config.gameObject);
+        Debug.Log("[Setup] ✓ TexturizadorFachadasOSM añadido — fachadas con ventanas en edificios OSM.");
     }
 
     // ═══════════════════════════════════════════════════════════════════════
