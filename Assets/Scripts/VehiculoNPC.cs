@@ -59,6 +59,8 @@ public class VehiculoNPC : MonoBehaviour
     private int       wpActual    = 0;
     private float     velocidadActual = 0f;
     private bool      frenando    = false;
+    // BUG 17 FIX: cachear el renderer principal para no buscarlo en cada impacto/daño.
+    private Renderer  rendererPrincipal;
 
     // ═══════════════════════════════════════════════════════════════════════
     //  UNITY
@@ -72,10 +74,12 @@ public class VehiculoNPC : MonoBehaviour
 
         if (capasObstaculo == 0) capasObstaculo = ~0;
 
+        // BUG 17 FIX: cachear el renderer en Awake() para no buscarlo en cada impacto.
+        rendererPrincipal = GetComponentInChildren<Renderer>();
+
         // Color aleatorio
-        var renderer = GetComponentInChildren<Renderer>();
-        if (renderer != null)
-            renderer.material.color = coloresCoche[Random.Range(0, coloresCoche.Length)];
+        if (rendererPrincipal != null)
+            rendererPrincipal.material.color = coloresCoche[Random.Range(0, coloresCoche.Length)];
     }
 
     private void FixedUpdate()
@@ -142,10 +146,16 @@ public class VehiculoNPC : MonoBehaviour
 
     private void DetectarObstaculos()
     {
-        // Raycast frontal
-        frenando = Physics.Raycast(transform.position + Vector3.up * 0.5f,
-                                   transform.forward,
-                                   distanciaFreno, capasObstaculo);
+        // BUG 19 FIX: anguloDeteccion estaba declarado como SerializeField pero NUNCA se usaba.
+        // Ahora se usa para un cono de 3 rayos (centro + flancos) que mejora la detección
+        // de obstáculos angulados respecto al vehículo.
+        Vector3 origen   = transform.position + Vector3.up * 0.5f;
+        Quaternion izq   = Quaternion.Euler(0f, -anguloDeteccion * 0.5f, 0f);
+        Quaternion der   = Quaternion.Euler(0f,  anguloDeteccion * 0.5f, 0f);
+
+        frenando = Physics.Raycast(origen, transform.forward,       distanciaFreno, capasObstaculo)
+                || Physics.Raycast(origen, izq * transform.forward, distanciaFreno, capasObstaculo)
+                || Physics.Raycast(origen, der * transform.forward, distanciaFreno, capasObstaculo);
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -157,11 +167,11 @@ public class VehiculoNPC : MonoBehaviour
         if (destruido) return;
         vida -= cantidad;
 
-        // Cambiar color al recibir daño (oscurecer)
-        var rend = GetComponentInChildren<Renderer>();
-        if (rend != null)
-            rend.material.color = Color.Lerp(rend.material.color, Color.black,
-                                             0.3f * ((float)(vidaMax - vida) / vidaMax));
+        // BUG 17 FIX: usar la referencia cacheada en Awake() en vez de buscar el renderer cada vez.
+        if (rendererPrincipal != null)
+            rendererPrincipal.material.color = Color.Lerp(
+                rendererPrincipal.material.color, Color.black,
+                0.3f * ((float)(vidaMax - vida) / vidaMax));
 
         if (vida <= 0) Destruir();
     }

@@ -63,8 +63,17 @@ public class TexturizadorEdificiosReales : MonoBehaviour
     {
         Debug.Log($"[Texturizador] Cargando imagen satélite: {tipoImagenSatelite}");
 
+        // BUG 32 FIX: los Cesium3DTileset deben estar bajo CesiumGeoreference en la jerarquía.
+        // Parentarlos fuera causaba que las coordenadas GeoTransform fallaran y el tileset
+        // apareciera en (0,0,0) en lugar de posicionarse sobre Alsasua.
+        var georef = Object.FindFirstObjectByType<CesiumGeoreference>();
+        Transform parentTileset = georef != null ? georef.transform : transform;
+        if (georef == null)
+            Debug.LogWarning("[Texturizador] CesiumGeoreference no encontrado — el tileset satélite puede aparecer desplazado. " +
+                             "Ejecuta Alsasua → ⚙ Configurar Escena Completa para crear la jerarquía.");
+
         GameObject tilesetObj = new GameObject("Satellite_ImageTileset");
-        tilesetObj.transform.parent = transform;
+        tilesetObj.transform.parent = parentTileset;
 
         Cesium3DTileset tileset = tilesetObj.AddComponent<Cesium3DTileset>();
         tileset.maximumScreenSpaceError = screenSpaceError;
@@ -114,22 +123,26 @@ public class TexturizadorEdificiosReales : MonoBehaviour
     /// </summary>
     private void CargarTilesetEdificiosOSM()
     {
-        // Evitar duplicados
-        if (Object.FindFirstObjectByType<Cesium3DTileset>() != null)
+        // BUG 31 FIX: detectar duplicados por ionAssetID == 96188, no por nombre del GameObject.
+        // Un tileset OSM existente puede tener cualquier nombre (p.ej. "Cesium OSM Buildings").
+        Cesium3DTileset[] existentes = Object.FindObjectsByType<Cesium3DTileset>(FindObjectsSortMode.None);
+        foreach (var t in existentes)
         {
-            Cesium3DTileset[] existentes = Object.FindObjectsByType<Cesium3DTileset>(FindObjectsSortMode.None);
-            foreach (var t in existentes)
+            if (t.ionAssetID == 96188)
             {
-                if (t.name.Contains("OSM"))
-                {
-                    Debug.Log("[Texturizador] Tileset OSM ya existe en escena. No se crea duplicado.");
-                    return;
-                }
+                Debug.Log("[Texturizador] Tileset OSM (assetID 96188) ya existe en escena. No se crea duplicado.");
+                return;
             }
         }
 
+        // BUG 32 FIX: parenterlo bajo CesiumGeoreference (igual que CargarImagenSatelite).
+        var georefOSM = Object.FindFirstObjectByType<CesiumGeoreference>();
+        Transform parentOSM = georefOSM != null ? georefOSM.transform : transform;
+        if (georefOSM == null)
+            Debug.LogWarning("[Texturizador] CesiumGeoreference no encontrado — el tileset OSM puede aparecer desplazado.");
+
         GameObject osmObj = new GameObject("OSM_Buildings_Texturizado");
-        osmObj.transform.parent = transform;
+        osmObj.transform.parent = parentOSM;
 
         Cesium3DTileset tileset = osmObj.AddComponent<Cesium3DTileset>();
 

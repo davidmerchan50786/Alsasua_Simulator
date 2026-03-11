@@ -29,10 +29,11 @@ public class SistemaDisparo : MonoBehaviour
     //  ESTADO INTERNO
     // ═══════════════════════════════════════════════════════════════════════
 
-    private float tiempoUltimoDisparo = 0f;
-    private bool  estaCargando        = false;
-    private float timerRecarga        = 0f;
-    private Camera camara;
+    private float              tiempoUltimoDisparo = 0f;
+    private bool               estaCargando        = false;
+    private float              timerRecarga        = 0f;
+    private Camera             camara;
+    private ControladorJugador controlJugador; // BUG 6 FIX: cachear en Awake(), no buscar cada disparo
 
     // ═══════════════════════════════════════════════════════════════════════
     //  UNITY
@@ -42,6 +43,12 @@ public class SistemaDisparo : MonoBehaviour
     {
         camara = GetComponentInChildren<Camera>();
         if (camara == null) camara = Camera.main;
+
+        // BUG 6 FIX: cachear la referencia al ControladorJugador en Awake().
+        // Antes se llamaba GetComponentInParent() EN CADA DISPARO (hasta 8 disparos/seg),
+        // que es una búsqueda de árbol de componentes innecesariamente cara.
+        controlJugador = GetComponentInParent<ControladorJugador>()
+                      ?? GetComponent<ControladorJugador>();
 
         // Por defecto: todas las capas EXCEPTO "Ignore Raycast" (capa 2).
         // El jugador se coloca en capa 2 para no bloquearse sus propios disparos.
@@ -95,14 +102,12 @@ public class SistemaDisparo : MonoBehaviour
                           : origen + dirCamara * alcanceDisparo;
 
         // Step 2 — Posición del arma (mano derecha del jugador)
-        var ctrl = GetComponentInParent<ControladorJugador>()
-                ?? GetComponent<ControladorJugador>();
-
-        Vector3 posArma = ctrl != null
-            ? ctrl.transform.position
-              + ctrl.transform.forward * 0.38f
+        // BUG 6 FIX: usar la referencia cacheada en Awake() en vez de buscar cada disparo.
+        Vector3 posArma = controlJugador != null
+            ? controlJugador.transform.position
+              + controlJugador.transform.forward * 0.38f
               + Vector3.up * 1.30f
-              + ctrl.transform.right * 0.25f
+              + controlJugador.transform.right * 0.25f
             : origen;   // FPS fallback: disparar desde la cámara
 
         // Dirección final + dispersión perpendicular al disparo

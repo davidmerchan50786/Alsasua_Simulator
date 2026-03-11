@@ -51,10 +51,11 @@ public class SistemaExplosion : MonoBehaviour
 
         // BUG FIX: usar HashSets para evitar aplicar daño múltiple a la misma entidad
         // cuando tiene varios colliders hijos (ej. enemigos con cuerpo + cabeza + arma).
-        var rbYaDanados       = new HashSet<Rigidbody>();
-        var enemigosYaDanados = new HashSet<EnemigoPatrulla>();
-        var jugadoresYaDanados= new HashSet<ControladorJugador>();
-        var vehiculosYaDanados= new HashSet<VehiculoNPC>();
+        var rbYaDanados         = new HashSet<Rigidbody>();
+        var enemigosYaDanados   = new HashSet<EnemigoPatrulla>();
+        var jugadoresYaDanados  = new HashSet<ControladorJugador>();
+        var vehiculosYaDanados  = new HashSet<VehiculoNPC>();
+        var barricadasYaDanadas = new HashSet<BarricadaFuego>(); // BUG 20 FIX
 
         foreach (var col in afectados)
         {
@@ -79,6 +80,12 @@ public class SistemaExplosion : MonoBehaviour
             var vehiculo = col.GetComponentInParent<VehiculoNPC>();
             if (vehiculo != null && vehiculosYaDanados.Add(vehiculo))
                 vehiculo.RecibirDano(dano);
+
+            // BUG 20 FIX: las barricadas también reciben daño de explosión.
+            // Antes se ignoraban porque no figuraban en este loop → eran inmunes.
+            var barricada = col.GetComponentInParent<BarricadaFuego>();
+            if (barricada != null && barricadasYaDanadas.Add(barricada))
+                barricada.RecibirDano(dano);
         }
     }
 
@@ -224,15 +231,24 @@ public class SistemaExplosion : MonoBehaviour
 
     private void SacudirCamara()
     {
-        Camera cam = Camera.main;
-        if (cam == null) return;
+        // BUG 15 FIX: Camera.main devuelve la cámara dron a Y≈1500 m, NO la cámara
+        // del jugador. La distancia dron→explosión siempre supera radio*4 → la sacudida
+        // nunca se aplica aunque el jugador esté a centímetros de la bomba.
+        // Solución: calcular distancia desde el JUGADOR y aplicar shake a SU cámara.
+        var jugador = Object.FindFirstObjectByType<ControladorJugador>();
+        if (jugador == null) return;
 
-        float dist = Vector3.Distance(transform.position, cam.transform.position);
+        float dist = Vector3.Distance(transform.position, jugador.transform.position);
         if (dist > radio * 4f) return;
 
         float intensidad = 1f - dist / (radio * 4f);
-        var sacudida = cam.GetComponent<SacudidaCamara>();
-        if (sacudida == null) sacudida = cam.gameObject.AddComponent<SacudidaCamara>();
+
+        // Buscar la cámara en la jerarquía del jugador (CamaraFPS, etc.)
+        Camera camJugador = jugador.GetComponentInChildren<Camera>();
+        if (camJugador == null) return;
+
+        var sacudida = camJugador.GetComponent<SacudidaCamara>();
+        if (sacudida == null) sacudida = camJugador.gameObject.AddComponent<SacudidaCamara>();
         sacudida.Sacudir(intensidad * 0.5f, 0.6f);
     }
 }
@@ -241,7 +257,12 @@ public class SistemaExplosion : MonoBehaviour
 public class OndaExplosionAnim : MonoBehaviour
 {
     private float    maxScale, duracion, timer;
-    private Renderer rend;  // cacheado para no llamar GetComponent cada frame
+    private Renderer rend;
+    // BUG 16 FIX: cachear la instancia de material una sola vez.
+    // Acceder a rend.material en Update() devuelve la misma instancia (Unity la cachea
+    // internamente) pero es buena práctica cachearla aquí y destruirla explícitamente
+    // en OnDestroy() para evitar leaks en el Editor cuando se entra/sale del modo Play.
+    private Material matInstancia;
 
     public void Init(float max, float dur)
     {
@@ -249,6 +270,8 @@ public class OndaExplosionAnim : MonoBehaviour
         // Guardia: duración mínima para evitar división por cero
         duracion = Mathf.Max(dur, 0.01f);
         rend     = GetComponent<Renderer>();
+        // Crear la instancia UNA sola vez (no cada frame)
+        matInstancia = rend != null ? rend.material : null;
     }
 
     private void Update()
@@ -259,10 +282,17 @@ public class OndaExplosionAnim : MonoBehaviour
 
         transform.localScale = Vector3.one * Mathf.Lerp(0f, maxScale, t);
 
-        if (rend != null)
-            rend.material.color = new Color(1f, 0.8f, 0.5f, Mathf.Lerp(0.4f, 0f, t));
+        if (matInstancia != null)
+            matInstancia.color = new Color(1f, 0.8f, 0.5f, Mathf.Lerp(0.4f, 0f, t));
 
         if (timer >= duracion) Destroy(gameObject);
+    }
+
+    private void OnDestroy()
+    {
+        // BUG 16 FIX: liberar explícitamente la instancia de material al destruir el GO
+        if (matInstancia != null)
+            Destroy(matInstancia);
     }
 }
 

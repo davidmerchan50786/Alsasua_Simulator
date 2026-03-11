@@ -86,6 +86,11 @@ public class ControladorJugador : MonoBehaviour
     // Daño visual (flash pantalla)
     private float timerDano = 0f;
 
+    // BUG 2 FIX: lista de materiales creados con new Material() para destruirlos
+    // explícitamente en OnDestroy() — Unity no los libera automáticamente.
+    private readonly System.Collections.Generic.List<Material> _matsCreados =
+        new System.Collections.Generic.List<Material>();
+
     // ═══════════════════════════════════════════════════════════════════════
     //  UNITY LIFECYCLE
     // ═══════════════════════════════════════════════════════════════════════
@@ -158,6 +163,11 @@ public class ControladorJugador : MonoBehaviour
         // Se re-parenta bajo CesiumGeoreference para que CesiumGlobeAnchor funcione.
         var georef = Object.FindFirstObjectByType<CesiumForUnity.CesiumGeoreference>();
         camaraTP.transform.SetParent(georef != null ? georef.transform : null, worldPositionStays: true);
+
+        // BUG 33 FIX: añadir CesiumGlobeAnchor a la cámara del jugador si no lo tiene ya.
+        // Sin él, la cámara no se georreferencia correctamente y puede desviarse en latitudes altas.
+        if (georef != null && camaraTP.GetComponent<CesiumForUnity.CesiumGlobeAnchor>() == null)
+            camaraTP.gameObject.AddComponent<CesiumForUnity.CesiumGlobeAnchor>();
         camaraTP.nearClipPlane = 0.15f;
         camaraTP.farClipPlane  = 1_000_000f;   // 1000 km — Cesium renderiza tiles lejanos
         camaraTP.fieldOfView   = fovNormal;
@@ -230,13 +240,36 @@ public class ControladorJugador : MonoBehaviour
     }
 
     // Crea un Material compatible con URP (evita el magenta por shader incorrecto)
-    private static Material MatURP(Color color)
+    // BUG 1 FIX: guard contra shader==null — si URP/Lit está stripeado de la build,
+    //            intentar URP/Unlit y luego Standard antes de lanzar excepción.
+    // BUG 2 FIX: method de instancia (no static) para poder añadir cada material
+    //            a _matsCreados y destruirlos explícitamente en OnDestroy().
+    private Material MatURP(Color color)
     {
         var shader = Shader.Find("Universal Render Pipeline/Lit")
+                  ?? Shader.Find("Universal Render Pipeline/Unlit")
                   ?? Shader.Find("Standard");
-        var mat = new Material(shader);
-        mat.color = color;
+
+        if (shader == null)
+        {
+            Debug.LogError("[ControladorJugador] MatURP: ningún shader compatible encontrado. " +
+                           "Incluye 'Universal Render Pipeline/Lit' en Always Included Shaders.");
+            // Fallback de emergencia — el material saldrá magenta pero no lanzará excepción.
+            shader = Shader.Find("Hidden/InternalErrorShader") ?? Shader.Find("UI/Default");
+            if (shader == null) return null;
+        }
+
+        var mat = new Material(shader) { color = color };
+        _matsCreados.Add(mat); // BUG 2 FIX: rastrear para destruir en OnDestroy()
         return mat;
+    }
+
+    // BUG 2 FIX: liberar los materiales del cuerpo al destruir el jugador.
+    private void OnDestroy()
+    {
+        foreach (var m in _matsCreados)
+            if (m != null) Object.Destroy(m);
+        _matsCreados.Clear();
     }
 
     // Helpers para crear piezas del cuerpo (sin colisionador, con sombras)
@@ -362,8 +395,20 @@ public class ControladorJugador : MonoBehaviour
     private void Gravedad()
     {
         estaEnSuelo = cc.isGrounded;
-        if (estaEnSuelo && velVert.y < 0f) velVert.y = -2f;
-        velVert.y += gravedad * Time.deltaTime;
+
+        if (estaEnSuelo)
+        {
+            // BUG 5 FIX: asignar -2f Y salir — no sumar gravedad este frame.
+            // Antes: velVert.y = -2f luego += gravedad*dt (negativo) → llegaba a ≈-2.2 cada frame
+            // → CharacterController se empujaba al suelo extra → micro-saltos / "temblor" al caminar.
+            if (velVert.y < 0f) velVert.y = -2f;
+        }
+        else
+        {
+            // Solo aplicar gravedad cuando estamos en el aire
+            velVert.y += gravedad * Time.deltaTime;
+        }
+
         cc.Move(velVert * Time.deltaTime);
     }
 

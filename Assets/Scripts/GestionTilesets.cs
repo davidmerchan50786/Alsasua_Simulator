@@ -53,8 +53,12 @@ public class GestionTilesets : MonoBehaviour
     [Tooltip("Mostrar overlay de debug (altura y SSE actual)")]
     [SerializeField] private bool mostrarDebugOverlay = false;
 
-    [Tooltip("Mostrar créditos de Google en pantalla (obligatorio por licencia)")]
-    [SerializeField] private bool mostrarCreditosGoogle = true;
+    // LICENCIA: showCreditsOnScreen es OBLIGATORIO por los Términos de Servicio de
+    // Google Maps Platform (sección "Attribution requirements").
+    // NO se expone como campo serializable para evitar que se desactive accidentalmente
+    // desde el Inspector — siempre forzado a true en ConfigurarTilesetsIniciales().
+    // Ref: https://developers.google.com/maps/documentation/tile/policies
+    private const bool CREDITOS_GOOGLE_OBLIGATORIOS = true;
 
     // BUG FIX: usamos el Transform del Jugador, NO de Camera.main.
     // Camera.main es la cámara dron a Y=1500 → InverseLerp(100,500,1500)=1 → sseLejano siempre
@@ -109,7 +113,7 @@ public class GestionTilesets : MonoBehaviour
         if (tilesetGooglePhotorealistic != null)
         {
             tilesetGooglePhotorealistic.maximumScreenSpaceError = sseCercano;
-            tilesetGooglePhotorealistic.showCreditsOnScreen     = mostrarCreditosGoogle;
+            tilesetGooglePhotorealistic.showCreditsOnScreen     = CREDITOS_GOOGLE_OBLIGATORIOS;
             tilesetGooglePhotorealistic.preloadAncestors        = true;
             tilesetGooglePhotorealistic.preloadSiblings         = true;
             Debug.Log("[GestionTilesets] Google Photorealistic configurado (SSE inicial: " + sseCercano + ").");
@@ -181,6 +185,19 @@ public class GestionTilesets : MonoBehaviour
 
         if (tilesetOSM != null && tilesetOSM.gameObject.activeSelf)
             tilesetOSM.maximumScreenSpaceError = sse;
+    }
+
+    // ============================================================
+    //  CICLO DE VIDA
+    // ============================================================
+
+    private void OnDestroy()
+    {
+        // BUG 28 FIX: detener la coroutine al destruir el componente.
+        // Sin esto, la coroutine sigue ejecutándose un frame más después de la destrucción
+        // y puede intentar acceder a referencias nulas (tilesets ya destruidos),
+        // generando MissingReferenceException en Unity.
+        StopAllCoroutines();
     }
 
     // ============================================================

@@ -26,6 +26,12 @@ public class SistemaBombas : MonoBehaviour
     private List<BombaColocada> bombas = new List<BombaColocada>();
     private Camera camara;
 
+    // BUG FIX RENDIMIENTO: caché de enemigos + throttle para no llamar
+    // FindObjectsByType cada frame (60+ veces/segundo → 5 veces/segundo)
+    private EnemigoPatrulla[] enemigosCache  = new EnemigoPatrulla[0];
+    private float timerProximidad            = 0f;
+    private const float INTERVALO_PROXIMIDAD = 0.2f;  // refrescar cada 200 ms
+
     // ═══════════════════════════════════════════════════════════════════════
     //  UNITY
     // ═══════════════════════════════════════════════════════════════════════
@@ -38,9 +44,17 @@ public class SistemaBombas : MonoBehaviour
 
     private void Update()
     {
-        // Comprobar proximidad de enemigos a cada bomba
-        if (proximidadActiva)
-            ComprobarProximidad();
+        // BUG FIX RENDIMIENTO: comprobar proximidad sólo cada INTERVALO_PROXIMIDAD segundos
+        // y sólo si hay bombas activas (evitar trabajo inútil cuando no hay ninguna colocada)
+        if (!proximidadActiva || bombas.Count == 0) return;
+
+        timerProximidad -= Time.deltaTime;
+        if (timerProximidad > 0f) return;
+
+        timerProximidad = INTERVALO_PROXIMIDAD;
+        // Refrescar la caché de enemigos cada 200 ms (no cada frame)
+        enemigosCache = Object.FindObjectsByType<EnemigoPatrulla>(FindObjectsSortMode.None);
+        ComprobarProximidad();
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -121,11 +135,11 @@ public class SistemaBombas : MonoBehaviour
 
     private void ComprobarProximidad()
     {
-        var enemigos = Object.FindObjectsByType<EnemigoPatrulla>(FindObjectsSortMode.None);
+        // Usa la caché refrescada en Update() — ya NO llama FindObjectsByType aquí
         foreach (var bomba in new List<BombaColocada>(bombas))
         {
             if (bomba.explotada) continue;
-            foreach (var enemigo in enemigos)
+            foreach (var enemigo in enemigosCache)
             {
                 if (enemigo == null) continue;
                 float dist = Vector3.Distance(bomba.posicion, enemigo.transform.position);

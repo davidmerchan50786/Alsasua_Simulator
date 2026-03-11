@@ -60,13 +60,21 @@ public class BarricadaFuego : MonoBehaviour
     }
 
     // Crea un Material compatible con URP (evita el magenta por shader incorrecto)
+    // BUG FIX: null guard — new Material(null) lanza NullReferenceException si ningún shader está disponible.
+    // Fallback en cadena: Lit → Unlit → Standard → InternalErrorShader (shader de error interno de Unity).
     private static Material MatURP(Color color)
     {
         var shader = Shader.Find("Universal Render Pipeline/Lit")
+                  ?? Shader.Find("Universal Render Pipeline/Unlit")
                   ?? Shader.Find("Standard");
-        var mat = new Material(shader);
-        mat.color = color;
-        return mat;
+        if (shader == null)
+        {
+            Debug.LogError("[BarricadaFuego] MatURP: ningún shader URP/Standard encontrado. " +
+                           "Incluye 'Universal Render Pipeline/Lit' en Always Included Shaders.");
+            shader = Shader.Find("Hidden/InternalErrorShader");
+            if (shader == null) return null;
+        }
+        return new Material(shader) { color = color };
     }
 
     private void CrearCaja(Vector3 pos, Vector3 scale, Color color)
@@ -76,7 +84,8 @@ public class BarricadaFuego : MonoBehaviour
         go.transform.localPosition = pos;
         go.transform.localScale    = scale;
         go.transform.localRotation = Quaternion.Euler(0f, Random.Range(-5f, 5f), 0f);
-        go.GetComponent<Renderer>().material = MatURP(color);
+        var matCaja = MatURP(color);
+        if (matCaja != null) go.GetComponent<Renderer>().material = matCaja;
 
         // Rigidbody para que las explosiones la muevan
         // FreezeRotationX/Z evita que las cajas se vuelquen solas al iniciarse
@@ -91,7 +100,8 @@ public class BarricadaFuego : MonoBehaviour
         go.transform.SetParent(transform);
         go.transform.localPosition = pos;
         go.transform.localScale    = scale;
-        go.GetComponent<Renderer>().material = MatURP(color);
+        var matCil = MatURP(color);
+        if (matCil != null) go.GetComponent<Renderer>().material = matCil;
 
         var rb = go.AddComponent<Rigidbody>();
         rb.mass        = 15f;
@@ -220,6 +230,12 @@ public class BarricadaFuego : MonoBehaviour
 
     public void RecibirDano(int cantidad)
     {
+        // BUG 21 FIX: si la barricada ya fue destruida (vida <= 0), ignorar daño adicional.
+        // Sin este guard, una segunda explosión llama a .Stop() en sistemas de partículas
+        // ya detenidos y desactiva luces que ya están desactivadas → no rompe nada pero
+        // genera trabajo inútil y puede provocar que 'vida' desborde hacia negativo.
+        if (vida <= 0) return;
+
         vida -= cantidad;
         if (vida <= 0)
         {

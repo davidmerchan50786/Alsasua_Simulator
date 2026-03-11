@@ -289,7 +289,9 @@ public static class SetupEscenaAlsasua
 
         if (go.GetComponent<CamaraDron>() == null)
         {
-            go.AddComponent<CamaraDron>();
+            // BUG FIX: usar Undo.AddComponent — si la cámara ya existía (cam != null),
+            // go.AddComponent sin Undo no permite deshacer con Ctrl+Z.
+            Undo.AddComponent<CamaraDron>(go);
             Debug.Log("[Setup] ✓ CamaraDron añadido a la cámara");
         }
 
@@ -427,14 +429,16 @@ public static class SetupEscenaAlsasua
 
         if (go.GetComponent<GestionTilesets>() == null)
         {
-            go.AddComponent<GestionTilesets>();
+            // BUG FIX: usar Undo.AddComponent para que Ctrl+Z pueda deshacer la adición del componente.
+            Undo.AddComponent<GestionTilesets>(go);
             Debug.Log("[Setup] ✓ GestionTilesets añadido");
         }
         // ControladorPostProcesado requiere Camera — se añade a la cámara principal, no al Manager
         Camera camPP = Camera.main;
         if (camPP != null && camPP.GetComponent<ControladorPostProcesado>() == null)
         {
-            camPP.gameObject.AddComponent<ControladorPostProcesado>();
+            // BUG FIX: usar Undo.AddComponent para que Ctrl+Z pueda deshacer la adición del componente.
+            Undo.AddComponent<ControladorPostProcesado>(camPP.gameObject);
             Debug.Log("[Setup] ✓ ControladorPostProcesado añadido a la Main Camera");
             EditorUtility.SetDirty(camPP.gameObject);
         }
@@ -469,7 +473,9 @@ public static class SetupEscenaAlsasua
         GameObject go = config != null ? config.gameObject : new GameObject("ManagerAlsasua");
         if (config == null) Undo.RegisterCreatedObjectUndo(go, "Crear ManagerAlsasua para Atmósfera");
 
-        go.AddComponent<SistemaAtmosfera>();
+        // BUG FIX: usar Undo.AddComponent para que Ctrl+Z pueda deshacer la adición del componente.
+        // Antes usaba go.AddComponent<SistemaAtmosfera>() sin Undo, inconsistente con AsegurarClima().
+        Undo.AddComponent<SistemaAtmosfera>(go);
         Debug.Log("[Setup] ✓ SistemaAtmosfera CREADO (sol astronómico + niebla dinámica)");
         EditorUtility.SetDirty(go);
     }
@@ -483,9 +489,21 @@ public static class SetupEscenaAlsasua
         { Debug.Log("[Setup]   SistemaClima ya existe"); return; }
 
         var config = Object.FindFirstObjectByType<ConfiguradorAlsasua>();
-        GameObject go = config != null ? config.gameObject : new GameObject("ManagerAlsasua");
+        GameObject go;
+        if (config != null)
+        {
+            go = config.gameObject;
+        }
+        else
+        {
+            go = new GameObject("ManagerAlsasua");
+            // BUG 34/35 FIX: registrar el nuevo GO en el sistema de Undo para que
+            // Ctrl+Z pueda deshacer la creación. Antes se omitía este registro cuando
+            // config==null, dejando el GO huérfano del historial de Undo.
+            Undo.RegisterCreatedObjectUndo(go, "Crear ManagerAlsasua para Clima");
+        }
 
-        go.AddComponent<SistemaClima>();
+        Undo.AddComponent<SistemaClima>(go);
         Debug.Log("[Setup] ✓ SistemaClima CREADO (lluvia·niebla·tormenta — clima atlántico Alsasua)");
         EditorUtility.SetDirty(go);
     }
@@ -557,7 +575,7 @@ public static class SetupEscenaAlsasua
         EditorUtility.SetDirty(jugadorGO);
         Debug.Log("[Setup] ✓ Jugador CREADO en (0, 1, -5) con:");
         Debug.Log("[Setup]     CharacterController · ControladorJugador · SistemaDisparo · SistemaBombas");
-        Debug.Log("[Setup]     Hijo: CamaraFPS (nearClip=0.1 · far=5000 · FOV=70°)");
+        Debug.Log("[Setup]     Hijo: CamaraFPS (nearClip=0.1 · far=1.000.000 · FOV=70°)");  // BUG FIX: el valor real es 1_000_000f, no 5000
         Debug.Log("[Setup]   ► Para usar en gameplay: activa CamaraFPS y desactiva Main Camera (dron)");
     }
 
