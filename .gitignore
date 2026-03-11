@@ -97,3 +97,21 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+
+# ══════════════════════════════════════════════════════════════════
+#  SEGURIDAD — CLAVES Y TOKENS (NUNCA subir al repositorio)
+# ══════════════════════════════════════════════════════════════════
+# ScriptableObject con API Key de Google Maps y Token de Cesium Ion.
+# Introduce las claves en el Inspector y JAMÁS las hardcodees en código.
+/[Aa]ssets/[Rr]esources/ConfiguracionTokens.asset
+/[Aa]ssets/[Rr]esources/ConfiguracionTokens.asset.meta
+
+# Archivos de CommandBuffer de URP que Unity puede generar fuera de Assets/
+ComputeCommandBuffer.cs
+IBaseCommandBuffer.cs
+IComputeCommandBuffer.cs
+IRasterCommandBuffer.cs
+IUnsafeCommandBuffer.cs
+RasterCommandBuffer.cs
+UnsafeCommandBuffer.cs
+null

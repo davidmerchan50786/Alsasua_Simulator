@@ -119,10 +119,21 @@ public class SistemaAtmosfera : MonoBehaviour
 
     private void Update()
     {
+        // BUG 25 FIX: solo llamar ActualizarAtmosfera() cuando el tiempo avanza.
+        // Con tiempoAnimado=false, la hora no cambia → los valores de la atmósfera
+        // tampoco cambian → recalcular sol/niebla/ambiente cada frame era trabajo perdido.
+        // El estado inicial ya se aplica en Start() y OnValidate() responde al Inspector.
         if (tiempoAnimado)
         {
             horaDelDia = (horaDelDia + Time.deltaTime * velocidadTiempo / 3600f) % 24f;
+            ActualizarAtmosfera();
         }
+    }
+
+    // BUG 25 FIX: responder a cambios en el Inspector sin necesitar tiempoAnimado=true.
+    private void OnValidate()
+    {
+        if (!Application.isPlaying) return;
         ActualizarAtmosfera();
     }
 
@@ -287,15 +298,17 @@ public class SistemaAtmosfera : MonoBehaviour
 
     // ─── Inspector helpers ───────────────────────────────────────────────
 
+    // BUG 25 FIX: los presets llaman ActualizarAtmosfera() directamente para que
+    // el cambio de hora se aplique inmediatamente aunque tiempoAnimado=false.
     [ContextMenu("Preset: Mediodía soleado")]
-    private void PresetMediodiaSoleado() { horaDelDia = 12f; diaDelAnio = 172; }
+    private void PresetMediodiaSoleado() { horaDelDia = 12f;  diaDelAnio = 172; ActualizarAtmosfera(); }
 
     [ContextMenu("Preset: Amanecer de verano")]
-    private void PresetAmanecer() { horaDelDia = 6.5f; diaDelAnio = 172; }
+    private void PresetAmanecer()        { horaDelDia = 6.5f; diaDelAnio = 172; ActualizarAtmosfera(); }
 
     [ContextMenu("Preset: Atardecer de otoño")]
-    private void PresetAtardecer() { horaDelDia = 19f; diaDelAnio = 280; }
+    private void PresetAtardecer()       { horaDelDia = 19f;  diaDelAnio = 280; ActualizarAtmosfera(); }
 
     [ContextMenu("Preset: Noche de invierno")]
-    private void PresetNoche() { horaDelDia = 1f; diaDelAnio = 355; }
+    private void PresetNoche()           { horaDelDia = 1f;   diaDelAnio = 355; ActualizarAtmosfera(); }
 }

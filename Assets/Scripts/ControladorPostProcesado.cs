@@ -159,9 +159,10 @@ public class ControladorPostProcesado : MonoBehaviour
     //  ESTADO INTERNO
     // ═══════════════════════════════════════════════════════════════════════
 
-    private Camera                     cam;
+    private Camera                        cam;
     private UniversalAdditionalCameraData cameraData;
-    private SistemaAtmosfera           atmosfera;
+    private SistemaAtmosfera              atmosfera;
+    private SistemaClima                  sistemaClima; // BUG 29 FIX: único escritor de whiteBalance.temperature
 
     // Efectos del volume
     private Tonemapping                 tonemapping;
@@ -181,9 +182,10 @@ public class ControladorPostProcesado : MonoBehaviour
 
     private void Awake()
     {
-        cam        = GetComponent<Camera>();
-        cameraData = cam.GetUniversalAdditionalCameraData();
-        atmosfera  = Object.FindFirstObjectByType<SistemaAtmosfera>();
+        cam          = GetComponent<Camera>();
+        cameraData   = cam.GetUniversalAdditionalCameraData();
+        atmosfera    = Object.FindFirstObjectByType<SistemaAtmosfera>();
+        sistemaClima = Object.FindFirstObjectByType<SistemaClima>(); // BUG 29 FIX
     }
 
     private void Start()
@@ -208,8 +210,12 @@ public class ControladorPostProcesado : MonoBehaviour
 
     private void Update()
     {
-        if (sincronizarConAtmosfera && atmosfera != null)
-            SincronizarTemperatura(atmosfera.HoraDelDia);
+        // BUG 29 FIX: este método es el ÚNICO escritor de whiteBalance.temperature.
+        // Combina la temperatura base (hora del día, si sincronizarConAtmosfera=true)
+        // con el offset meteorológico de SistemaClima (si existe).
+        // Antes: SistemaClima.AplicarPostProcesado() también escribía esa propiedad
+        // cada frame durante transiciones de clima → se sobreescribían mutuamente.
+        AplicarTemperaturaWhiteBalance();
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -404,22 +410,36 @@ public class ControladorPostProcesado : MonoBehaviour
     //  SINCRONÍA CON HORA DEL DÍA
     // ═══════════════════════════════════════════════════════════════════════
 
-    private void SincronizarTemperatura(float hora)
+    // BUG 29 FIX: punto único de escritura en whiteBalance.temperature.
+    // Combina temperatura de hora del día + offset meteorológico de SistemaClima.
+    private void AplicarTemperaturaWhiteBalance()
     {
         if (whiteBalance == null) return;
 
-        // Temperatura de color por hora (igual que el sol real):
-        // Amanecer/atardecer: cálido  (+40 a +60)
-        // Mediodía despejado: ligeramente frío (-10 a -20)
-        // Noche: frío azulado (-40 a -60)
-        float temp;
-        if      (hora >= 5f  && hora < 8f)  temp = Mathf.Lerp(60f, 15f,  (hora - 5f)  / 3f);   // Amanecer
-        else if (hora >= 8f  && hora < 17f) temp = Mathf.Lerp(15f, -10f, (hora - 8f)  / 9f);   // Día
-        else if (hora >= 17f && hora < 21f) temp = Mathf.Lerp(-10f, 50f, (hora - 17f) / 4f);   // Atardecer
-        else if (hora >= 21f || hora < 5f)  temp = -40f;                                          // Noche
-        else                                temp = -10f;
+        // Temperatura base: valor del Inspector (fallback si no hay sincronía con atmósfera)
+        float temp = temperaturaColor;
 
-        whiteBalance.temperature.value = temp;
+        if (sincronizarConAtmosfera && atmosfera != null)
+        {
+            float hora = atmosfera.HoraDelDia;
+            // Temperatura de color por hora (igual que el sol real):
+            // Amanecer/atardecer: cálido  (+40 a +60)
+            // Mediodía despejado: ligeramente frío (-10 a -20)
+            // Noche: frío azulado (-40 a -60)
+            if      (hora >= 5f  && hora < 8f)  temp = Mathf.Lerp(60f,  15f,  (hora - 5f)  / 3f);  // Amanecer
+            else if (hora >= 8f  && hora < 17f) temp = Mathf.Lerp(15f, -10f,  (hora - 8f)  / 9f);  // Día
+            else if (hora >= 17f && hora < 21f) temp = Mathf.Lerp(-10f, 50f,  (hora - 17f) / 4f);  // Atardecer
+            else                                temp = -40f;                                          // Noche
+        }
+
+        // Sumar el offset meteorológico de SistemaClima.
+        // Ejemplo: Lluvia → -25, Tormenta → -35, Despejado → 0.
+        // SistemaClima.TemperaturaActual se actualiza suavemente durante sus transiciones.
+        if (sistemaClima != null)
+            temp += sistemaClima.TemperaturaActual;
+
+        whiteBalance.temperature.value         = Mathf.Clamp(temp, -100f, 100f);
+        whiteBalance.temperature.overrideState = true;
     }
 
     // ═══════════════════════════════════════════════════════════════════════

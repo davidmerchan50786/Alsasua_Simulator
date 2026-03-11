@@ -77,7 +77,12 @@ public class EnemigoPatrulla : MonoBehaviour
     {
         if (Estado == EstadoIA.Muerto) return;
 
-        timerAtaque -= Time.deltaTime;
+        // BUG 12 FIX: solo decrementar timerAtaque en el estado Atacando.
+        // Antes decrementaba siempre → llegaba muy negativo en patrulla →
+        // al entrar en Atacando disparaba 0 frames después sin cadencia.
+        // Clamp a 0 al salir de Atacando evita desbordamientos.
+        if (Estado == EstadoIA.Atacando)
+            timerAtaque -= Time.deltaTime;
 
         switch (Estado)
         {
@@ -195,10 +200,14 @@ public class EnemigoPatrulla : MonoBehaviour
             float angulo   = Vector3.Angle(transform.forward, dirJugador);
             if (angulo < anguloVision / 2f)
             {
-                // Raycast de línea de visión
+                // BUG 10 FIX: usar ~0 (todos los layers) en vez de LayerMask.GetMask("Default").
+                // Con "Default" los tiles de Cesium (en su propia capa) no bloqueaban el rayo,
+                // permitiendo al enemigo "ver" al jugador a través de edificios fotorrealistas.
+                // Restamos 1m a la distancia para no impactar el propio collider del jugador.
+                float distObst = Mathf.Max(0f, dist - 1f);
                 if (!Physics.Raycast(transform.position + Vector3.up,
-                                     dirJugador, dist,
-                                     LayerMask.GetMask("Default")))
+                                     dirJugador, distObst,
+                                     ~0, QueryTriggerInteraction.Ignore))
                     enCampo = true;
             }
         }
@@ -291,6 +300,11 @@ public class EnemigoPatrulla : MonoBehaviour
 
     private void CambiarEstado(EstadoIA nuevo)
     {
+        // BUG 12 FIX: al salir del estado Atacando, resetear timerAtaque a 0
+        // para que la próxima vez que entre en Atacando espere la cadencia completa.
+        if (Estado == EstadoIA.Atacando && nuevo != EstadoIA.Atacando)
+            timerAtaque = 0f;
+
         Estado = nuevo;
         if (nuevo == EstadoIA.Alertado)
         {
@@ -357,13 +371,21 @@ public class EnemigoPatrulla : MonoBehaviour
     private Color colorUniforme = new Color(0.25f, 0.28f, 0.22f); // verde militar
 
     // Crea un Material compatible con URP (evita el magenta por shader incorrecto)
+    // BUG FIX: null guard — new Material(null) lanza NullReferenceException si ningún shader está disponible.
+    // Fallback en cadena: Lit → Unlit → Standard → InternalErrorShader (shader de error interno de Unity).
     private static Material MatURP(Color color)
     {
         var shader = Shader.Find("Universal Render Pipeline/Lit")
+                  ?? Shader.Find("Universal Render Pipeline/Unlit")
                   ?? Shader.Find("Standard");
-        var mat = new Material(shader);
-        mat.color = color;
-        return mat;
+        if (shader == null)
+        {
+            Debug.LogError("[EnemigoPatrulla] MatURP: ningún shader URP/Standard encontrado. " +
+                           "Incluye 'Universal Render Pipeline/Lit' en Always Included Shaders.");
+            shader = Shader.Find("Hidden/InternalErrorShader");
+            if (shader == null) return null;
+        }
+        return new Material(shader) { color = color };
     }
 
     private void CrearCuerpoBasico()
@@ -373,7 +395,8 @@ public class EnemigoPatrulla : MonoBehaviour
         cuerpo.transform.SetParent(transform);
         cuerpo.transform.localPosition = new Vector3(0f, 1f, 0f);
         cuerpo.transform.localScale    = new Vector3(0.6f, 0.9f, 0.6f);
-        cuerpo.GetComponent<Renderer>().material = MatURP(colorUniforme);
+        var matCuerpo = MatURP(colorUniforme);
+        if (matCuerpo != null) cuerpo.GetComponent<Renderer>().material = matCuerpo;
         Destroy(cuerpo.GetComponent<Collider>());
 
         // Cabeza
@@ -381,7 +404,8 @@ public class EnemigoPatrulla : MonoBehaviour
         cabeza.transform.SetParent(transform);
         cabeza.transform.localPosition = new Vector3(0f, 2.0f, 0f);
         cabeza.transform.localScale    = new Vector3(0.4f, 0.4f, 0.4f);
-        cabeza.GetComponent<Renderer>().material = MatURP(new Color(0.75f, 0.62f, 0.48f));
+        var matCabeza = MatURP(new Color(0.75f, 0.62f, 0.48f));
+        if (matCabeza != null) cabeza.GetComponent<Renderer>().material = matCabeza;
         Destroy(cabeza.GetComponent<Collider>());
 
         // Casco
@@ -389,7 +413,8 @@ public class EnemigoPatrulla : MonoBehaviour
         casco.transform.SetParent(transform);
         casco.transform.localPosition = new Vector3(0f, 2.15f, 0f);
         casco.transform.localScale    = new Vector3(0.45f, 0.35f, 0.45f);
-        casco.GetComponent<Renderer>().material = MatURP(colorUniforme);
+        var matCasco = MatURP(colorUniforme);
+        if (matCasco != null) casco.GetComponent<Renderer>().material = matCasco;
         Destroy(casco.GetComponent<Collider>());
 
         // Colisionador

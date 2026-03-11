@@ -117,6 +117,14 @@ public class SistemaClima : MonoBehaviour
     private float intensidadSolActual = 1f;
     private float temperaturaCCActual = 0f;
 
+    // BUG 22 FIX: cachear Camera.main en Awake() — llamarla en SeguirCamara() cada frame
+    // realiza una búsqueda de escena (O(n)) que es innecesaria ya que no cambia.
+    private Camera camPrincipal;
+
+    // BUG 24 FIX: evitar recalcular el ángulo de lluvia cada frame si el viento no cambió.
+    private float anguloVientoPrev    = float.MaxValue;
+    private float direccionVientoPrev = float.MaxValue;
+
     // ═══════════════════════════════════════════════════════════════════════
     //  DATOS POR ESTADO (tabla de configuración)
     // ═══════════════════════════════════════════════════════════════════════
@@ -145,6 +153,7 @@ public class SistemaClima : MonoBehaviour
 
         colorNieblaActual = colorNieblaLluvia;
         climaObjetivo     = climaActual;
+        camPrincipal      = Camera.main; // BUG 22 FIX
     }
 
     private void Start()
@@ -185,8 +194,16 @@ public class SistemaClima : MonoBehaviour
             }
         }
 
-        // Ángulo de lluvia con viento
-        ActualizarAnguloLluvia();
+        // BUG 24 FIX: recalcular el ángulo de lluvia sólo cuando el viento haya cambiado.
+        // Antes se llamaba cada frame aunque anguloViento/direccionViento fueran constantes,
+        // ejecutando trigonometría y modificando el ParticleSystem innecesariamente.
+        if (!Mathf.Approximately(anguloViento, anguloVientoPrev) ||
+            !Mathf.Approximately(direccionViento, direccionVientoPrev))
+        {
+            ActualizarAnguloLluvia();
+            anguloVientoPrev    = anguloViento;
+            direccionVientoPrev = direccionViento;
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -373,11 +390,11 @@ public class SistemaClima : MonoBehaviour
 
     private void AplicarPostProcesado(float temperaturaCC, float saturacion, float vignetteExtra)
     {
-        if (whiteBalance != null)
-        {
-            whiteBalance.temperature.value         = temperaturaCC;
-            whiteBalance.temperature.overrideState = true;
-        }
+        // BUG 29 FIX: SistemaClima ya NO escribe directamente en whiteBalance.temperature.
+        // ControladorPostProcesado es el ÚNICO escritor de esa propiedad — la combina con la
+        // temperatura base (hora del día) leyendo TemperaturaActual desde aquí.
+        // Sólo actualizamos el campo interno para que ControladorPostProcesado lo pueda leer.
+        temperaturaCCActual = temperaturaCC;
 
         if (colorAdjustments != null)
         {
@@ -406,7 +423,10 @@ public class SistemaClima : MonoBehaviour
 
     private void SeguirCamara()
     {
-        Camera cam = Camera.main;
+        // BUG 22 FIX: usar la cámara cacheada en Awake() en vez de Camera.main cada frame.
+        // Si por algún motivo la referencia se pierde (cambio de escena), refrescar la caché.
+        if (camPrincipal == null) camPrincipal = Camera.main;
+        Camera cam = camPrincipal;
         if (cam == null) return;
 
         Vector3 posBase = new Vector3(cam.transform.position.x,
@@ -618,4 +638,11 @@ public class SistemaClima : MonoBehaviour
                                                        or EstadoClima.Tormenta;
     public bool        HayNiebla     => climaObjetivo is EstadoClima.Niebla
                                                       or EstadoClima.NieblaBaja;
+
+    /// <summary>
+    /// BUG 29 FIX: offset de temperatura meteorológica para el WhiteBalance (-35 Tormenta … 0 Despejado).
+    /// ControladorPostProcesado lo lee y suma a la temperatura base de la hora del día,
+    /// siendo el único escritor de whiteBalance.temperature en el Volume.
+    /// </summary>
+    public float       TemperaturaActual => temperaturaCCActual;
 }
