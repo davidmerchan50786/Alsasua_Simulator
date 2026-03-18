@@ -38,7 +38,9 @@ public static class ConfiguradorPersonajeKenney
     };
 
     [MenuItem("Alsasua/Configurar Personajes Kenney (CC0)")]
-    public static void Configurar()
+    public static void Configurar() => Configurar(silencioso: false);
+
+    public static void Configurar(bool silencioso)
     {
         bool todoOK = true;
 
@@ -127,13 +129,12 @@ public static class ConfiguradorPersonajeKenney
             "════════════════════════════════════════════════════════"
         );
 
-        EditorUtility.DisplayDialog(
+        if (!silencioso) EditorUtility.DisplayDialog(
             $"✓ {prefabsCreados} personajes configurados",
             $"Prefabs creados en Assets/Personajes/Prefabs/\n\n" +
             "Arrastra cualquier prefab al campo 'Prefab Personaje' " +
             "del ControladorJugador en el Inspector.\n\n" +
-            "Recuerda abrir el Animator Controller y asignar los clips " +
-            "de Assets/Personajes/Animaciones/ a cada estado.",
+            "El Animator Controller se crea automáticamente al abrir Unity.",
             "OK"
         );
     }
