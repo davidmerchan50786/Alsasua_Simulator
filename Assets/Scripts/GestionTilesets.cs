@@ -150,6 +150,10 @@ public class GestionTilesets : MonoBehaviour
         {
             yield return new WaitForSeconds(0.5f);
 
+            // FIX: guard post-yield — si el GO fue destruido durante el sleep, salir limpiamente.
+            // Sin esto, la coroutine intenta acceder a tilesets ya destruidos y lanza MissingReferenceException.
+            if (!this) yield break;
+
             if (!calidadDinamica || observador == null)
                 continue;
 

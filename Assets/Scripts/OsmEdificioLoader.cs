@@ -257,6 +257,10 @@ public class OsmEdificioLoader : MonoBehaviour
         using var uwr = UnityWebRequest.Get(url);
         yield return uwr.SendWebRequest();
 
+        // FIX: guard post-yield — si el GO fue destruido mientras esperaba la respuesta,
+        // salir limpiamente antes de intentar parsear el JSON o crear edificios.
+        if (!this) yield break;
+
         if (uwr.result != UnityWebRequest.Result.Success)
         {
             Debug.LogError($"[OsmLoader] No se pudo cargar '{ruta}': {uwr.error}\n" +

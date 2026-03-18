@@ -66,6 +66,10 @@ public class ConfiguradorAlsasua : MonoBehaviour
     private float             _tilesetCacheTime = -1f;
     private const float       TILESET_CACHE_TTL = 5f; // refrescar cada 5s por si cambian en runtime
 
+    // PERF FIX: Camera.main en OnGUI() realiza búsqueda de escena por tag en CADA FRAME
+    // (OnGUI se llama 2+ veces/frame). Cacheamos la referencia una sola vez en Start().
+    private Camera _camaraHUD;
+
     // ============================================================
     //  INICIALIZACIÓN
     // ============================================================
@@ -81,6 +85,10 @@ public class ConfiguradorAlsasua : MonoBehaviour
         // BUG FIX: CorregirAudioListeners() estaba definido pero nunca llamado →
         // si había múltiples AudioListeners en escena, Unity emitía warnings de audio.
         CorregirAudioListeners();
+
+        // PERF FIX: cachear Camera.main para OnGUI() — evita búsqueda por tag cada frame.
+        // CorregirCamaras() ya ha configurado todas las cámaras en este punto.
+        _camaraHUD = Camera.main;
 
         // Invoke(0): se ejecuta al FINAL del primer frame, después de que TODOS los
         // Start() hayan corrido (incluyendo ControladorJugador que desacopla la cámara).
@@ -537,9 +545,12 @@ public class ConfiguradorAlsasua : MonoBehaviour
         GUI.Label(new Rect(12f, 10f, 370f, 20f),
             $"Altsasu / Alsasua  |  Lat: {ALSASUA_LATITUD:F4}  Lon: {ALSASUA_LONGITUD:F4}");
 
+        // PERF FIX: usar _camaraHUD cacheada — Camera.main hace búsqueda de escena por tag.
+        // Si por algún motivo la referencia se perdió (cambio de escena), refrescar la caché.
+        if (_camaraHUD == null) _camaraHUD = Camera.main;
         GUI.color = Color.cyan;
         GUI.Label(new Rect(12f, 30f, 370f, 20f),
-            $"Tilesets activos: {activos}  |  Cámara Y: {(Camera.main != null ? Camera.main.transform.position.y.ToString("F0") : "?")} m");
+            $"Tilesets activos: {activos}  |  Cámara Y: {(_camaraHUD != null ? _camaraHUD.transform.position.y.ToString("F0") : "?")} m");
 
         GUI.color = Color.white;
         for (int i = 0; i < tilesets.Length; i++)

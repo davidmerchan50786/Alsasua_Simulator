@@ -91,6 +91,11 @@ public class ControladorJugador : MonoBehaviour
     private readonly System.Collections.Generic.List<Material> _matsCreados =
         new System.Collections.Generic.List<Material>();
 
+    // PERF FIX: LayerMask calculado UNA sola vez en Awake() y cacheado.
+    // LayerMask.GetMask() hace string lookups en cada llamada → en LateUpdate (60fps)
+    // eran 60 lookups/seg innecesarios. Ahora es un simple int.
+    private int _maskSpringArm;
+
     // ═══════════════════════════════════════════════════════════════════════
     //  UNITY LIFECYCLE
     // ═══════════════════════════════════════════════════════════════════════
@@ -110,6 +115,9 @@ public class ControladorJugador : MonoBehaviour
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible   = false;
+
+        // PERF FIX: cachear la LayerMask aquí (una vez) para ActualizarCamara() en LateUpdate
+        _maskSpringArm = ~LayerMask.GetMask("Player", "Ignore Raycast");
     }
 
     private void Start()
@@ -446,8 +454,7 @@ public class ControladorJugador : MonoBehaviour
 
         // ── Spring Arm: detectar geometría entre pivot y cámara ─────────────
         Vector3 posFinal = posBuscada;
-        if (Physics.Linecast(pivotPos, posBuscada, out RaycastHit hit,
-                             ~LayerMask.GetMask("Player", "Ignore Raycast")))
+        if (Physics.Linecast(pivotPos, posBuscada, out RaycastHit hit, _maskSpringArm))
         {
             // Acercar la cámara al punto de colisión (+ pequeño offset)
             posFinal = hit.point + (pivotPos - posBuscada).normalized * 0.18f;

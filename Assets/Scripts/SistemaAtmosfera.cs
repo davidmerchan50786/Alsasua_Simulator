@@ -98,6 +98,14 @@ public class SistemaAtmosfera : MonoBehaviour
     private float elevacionSolar;  // grados sobre el horizonte
     private float azimutSolar;     // grados (0=N, 90=E, 180=S, 270=O)
 
+    // PERF FIX: throttle del recálculo de la atmósfera cuando el tiempo está animado.
+    // CalcularPosicionSolar() ejecuta 6+ funciones trig por frame → 360+ trig/seg.
+    // La posición solar cambia tan despacio que 2 actualizaciones/seg son imperceptibles
+    // (con velocidadTiempo=120, 0.5s real = 1 minuto de juego = 0.5° de arco solar).
+    // horaDelDia sigue avanzando cada frame para precisión; solo el render se limita.
+    private float _timerAtmosfera    = 0f;
+    private const float INTERVALO_ATM = 0.5f; // recalcular 2 veces/segundo
+
     // ═══════════════════════════════════════════════════════════════════════
     //  UNITY
     // ═══════════════════════════════════════════════════════════════════════
@@ -125,8 +133,19 @@ public class SistemaAtmosfera : MonoBehaviour
         // El estado inicial ya se aplica en Start() y OnValidate() responde al Inspector.
         if (tiempoAnimado)
         {
+            // Avanzar el reloj cada frame (necesario para precisión temporal)
             horaDelDia = (horaDelDia + Time.deltaTime * velocidadTiempo / 3600f) % 24f;
-            ActualizarAtmosfera();
+
+            // PERF FIX: recalcular sol/niebla/ambiente solo cada INTERVALO_ATM segundos.
+            // Antes: ActualizarAtmosfera() se llamaba 60 veces/seg → 360 trig/seg.
+            // Ahora: 2 veces/seg → 12 trig/seg. Diferencia visual: imperceptible
+            // (la posición solar varía <0.5° entre ticks).
+            _timerAtmosfera -= Time.deltaTime;
+            if (_timerAtmosfera <= 0f)
+            {
+                _timerAtmosfera = INTERVALO_ATM;
+                ActualizarAtmosfera();
+            }
         }
     }
 
