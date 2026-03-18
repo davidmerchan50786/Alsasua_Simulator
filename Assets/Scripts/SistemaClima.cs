@@ -449,9 +449,9 @@ public class SistemaClima : MonoBehaviour
         Camera cam = camPrincipal;
         if (cam == null) return;
 
-        Vector3 posBase = new Vector3(cam.transform.position.x,
-                                      cam.transform.position.y,
-                                      cam.transform.position.z);
+        // OPT: asignación directa — new Vector3(p.x, p.y, p.z) es idéntico a p pero
+        // crea una copia innecesaria (Vector3 es struct, se copia igual al asignar).
+        Vector3 posBase = cam.transform.position;
 
         if (psLluvia != null)
             psLluvia.transform.position = posBase + Vector3.up * 120f;
