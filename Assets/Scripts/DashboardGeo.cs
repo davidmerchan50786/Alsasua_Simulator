@@ -146,15 +146,11 @@ public class DashboardGeo : MonoBehaviour
         if (volumenGlobal == null)
             volumenGlobal = Object.FindFirstObjectByType<Volume>();
 
-        // Obtener efectos del Volume profile
-        if (volumenGlobal != null && volumenGlobal.profile != null)
-        {
-            var p = volumenGlobal.profile;
-            p.TryGet(out colorAdj);
-            p.TryGet(out bloom);
-            p.TryGet(out vignette);
-            p.TryGet(out smh);
-        }
+        // FIX: NO obtener efectos del Volume profile aquí — ControladorPostProcesado.Start()
+        // (order 0, mismo frame) todavía no ha llamado p.Add<T>() en este punto si
+        // DashboardGeo también tiene order 0 y corre antes. Los efectos se obtienen en
+        // GuardarValoresOriginales() que se invoca con Invoke(0f), garantizando que
+        // todos los Start() hayan terminado antes de hacer TryGet.
 
         // Buscar controladores si no están asignados
         if (controladorJugador == null)
@@ -207,6 +203,18 @@ public class DashboardGeo : MonoBehaviour
 
     private void GuardarValoresOriginales()
     {
+        // FIX: obtener efectos aquí — ControladorPostProcesado.Start() ya ha corrido
+        // y añadido los efectos al profile mediante p.Add<T>().
+        // Invoke(nameof(GuardarValoresOriginales), 0f) garantiza ejecución post-Start.
+        if (volumenGlobal != null && volumenGlobal.profile != null)
+        {
+            var p = volumenGlobal.profile;
+            p.TryGet(out colorAdj);
+            p.TryGet(out bloom);
+            p.TryGet(out vignette);
+            p.TryGet(out smh);
+        }
+
         if (colorAdj != null)
         {
             savedSat         = colorAdj.saturation.value;

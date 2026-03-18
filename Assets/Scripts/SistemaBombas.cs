@@ -81,9 +81,8 @@ public class SistemaBombas : MonoBehaviour
         var bombaGO = CrearObjetoBomba(posicion);
         var bomba   = new BombaColocada
         {
-            gameObject   = bombaGO,
+            objetoFisico = bombaGO,
             posicion     = posicion,
-            timerRestante = timerAutodetonacion > 0 ? timerAutodetonacion : -1f,
         };
         bombas.Add(bomba);
         bombasDisponibles--;
@@ -122,8 +121,8 @@ public class SistemaBombas : MonoBehaviour
         bomba.explotada = true;
         bombas.Remove(bomba);
 
-        if (bomba.gameObject != null)
-            Destroy(bomba.gameObject);
+        if (bomba.objetoFisico != null)
+            Destroy(bomba.objetoFisico);
 
         SistemaExplosion.Explotar(bomba.posicion, radioExplosion, fuerzaExplosion, danoExplosion);
         Debug.Log($"[Bombas] ¡BOOM! en {bomba.posicion:F1}");
@@ -136,14 +135,19 @@ public class SistemaBombas : MonoBehaviour
     private void ComprobarProximidad()
     {
         // Usa la caché refrescada en Update() — ya NO llama FindObjectsByType aquí
-        foreach (var bomba in new List<BombaColocada>(bombas))
+        // FIX OPT: iterar con índice descendente para evitar new List<> cada 200 ms.
+        // Detonar() llama bombas.Remove() — el índice descendente garantiza que los
+        // elementos anteriores al índice actual no se saltan tras el Remove.
+        // FIX OPT: sqrMagnitude evita Sqrt de Vector3.Distance (1 Sqrt/par bomba×enemigo).
+        float distSqr = distanciaProximidad * distanciaProximidad;
+        for (int i = bombas.Count - 1; i >= 0; i--)
         {
+            var bomba = bombas[i];
             if (bomba.explotada) continue;
             foreach (var enemigo in enemigosCache)
             {
                 if (enemigo == null) continue;
-                float dist = Vector3.Distance(bomba.posicion, enemigo.transform.position);
-                if (dist <= distanciaProximidad)
+                if ((bomba.posicion - enemigo.transform.position).sqrMagnitude <= distSqr)
                 {
                     Debug.Log("[Bombas] Enemigo detectado cerca. ¡DETONACIÓN POR PROXIMIDAD!");
                     Detonar(bomba);
@@ -157,6 +161,19 @@ public class SistemaBombas : MonoBehaviour
     //  OBJETO 3D DE BOMBA
     // ═══════════════════════════════════════════════════════════════════════
 
+    // FIX LEAK: material compartido para todas las bombas — .material (instancia) fue sustituido
+    // por .sharedMaterial + MaterialPropertyBlock. Una sola instancia del material para N bombas.
+    private static Material _matBombaCache;
+    private static Material MatBomba()
+    {
+        if (_matBombaCache != null) return _matBombaCache;
+        var shader = Shader.Find("Universal Render Pipeline/Lit")
+                  ?? Shader.Find("Universal Render Pipeline/Unlit")
+                  ?? Shader.Find("Standard");
+        _matBombaCache = new Material(shader) { color = new Color(0.1f, 0.1f, 0.1f) };
+        return _matBombaCache;
+    }
+
     private GameObject CrearObjetoBomba(Vector3 posicion)
     {
         // Cuerpo principal (cilindro negro)
@@ -165,8 +182,8 @@ public class SistemaBombas : MonoBehaviour
         go.transform.position   = posicion + Vector3.up * 0.12f;
         go.transform.localScale = new Vector3(0.2f, 0.12f, 0.2f);
 
-        var mat = go.GetComponent<Renderer>().material;
-        mat.color = new Color(0.1f, 0.1f, 0.1f);
+        // FIX LEAK: sharedMaterial + material cacheado estático en vez de .material (instancia nueva por bomba)
+        go.GetComponent<Renderer>().sharedMaterial = MatBomba();
 
         // Luz parpadeante roja
         var luzGO = new GameObject("LuzBomba");
@@ -218,9 +235,8 @@ public class SistemaBombas : MonoBehaviour
 
     private class BombaColocada
     {
-        public GameObject gameObject;
+        public GameObject objetoFisico;
         public Vector3    posicion;
-        public float      timerRestante;
         public bool       explotada;
     }
 }

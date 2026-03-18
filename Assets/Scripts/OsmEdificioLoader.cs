@@ -149,6 +149,11 @@ public class OsmEdificioLoader : MonoBehaviour
     private bool matFachadaCreado;
     private bool matTejadoCreado;
 
+    // FIX LEAK: rastrear Texture2D creadas en runtime — Unity NO las libera al destruir el Renderer.
+    // 5649 texturas × 0.15 MB (DXT1) = 847 MB de VRAM acumulados si nunca se destruyen.
+    // Deben destruirse explícitamente en OnDestroy() y RecargarEdificios().
+    private readonly List<Texture2D> texturasCreadas = new List<Texture2D>();
+
     // ═══════════════════════════════════════════════════════════════════════
     //  UNITY
     // ═══════════════════════════════════════════════════════════════════════
@@ -217,6 +222,11 @@ public class OsmEdificioLoader : MonoBehaviour
         foreach (var mesh in meshesCreados)
             if (mesh != null) Destroy(mesh);
         meshesCreados.Clear();
+
+        // FIX LEAK: destruir las Texture2D de Street View — no se liberan al destruir el Renderer
+        foreach (var tex in texturasCreadas)
+            if (tex != null) Destroy(tex);
+        texturasCreadas.Clear();
     }
 
     /// <summary>
@@ -586,6 +596,11 @@ public class OsmEdificioLoader : MonoBehaviour
                         tex.Apply(true, true);      // genera mipmaps + sube + libera CPU
                     }
 
+                    // FIX LEAK: rastrear la textura para destruirla en OnDestroy/RecargarEdificios.
+                    // Aunque Apply(false, true) libera la copia CPU, el objeto Texture2D sigue
+                    // ocupando VRAM hasta que se llame Destroy(tex) explícitamente.
+                    texturasCreadas.Add(tex);
+
                     // MEJORA CALIDAD: Trilinear aprovecha los mipmaps para transición
                     // suave entre niveles de detalle (vs Bilinear que produce "popping").
                     // anisoLevel 4 = nitidez en fachadas vistas en ángulo oblicuo.
@@ -671,6 +686,11 @@ public class OsmEdificioLoader : MonoBehaviour
         foreach (var mesh in meshesCreados)
             if (mesh != null) Destroy(mesh);
         meshesCreados.Clear();
+
+        // FIX LEAK: destruir las Texture2D de Street View antes de destruir los Renderers.
+        foreach (var tex in texturasCreadas)
+            if (tex != null) Destroy(tex);
+        texturasCreadas.Clear();
 
         // Destruir GameObjects hijo (edificios y tejados)
         for (int i = transform.childCount - 1; i >= 0; i--)

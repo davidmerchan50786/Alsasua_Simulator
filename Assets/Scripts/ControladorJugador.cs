@@ -168,7 +168,7 @@ public class ControladorJugador : MonoBehaviour
         // Sin él, la cámara no se georreferencia correctamente y puede desviarse en latitudes altas.
         if (georef != null && camaraTP.GetComponent<CesiumForUnity.CesiumGlobeAnchor>() == null)
             camaraTP.gameObject.AddComponent<CesiumForUnity.CesiumGlobeAnchor>();
-        camaraTP.nearClipPlane = 0.15f;
+        camaraTP.nearClipPlane = 0.3f;          // FIX: consistente con ControladorPostProcesado (ratio z-buffer 1:400k)
         camaraTP.farClipPlane  = 1_000_000f;   // 1000 km — Cesium renderiza tiles lejanos
         camaraTP.fieldOfView   = fovNormal;
 

@@ -219,13 +219,8 @@ public class SistemaAtmosfera : MonoBehaviour
         float t         = horaDelDia / 24f;
         Color colorBase = colorAmbiente.Evaluate(t) * intensidadAmbiente;
 
-        // MEJORA ILUMINACIÓN INDIRECTA: Trilinear en vez de Flat.
-        // Flat ilumina uniformemente desde todos los ángulos → plástico.
-        // Trilinear separa sky (frío/azul), equator (neutro) y ground (cálido/oscuro) →
-        // objetos en sombra reciben luz correcta del cielo y no del suelo.
-        RenderSettings.ambientMode = AmbientMode.Trilinear;
-
         // Cielo: el más brillante, ligeramente más frío (refleja el color del cielo real)
+        // (AmbientMode.Trilinear se establece una sola vez en ConfigurarNiebla() — no cada frame)
         RenderSettings.ambientSkyColor     = colorBase * 1.15f;
 
         // Ecuador / horizonte: color base del gradiente
@@ -267,6 +262,12 @@ public class SistemaAtmosfera : MonoBehaviour
         RenderSettings.fogMode    = FogMode.ExponentialSquared;
         RenderSettings.fogColor   = colorNieblaBase;
         RenderSettings.fogDensity = densidadNiebla;
+
+        // MEJORA ILUMINACIÓN INDIRECTA: Trilinear en vez de Flat.
+        // Flat ilumina uniformemente desde todos los ángulos → plástico.
+        // Trilinear separa sky (frío/azul), equator (neutro) y ground (cálido/oscuro).
+        // Se establece UNA SOLA VEZ aquí (Start) en vez de cada frame en AplicarAmbiente().
+        RenderSettings.ambientMode = AmbientMode.Trilinear;
     }
 
     // ═══════════════════════════════════════════════════════════════════════

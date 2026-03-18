@@ -171,6 +171,14 @@ public class SistemaClima : MonoBehaviour
 
     private void Update()
     {
+        // FIX: lazy-init de efectos del Volume.
+        // ObtenerEfectosVolumen() se llamó en Start() (DefaultExecutionOrder -40) ANTES de que
+        // ControladorPostProcesado.Start() (order 0) añadiera los efectos al profile con p.Add<T>().
+        // TryGet() devolvía false → colorAdjustments/vignette/dof = null → efectos meteorológicos
+        // de saturación, viñeta y DOF nunca se aplicaban. Reintentar hasta obtenerlos.
+        if (colorAdjustments == null && volumenPostProcesado != null)
+            ObtenerEfectosVolumen();
+
         // Seguir la cámara con la lluvia
         SeguirCamara();
 
