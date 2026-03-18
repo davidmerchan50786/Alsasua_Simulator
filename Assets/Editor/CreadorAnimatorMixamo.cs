@@ -40,7 +40,9 @@ public static class CreadorAnimatorMixamo
     private const string RUTA_ANIM_MORIR       = "Assets/Personajes/Animaciones/Anim_Morir.fbx";
 
     [MenuItem("Alsasua/Crear Animator Controller Mixamo")]
-    public static void CrearController()
+    public static void CrearController() => CrearController(silencioso: false);
+
+    public static void CrearController(bool silencioso)
     {
         // ── 0. Cargar todos los clips ─────────────────────────────────────────
         AnimationClip clipIdle       = CargarPrimerClip(RUTA_ANIM_IDLE);
@@ -70,7 +72,7 @@ public static class CreadorAnimatorMixamo
             Debug.LogError(
                 "[Alsasua] No se encontraron clips en Assets/Personajes/Animaciones/\n" +
                 "Ejecuta primero 'Alsasua → Configurar Personajes Kenney (CC0)'.");
-            EditorUtility.DisplayDialog(
+            if (!silencioso) EditorUtility.DisplayDialog(
                 "Error: sin animaciones",
                 "No se encontraron clips en Assets/Personajes/Animaciones/\n\n" +
                 "Ejecuta primero 'Alsasua → Configurar Personajes Kenney (CC0)'.",
@@ -224,7 +226,7 @@ public static class CreadorAnimatorMixamo
             "════════════════════════════════════════════════════"
         );
 
-        EditorUtility.DisplayDialog(
+        if (!silencioso) EditorUtility.DisplayDialog(
             $"✓ Animator Controller creado ({cargados}/9 clips)",
             $"AnimatorMixamo.controller generado con {cargados}/9 clips asignados.\n\n" +
             "Arrastra el controller al Inspector del ControladorJugador\n" +
