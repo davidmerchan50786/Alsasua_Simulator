@@ -210,12 +210,16 @@ public class ControladorPostProcesado : MonoBehaviour
 
     private void Update()
     {
-        // BUG 29 FIX: este método es el ÚNICO escritor de whiteBalance.temperature.
-        // Combina la temperatura base (hora del día, si sincronizarConAtmosfera=true)
-        // con el offset meteorológico de SistemaClima (si existe).
-        // Antes: SistemaClima.AplicarPostProcesado() también escribía esa propiedad
-        // cada frame durante transiciones de clima → se sobreescribían mutuamente.
+        // BUG 29 FIX: punto único de escritura de whiteBalance.temperature.
         AplicarTemperaturaWhiteBalance();
+
+        // MEJORA: bloom y grano dinámicos según hora del día.
+        // Animados suavemente en Update para no saltar bruscamente.
+        if (sincronizarConAtmosfera && atmosfera != null)
+        {
+            AplicarBloomDinamico();
+            AplicarGrainDinamico();
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -233,8 +237,11 @@ public class ControladorPostProcesado : MonoBehaviour
         // Habilitar post-procesado en esta cámara
         cameraData.renderPostProcessing = true;
 
-        cam.nearClipPlane = 0.5f;
-        cam.farClipPlane  = 300000f;
+        // MEJORA Z-BUFFER: ratio near/far = 1:600000 causaba z-fighting en edificios.
+        // 0.25m near + 150km far = ratio 1:600000→1:600000... espera → 0.25/150000 = 1:600000
+        // Mejor: 0.3m / 120000m = 1:400000 → buena precisión en el rango 1-1000m del jugador.
+        cam.nearClipPlane = 0.3f;
+        cam.farClipPlane  = 120000f; // 120 km cubre toda el área de Cesium visible + margen
         cam.usePhysicalProperties = false;
 
         Debug.Log("[PostProcesado] Cámara configurada.");
@@ -440,6 +447,56 @@ public class ControladorPostProcesado : MonoBehaviour
 
         whiteBalance.temperature.value         = Mathf.Clamp(temp, -100f, 100f);
         whiteBalance.temperature.overrideState = true;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  EFECTOS DINÁMICOS (animados en Update según SistemaAtmosfera)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Ajusta el bloom suavemente según la posición del sol:
+    ///   · Día (sol alto):       threshold base, intensidad base (sutil)
+    ///   · Amanecer/atardecer:   threshold más bajo, intensidad mayor (halos dorados)
+    ///   · Noche:                threshold bajo, intensidad alta (halos de luces)
+    /// </summary>
+    private void AplicarBloomDinamico()
+    {
+        if (bloom == null) return;
+        float elev = atmosfera.ElevacionSolar;
+
+        // factorHorizon sube cuando el sol está cerca del horizonte (±30°)
+        float factorHorizon = Mathf.Clamp01(1f - Mathf.Abs(elev) / 30f);
+        // factorNoche sube solo cuando el sol está bajo el horizonte
+        float factorNoche   = Mathf.Clamp01(-elev / 12f);
+
+        // Targets: noche y amanecer/atardecer tienen bloom más intenso
+        float targetThreshold = Mathf.Lerp(bloomThreshold,
+                                            Mathf.Lerp(0.78f, 0.65f, factorNoche),
+                                            factorHorizon);
+        float targetIntensidad = Mathf.Lerp(bloomIntensidad,
+                                             Mathf.Lerp(0.45f, 0.65f, factorNoche),
+                                             factorHorizon);
+
+        // Transición muy suave (0.4 unidades/seg) para que no se note el cambio
+        const float SPEED = 0.4f;
+        Set(bloom.threshold, Mathf.Lerp(bloom.threshold.value, targetThreshold, Time.deltaTime * SPEED));
+        Set(bloom.intensity,  Mathf.Lerp(bloom.intensity.value,  targetIntensidad,  Time.deltaTime * SPEED));
+    }
+
+    /// <summary>
+    /// Simula el aumento de ISO de una cámara real en condiciones de poca luz:
+    /// el grano sube gradualmente desde el ocaso hasta el amanecer.
+    /// </summary>
+    private void AplicarGrainDinamico()
+    {
+        if (filmGrain == null || !grainActivo) return;
+        float elev = atmosfera.ElevacionSolar;
+
+        // factorNoche: 0=pleno día, 1=medianoche
+        float factorNoche  = Mathf.Clamp01(-elev / 12f);
+        float targetGrain  = Mathf.Lerp(grainIntensidad, grainIntensidad * 2.8f, factorNoche);
+
+        Set(filmGrain.intensity, Mathf.Lerp(filmGrain.intensity.value, targetGrain, Time.deltaTime * 0.6f));
     }
 
     // ═══════════════════════════════════════════════════════════════════════

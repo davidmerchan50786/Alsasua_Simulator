@@ -198,15 +198,44 @@ public class SistemaAtmosfera : MonoBehaviour
         float t = horaDelDia / 24f;
         luzSolar.color = colorDelSol.Evaluate(t);
 
-        // Sombras blandas solo cuando el sol está bien alto
-        luzSolar.shadows = elevacionSolar > 8f ? LightShadows.Soft : LightShadows.None;
+        // MEJORA SOMBRAS: activadas desde -3° (incluye amanecer/atardecer).
+        // Hard shadows en ángulos bajos (más dramáticas y baratas); Soft en ángulos altos.
+        if (elevacionSolar > 18f)
+            luzSolar.shadows = LightShadows.Soft;
+        else if (elevacionSolar > -3f)
+            luzSolar.shadows = LightShadows.Hard; // rayos rasantes del amanecer/atardecer
+        else
+            luzSolar.shadows = LightShadows.None;
+
+        // MEJORA SOMBRAS: intensidad gradual según ángulo solar (penumbra natural).
+        // Bajo el horizonte: 0.0; horizon: 0.3; cénit: 0.95.
+        // SistemaClima.AplicarLuz() puede multiplicar este valor para efecto de nubes.
+        float shadowFade = Mathf.Clamp01((elevacionSolar + 3f) / 21f);
+        luzSolar.shadowStrength = Mathf.Lerp(0.25f, 0.95f, shadowFade * shadowFade);
     }
 
     private void AplicarAmbiente()
     {
-        float t = horaDelDia / 24f;
-        RenderSettings.ambientMode  = AmbientMode.Flat;
-        RenderSettings.ambientLight = colorAmbiente.Evaluate(t) * intensidadAmbiente;
+        float t         = horaDelDia / 24f;
+        Color colorBase = colorAmbiente.Evaluate(t) * intensidadAmbiente;
+
+        // MEJORA ILUMINACIÓN INDIRECTA: Trilinear en vez de Flat.
+        // Flat ilumina uniformemente desde todos los ángulos → plástico.
+        // Trilinear separa sky (frío/azul), equator (neutro) y ground (cálido/oscuro) →
+        // objetos en sombra reciben luz correcta del cielo y no del suelo.
+        RenderSettings.ambientMode = AmbientMode.Trilinear;
+
+        // Cielo: el más brillante, ligeramente más frío (refleja el color del cielo real)
+        RenderSettings.ambientSkyColor     = colorBase * 1.15f;
+
+        // Ecuador / horizonte: color base del gradiente
+        RenderSettings.ambientEquatorColor = colorBase;
+
+        // Suelo: siempre más oscuro y con tono cálido-terroso (asfalto, hierba, tierra)
+        // De noche se neutraliza un poco para no tener un suelo demasiado naranja oscuro.
+        float factorNoche = Mathf.Clamp01(-elevacionSolar / 12f);
+        Color tintSuelo   = Color.Lerp(new Color(0.52f, 0.42f, 0.32f), Color.grey, factorNoche * 0.5f);
+        RenderSettings.ambientGroundColor  = colorBase * tintSuelo * 0.38f;
     }
 
     private void AplicarNiebla()

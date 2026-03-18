@@ -99,6 +99,15 @@ InitTestScene*.unity*
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
 
 # ══════════════════════════════════════════════════════════════════
+#  OSM / STREET VIEW — IMÁGENES GENERADAS (binarios grandes)
+# ══════════════════════════════════════════════════════════════════
+# Las imágenes de fachadas (~324 MB, 5649 JPEGs) se regeneran con
+# GeneradorFachadas.py — no deben subirse al repositorio.
+# Los archivos de datos JSON y el script Python SÍ se versionan.
+/[Aa]ssets/OSMData/fachadas/
+/[Aa]ssets/OSMData/fachadas.meta
+
+# ══════════════════════════════════════════════════════════════════
 #  SEGURIDAD — CLAVES Y TOKENS (NUNCA subir al repositorio)
 # ══════════════════════════════════════════════════════════════════
 # ScriptableObject con API Key de Google Maps y Token de Cesium Ion.
