@@ -59,6 +59,13 @@ public class ConfiguradorAlsasua : MonoBehaviour
     private GameObject tilesetEdificios;
     private GameObject tilesetOSM;
 
+    // FIX PERF: caché del array de tilesets para OnGUI().
+    // Sin esto, FindObjectsByType se llama 60+ veces/seg (una por frame) → O(n) scan continuo.
+    // Se invalida explícitamente en CargarTilesets() y CorregirTilesetsExistentes().
+    private Cesium3DTileset[] _cachedTilesets;
+    private float             _tilesetCacheTime = -1f;
+    private const float       TILESET_CACHE_TTL = 5f; // refrescar cada 5s por si cambian en runtime
+
     // ============================================================
     //  INICIALIZACIÓN
     // ============================================================
@@ -404,6 +411,7 @@ public class ConfiguradorAlsasua : MonoBehaviour
             CargarEdificiosOSM();
         }
 
+        _cachedTilesets = null; // FIX: invalidar caché al añadir nuevos tilesets
         var tilesetsFinal = Object.FindObjectsByType<Cesium3DTileset>(FindObjectsSortMode.None);
         if (tilesetsFinal.Length == 0)
         {
@@ -505,8 +513,13 @@ public class ConfiguradorAlsasua : MonoBehaviour
 
     private void OnGUI()
     {
-        CesiumForUnity.Cesium3DTileset[] tilesets =
-            Object.FindObjectsByType<CesiumForUnity.Cesium3DTileset>(FindObjectsSortMode.None);
+        // FIX PERF: usar caché con TTL en vez de FindObjectsByType en cada frame.
+        if (_cachedTilesets == null || Time.realtimeSinceStartup - _tilesetCacheTime > TILESET_CACHE_TTL)
+        {
+            _cachedTilesets    = Object.FindObjectsByType<Cesium3DTileset>(FindObjectsSortMode.None);
+            _tilesetCacheTime  = Time.realtimeSinceStartup;
+        }
+        CesiumForUnity.Cesium3DTileset[] tilesets = _cachedTilesets;
 
         int activos = 0;
         foreach (var t in tilesets)

@@ -38,9 +38,10 @@ public class GestionTilesets : MonoBehaviour
     [Range(2f, 16f)]
     [SerializeField] private float sseCercano = 4f;   // Alta calidad
 
-    [Tooltip("SSE cuando el observador está lejos (> 500m) — menor detalle")]
+    [Tooltip("SSE cuando el observador está lejos (> 500m) — menor detalle.\n" +
+             "Reducido de 24 a 16: salto de LOD 6× → 4× para transición más suave y menos pop-in.")]
     [Range(8f, 64f)]
-    [SerializeField] private float sseLejano = 24f;   // Menor calidad
+    [SerializeField] private float sseLejano = 16f;   // MEJORA: reducido para menos pop-in de tiles
 
     [Header("═══ UMBRALES DE ALTURA (metros) ═══")]
     [SerializeField] private float alturaVistaCercana = 100f;
