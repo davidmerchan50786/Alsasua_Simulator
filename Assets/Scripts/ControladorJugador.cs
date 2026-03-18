@@ -1,5 +1,32 @@
 // Assets/Scripts/ControladorJugador.cs
-// Controlador jugador en TERCERA PERSONA — Spring Arm · Cuerpo procedural
+// Controlador jugador en TERCERA PERSONA — Spring Arm · Mixamo o Cuerpo procedural
+//
+// PERSONAJE MIXAMO (recomendado):
+//   1. Ve a mixamo.com (cuenta Adobe gratuita)
+//   2. Descarga un personaje en "FBX for Unity"
+//   3. Descarga estas animaciones (FBX for Unity, sin skin):
+//        · Idle           → guarda como Anim_Idle.fbx
+//        · Walking        → guarda como Anim_Andar.fbx
+//        · Running        → guarda como Anim_Correr.fbx
+//        · Crouching Idle → guarda como Anim_Agachado.fbx
+//        · Crouching Walk → guarda como Anim_AgachadoAndar.fbx
+//        · Jump           → guarda como Anim_Saltar.fbx
+//        · Rifle Aiming Idle → guarda como Anim_Apuntar.fbx
+//        · Dying          → guarda como Anim_Morir.fbx
+//   4. Importa todo en Assets/Personajes/
+//   5. Crea un Animator Controller con los parámetros que se listan abajo
+//   6. Arrastra el prefab del personaje y el controller al Inspector de este componente
+//
+// PARÁMETROS DEL ANIMATOR CONTROLLER:
+//   Float:   VelocidadMovimiento  (0=parado · 0.5=andar · 1=correr)
+//   Bool:    EstaAgachado
+//   Bool:    EstaApuntando
+//   Bool:    EstaEnSuelo
+//   Trigger: Saltar
+//   Trigger: Disparar
+//   Trigger: Morir
+//
+// Si no hay prefab asignado → se genera el cuerpo procedural de bloques (fallback).
 //
 // Controles:
 //   WASD       – Mover           SHIFT – Correr
@@ -49,6 +76,31 @@ public class ControladorJugador : MonoBehaviour
     //  SALUD
     // ═══════════════════════════════════════════════════════════════════════
 
+    // ═══════════════════════════════════════════════════════════════════════
+    //  PERSONAJE MIXAMO
+    // ═══════════════════════════════════════════════════════════════════════
+
+    [Header("═══ PERSONAJE MIXAMO ═══")]
+    [Tooltip("Prefab FBX descargado de mixamo.com.\n" +
+             "Si está vacío se genera el cuerpo procedural de bloques (para prototipado).")]
+    [SerializeField] private GameObject prefabPersonaje;
+
+    [Tooltip("Animator Controller con los estados de movimiento.\n" +
+             "Parámetros Float: VelocidadMovimiento (0=parado, 0.5=andar, 1=correr)\n" +
+             "Parámetros Bool: EstaAgachado, EstaApuntando, EstaEnSuelo\n" +
+             "Triggers: Saltar, Disparar, Morir")]
+    [SerializeField] private RuntimeAnimatorController controladorAnimaciones;
+
+    [Tooltip("Offset de posición del modelo respecto al CharacterController (ajustar si flota o se hunde)")]
+    [SerializeField] private Vector3 offsetModelo = Vector3.zero;
+
+    [Tooltip("Escala del modelo (algunos FBX de Mixamo vienen a 0.01 — ponlo a 1 si es correcto)")]
+    [SerializeField] private float escalaModelo = 1f;
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  SALUD
+    // ═══════════════════════════════════════════════════════════════════════
+
     [Header("═══ SALUD ═══")]
     [SerializeField] private int vida    = 100;
     [SerializeField] private int vidaMax = 100;
@@ -85,6 +137,20 @@ public class ControladorJugador : MonoBehaviour
 
     // Daño visual (flash pantalla)
     private float timerDano = 0f;
+
+    // ── Animator Mixamo ──────────────────────────────────────────────────
+    // Referencia al Animator del personaje instanciado (null si se usa cuerpo procedural)
+    private Animator animPersonaje;
+
+    // IDs de parámetros del Animator cacheados como hash → evita string lookup cada frame.
+    // Animator.StringToHash() es O(1) y el resultado es un int constante.
+    private static readonly int AnimVelocidad  = Animator.StringToHash("VelocidadMovimiento");
+    private static readonly int AnimAgachado   = Animator.StringToHash("EstaAgachado");
+    private static readonly int AnimApuntando  = Animator.StringToHash("EstaApuntando");
+    private static readonly int AnimEnSuelo    = Animator.StringToHash("EstaEnSuelo");
+    private static readonly int AnimSaltar     = Animator.StringToHash("Saltar");
+    private static readonly int AnimDisparar   = Animator.StringToHash("Disparar");
+    private static readonly int AnimMorir      = Animator.StringToHash("Morir");
 
     // BUG 2 FIX: lista de materiales creados con new Material() para destruirlos
     // explícitamente en OnDestroy() — Unity no los libera automáticamente.
@@ -135,6 +201,7 @@ public class ControladorJugador : MonoBehaviour
         GestionarCursor();
         MoverJugador();
         Gravedad();
+        ActualizarAnimaciones();
         if (timerDano > 0f) timerDano -= Time.deltaTime;
     }
 
@@ -187,11 +254,59 @@ public class ControladorJugador : MonoBehaviour
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    //  CUERPO PROCEDURAL (soldado táctico, visible desde 3ª persona)
+    //  PERSONAJE — MIXAMO O PROCEDURAL
     // ═══════════════════════════════════════════════════════════════════════
 
     private void CrearCuerpoJugador()
     {
+        // ── Opción A: Personaje Mixamo ───────────────────────────────────────
+        if (prefabPersonaje != null)
+        {
+            // Destruir modelo anterior si existía (p.ej. al reconfigurar en runtime)
+            var anterior = transform.Find("_PersonajeMixamo");
+            if (anterior != null) Destroy(anterior.gameObject);
+
+            var go = Instantiate(prefabPersonaje, transform);
+            go.name = "_PersonajeMixamo";
+            go.transform.localPosition = offsetModelo;
+            go.transform.localRotation = Quaternion.identity;
+            go.transform.localScale    = Vector3.one * escalaModelo;
+
+            // Desactivar colisionadores del modelo — CharacterController gestiona las colisiones.
+            // Sin esto el personaje puede teletransportarse o bloquearse en la geometría.
+            foreach (var col in go.GetComponentsInChildren<Collider>(true))
+                col.enabled = false;
+
+            // Buscar Animator en el prefab (puede estar en la raíz o en un hijo)
+            animPersonaje = go.GetComponent<Animator>()
+                         ?? go.GetComponentInChildren<Animator>();
+
+            if (animPersonaje != null)
+            {
+                // Asignar controller si está asignado en Inspector
+                if (controladorAnimaciones != null)
+                    animPersonaje.runtimeAnimatorController = controladorAnimaciones;
+
+                // CRÍTICO: desactivar Root Motion — el CharacterController maneja el movimiento.
+                // Con Root Motion activado, el Animator mueve el personaje directamente por su
+                // curva de animación → conflicto con cc.Move() → deslizamiento o bloqueo.
+                animPersonaje.applyRootMotion = false;
+
+                // Culling Mode: solo animar cuando el personaje es visible en cámara (optimización).
+                animPersonaje.cullingMode = AnimatorCullingMode.CullUpdateTransforms;
+
+                Debug.Log($"[Jugador] ✓ Personaje Mixamo '{prefabPersonaje.name}' instanciado con Animator.");
+            }
+            else
+            {
+                Debug.LogWarning("[Jugador] El prefab no tiene Animator. " +
+                                 "Añade un Animator Controller al FBX en el Inspector de Import.");
+            }
+
+            return; // No crear el cuerpo procedural
+        }
+
+        // ── Opción B: Cuerpo procedural (fallback sin prefab) ───────────────
         if (transform.Find("_Cuerpo") != null) return;  // ya existe
 
         var raiz = new GameObject("_Cuerpo");
@@ -349,7 +464,13 @@ public class ControladorJugador : MonoBehaviour
         }
 
         // Acciones de combate
-        if (m.leftButton.isPressed  && sistemaDisparo != null) sistemaDisparo.Disparar();
+        if (m.leftButton.isPressed && sistemaDisparo != null)
+        {
+            sistemaDisparo.Disparar();
+            // Trigger de disparo solo en el primer frame del clic (evita spam de trigger)
+            if (m.leftButton.wasPressedThisFrame)
+                animPersonaje?.SetTrigger(AnimDisparar);
+        }
         if (kb.fKey.wasPressedThisFrame && sistemaBombas != null) sistemaBombas.ColocarBomba();
         if (kb.gKey.wasPressedThisFrame && sistemaBombas != null) sistemaBombas.DetonarUltima();
     }
@@ -420,8 +541,11 @@ public class ControladorJugador : MonoBehaviour
         cc.Move(velVert * Time.deltaTime);
     }
 
-    private void Saltar() =>
+    private void Saltar()
+    {
         velVert.y = Mathf.Sqrt(fuerzaSalto * -2f * gravedad);
+        animPersonaje?.SetTrigger(AnimSaltar);
+    }
 
     private void ToggleAgacharse()
     {
@@ -489,9 +613,45 @@ public class ControladorJugador : MonoBehaviour
     private void Morir()
     {
         Debug.Log("[Jugador] ¡Has muerto!");
+        animPersonaje?.SetTrigger(AnimMorir);
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible   = true;
         enabled          = false;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  ANIMACIONES MIXAMO
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Empuja los parámetros del estado de movimiento al Animator del personaje Mixamo.
+    /// Se llama cada frame desde Update(). Si no hay Animator (cuerpo procedural), no hace nada.
+    /// </summary>
+    private void ActualizarAnimaciones()
+    {
+        if (animPersonaje == null) return;
+
+        // ── Velocidad normalizada para el Blend Tree de locomoción ──────────
+        // 0.0 = parado (Idle)
+        // 0.5 = andando (Walking) — al andar sin correr
+        // 1.0 = corriendo (Running)
+        // Usamos velHoriz.magnitude para que el blend refleje la velocidad REAL
+        // (no el input — si hay inercia, la transición es más suave).
+        float speedNorm;
+        float speed = velHoriz.magnitude;
+        if (estaCorriendo)
+            speedNorm = Mathf.InverseLerp(0f, velocidadCorrer, speed);
+        else
+            // Rango 0→andar mapea a 0→0.5 para que correr sea siempre >0.5
+            speedNorm = Mathf.InverseLerp(0f, velocidadAndar, speed) * 0.5f;
+
+        // dampTime=0.1s → transición suave entre estados sin pop brusco
+        animPersonaje.SetFloat(AnimVelocidad, speedNorm, 0.1f, Time.deltaTime);
+
+        // ── Estados booleanos ────────────────────────────────────────────────
+        animPersonaje.SetBool(AnimAgachado,  estaAgachado);
+        animPersonaje.SetBool(AnimApuntando, modoApuntar);
+        animPersonaje.SetBool(AnimEnSuelo,   estaEnSuelo);
     }
 
     // ═══════════════════════════════════════════════════════════════════════
