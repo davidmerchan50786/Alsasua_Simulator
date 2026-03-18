@@ -1,49 +1,69 @@
 // Assets/Editor/CreadorAnimatorMixamo.cs
 // Herramienta de Unity Editor que genera automáticamente un Animator Controller
-// para personajes Kenney/Mixamo con los parámetros que espera ControladorJugador.cs.
+// para personajes Kenney (CC0) + Mixamo con los parámetros que espera ControladorJugador.cs.
 //
 // CÓMO USAR:
 //   1. Asegúrate de haber ejecutado primero "Alsasua → Configurar Personajes Kenney"
 //   2. Menú Unity: Alsasua → Crear Animator Controller Mixamo
-//   3. Se crea Assets/Personajes/AnimatorMixamo.controller con clips asignados
-//   4. (Opcional) Sustituye los clips de fallback por animaciones reales en el Animator
-//   5. Arrastra el controller al Inspector del ControladorJugador → "Controlador Animaciones"
+//   3. Se crea Assets/Personajes/AnimatorMixamo.controller con TODOS los clips asignados
+//   4. Arrastra el controller al Inspector del ControladorJugador → "Controlador Animaciones"
 //
-// CLIPS ASIGNADOS AUTOMÁTICAMENTE (con fallbacks usando Kenney CC0):
-//   · Idle      → Anim_Idle.fbx
-//   · Correr    → Anim_Correr.fbx
-//   · Andar     → Anim_Correr.fbx a velocidad 0.6 (fallback hasta tener Walk real)
-//   · Agachado  → Anim_Idle.fbx   (fallback hasta tener CrouchIdle real)
-//   · AgachadoAndar → Anim_Correr.fbx (fallback)
-//   · Apuntando → Anim_Idle.fbx   (fallback hasta tener AimIdle real)
-//   · Saltar    → Anim_Saltar.fbx
-//   · Disparar  → Anim_Idle.fbx   (fallback: sin animación de disparo)
-//   · Morir     → Anim_Saltar.fbx (fallback: caída hacia atrás)
+// CLIPS ASIGNADOS AUTOMÁTICAMENTE:
+//   · Idle           → Anim_Idle.fbx          (Kenney CC0)
+//   · Andar          → Anim_Andar.fbx          (Mixamo: Walking, In Place)
+//   · Correr         → Anim_Correr.fbx         (Kenney CC0)
+//   · Agachado Idle  → Anim_Agachado.fbx       (Mixamo: Crouching Idle)
+//   · Agachado Andar → Anim_AgachadoAndar.fbx  (Mixamo: Walk Crouching Forward, In Place)
+//   · Apuntando      → Anim_Apuntar.fbx        (Mixamo: Rifle Aiming Idle)
+//   · Saltar         → Anim_Saltar.fbx         (Kenney CC0)
+//   · Disparar       → Anim_Disparar.fbx       (Mixamo: Shooting)
+//   · Morir          → Anim_Morir.fbx          (Mixamo: Dying)
 
 #if UNITY_EDITOR
 
+using System.Linq;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.Animations;
 
 public static class CreadorAnimatorMixamo
 {
-    private const string RUTA_OUTPUT      = "Assets/Personajes/AnimatorMixamo.controller";
-    private const string RUTA_ANIM_IDLE   = "Assets/Personajes/Animaciones/Anim_Idle.fbx";
-    private const string RUTA_ANIM_CORRER = "Assets/Personajes/Animaciones/Anim_Correr.fbx";
-    private const string RUTA_ANIM_SALTAR = "Assets/Personajes/Animaciones/Anim_Saltar.fbx";
+    private const string RUTA_OUTPUT           = "Assets/Personajes/AnimatorMixamo.controller";
+    private const string RUTA_ANIM_IDLE        = "Assets/Personajes/Animaciones/Anim_Idle.fbx";
+    private const string RUTA_ANIM_ANDAR       = "Assets/Personajes/Animaciones/Anim_Andar.fbx";
+    private const string RUTA_ANIM_CORRER      = "Assets/Personajes/Animaciones/Anim_Correr.fbx";
+    private const string RUTA_ANIM_AGACHADO    = "Assets/Personajes/Animaciones/Anim_Agachado.fbx";
+    private const string RUTA_ANIM_AGACH_ANDAR = "Assets/Personajes/Animaciones/Anim_AgachadoAndar.fbx";
+    private const string RUTA_ANIM_APUNTAR     = "Assets/Personajes/Animaciones/Anim_Apuntar.fbx";
+    private const string RUTA_ANIM_SALTAR      = "Assets/Personajes/Animaciones/Anim_Saltar.fbx";
+    private const string RUTA_ANIM_DISPARAR    = "Assets/Personajes/Animaciones/Anim_Disparar.fbx";
+    private const string RUTA_ANIM_MORIR       = "Assets/Personajes/Animaciones/Anim_Morir.fbx";
 
     [MenuItem("Alsasua/Crear Animator Controller Mixamo")]
     public static void CrearController()
     {
-        // ── 0. Cargar clips disponibles ──────────────────────────────────────
-        AnimationClip clipIdle   = CargarPrimerClip(RUTA_ANIM_IDLE);
-        AnimationClip clipCorrer = CargarPrimerClip(RUTA_ANIM_CORRER);
-        AnimationClip clipSaltar = CargarPrimerClip(RUTA_ANIM_SALTAR);
+        // ── 0. Cargar todos los clips ─────────────────────────────────────────
+        AnimationClip clipIdle       = CargarPrimerClip(RUTA_ANIM_IDLE);
+        AnimationClip clipAndar      = CargarPrimerClip(RUTA_ANIM_ANDAR);
+        AnimationClip clipCorrer     = CargarPrimerClip(RUTA_ANIM_CORRER);
+        AnimationClip clipAgachado   = CargarPrimerClip(RUTA_ANIM_AGACHADO);
+        AnimationClip clipAgachAndar = CargarPrimerClip(RUTA_ANIM_AGACH_ANDAR);
+        AnimationClip clipApuntar    = CargarPrimerClip(RUTA_ANIM_APUNTAR);
+        AnimationClip clipSaltar     = CargarPrimerClip(RUTA_ANIM_SALTAR);
+        AnimationClip clipDisparar   = CargarPrimerClip(RUTA_ANIM_DISPARAR);
+        AnimationClip clipMorir      = CargarPrimerClip(RUTA_ANIM_MORIR);
 
-        int cargados = (clipIdle   != null ? 1 : 0) +
-                       (clipCorrer != null ? 1 : 0) +
-                       (clipSaltar != null ? 1 : 0);
+        // Fallbacks: usar clips Kenney si los Mixamo no están disponibles aún
+        if (clipAndar      == null) clipAndar      = clipCorrer;
+        if (clipAgachado   == null) clipAgachado   = clipIdle;
+        if (clipAgachAndar == null) clipAgachAndar = clipCorrer;
+        if (clipApuntar    == null) clipApuntar    = clipIdle;
+        if (clipDisparar   == null) clipDisparar   = clipIdle;
+        if (clipMorir      == null) clipMorir      = clipSaltar;
+
+        int cargados = new[] { clipIdle, clipAndar, clipCorrer, clipAgachado,
+                               clipAgachAndar, clipApuntar, clipSaltar, clipDisparar, clipMorir }
+                       .Count(c => c != null);
 
         if (cargados == 0)
         {
@@ -90,13 +110,8 @@ public static class CreadorAnimatorMixamo
 
         // Umbral 0.0=Idle  0.5=Andar(walk)  1.0=Correr(run)
         blendLoco.AddChild(clipIdle,   0.0f);
-        blendLoco.AddChild(clipCorrer, 0.5f);   // fallback: misma animación a velocidad 0.6
+        blendLoco.AddChild(clipAndar,  0.5f);
         blendLoco.AddChild(clipCorrer, 1.0f);
-
-        // Velocidad para el slot "Andar": 60% del clip de correr = aspecto más lento
-        var childrenLoco = blendLoco.children;
-        childrenLoco[1].timeScale = 0.6f;
-        blendLoco.children = childrenLoco;
 
         stateLocomotion.motion = blendLoco;
 
@@ -108,16 +123,13 @@ public static class CreadorAnimatorMixamo
         blendAgachado.blendType              = BlendTreeType.Simple1D;
         blendAgachado.blendParameter         = "VelocidadMovimiento";
         blendAgachado.useAutomaticThresholds = false;
-        blendAgachado.AddChild(clipIdle,   0.0f);  // fallback: idle como agachado parado
-        blendAgachado.AddChild(clipCorrer, 0.5f);  // fallback: run como agachado andando
-        var childrenAg = blendAgachado.children;
-        childrenAg[1].timeScale = 0.5f;
-        blendAgachado.children = childrenAg;
+        blendAgachado.AddChild(clipAgachado,   0.0f);
+        blendAgachado.AddChild(clipAgachAndar, 0.5f);
         stateAgachado.motion = blendAgachado;
 
         // 3c. APUNTANDO
         AnimatorState stateApuntar = rootStateMachine.AddState("Apuntando", new Vector3(550f, 150f));
-        stateApuntar.motion = clipIdle;    // fallback: idle mientras apunta
+        stateApuntar.motion = clipApuntar;
 
         // 3d. SALTAR
         AnimatorState stateSaltar = rootStateMachine.AddState("Saltar", new Vector3(300f, 0f));
@@ -125,11 +137,11 @@ public static class CreadorAnimatorMixamo
 
         // 3e. DISPARAR
         AnimatorState stateDisparar = rootStateMachine.AddState("Disparar", new Vector3(550f, 0f));
-        stateDisparar.motion = clipIdle;  // fallback: idle (sin animación de disparo)
+        stateDisparar.motion = clipDisparar;
 
         // 3f. MORIR
         AnimatorState stateMorir = rootStateMachine.AddState("Morir", new Vector3(300f, -150f));
-        stateMorir.motion = clipSaltar;   // fallback: saltar invertido simula caída
+        stateMorir.motion = clipMorir;
 
         // ── 4. Estado por defecto ─────────────────────────────────────────────
         rootStateMachine.defaultState = stateLocomotion;
@@ -189,32 +201,22 @@ public static class CreadorAnimatorMixamo
         EditorGUIUtility.PingObject(controller);
 
         // ── 7. Informe en consola ─────────────────────────────────────────────
-        string estadoClips =
-            $"  · Idle    → {(clipIdle   != null ? RUTA_ANIM_IDLE   : "NO ENCONTRADO")}\n" +
-            $"  · Correr  → {(clipCorrer != null ? RUTA_ANIM_CORRER : "NO ENCONTRADO")}\n" +
-            $"  · Saltar  → {(clipSaltar != null ? RUTA_ANIM_SALTAR : "NO ENCONTRADO")}";
-
+        string C(AnimationClip c, string ruta) => c != null ? ruta : "⚠ NO ENCONTRADO";
         Debug.Log(
             "════════════════════════════════════════════════════\n" +
             "  [Alsasua] ✓ AnimatorMixamo.controller creado en:\n" +
             $"  {RUTA_OUTPUT}\n" +
             "  \n" +
-            "  CLIPS ASIGNADOS (Kenney CC0):\n" +
-            estadoClips + "\n" +
-            "  \n" +
-            "  FALLBACKS ACTIVOS (sustituir por clips reales si tienes):\n" +
-            "  · Andar       → Correr × 0.6  (reemplazar con clip Walk)\n" +
-            "  · Agachado    → Idle           (reemplazar con CrouchIdle)\n" +
-            "  · AgachadoAndar→ Correr × 0.5  (reemplazar con CrouchWalk)\n" +
-            "  · Apuntando   → Idle           (reemplazar con AimIdle)\n" +
-            "  · Disparar    → Idle           (reemplazar con ShootClip)\n" +
-            "  · Morir       → Saltar         (reemplazar con DeathClip)\n" +
-            "  \n" +
-            "  CÓMO AÑADIR ANIMACIONES REALES MÁS ADELANTE:\n" +
-            "  1. Descarga clips de Mixamo (formato FBX for Unity)\n" +
-            "  2. Ponlos en Assets/Personajes/Animaciones/\n" +
-            "  3. Doble clic en AnimatorMixamo.controller\n" +
-            "  4. Arrastra el clip al estado correspondiente\n" +
+            "  CLIPS ASIGNADOS:\n" +
+            $"  · Idle           → {C(clipIdle,       RUTA_ANIM_IDLE)}\n" +
+            $"  · Andar          → {C(clipAndar,      RUTA_ANIM_ANDAR)}\n" +
+            $"  · Correr         → {C(clipCorrer,     RUTA_ANIM_CORRER)}\n" +
+            $"  · Agachado Idle  → {C(clipAgachado,   RUTA_ANIM_AGACHADO)}\n" +
+            $"  · Agachado Andar → {C(clipAgachAndar, RUTA_ANIM_AGACH_ANDAR)}\n" +
+            $"  · Apuntando      → {C(clipApuntar,    RUTA_ANIM_APUNTAR)}\n" +
+            $"  · Saltar         → {C(clipSaltar,     RUTA_ANIM_SALTAR)}\n" +
+            $"  · Disparar       → {C(clipDisparar,   RUTA_ANIM_DISPARAR)}\n" +
+            $"  · Morir          → {C(clipMorir,      RUTA_ANIM_MORIR)}\n" +
             "  \n" +
             "  PASO SIGUIENTE:\n" +
             "  · Arrastra AnimatorMixamo.controller al campo\n" +
@@ -223,13 +225,11 @@ public static class CreadorAnimatorMixamo
         );
 
         EditorUtility.DisplayDialog(
-            $"✓ Animator Controller creado ({cargados}/3 clips)",
-            "AnimatorMixamo.controller generado en Assets/Personajes/\n\n" +
-            "Los clips disponibles (Idle, Correr, Saltar) están asignados.\n" +
-            "Los estados sin clip real usan fallbacks funcionales.\n\n" +
+            $"✓ Animator Controller creado ({cargados}/9 clips)",
+            $"AnimatorMixamo.controller generado con {cargados}/9 clips asignados.\n\n" +
             "Arrastra el controller al Inspector del ControladorJugador\n" +
             "→ campo 'Controlador Animaciones'.\n\n" +
-            "Consulta la consola para detalles y cómo mejorar los clips.",
+            "Consulta la consola para ver el detalle de cada clip.",
             "OK"
         );
     }
