@@ -112,9 +112,13 @@ public class ConfiguradorAlsasua : MonoBehaviour
         }
 
         // Asegurar Far Clipping en todas las cámaras (ControladorJugador puede haberlo sobreescrito)
+        // FIX: umbral 2_000f en vez de 500_000f — solo corregir cámaras en el default de Unity (1000m).
+        // ControladorPostProcesado pone 120_000m deliberadamente para mejor ratio z-buffer (1:400k).
+        // Con el umbral antiguo (500_000), 120_000 < 500_000 → se sobreescribía a 1_000_000m
+        // deshaciendo la mejora de z-fighting. Con 2_000m solo tocamos cámaras sin configurar.
         foreach (var cam in Object.FindObjectsByType<Camera>(FindObjectsSortMode.None))
         {
-            if (cam.farClipPlane < 500_000f)
+            if (cam.farClipPlane < 2_000f)
             {
                 cam.farClipPlane = 1_000_000f;
                 Debug.Log($"[Alsasua] ✓ Far clip corregido en '{cam.gameObject.name}' post-start.");
@@ -257,7 +261,7 @@ public class ConfiguradorAlsasua : MonoBehaviour
     private void CorregirCamaras()
     {
         const float FAR_CESIUM  = 1_000_000f;   // 1.000 km — recomendado por Cesium
-        const float NEAR_SUELO  = 0.1f;         // 10 cm — evita corte al nivel del suelo
+        const float NEAR_SUELO  = 0.3f;         // 30 cm — consistente con ControladorPostProcesado (ratio z-buffer 1:400k)
 
         // ── Skybox: si no hay ninguno asignado, la cámara ve el cielo NEGRO ────
         if (RenderSettings.skybox == null)
