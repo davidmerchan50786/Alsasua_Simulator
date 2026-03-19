@@ -107,6 +107,10 @@ public class ControladorJugador : MonoBehaviour
 
     public int  Vida       => vida;
     public bool EstaMuerto => vida <= 0;
+    // BUG 15b FIX: exponer la cámara de 3ª persona para SistemaExplosion.SacudirCamara().
+    // ConfigurarCamara() desacopla camaraTP del jugador → GetComponentInChildren<Camera>()
+    // siempre devuelve null desde fuera. Esta propiedad da acceso directo sin búsqueda.
+    public Camera CamaraTP => camaraTP;
 
     // ═══════════════════════════════════════════════════════════════════════
     //  ESTADO INTERNO

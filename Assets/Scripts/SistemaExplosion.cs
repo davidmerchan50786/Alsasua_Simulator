@@ -243,8 +243,10 @@ public class SistemaExplosion : MonoBehaviour
 
         float intensidad = 1f - dist / (radio * 4f);
 
-        // Buscar la cámara en la jerarquía del jugador (CamaraFPS, etc.)
-        Camera camJugador = jugador.GetComponentInChildren<Camera>();
+        // BUG 15b FIX: ConfigurarCamara() desacopla camaraTP del jugador bajo CesiumGeoreference,
+        // por lo que GetComponentInChildren<Camera>() siempre devolvía null → shake nunca aplicado.
+        // Solución: usar la propiedad pública CamaraTP expuesta por ControladorJugador.
+        Camera camJugador = jugador.CamaraTP;
         if (camJugador == null) return;
 
         var sacudida = camJugador.GetComponent<SacudidaCamara>();

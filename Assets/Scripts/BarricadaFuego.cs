@@ -3,6 +3,7 @@
 // Se crea por código, no necesita assets externos
 
 using UnityEngine;
+using System.Collections.Generic;
 
 public class BarricadaFuego : MonoBehaviour
 {
@@ -11,6 +12,11 @@ public class BarricadaFuego : MonoBehaviour
     [SerializeField] private float intensidadFuego = 1f;  // 0-1
     [SerializeField] private int   vida            = 200;
     [SerializeField] private float radioBloqueo    = 2.5f;
+
+    // BUG 5 FIX: rastrear materiales creados con new Material() para destruirlos en OnDestroy().
+    // MatURP() era static → los materiales no pertenecían a ninguna instancia y Unity no los
+    // liberaba al salir del modo Play en el Editor, acumulando leaks cada vez que se entraba.
+    private readonly List<Material> _matsCreados = new List<Material>();
 
     private ParticleSystem psFuego;
     private ParticleSystem psHumo;
@@ -62,7 +68,8 @@ public class BarricadaFuego : MonoBehaviour
     // Crea un Material compatible con URP (evita el magenta por shader incorrecto)
     // BUG FIX: null guard — new Material(null) lanza NullReferenceException si ningún shader está disponible.
     // Fallback en cadena: Lit → Unlit → Standard → InternalErrorShader (shader de error interno de Unity).
-    private static Material MatURP(Color color)
+    // BUG 5 FIX: convertido de static a instancia para poder registrar en _matsCreados.
+    private Material MatURP(Color color)
     {
         var shader = Shader.Find("Universal Render Pipeline/Lit")
                   ?? Shader.Find("Universal Render Pipeline/Unlit")
@@ -74,7 +81,17 @@ public class BarricadaFuego : MonoBehaviour
             shader = Shader.Find("Hidden/InternalErrorShader");
             if (shader == null) return null;
         }
-        return new Material(shader) { color = color };
+        var mat = new Material(shader) { color = color };
+        _matsCreados.Add(mat);
+        return mat;
+    }
+
+    private void OnDestroy()
+    {
+        // BUG 5 FIX: destruir todas las instancias de material creadas para evitar leaks en el Editor.
+        foreach (var m in _matsCreados)
+            if (m != null) Object.Destroy(m);
+        _matsCreados.Clear();
     }
 
     private void CrearCaja(Vector3 pos, Vector3 scale, Color color)
@@ -85,7 +102,8 @@ public class BarricadaFuego : MonoBehaviour
         go.transform.localScale    = scale;
         go.transform.localRotation = Quaternion.Euler(0f, Random.Range(-5f, 5f), 0f);
         var matCaja = MatURP(color);
-        if (matCaja != null) go.GetComponent<Renderer>().material = matCaja;
+        // BUG 5 FIX: sharedMaterial asigna sin crear una segunda instancia de material.
+        if (matCaja != null) go.GetComponent<Renderer>().sharedMaterial = matCaja;
 
         // Rigidbody para que las explosiones la muevan
         // FreezeRotationX/Z evita que las cajas se vuelquen solas al iniciarse
@@ -101,7 +119,8 @@ public class BarricadaFuego : MonoBehaviour
         go.transform.localPosition = pos;
         go.transform.localScale    = scale;
         var matCil = MatURP(color);
-        if (matCil != null) go.GetComponent<Renderer>().material = matCil;
+        // BUG 5 FIX: ídem.
+        if (matCil != null) go.GetComponent<Renderer>().sharedMaterial = matCil;
 
         var rb = go.AddComponent<Rigidbody>();
         rb.mass        = 15f;

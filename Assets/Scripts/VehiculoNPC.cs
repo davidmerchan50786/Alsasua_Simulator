@@ -167,11 +167,15 @@ public class VehiculoNPC : MonoBehaviour
         if (destruido) return;
         vida -= cantidad;
 
-        // BUG 17 FIX: usar la referencia cacheada en Awake() en vez de buscar el renderer cada vez.
+        // FIX: cachear la referencia al material en variable local para evitar dos accesos a
+        // .material por llamada. Unity crea la instancia per-renderer en el primer acceso y la
+        // devuelve en el segundo, pero el doble acceso añade overhead y confunde al lector.
         if (rendererPrincipal != null)
-            rendererPrincipal.material.color = Color.Lerp(
-                rendererPrincipal.material.color, Color.black,
+        {
+            var mat = rendererPrincipal.material;
+            mat.color = Color.Lerp(mat.color, Color.black,
                 0.3f * ((float)(vidaMax - vida) / vidaMax));
+        }
 
         if (vida <= 0) Destruir();
     }
@@ -184,9 +188,14 @@ public class VehiculoNPC : MonoBehaviour
         // Explosión del vehículo
         SistemaExplosion.Explotar(transform.position + Vector3.up, 8f, 400f, 80);
 
-        // Oscurecer completamente
+        // Oscurecer completamente — FIX: usar MaterialPropertyBlock para no crear instancias
+        // de material por cada sub-renderer del vehículo (carrocería + techo + 4 ruedas = 6).
+        // MaterialPropertyBlock es per-renderer, sin creación de Material ni GC.
+        var pb = new MaterialPropertyBlock();
+        pb.SetColor("_BaseColor", new Color(0.08f, 0.06f, 0.05f));
+        pb.SetColor("_Color",     new Color(0.08f, 0.06f, 0.05f));  // fallback para shader Standard
         foreach (var r in GetComponentsInChildren<Renderer>())
-            r.material.color = new Color(0.08f, 0.06f, 0.05f);
+            r.SetPropertyBlock(pb);
 
         // Desactivar física controlada
         rb.constraints = RigidbodyConstraints.None;

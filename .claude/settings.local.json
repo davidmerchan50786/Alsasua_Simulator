@@ -22,7 +22,20 @@
       "Bash(powershell -Command \"Get-Process ''Unity Hub'' -ErrorAction SilentlyContinue | Select-Object Id | Format-Table -HideTableHeaders\")",
       "Bash(powershell -Command \"Get-Process ''Unity.Licensing.Client'' -ErrorAction SilentlyContinue | Select-Object Id,StartTime\")",
       "Bash(\"C:/Program Files/Unity/Hub/Editor/6000.3.10f1/Editor/Data/Resources/Licensing/Client/Unity.Licensing.Client.exe\" --showEntitlements)",
-      "Bash(echo \"Exit: $?\")"
+      "Bash(echo \"Exit: $?\")",
+      "Bash(grep -vP '\\(^\\\\s*//\\)|\\(^\\\\s*\\\\*\\)|\\(^\\\\s*#\\)|\\(^\\\\s*\\\\[\\)' )",
+      "Bash(grep -vP '^\\\\s*\\(class|struct|interface|enum|namespace|using|public|private|protected|internal|override|virtual|abstract|static|void|//|/\\\\*|\\\\*|#region|#endregion|#pragma|#if|#else|#endif\\)' )",
+      "Bash(done)",
+      "Bash(grep -vE '\\(//|/\\\\*|\\\\*|#\\)' )",
+      "Bash(grep -vE '\\(//|for\\\\s*\\\\\\(\\)')",
+      "Bash(__NEW_LINE_b88ea3af24dba10d__ echo \"\")",
+      "Bash(grep -vE '^\\\\s*//|^\\\\s*\\\\*')",
+      "Bash(git add Assets/Editor/SetupEscenaAlsasua.cs Assets/Scripts/BarricadaFuego.cs Assets/Scripts/ControladorJugador.cs Assets/Scripts/ControladorPostProcesado.cs Assets/Scripts/EnemigoPatrulla.cs Assets/Scripts/GestionTilesets.cs Assets/Scripts/SistemaAtmosfera.cs Assets/Scripts/SistemaBombas.cs Assets/Scripts/SistemaClima.cs Assets/Scripts/SistemaDisparo.cs Assets/Scripts/SistemaExplosion.cs Assets/Scripts/VehiculoNPC.cs \"Assets/TexturizadorEdificiosReales.cs\" .gitignore)",
+      "Bash(git rm --cached \"ComputeCommandBuffer.cs\" \"IBaseCommandBuffer.cs\" \"IComputeCommandBuffer.cs\" \"IRasterCommandBuffer.cs\" \"IUnsafeCommandBuffer.cs\" \"RasterCommandBuffer.cs\" \"UnsafeCommandBuffer.cs\")",
+      "Bash(git add -u)",
+      "Bash(git restore --staged .claude/settings.local.json)",
+      "Bash(git commit:*)",
+      "Bash(git push origin main)"
     ]
   }
 }

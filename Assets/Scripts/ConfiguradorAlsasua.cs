@@ -70,6 +70,10 @@ public class ConfiguradorAlsasua : MonoBehaviour
     // (OnGUI se llama 2+ veces/frame). Cacheamos la referencia una sola vez en Start().
     private Camera _camaraHUD;
 
+    // BUG 6 FIX: material del skybox creado en CorregirCamaras() — guardarlo para destruirlo
+    // en OnDestroy(). Sin esto queda como objeto huérfano en memoria al salir del modo Play.
+    private Material _skyboxMat;
+
     // ============================================================
     //  INICIALIZACIÓN
     // ============================================================
@@ -277,12 +281,13 @@ public class ConfiguradorAlsasua : MonoBehaviour
             var skyShader = Shader.Find("Skybox/Procedural");
             if (skyShader != null)
             {
-                var skyMat = new Material(skyShader);
-                skyMat.SetFloat("_AtmosphereThickness", 1.1f);
-                skyMat.SetColor("_SkyTint", new Color(0.50f, 0.65f, 0.82f));
-                skyMat.SetColor("_GroundColor", new Color(0.37f, 0.35f, 0.32f));
-                skyMat.SetFloat("_Exposure", 1.3f);
-                RenderSettings.skybox = skyMat;
+                // BUG 6 FIX: guardar la referencia en _skyboxMat para destruirla en OnDestroy().
+                _skyboxMat = new Material(skyShader);
+                _skyboxMat.SetFloat("_AtmosphereThickness", 1.1f);
+                _skyboxMat.SetColor("_SkyTint", new Color(0.50f, 0.65f, 0.82f));
+                _skyboxMat.SetColor("_GroundColor", new Color(0.37f, 0.35f, 0.32f));
+                _skyboxMat.SetFloat("_Exposure", 1.3f);
+                RenderSettings.skybox = _skyboxMat;
                 DynamicGI.UpdateEnvironment();
                 Debug.Log("[Alsasua] Skybox procedimental activado.");
             }
@@ -561,6 +566,25 @@ public class ConfiguradorAlsasua : MonoBehaviour
             string fisica = t.createPhysicsMeshes ? "[physics]" : "";
             GUI.Label(new Rect(12f, 50f + i * 20f, 370f, 20f),
                 $"  {t.gameObject.name} [{src}] {fisica}");
+        }
+    }
+
+    // ============================================================
+    //  LIMPIEZA
+    // ============================================================
+
+    private void OnDestroy()
+    {
+        // BUG 6 FIX: destruir el material del skybox que creamos por código.
+        // RenderSettings.skybox persiste más allá del modo Play si no se limpia aquí;
+        // al volver a entrar en Play, Unity encuentra el material destruido y la cámara
+        // vuelve a verse negra, forzando otro CreateMaterial() innecesario.
+        if (_skyboxMat != null)
+        {
+            if (RenderSettings.skybox == _skyboxMat)
+                RenderSettings.skybox = null;
+            Object.Destroy(_skyboxMat);
+            _skyboxMat = null;
         }
     }
 
