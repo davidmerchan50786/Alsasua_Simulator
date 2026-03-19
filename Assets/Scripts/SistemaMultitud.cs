@@ -116,8 +116,9 @@ public sealed class SistemaMultitud : MonoBehaviour
 
     // Lógica
     private float      _acumLogica;
-    private const float TICK_LOGICA  = 1f / 30f;      // actualizar flocking a 30 FPS
-    private int        _indiceRaycast;                 // puntero circular para muestreo de suelo
+    private const float TICK_LOGICA         = 1f / 30f;  // actualizar flocking a 30 FPS
+    private int         _indiceRaycast;                   // puntero circular para muestreo continuo
+    private const int   RAYCASTS_POR_FRAME  = 50;         // raycasts de corrección inicial por frame
 
     // ══════════════════════════════════════════════════════════════════════
     //  UNITY LIFECYCLE
@@ -140,6 +141,14 @@ public sealed class SistemaMultitud : MonoBehaviour
         InicializarGrid();
         InicializarAgentes();
         CrearPancarta();
+    }
+
+    private void Start()
+    {
+        // Lanzar coroutine de corrección de alturas DESPUÉS de Awake (primer frame ya renderizado).
+        // MuestrearSueloPorTurno() tarda 1000 frames en corregir todos los agentes;
+        // esta coroutine lo hace en ~20 frames haciendo RAYCASTS_POR_FRAME/frame.
+        StartCoroutine(CorregirAlturasIniciales());
     }
 
     private void Update()
@@ -287,10 +296,12 @@ public sealed class SistemaMultitud : MonoBehaviour
                 + derecha * offsetX
                 + dir     * offsetZ;
 
-            // Muestrear altura de suelo desde el punto inicial
+            // FIX HITCH: NO hacer raycast aquí. 1000 raycasts síncronos en Awake() causaban
+            // un bloqueo de 80-200ms en el primer frame. En su lugar, los agentes parten a
+            // posInicial.y y CorregirAlturasIniciales() (coroutine desde Start()) los corrige
+            // distribuyendo RAYCASTS_POR_FRAME raycasts por frame → 20 frames / ~333ms a 60fps.
+            // MuestrearSueloPorTurno() sigue activo para corrección continua de topografía.
             float alturaY = posInicial.y;
-            if (Physics.Raycast(posInicial + Vector3.up * 10f, Vector3.down, out RaycastHit hit, 50f))
-                alturaY = hit.point.y;
 
             bool esPortador = (i < portadoresPancarta);
 
@@ -467,6 +478,31 @@ public sealed class SistemaMultitud : MonoBehaviour
         ref AgentData ag = ref _agentes[_indiceRaycast];
         if (Physics.Raycast(ag.posicion + Vector3.up * 8f, Vector3.down, out RaycastHit hit, 30f))
             ag.alturaY = hit.point.y;
+    }
+
+    /// <summary>
+    /// Corrección inicial de alturas distribuida en frames.
+    /// Hace RAYCASTS_POR_FRAME raycasts/frame → completa en ~20 frames (≈333ms a 60fps)
+    /// en lugar del bloqueo de 80-200ms que causaban 1000 raycasts síncronos en Awake().
+    /// MuestrearSueloPorTurno() continúa activo para corrección de topografía en runtime.
+    /// </summary>
+    private System.Collections.IEnumerator CorregirAlturasIniciales()
+    {
+        for (int i = 0; i < _numAgentes; i++)
+        {
+            if (Physics.Raycast(_agentes[i].posicion + Vector3.up * 10f, Vector3.down,
+                                out RaycastHit hit, 60f))
+            {
+                _agentes[i].posicion.y = hit.point.y;
+                _agentes[i].alturaY    = hit.point.y;
+            }
+
+            // Ceder el control al motor cada RAYCASTS_POR_FRAME raycasts.
+            // Ej: 1000 agentes / 50 raycasts por frame = 20 yields = 20 frames ≈ 333ms @ 60fps.
+            if ((i + 1) % RAYCASTS_POR_FRAME == 0)
+                yield return null;
+        }
+        Debug.Log("[Multitud] Alturas iniciales corregidas sin hitch de carga.");
     }
 
     // ══════════════════════════════════════════════════════════════════════
