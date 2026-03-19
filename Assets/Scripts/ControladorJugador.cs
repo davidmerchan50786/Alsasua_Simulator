@@ -112,6 +112,27 @@ public class ControladorJugador : MonoBehaviour
     // siempre devuelve null desde fuera. Esta propiedad da acceso directo sin búsqueda.
     public Camera CamaraTP => camaraTP;
 
+    // Estado de movimiento expuesto para SistemaDisparo (dispersión dinámica) y HUDJugador
+    public bool  EstaAgachadoP   => estaAgachado;
+    public bool  EstaCorriendoP  => estaCorriendo;
+    public bool  EstaEnSueloP    => estaEnSuelo;
+    public bool  EstaApuntandoP  => modoApuntar;
+    /// <summary>Velocidad horizontal real del CharacterController (m/s).</summary>
+    public float VelocidadHoriz  => velHoriz.magnitude;
+
+    // Propiedades para HUDJugador (Canvas UI)
+    public int   VidaMax     => vidaMax;
+    public float RatioVida   => (float)vida / Mathf.Max(1, vidaMax);
+    /// <summary>Intensidad del flash de daño (0 = sin flash, >0 = activo). Decrece por sí solo.</summary>
+    public float FlashDano   => timerDano;
+    /// <summary>Texto de estado actual del jugador para el HUD.</summary>
+    public string TextoEstado => EstaMuerto                          ? "─ MUERTO ─"
+                               : estaAgachado                        ? "AGACHADO"
+                               : modoApuntar                         ? "APUNTANDO"
+                               : estaCorriendo                       ? "CORRIENDO"
+                               : inputMovimiento.magnitude > 0.05f   ? "ANDANDO"
+                               : "EN GUARDIA";
+
     // ═══════════════════════════════════════════════════════════════════════
     //  ESTADO INTERNO
     // ═══════════════════════════════════════════════════════════════════════
@@ -141,6 +162,9 @@ public class ControladorJugador : MonoBehaviour
 
     // Daño visual (flash pantalla)
     private float timerDano = 0f;
+
+    // Pasos de audio
+    private float _timerPaso = 0f;
 
     // ── Animator Mixamo ──────────────────────────────────────────────────
     // Referencia al Animator del personaje instanciado (null si se usa cuerpo procedural)
@@ -508,6 +532,7 @@ public class ControladorJugador : MonoBehaviour
 
         velHoriz = Vector3.Lerp(velHoriz, moveDir * vel, suavidadMovimiento * Time.deltaTime);
         cc.Move(velHoriz * Time.deltaTime);
+        ActualizarPasos();
 
         // ── Rotar jugador ───────────────────────────────────────────────────
         if (modoApuntar)
@@ -559,6 +584,21 @@ public class ControladorJugador : MonoBehaviour
         cc.center = new Vector3(0f, h * 0.5f, 0f);
         if (pivotCam != null)
             pivotCam.localPosition = new Vector3(0f, estaAgachado ? alturaHombro * 0.55f : alturaHombro, 0f);
+    }
+
+    // ── Pasos de audio ───────────────────────────────────────────────────
+    private void ActualizarPasos()
+    {
+        if (!estaEnSuelo || velHoriz.magnitude < 0.5f) { _timerPaso = 0f; return; }
+
+        float intervalo = estaCorriendo ? 0.35f : 0.55f;
+        _timerPaso -= Time.deltaTime;
+        if (_timerPaso > 0f) return;
+
+        AudioManager.I?.Play(
+            estaCorriendo ? AudioManager.Clip.PasoCorrer : AudioManager.Clip.PasoNormal,
+            transform.position);
+        _timerPaso = intervalo;
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -658,73 +698,5 @@ public class ControladorJugador : MonoBehaviour
         animPersonaje.SetBool(AnimEnSuelo,   estaEnSuelo);
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    //  HUD
-    // ═══════════════════════════════════════════════════════════════════════
-
-    private void OnGUI()
-    {
-        // ── Flash de daño (borde rojo al recibir impacto) ────────────────────
-        if (timerDano > 0f)
-        {
-            GUI.color = new Color(1f, 0f, 0f, Mathf.Clamp01(timerDano * 2.5f) * 0.55f);
-            GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), Texture2D.whiteTexture);
-        }
-
-        // ── Barra de vida ────────────────────────────────────────────────────
-        float barW = 220f, barH = 18f, x = 20f, y = Screen.height - 48f;
-        float ratio = (float)vida / vidaMax;
-
-        // Fondo
-        GUI.color = new Color(0f, 0f, 0f, 0.70f);
-        GUI.DrawTexture(new Rect(x - 2f, y - 2f, barW + 4f, barH + 4f), Texture2D.whiteTexture);
-
-        // Relleno (verde → rojo según vida)
-        GUI.color = Color.Lerp(new Color(0.85f, 0.1f, 0.1f), new Color(0.1f, 0.80f, 0.2f), ratio);
-        GUI.DrawTexture(new Rect(x, y, barW * ratio, barH), Texture2D.whiteTexture);
-
-        // Texto
-        GUI.color = Color.white;
-        GUI.Label(new Rect(x + 6f, y + 1f, barW, barH), $"❤  {vida} / {vidaMax}");
-
-        // Estado del jugador
-        string estado = EstaMuerto     ? "─ MUERTO ─"
-                      : estaAgachado   ? "AGACHADO"
-                      : modoApuntar    ? "APUNTANDO"
-                      : estaCorriendo  ? "CORRIENDO"
-                      : inputMovimiento.magnitude > 0.05f ? "ANDANDO"
-                      : "EN GUARDIA";
-        GUI.color = new Color(1f, 1f, 0.8f, 0.9f);
-        GUI.Label(new Rect(x, y - 22f, 260f, 20f), estado);
-
-        // ── Mira central ─────────────────────────────────────────────────────
-        float cx = Screen.width * 0.5f, cy = Screen.height * 0.5f;
-        if (modoApuntar)
-        {
-            // Cruz de apuntado
-            GUI.color = new Color(1f, 1f, 1f, 0.95f);
-            GUI.DrawTexture(new Rect(cx - 14f, cy - 1f, 28f, 2f), Texture2D.whiteTexture);
-            GUI.DrawTexture(new Rect(cx - 1f, cy - 14f, 2f, 28f), Texture2D.whiteTexture);
-            // Hueco central (para que no oculte el objetivo)
-            GUI.color = new Color(0f, 0f, 0f, 0f);
-            GUI.DrawTexture(new Rect(cx - 3f, cy - 3f, 6f, 6f), Texture2D.whiteTexture);
-        }
-        else
-        {
-            // Punto de referencia (3ª persona)
-            GUI.color = new Color(1f, 1f, 1f, 0.75f);
-            GUI.DrawTexture(new Rect(cx - 2f, cy - 2f, 5f, 5f), Texture2D.whiteTexture);
-        }
-
-        // ── Panel de controles (esquina superior izquierda) ──────────────────
-        GUI.color = new Color(0f, 0f, 0f, 0.50f);
-        GUI.DrawTexture(new Rect(14f, 14f, 210f, 112f), Texture2D.whiteTexture);
-        GUI.color = new Color(1f, 1f, 0.85f, 0.85f);
-        GUI.Label(new Rect(20f, 18f, 206f, 112f),
-            "WASD · Mover         SHIFT · Correr\n"  +
-            "SPACE · Saltar          C · Agacharse\n" +
-            "RMB · Apuntar      LMB · Disparar\n"    +
-            "F · Colocar bomba   G · Detonar\n"       +
-            "ESC · Cursor libre");
-    }
+    // OnGUI() eliminado — HUDJugador.cs gestiona el HUD vía Canvas uGUI (sin legacy OnGUI).
 }
