@@ -121,6 +121,12 @@ public class SistemaClima : MonoBehaviour
     // realiza una búsqueda de escena (O(n)) que es innecesaria ya que no cambia.
     private Camera camPrincipal;
 
+    // BUG FIX LEAK: rastrear materiales de partículas creados en runtime para destruirlos
+    // en OnDestroy(). new Material() + rend.material = mat (setter) NO son auto-destruidos
+    // por Unity cuando el renderer o el GO se destruyen — requieren Destroy() explícito.
+    private Material _matLluvia;
+    private Material _matBruma;
+
     // BUG 24 FIX: evitar recalcular el ángulo de lluvia cada frame si el viento no cambió.
     private float anguloVientoPrev    = float.MaxValue;
     private float direccionVientoPrev = float.MaxValue;
@@ -517,7 +523,8 @@ public class SistemaClima : MonoBehaviour
         rend.renderMode   = ParticleSystemRenderMode.Stretch;
         rend.velocityScale = 0.04f;
         rend.lengthScale   = 2.0f;
-        rend.material      = CrearMaterialLluvia(new Color(0.80f, 0.88f, 0.95f, 0.65f));
+        _matLluvia         = CrearMaterialLluvia(new Color(0.80f, 0.88f, 0.95f, 0.65f)); // BUG FIX LEAK: guardar ref para OnDestroy
+        rend.material      = _matLluvia;
         rend.sortingOrder  = 10;
 
         Debug.Log("[Clima] Sistema de lluvia creado.");
@@ -570,7 +577,8 @@ public class SistemaClima : MonoBehaviour
         // ── Renderizado: billboard suave ──────────────────────────────────
         var rend = psBruma.GetComponent<ParticleSystemRenderer>();
         rend.renderMode  = ParticleSystemRenderMode.Billboard;
-        rend.material    = CrearMaterialBruma(new Color(0.85f, 0.87f, 0.90f, 0.12f));
+        _matBruma        = CrearMaterialBruma(new Color(0.85f, 0.87f, 0.90f, 0.12f)); // BUG FIX LEAK: guardar ref para OnDestroy
+        rend.material    = _matBruma;
         rend.sortingOrder = 5;
 
         Debug.Log("[Clima] Sistema de bruma creado.");
@@ -640,6 +648,19 @@ public class SistemaClima : MonoBehaviour
             nuevo = EstadoClima.Nublado;
 
         SetClima(nuevo, Random.Range(8f, 20f));
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  CLEANUP
+    // ═══════════════════════════════════════════════════════════════════════
+
+    private void OnDestroy()
+    {
+        // BUG FIX LEAK: destruir explícitamente los materiales runtime de lluvia y bruma.
+        // Fueron asignados via rend.material = _mat (setter); Unity NO los destruye al
+        // destruir el renderer o el GameObject — requieren Destroy() explícito.
+        if (_matLluvia != null) { Object.Destroy(_matLluvia); _matLluvia = null; }
+        if (_matBruma  != null) { Object.Destroy(_matBruma);  _matBruma  = null; }
     }
 
     // ═══════════════════════════════════════════════════════════════════════

@@ -202,6 +202,22 @@ public class SistemaBombas : MonoBehaviour
     }
 
     // ═══════════════════════════════════════════════════════════════════════
+    //  CLEANUP
+    // ═══════════════════════════════════════════════════════════════════════
+
+    private void OnDestroy()
+    {
+        // BUG FIX: _matBombaCache es estático → persiste en memoria al salir del modo Play
+        // en el Editor (los campos estáticos de MonoBehaviours NO se resetean al recargar).
+        // Destruirlo y nullificarlo aquí garantiza que el GC lo pueda recoger.
+        if (_matBombaCache != null)
+        {
+            Object.Destroy(_matBombaCache);
+            _matBombaCache = null;
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
     //  TIMER AUTOMÁTICO
     // ═══════════════════════════════════════════════════════════════════════
 

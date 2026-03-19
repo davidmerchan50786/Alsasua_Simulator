@@ -197,11 +197,17 @@ public class SistemaDisparo : MonoBehaviour
         CrearBurst(punto, new Color(0.7f, 0.6f, 0.5f), 0.06f, 12, 0.3f);
 
         // Marca de bala (pequeña esfera negra)
+        // FIX: usar MaterialPropertyBlock en lugar de renderer.material para no crear
+        // una instancia de Material per-decal. A 8 disparos/seg, renderer.material
+        // generaría ~480 instancias en 60 seg → presión sobre el GC innecesaria.
         var marca = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         marca.transform.position   = punto + normal * 0.01f;
         marca.transform.localScale = Vector3.one * 0.04f;
-        var mat = marca.GetComponent<Renderer>().material;
-        mat.color = new Color(0.1f, 0.1f, 0.1f);
+        var rend = marca.GetComponent<Renderer>();
+        var pb   = new MaterialPropertyBlock();
+        pb.SetColor("_BaseColor", new Color(0.1f, 0.1f, 0.1f));
+        pb.SetColor("_Color",     new Color(0.1f, 0.1f, 0.1f));
+        rend.SetPropertyBlock(pb);
         Destroy(marca.GetComponent<Collider>());
         Destroy(marca, 8f);
     }

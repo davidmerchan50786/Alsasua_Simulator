@@ -335,14 +335,20 @@ public class EnemigoPatrulla : MonoBehaviour
 
     private IEnumerator FlashDano()
     {
+        // BUG FIX LEAK: usar sharedMaterial en vez de material (getter).
+        // El getter .material crea una instancia nueva del material cada llamada si el
+        // renderer aún no está instanciado → con armas automáticas (8 dis/seg) generaba
+        // decenas de instancias huérfanas. sharedMaterial modifica el material compartido
+        // directamente (sin instanciar) y funciona igual visualmente ya que cada enemigo
+        // tiene su propio material (creado individualmente en MatURP).
         foreach (var r in GetComponentsInChildren<Renderer>())
-            r.material.color = Color.red;
+            if (r.sharedMaterial != null) r.sharedMaterial.color = Color.red;
         yield return new WaitForSeconds(0.15f);
         // BUG FIX: no restaurar color si el enemigo ya ha muerto durante el flash
         if (Estado != EstadoIA.Muerto)
         {
             foreach (var r in GetComponentsInChildren<Renderer>())
-                r.material.color = colorUniforme;
+                if (r.sharedMaterial != null) r.sharedMaterial.color = colorUniforme;
         }
     }
 
@@ -370,10 +376,15 @@ public class EnemigoPatrulla : MonoBehaviour
 
     private Color colorUniforme = new Color(0.25f, 0.28f, 0.22f); // verde militar
 
+    // BUG FIX LEAK: lista de materiales creados con new Material() para destruirlos en OnDestroy().
+    // MatURP era static → los materiales no podían ser rastreados por instancia → leak garantizado.
+    private readonly System.Collections.Generic.List<Material> _matsCreados =
+        new System.Collections.Generic.List<Material>();
+
     // Crea un Material compatible con URP (evita el magenta por shader incorrecto)
     // BUG FIX: null guard — new Material(null) lanza NullReferenceException si ningún shader está disponible.
-    // Fallback en cadena: Lit → Unlit → Standard → InternalErrorShader (shader de error interno de Unity).
-    private static Material MatURP(Color color)
+    // BUG FIX LEAK: método de instancia (no static) para poder rastrear el material en _matsCreados.
+    private Material MatURP(Color color)
     {
         var shader = Shader.Find("Universal Render Pipeline/Lit")
                   ?? Shader.Find("Universal Render Pipeline/Unlit")
@@ -385,7 +396,17 @@ public class EnemigoPatrulla : MonoBehaviour
             shader = Shader.Find("Hidden/InternalErrorShader");
             if (shader == null) return null;
         }
-        return new Material(shader) { color = color };
+        var mat = new Material(shader) { color = color };
+        _matsCreados.Add(mat);
+        return mat;
+    }
+
+    // BUG FIX LEAK: destruir los materiales del cuerpo al destruir el enemigo.
+    private void OnDestroy()
+    {
+        foreach (var m in _matsCreados)
+            if (m != null) Object.Destroy(m);
+        _matsCreados.Clear();
     }
 
     private void CrearCuerpoBasico()
@@ -396,7 +417,7 @@ public class EnemigoPatrulla : MonoBehaviour
         cuerpo.transform.localPosition = new Vector3(0f, 1f, 0f);
         cuerpo.transform.localScale    = new Vector3(0.6f, 0.9f, 0.6f);
         var matCuerpo = MatURP(colorUniforme);
-        if (matCuerpo != null) cuerpo.GetComponent<Renderer>().material = matCuerpo;
+        if (matCuerpo != null) cuerpo.GetComponent<Renderer>().sharedMaterial = matCuerpo;
         Destroy(cuerpo.GetComponent<Collider>());
 
         // Cabeza
@@ -405,7 +426,7 @@ public class EnemigoPatrulla : MonoBehaviour
         cabeza.transform.localPosition = new Vector3(0f, 2.0f, 0f);
         cabeza.transform.localScale    = new Vector3(0.4f, 0.4f, 0.4f);
         var matCabeza = MatURP(new Color(0.75f, 0.62f, 0.48f));
-        if (matCabeza != null) cabeza.GetComponent<Renderer>().material = matCabeza;
+        if (matCabeza != null) cabeza.GetComponent<Renderer>().sharedMaterial = matCabeza;
         Destroy(cabeza.GetComponent<Collider>());
 
         // Casco
@@ -414,7 +435,7 @@ public class EnemigoPatrulla : MonoBehaviour
         casco.transform.localPosition = new Vector3(0f, 2.15f, 0f);
         casco.transform.localScale    = new Vector3(0.45f, 0.35f, 0.45f);
         var matCasco = MatURP(colorUniforme);
-        if (matCasco != null) casco.GetComponent<Renderer>().material = matCasco;
+        if (matCasco != null) casco.GetComponent<Renderer>().sharedMaterial = matCasco;
         Destroy(casco.GetComponent<Collider>());
 
         // Colisionador
