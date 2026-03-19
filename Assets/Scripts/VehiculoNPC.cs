@@ -60,7 +60,9 @@ public class VehiculoNPC : MonoBehaviour
     private float     velocidadActual = 0f;
     private bool      frenando    = false;
     // BUG 17 FIX: cachear el renderer principal para no buscarlo en cada impacto/daño.
-    private Renderer  rendererPrincipal;
+    private Renderer             rendererPrincipal;
+    // FIX LEAK: MPB reutilizable para asignar y modificar colores sin crear instancias de Material.
+    private MaterialPropertyBlock _mpbCoche;
 
     // ═══════════════════════════════════════════════════════════════════════
     //  UNITY
@@ -77,9 +79,18 @@ public class VehiculoNPC : MonoBehaviour
         // BUG 17 FIX: cachear el renderer en Awake() para no buscarlo en cada impacto.
         rendererPrincipal = GetComponentInChildren<Renderer>();
 
-        // Color aleatorio
+        // Color aleatorio — FIX LEAK: MaterialPropertyBlock en lugar de .material.color.
+        // Acceder a renderer.material crea una instancia de Material por renderer que nunca
+        // se destruye automáticamente. SetPropertyBlock sobreescribe propiedades del shader
+        // por renderer sin crear ninguna instancia → cero leak, cero GC.
         if (rendererPrincipal != null)
-            rendererPrincipal.material.color = coloresCoche[Random.Range(0, coloresCoche.Length)];
+        {
+            Color c = coloresCoche[Random.Range(0, coloresCoche.Length)];
+            _mpbCoche = new MaterialPropertyBlock();
+            _mpbCoche.SetColor("_BaseColor", c);   // URP/Lit
+            _mpbCoche.SetColor("_Color",     c);   // Standard (fallback)
+            rendererPrincipal.SetPropertyBlock(_mpbCoche);
+        }
     }
 
     private void FixedUpdate()
@@ -167,14 +178,18 @@ public class VehiculoNPC : MonoBehaviour
         if (destruido) return;
         vida -= cantidad;
 
-        // FIX: cachear la referencia al material en variable local para evitar dos accesos a
-        // .material por llamada. Unity crea la instancia per-renderer en el primer acceso y la
-        // devuelve en el segundo, pero el doble acceso añade overhead y confunde al lector.
-        if (rendererPrincipal != null)
+        // FIX LEAK: leer el color actual del MPB (no de .material) y oscurecer sin crear instancias.
+        // GetPropertyBlock rellena _mpbCoche con los valores actuales del renderer → GetColor
+        // devuelve el último color asignado → lo oscurecemos y lo volvemos a escribir.
+        if (rendererPrincipal != null && _mpbCoche != null)
         {
-            var mat = rendererPrincipal.material;
-            mat.color = Color.Lerp(mat.color, Color.black,
-                0.3f * ((float)(vidaMax - vida) / vidaMax));
+            rendererPrincipal.GetPropertyBlock(_mpbCoche);
+            Color colorActual = _mpbCoche.GetColor("_BaseColor");
+            Color colorOscuro = Color.Lerp(colorActual, Color.black,
+                                           0.3f * ((float)(vidaMax - vida) / vidaMax));
+            _mpbCoche.SetColor("_BaseColor", colorOscuro);
+            _mpbCoche.SetColor("_Color",     colorOscuro);
+            rendererPrincipal.SetPropertyBlock(_mpbCoche);
         }
 
         if (vida <= 0) Destruir();
@@ -240,7 +255,12 @@ public class VehiculoNPC : MonoBehaviour
             rueda.transform.localPosition = new Vector3(posX[i], 0.22f, posZ[i]);
             rueda.transform.localScale    = new Vector3(0.35f, 0.22f, 0.35f);
             rueda.transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
-            rueda.GetComponent<Renderer>().material.color = new Color(0.1f, 0.1f, 0.1f);
+            // FIX LEAK: 4 accesos a .material en el bucle crean 4 instancias de Material
+            // que nunca se destruyen. Usar MaterialPropertyBlock por rueda → cero instancias.
+            var mpbRueda = new MaterialPropertyBlock();
+            mpbRueda.SetColor("_BaseColor", new Color(0.1f, 0.1f, 0.1f));
+            mpbRueda.SetColor("_Color",     new Color(0.1f, 0.1f, 0.1f));
+            rueda.GetComponent<Renderer>().SetPropertyBlock(mpbRueda);
             Destroy(rueda.GetComponent<Collider>());
         }
 

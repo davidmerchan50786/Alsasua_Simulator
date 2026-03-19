@@ -82,12 +82,24 @@ public sealed class GestorEscena : MonoBehaviour
     // ───────────────────────────────────────────────────────────────────────
     private void Awake()
     {
-        // Crear sistemas que falten
+        // Crear sistemas que falten.
+        // ORDEN IMPORTA: SistemaPersonajes se crea el ÚLTIMO para que
+        // ConfigurarWaypointsPersonajes() se llame antes de su Awake().
+        // [DefaultExecutionOrder(-10)] garantiza que este Awake() corre antes que
+        // SistemaPersonajes (order 0) cuando ambos están pre-asignados en el Inspector.
+        // En el caso de creación dinámica (AddComponent), Awake() del nuevo componente
+        // se dispara de forma síncrona, por lo que llamamos a ConfigurarWaypointsPersonajes()
+        // INMEDIATAMENTE después para que las rutas estén listas antes del primer TickCaminar.
         if (activarMultitud   && sistemaMultitud    == null) sistemaMultitud    = CrearSistema<SistemaMultitud>("SistemaMultitud");
-        if (activarPersonajes && sistemaPersonajes  == null) sistemaPersonajes  = CrearSistema<SistemaPersonajes>("SistemaPersonajes");
         if (activarTrafico    && sistemaTrafico     == null) sistemaTrafico     = CrearSistema<SistemaTrafico>("SistemaTrafico");
         if (activarTren       && sistemaFerroviario == null) sistemaFerroviario = CrearSistema<SistemaFerroviario>("SistemaFerroviario");
         if (activarVegetacion && sistemaVegetacion  == null) sistemaVegetacion  = CrearSistema<SistemaVegetacion>("SistemaVegetacion");
+
+        // FIX RACE CONDITION: las rutas deben inyectarse en SistemaPersonajes ANTES de que
+        // su Awake() llame a SpawnTodos(). Con el orden de ejecución (-10 vs 0) esto se cumple
+        // tanto si el componente está en Inspector como si se crea aquí dinámicamente.
+        if (activarPersonajes && sistemaPersonajes  == null) sistemaPersonajes  = CrearSistema<SistemaPersonajes>("SistemaPersonajes");
+        if (activarPersonajes && sistemaPersonajes  != null) ConfigurarWaypointsPersonajes();
 
         // Desactivar los que no se usen
         if (!activarMultitud   && sistemaMultitud    != null) sistemaMultitud.gameObject.SetActive(false);
@@ -99,9 +111,6 @@ public sealed class GestorEscena : MonoBehaviour
 
     private void Start()
     {
-        if (activarPersonajes && sistemaPersonajes != null)
-            ConfigurarWaypointsPersonajes();
-
         LogEstado();
     }
 
