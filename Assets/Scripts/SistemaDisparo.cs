@@ -11,6 +11,7 @@
 
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Unity.Profiling;
 
 public class SistemaDisparo : MonoBehaviour
 {
@@ -19,26 +20,39 @@ public class SistemaDisparo : MonoBehaviour
     // ═══════════════════════════════════════════════════════════════════════
 
     [Header("═══ ARMA ═══")]
+    [Tooltip("Distancia máxima de alcance del raycast de disparo (m).")]
     [SerializeField] private float alcanceDisparo     = 200f;
+    [Tooltip("Puntos de daño aplicados al objetivo por cada bala impactada.")]
     [SerializeField] private int   danoPorBala        = 25;
+    [Tooltip("Tiempo mínimo entre disparos (segundos). Determina la cadencia de fuego.")]
     [SerializeField] private float cadencia           = 0.12f;   // segundos entre disparos
 
     [Header("═══ DISPERSIÓN ═══")]
+    [Tooltip("Dispersión base del arma estando parado y en suelo (radianes de cono).")]
     [SerializeField] private float dispersionBase     = 0.015f;  // parado, en suelo
+    [Tooltip("Dispersión extra añadida al andar. Se escala por velocidad normalizada.")]
     [SerializeField] private float dispersionMovimiento = 0.022f; // añadido al andar
+    [Tooltip("Dispersión extra añadida cuando el jugador está en el aire.")]
     [SerializeField] private float dispersionAire     = 0.040f;  // añadido al saltar
+    [Tooltip("Multiplicador de dispersión al estar agachado (C). 0.4 = 60% menos dispersión.")]
     [Range(0.1f, 1f)]
     [SerializeField] private float multAgachado       = 0.40f;   // multiplicador al agacharse
+    [Tooltip("Multiplicador de dispersión al apuntar con RMB. 0.6 = 40% menos dispersión.")]
     [Range(0.5f, 1f)]
     [SerializeField] private float multApuntando      = 0.60f;   // multiplicador al apuntar (RMB)
 
     [Header("═══ MUNICIÓN ═══")]
+    [Tooltip("Balas actuales en el cargador.")]
     [SerializeField] private int   balas             = 30;
+    [Tooltip("Capacidad máxima del cargador.")]
     [SerializeField] private int   balasMaxCargador  = 30;
+    [Tooltip("Balas en reserva (fuera del cargador). Al recargar se transfieren al cargador.")]
     [SerializeField] private int   balasReserva      = 120;
+    [Tooltip("Duración de la animación de recarga (segundos).")]
     [SerializeField] private float tiempoRecarga     = 2.0f;
 
     [Header("═══ CAPAS ═══")]
+    [Tooltip("Capas de Unity que pueden recibir impacto de bala. Por defecto todo excepto 'Ignore Raycast'.")]
     [SerializeField] private LayerMask capasImpacto;   // qué capas reciben impacto
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -91,6 +105,10 @@ public class SistemaDisparo : MonoBehaviour
     private Material              _matDecalCompartido;  // BUG FIX: un único material para todos los décals (antes: N=50 materiales → memory leak)
     private static readonly int   _idBaseColor = Shader.PropertyToID("_BaseColor");
     private static readonly Color _colorDecal  = new Color(0.08f, 0.08f, 0.08f);
+
+    // ── Profiler marker ──────────────────────────────────────────────────
+    private static readonly ProfilerMarker _markerDisparar =
+        new ProfilerMarker("SistemaDisparo.Disparar");
 
     // ═══════════════════════════════════════════════════════════════════════
     //  UNITY
@@ -249,6 +267,7 @@ public class SistemaDisparo : MonoBehaviour
 
     public void Disparar()
     {
+        using var _prof = _markerDisparar.Auto();
         if (estaCargando) return;
         if (Time.time - tiempoUltimoDisparo < cadencia) return;
         if (balas <= 0) { IniciarRecarga(); return; }

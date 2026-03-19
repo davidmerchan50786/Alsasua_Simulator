@@ -27,6 +27,7 @@
 
 using UnityEngine;
 using System.Collections.Generic;
+using Unity.Profiling;
 
 [AddComponentMenu("Alsasua/Sistema Ferroviario")]
 public sealed class SistemaFerroviario : MonoBehaviour
@@ -104,6 +105,10 @@ public sealed class SistemaFerroviario : MonoBehaviour
     private MaterialPropertyBlock _propBlock;
     private static readonly int _idBaseColor = Shader.PropertyToID("_BaseColor");
 
+    // ── Profiler markers ────────────────────────────────────────────────
+    private static readonly ProfilerMarker _markerUpdate =
+        new ProfilerMarker("SistemaFerroviario.Update");
+
     // ══════════════════════════════════════════════════════════════════════
     //  UNITY LIFECYCLE
     // ══════════════════════════════════════════════════════════════════════
@@ -128,6 +133,7 @@ public sealed class SistemaFerroviario : MonoBehaviour
 
     private void Update()
     {
+        using var _prof = _markerUpdate.Auto();
         if (_trenes == null) return;
         ActualizarTrenes(Time.deltaTime);
         RenderizarTrenes();

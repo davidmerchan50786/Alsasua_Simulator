@@ -4,6 +4,7 @@
 
 using UnityEngine;
 using System.Collections;
+using Unity.Profiling;
 
 public class EnemigoPatrulla : MonoBehaviour
 {
@@ -18,32 +19,49 @@ public class EnemigoPatrulla : MonoBehaviour
     // ═══════════════════════════════════════════════════════════════════════
 
     [Header("═══ VIDA ═══")]
+    [Tooltip("Puntos de vida actuales del enemigo.")]
     [SerializeField] private int vida    = 100;
+    [Tooltip("Puntos de vida máximos del enemigo.")]
     [SerializeField] private int vidaMax = 100;
 
     [Header("═══ VISIÓN ═══")]
+    [Tooltip("Radio de detección visual (m). El jugador debe estar dentro de este radio y en el ángulo de visión para ser detectado.")]
     [SerializeField] private float radioVision     = 25f;
+    [Tooltip("Ángulo del cono de visión frontal en grados (p.ej. 110 = ±55° desde el frente).")]
     [SerializeField] private float anguloVision    = 110f;
-    [SerializeField] private float radioEscucha    = 8f;   // detecta sin línea de visión
+    [Tooltip("Radio de escucha (m). Detecta al jugador sin línea de visión si está dentro de este radio.")]
+    [SerializeField] private float radioEscucha    = 8f;
 
     [Header("═══ MOVIMIENTO ═══")]
+    [Tooltip("Velocidad en m/s durante la patrulla normal de waypoints.")]
     [SerializeField] private float velocidadPatrulla  = 2.5f;
+    [Tooltip("Velocidad en m/s cuando persigue activamente al jugador detectado.")]
     [SerializeField] private float velocidadPerseguir = 5.5f;
+    [Tooltip("Velocidad de giro máxima en grados/segundo.")]
     [SerializeField] private float velocidadGiro      = 180f;
 
     [Header("═══ ATAQUE ═══")]
+    [Tooltip("Radio máximo en metros desde el que el enemigo entra en modo Atacando.")]
     [SerializeField] private float radioAtaque        = 18f;
+    [Tooltip("Daño aplicado al jugador por cada impacto de disparo.")]
     [SerializeField] private int   danoPorDisparo     = 15;
+    [Tooltip("Segundos mínimos entre disparos consecutivos del enemigo.")]
     [SerializeField] private float cadenciaAtaque     = 0.8f;
-    [SerializeField] private float precisionEnemy     = 0.05f;  // dispersión
+    [Tooltip("Dispersión angular de los disparos (0 = perfecta puntería, 0.1 = muy errática).")]
+    [SerializeField] private float precisionEnemy     = 0.05f;
 
     [Header("═══ WAYPOINTS DE PATRULLA ═══")]
+    [Tooltip("Puntos de patrulla en orden. El enemigo los recorre en bucle indefinido.")]
     [SerializeField] private Transform[] waypointsPatrulla;
+    [Tooltip("Segundos que el enemigo espera quieto al llegar a cada waypoint.")]
     [SerializeField] private float tiempoEsperaWP = 2f;
 
     // ═══════════════════════════════════════════════════════════════════════
     //  ESTADO INTERNO
     // ═══════════════════════════════════════════════════════════════════════
+
+    // FIX OBSERVABILIDAD: ProfilerMarker de coste cero cuando el Profiler no está conectado.
+    private static readonly ProfilerMarker _markerUpdate = new ProfilerMarker("EnemigoPatrulla.Update");
 
     public  EstadoIA Estado  { get; private set; } = EstadoIA.Patrullando;
     private Transform jugador;
@@ -75,6 +93,7 @@ public class EnemigoPatrulla : MonoBehaviour
 
     private void Update()
     {
+        using var _prof = _markerUpdate.Auto();
         if (Estado == EstadoIA.Muerto) return;
 
         // BUG 12 FIX: solo decrementar timerAtaque en el estado Atacando.
@@ -306,6 +325,12 @@ public class EnemigoPatrulla : MonoBehaviour
         if (Estado == EstadoIA.Atacando && nuevo != EstadoIA.Atacando)
             timerAtaque = 0f;
 
+        // FIX OBSERVABILIDAD: loggear cada transición de estado de IA.
+        // Sin este log, los bugs de IA son imposibles de rastrear (la máquina de estados
+        // cambiaba silenciosamente decenas de veces por segundo sin dejar rastro).
+        if (Estado != nuevo)
+            AlsasuaLogger.Verbose("EnemigoPatrulla", $"{name}: {Estado} → {nuevo}");
+
         Estado = nuevo;
         if (nuevo == EstadoIA.Alertado)
         {
@@ -466,7 +491,17 @@ public class EnemigoPatrulla : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        Gizmos.color = Color.yellow;
+        // FIX OBSERVABILIDAD: color del indicador de visión refleja el estado IA actual.
+        // En Play mode permite ver de un vistazo qué estado tiene cada enemigo en la escena.
+        Color colorEstado = Estado switch
+        {
+            EstadoIA.Patrullando  => new Color(0.2f, 0.9f, 0.2f, 0.8f),  // verde  = en patrulla
+            EstadoIA.Alertado     => new Color(1.0f, 0.9f, 0.0f, 0.8f),  // amarillo = alerta
+            EstadoIA.Persiguiendo => new Color(1.0f, 0.5f, 0.0f, 0.8f),  // naranja  = persiguiendo
+            EstadoIA.Atacando     => new Color(1.0f, 0.1f, 0.1f, 0.9f),  // rojo     = atacando
+            _                     => Color.grey,                           // gris     = muerto
+        };
+        Gizmos.color = colorEstado;
         Gizmos.DrawWireSphere(transform.position, radioVision);
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, radioAtaque);

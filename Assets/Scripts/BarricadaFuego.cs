@@ -8,9 +8,13 @@ using System.Collections.Generic;
 public class BarricadaFuego : MonoBehaviour
 {
     [Header("═══ BARRICADA ═══")]
+    [Tooltip("Si está activo al inicio, la barricada aparece ya ardiendo. Desmarca para colocarla sin fuego.")]
     [SerializeField] private bool  fuegoPrendido  = true;
+    [Tooltip("Intensidad de las partículas de fuego y chispas (0 = sin partículas, 1 = máximo).")]
     [SerializeField] private float intensidadFuego = 1f;  // 0-1
+    [Tooltip("Puntos de vida de la barricada. Al llegar a 0 se apagan fuego, humo y luz.")]
     [SerializeField] private int   vida            = 200;
+    [Tooltip("Radio de la zona de bloqueo visible en el Editor (Gizmo). No afecta a la colisión física.")]
     [SerializeField] private float radioBloqueo    = 2.5f;
 
     // BUG 5 FIX: rastrear materiales creados con new Material() para destruirlos en OnDestroy().
@@ -262,7 +266,21 @@ public class BarricadaFuego : MonoBehaviour
             if (psHumo   != null) psHumo.Stop();
             if (psChispas!= null) psChispas.Stop();
             if (luzFuego != null) luzFuego.enabled = false;
+            AlsasuaLogger.Info("BarricadaFuego", $"{name}: destruida en {transform.position}");
         }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  GIZMOS — visualización del radio de bloqueo en el Editor
+    // ═══════════════════════════════════════════════════════════════════════
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = fuegoPrendido
+            ? new Color(1f, 0.35f, 0f, 0.55f)   // naranja = activa con fuego
+            : new Color(0.6f, 0.6f, 0.6f, 0.4f); // gris = sin fuego
+        Gizmos.DrawWireSphere(transform.position, radioBloqueo);
+        Gizmos.DrawSphere(transform.position + Vector3.up * 0.1f, 0.15f);
     }
 
     // ═══════════════════════════════════════════════════════════════════════

@@ -15,6 +15,7 @@
 
 using UnityEngine;
 using System.Collections.Generic;
+using Unity.Profiling;
 
 public sealed class SistemaVegetacion : MonoBehaviour
 {
@@ -34,17 +35,27 @@ public sealed class SistemaVegetacion : MonoBehaviour
     [SerializeField] private float[] radiosZona = new float[] { 250f, 200f, 220f, 180f };
 
     [Header("═══ PARÁMETROS ═══")]
+    [Tooltip("Número máximo de árboles generados por zona forestal.")]
     [SerializeField] private int   densidadArbolesZona = 300;  // árboles por zona
+    [Tooltip("Distancia máxima de renderizado de árboles desde la cámara (m). Árboles más lejanos se descartan.")]
     [SerializeField] private float rangoRender          = 600f; // distancia máx visible
+    [Tooltip("Altura Y base para el raycast de terreno. Aumentar si los árboles flotan o se entierran.")]
     [SerializeField] private float alturaTerreno        = 0f;   // altura base si no hay raycast
+    [Tooltip("Escala mínima de los pinos (multiplicador de tamaño del mesh).")]
     [SerializeField] private float escalaMinPino        = 0.8f;
+    [Tooltip("Escala máxima de los pinos (multiplicador de tamaño del mesh).")]
     [SerializeField] private float escalaMaxPino        = 2.2f;
+    [Tooltip("Escala mínima de los robles (multiplicador de tamaño del mesh).")]
     [SerializeField] private float escalaMinRoble       = 0.7f;
+    [Tooltip("Escala máxima de los robles (multiplicador de tamaño del mesh).")]
     [SerializeField] private float escalaMaxRoble       = 1.8f;
+    [Tooltip("Proporción de pinos respecto al total de árboles. 0 = todo robles, 1 = todo pinos.")]
     [SerializeField] [Range(0f,1f)] private float fraccionPinos = 0.65f; // 65 % pinos, resto robles
 
     [Header("═══ VIENTO ═══")]
+    [Tooltip("Frecuencia del ciclo de balanceo del viento (ciclos/segundo).")]
     [SerializeField] private float velocidadViento = 0.8f;   // ciclos/s
+    [Tooltip("Amplitud de la oscilación de viento en escala X del árbol. 0 = sin viento.")]
     [SerializeField] private float fuerzaViento    = 0.04f;  // amplitud tono oscilación
 
     // ───────────────────────────────────────────────────────────────────────
@@ -83,6 +94,10 @@ public sealed class SistemaVegetacion : MonoBehaviour
     private float    _timerViento = 0f;
 
     // (sin _idBaseColor/_idBaseMap — vegetación no usa per-instance color override)
+
+    // ── Profiler marker ──────────────────────────────────────────────────
+    private static readonly ProfilerMarker _markerRender =
+        new ProfilerMarker("SistemaVegetacion.RenderizarArboles");
 
     // ───────────────────────────────────────────────────────────────────────
     //  UNITY
@@ -172,6 +187,7 @@ public sealed class SistemaVegetacion : MonoBehaviour
     // ───────────────────────────────────────────────────────────────────────
     private void RenderizarArboles()
     {
+        using var _prof = _markerRender.Auto();
         if (_arboles == null || _arboles.Length == 0) return;
 
         Vector3 camPos = _camPrincipal.transform.position;
@@ -424,6 +440,24 @@ public sealed class SistemaVegetacion : MonoBehaviour
     // ───────────────────────────────────────────────────────────────────────
     //  API PÚBLICA
     // ───────────────────────────────────────────────────────────────────────
+
+    // ───────────────────────────────────────────────────────────────────────
+    //  GIZMOS — visualización de zonas en el Editor
+    // ───────────────────────────────────────────────────────────────────────
+    private void OnDrawGizmosSelected()
+    {
+        if (centrosZona == null) return;
+        for (int z = 0; z < centrosZona.Length; z++)
+        {
+            float radio = z < radiosZona?.Length ? radiosZona[z] : 200f;
+            // Color degradado verde por zona (para diferenciarlas fácilmente)
+            float hue = (float)z / Mathf.Max(1, centrosZona.Length);
+            Gizmos.color = Color.HSVToRGB(0.33f + hue * 0.15f, 0.7f, 0.9f);
+            Gizmos.DrawWireSphere(centrosZona[z], radio);
+            // Punto central
+            Gizmos.DrawSphere(centrosZona[z], 3f);
+        }
+    }
 
     /// <summary>Número total de árboles generados.</summary>
     public int TotalArboles => _arboles?.Length ?? 0;

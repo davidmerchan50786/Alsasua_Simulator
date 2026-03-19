@@ -47,12 +47,19 @@ public class ControladorJugador : MonoBehaviour
     // ═══════════════════════════════════════════════════════════════════════
 
     [Header("═══ MOVIMIENTO ═══")]
+    [Tooltip("Velocidad de desplazamiento caminando (m/s).")]
     [SerializeField] private float velocidadAndar    = 4.0f;
+    [Tooltip("Velocidad de desplazamiento corriendo con SHIFT (m/s).")]
     [SerializeField] private float velocidadCorrer   = 8.5f;
+    [Tooltip("Velocidad de desplazamiento en posición agachada (m/s).")]
     [SerializeField] private float velocidadAgachar  = 2.0f;
+    [Tooltip("Impulso vertical al saltar. Determina la altura máxima del salto.")]
     [SerializeField] private float fuerzaSalto       = 5.5f;
+    [Tooltip("Aceleración gravitatoria (m/s²). Valor negativo. -20 da saltos más 'pesados'.")]
     [SerializeField] private float gravedad          = -20f;
+    [Tooltip("Factor de suavizado de la inercia horizontal (Lerp t por segundo). Mayor valor = arranque/parada más bruscos.")]
     [SerializeField] private float suavidadMovimiento = 9f;
+    [Tooltip("Factor de suavizado de la rotación del jugador (Lerp t por segundo). Mayor valor = giro más rápido.")]
     [SerializeField] private float suavidadGiro      = 14f;
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -60,16 +67,27 @@ public class ControladorJugador : MonoBehaviour
     // ═══════════════════════════════════════════════════════════════════════
 
     [Header("═══ CÁMARA 3ª PERSONA ═══")]
+    [Tooltip("Distancia del Spring Arm en modo exploración normal (m).")]
     [SerializeField] private float distanciaBrazo   = 4.5f;    // dist. normal
+    [Tooltip("Distancia del Spring Arm al apuntar con RMB, más cercana para mejor puntería (m).")]
     [SerializeField] private float distanciaApuntar = 2.8f;    // dist. al apuntar (RMB)
+    [Tooltip("Altura del pivot de la cámara respecto a los pies del jugador (m). 1.5 ≈ altura del hombro.")]
     [SerializeField] private float alturaHombro     = 1.5f;    // pivot sobre el jugador
+    [Tooltip("Sensibilidad horizontal del ratón (°/px × 0.05). 2.8 ≈ 0.14°/px.")]
     [SerializeField] private float sensibilidadX    = 2.8f;
+    [Tooltip("Sensibilidad vertical del ratón (°/px × 0.05). 2.2 ≈ 0.11°/px.")]
     [SerializeField] private float sensibilidadY    = 2.2f;
+    [Tooltip("Límite inferior del ángulo vertical de la cámara (°). Negativo = mirar hacia abajo.")]
     [SerializeField] private float limVertMin       = -25f;
+    [Tooltip("Límite superior del ángulo vertical de la cámara (°). Positivo = mirar hacia arriba.")]
     [SerializeField] private float limVertMax       =  65f;
+    [Tooltip("Factor de suavizado del Spring Arm (Lerp t por segundo). Mayor valor = cámara más pegada al objetivo.")]
     [SerializeField] private float suavidadCamara   = 12f;
+    [Tooltip("Campo de visión (FOV) en modo exploración (°). Rango típico 60–75°.")]
     [SerializeField] private float fovNormal        = 68f;
+    [Tooltip("Campo de visión (FOV) al apuntar con RMB (°). Menor valor = más zoom.")]
     [SerializeField] private float fovApuntando     = 48f;
+    [Tooltip("Ángulo vertical inicial de la cámara al arrancar (°). 5° = casi horizontal, ligeramente hacia abajo.")]
     [SerializeField] private float anguloVertDefault =  5f;    // 5° = casi horizontal
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -102,7 +120,9 @@ public class ControladorJugador : MonoBehaviour
     // ═══════════════════════════════════════════════════════════════════════
 
     [Header("═══ SALUD ═══")]
+    [Tooltip("Puntos de vida actuales del jugador. Llega a 0 → muerte.")]
     [SerializeField] private int vida    = 100;
+    [Tooltip("Puntos de vida máximos. Curar() no puede superar este valor.")]
     [SerializeField] private int vidaMax = 100;
 
     public int  Vida       => vida;

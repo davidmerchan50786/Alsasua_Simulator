@@ -78,6 +78,7 @@ public class SistemaAtmosfera : MonoBehaviour
     [SerializeField] private Gradient colorAmbiente;
 
     [Range(0f, 3f)]
+    [Tooltip("Multiplicador de la intensidad del color ambiente. 1.1 = ligeramente más brillante que el gradiente base.")]
     [SerializeField] private float intensidadAmbiente = 1.1f;
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -87,6 +88,12 @@ public class SistemaAtmosfera : MonoBehaviour
     public float HoraDelDia    => horaDelDia;
     public float ElevacionSolar => elevacionSolar;
     public bool  EsDeDia       => elevacionSolar > 0f;
+
+    /// <summary>
+    /// Se dispara cuando el sol cruza el horizonte (amanecer o anochecer).
+    /// El parámetro bool es <c>true</c> si el nuevo estado es de día, <c>false</c> si es de noche.
+    /// </summary>
+    public event System.Action<bool> OnCambioDia;
 
     // ═══════════════════════════════════════════════════════════════════════
     //  ESTADO INTERNO
@@ -105,6 +112,9 @@ public class SistemaAtmosfera : MonoBehaviour
     // horaDelDia sigue avanzando cada frame para precisión; solo el render se limita.
     private float _timerAtmosfera    = 0f;
     private const float INTERVALO_ATM = 0.5f; // recalcular 2 veces/segundo
+
+    // Estado previo de día/noche para detectar transiciones y disparar OnCambioDia.
+    private bool _eraDeDia = true;
 
     // ═══════════════════════════════════════════════════════════════════════
     //  UNITY
@@ -166,6 +176,16 @@ public class SistemaAtmosfera : MonoBehaviour
         AplicarLuzSolar();
         AplicarAmbiente();
         AplicarNiebla();
+
+        // ── Detectar transición día/noche y disparar evento ────────────────
+        bool esDeDiaAhora = EsDeDia;
+        if (esDeDiaAhora != _eraDeDia)
+        {
+            _eraDeDia = esDeDiaAhora;
+            string transicion = esDeDiaAhora ? "Noche → Día" : "Día → Noche";
+            AlsasuaLogger.Info("Atmósfera", $"{transicion} — hora: {horaDelDia:F1}h  elevación: {elevacionSolar:F1}°");
+            OnCambioDia?.Invoke(esDeDiaAhora);
+        }
     }
 
     /// <summary>
