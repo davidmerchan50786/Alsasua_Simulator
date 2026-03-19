@@ -192,13 +192,13 @@ public sealed class SistemaAssets : MonoBehaviour
 
         if (fallbacks > 0)
         {
-            Debug.LogWarning(
-                $"[SistemaAssets] {cargados} assets externos cargados, {fallbacks} usarán fallback procedural.\n" +
+            AlsasuaLogger.Warn("SistemaAssets",
+                $"{cargados} assets externos cargados, {fallbacks} usarán fallback procedural.\n" +
                 "Para cargar los assets reales: menú Unity → Alsasua → Descargar Assets Externos");
         }
         else
         {
-            Debug.Log($"[SistemaAssets] ✓ Todos los assets externos cargados ({cargados}/{cargados + fallbacks}).");
+            AlsasuaLogger.Info("SistemaAssets", $"✓ Todos los assets externos cargados ({cargados}/{cargados + fallbacks}).");
         }
     }
 
@@ -208,7 +208,7 @@ public sealed class SistemaAssets : MonoBehaviour
         else
         {
             fallbacks++;
-            Debug.Log($"[SistemaAssets] Asset no encontrado (fallback procedural): {nombre}");
+            AlsasuaLogger.Verbose("SistemaAssets", $"Asset no encontrado (fallback procedural): {nombre}");
         }
     }
 

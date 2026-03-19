@@ -723,8 +723,8 @@ public sealed class SistemaPersonajes : MonoBehaviour
               ?? Shader.Find("Standard");
         if (sh == null)
         {
-            Debug.LogError("[SistemaPersonajes] Shader no encontrado. " +
-                           "Incluye 'Universal Render Pipeline/Lit' en Always Included Shaders.");
+            AlsasuaLogger.Error("SistemaPersonajes", "Shader no encontrado. " +
+                               "Incluye 'Universal Render Pipeline/Lit' en Always Included Shaders.");
             sh = Shader.Find("Hidden/InternalErrorShader");
             if (sh == null) return null;
         }
@@ -804,7 +804,7 @@ public sealed class SistemaPersonajes : MonoBehaviour
             if (p.tipo == TipoPersonaje.GuardiaCivil || p.tipo == TipoPersonaje.PoliciaForal)
                 p.waypointActual = 0;
         }
-        Debug.Log($"[SistemaPersonajes] Rutas asignadas — GC: {rutaGC?.Length ?? 0} wp, PF: {rutaPF?.Length ?? 0} wp.");
+        AlsasuaLogger.Info("SistemaPersonajes", $"Rutas asignadas — GC: {rutaGC?.Length ?? 0} wp, PF: {rutaPF?.Length ?? 0} wp.");
     }
 
     /// <summary>Activa alerta: GC/PF aceleran y no se detienen.</summary>

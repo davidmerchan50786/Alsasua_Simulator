@@ -198,8 +198,8 @@ public class ControladorPostProcesado : MonoBehaviour
             volumenGlobal = Object.FindFirstObjectByType<Volume>();
             if (volumenGlobal == null)
             {
-                Debug.LogWarning("[PostProcesado] No hay Volume en la escena. " +
-                                 "Ejecuta Alsasua → ⚙ Configurar Escena Completa.");
+                AlsasuaLogger.Warn("PostProcesado", "No hay Volume en la escena. " +
+                                   "Ejecuta Alsasua → ⚙ Configurar Escena Completa.");
                 return;
             }
         }
@@ -244,7 +244,7 @@ public class ControladorPostProcesado : MonoBehaviour
         cam.farClipPlane  = 120000f; // 120 km cubre toda el área de Cesium visible + margen
         cam.usePhysicalProperties = false;
 
-        Debug.Log("[PostProcesado] Cámara configurada.");
+        AlsasuaLogger.Info("PostProcesado", "Cámara configurada.");
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -272,7 +272,7 @@ public class ControladorPostProcesado : MonoBehaviour
                 efecto = p.Add<T>(true);
         }
 
-        Debug.Log("[PostProcesado] Efectos obtenidos del Volume profile.");
+        AlsasuaLogger.Info("PostProcesado", "Efectos obtenidos del Volume profile.");
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -291,7 +291,7 @@ public class ControladorPostProcesado : MonoBehaviour
         AplicarMotionBlur();
         AplicarFilmGrain();
         AplicarChromaticAberration();
-        Debug.Log("[PostProcesado] ✓ Todos los efectos aplicados (modo fotorrealista).");
+        AlsasuaLogger.Info("PostProcesado", "✓ Todos los efectos aplicados (modo fotorrealista).");
     }
 
     // ───────────────────────────────────────────────────────────────────────

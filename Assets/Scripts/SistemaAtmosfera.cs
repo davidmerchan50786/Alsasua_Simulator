@@ -317,7 +317,7 @@ public class SistemaAtmosfera : MonoBehaviour
     {
         foreach (var l in Object.FindObjectsByType<Light>(FindObjectsSortMode.None))
             if (l.type == LightType.Directional) return l;
-        Debug.LogWarning("[Atmósfera] No se encontró Directional Light. El sol no funcionará.");
+        AlsasuaLogger.Warn("Atmósfera", "No se encontró Directional Light. El sol no funcionará.");
         return null;
     }
 

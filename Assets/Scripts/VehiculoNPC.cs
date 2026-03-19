@@ -12,10 +12,15 @@ public class VehiculoNPC : MonoBehaviour
     // ═══════════════════════════════════════════════════════════════════════
 
     [Header("═══ MOVIMIENTO ═══")]
+    [Tooltip("Velocidad máxima de desplazamiento del vehículo (m/s). 8 m/s ≈ 30 km/h, velocidad urbana.")]
     [SerializeField] private float velocidadMax    = 8f;    // m/s ≈ 30 km/h ciudad
+    [Tooltip("Aceleración desde parado hasta velocidadMax (m/s²). Valores bajos = arranque gradual.")]
     [SerializeField] private float aceleracion     = 4f;
+    [Tooltip("Velocidad angular máxima de giro del vehículo (grados/segundo).")]
     [SerializeField] private float velocidadGiro   = 120f;  // grados/seg
+    [Tooltip("Distancia horizontal al waypoint para considerarlo alcanzado y avanzar al siguiente (m).")]
     [SerializeField] private float distanciaWP     = 4f;    // distancia para cambiar waypoint
+    [Tooltip("Si está activo, al llegar al último waypoint el vehículo vuelve al primero (ruta en bucle).")]
     [SerializeField] private bool  bucleWaypoints  = true;
 
     [Header("═══ WAYPOINTS ═══")]
@@ -23,8 +28,11 @@ public class VehiculoNPC : MonoBehaviour
     [SerializeField] private List<Transform> waypoints = new List<Transform>();
 
     [Header("═══ OBSTÁCULOS ═══")]
+    [Tooltip("Distancia de detección de obstáculos con el raycast frontal. El vehículo frenará si hay algo a este rango (m).")]
     [SerializeField] private float distanciaFreno  = 6f;
+    [Tooltip("Ángulo total del cono de detección (°). Se usan 3 rayos: centro ±(ángulo/2). 30° = buena detección de giros.")]
     [SerializeField] private float anguloDeteccion = 30f;
+    [Tooltip("Capas que pueden bloquear el avance del vehículo. Por defecto (~0) detecta todo.")]
     [SerializeField] private LayerMask capasObstaculo;
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -32,7 +40,9 @@ public class VehiculoNPC : MonoBehaviour
     // ═══════════════════════════════════════════════════════════════════════
 
     [Header("═══ SALUD ═══")]
+    [Tooltip("Puntos de vida actuales del vehículo. Al llegar a 0 explota y se destruye.")]
     [SerializeField] private int vida    = 80;
+    [Tooltip("Puntos de vida máximos del vehículo (referencia para el oscurecimiento progresivo de la carrocería).")]
     [SerializeField] private int vidaMax = 80;
     private bool destruido = false;
 

@@ -160,7 +160,7 @@ public sealed class SistemaTrafico : MonoBehaviour
     {
         if (carriles == null || carriles.Length == 0)
         {
-            Debug.LogWarning("[SistemaTrafico] Sin carriles definidos. Asigna waypoints en el Inspector.");
+            AlsasuaLogger.Warn("SistemaTrafico", "Sin carriles definidos. Asigna waypoints en el Inspector.");
             enabled = false;
             return;
         }
@@ -324,8 +324,8 @@ public sealed class SistemaTrafico : MonoBehaviour
             var poolShader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
             if (poolShader == null)
             {
-                Debug.LogError("[SistemaTrafico] Shader URP/Lit no encontrado para pool visual. " +
-                               "Añádelo a Always Included Shaders.");
+                AlsasuaLogger.Error("SistemaTrafico", "Shader URP/Lit no encontrado para pool visual. " +
+                                   "Añádelo a Always Included Shaders.");
                 continue;
             }
             var mat = new Material(poolShader);

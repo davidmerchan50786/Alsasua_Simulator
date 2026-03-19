@@ -36,10 +36,15 @@ public sealed class GestorEscena : MonoBehaviour
     [SerializeField] private SistemaVegetacion  sistemaVegetacion;
 
     [Header("═══ ACTIVOS ═══")]
+    [Tooltip("Activa la simulación de la manifestación (500-1000 personas en movimiento).")]
     [SerializeField] private bool activarMultitud    = true;
+    [Tooltip("Activa los personajes individuales: Guardia Civil, Policía Foral y civiles con rutas de patrulla.")]
     [SerializeField] private bool activarPersonajes  = true;
+    [Tooltip("Activa el tráfico de vehículos NPC con DrawMeshInstanced.")]
     [SerializeField] private bool activarTrafico     = true;
+    [Tooltip("Activa la simulación del tren en la línea Pamplona–Donostia.")]
     [SerializeField] private bool activarTren        = true;
+    [Tooltip("Activa los bosques procedurales de pinos y robles alrededor de Alsasua.")]
     [SerializeField] private bool activarVegetacion  = true;
 
     [Header("═══ CONFIGURACIÓN ALSASUA ═══")]
@@ -123,7 +128,7 @@ public sealed class GestorEscena : MonoBehaviour
         // aquí, añadimos guard explícito por si este método se invoca desde otro contexto.
         if (sistemaPersonajes == null)
         {
-            Debug.LogWarning("[GestorEscena] ConfigurarWaypointsPersonajes: sistemaPersonajes es null.");
+            AlsasuaLogger.Warn("GestorEscena", "ConfigurarWaypointsPersonajes: sistemaPersonajes es null.");
             return;
         }
 
@@ -169,7 +174,7 @@ public sealed class GestorEscena : MonoBehaviour
     // ───────────────────────────────────────────────────────────────────────
     private void LogEstado()
     {
-        Debug.Log(
+        AlsasuaLogger.Info("GestorEscena",
             "╔══════════════════════════════════════════════════════════╗\n" +
             "║  ALSASUA SIMULATOR — Sistemas activos                    ║\n" +
             "╠══════════════════════════════════════════════════════════╣\n" +
@@ -178,8 +183,7 @@ public sealed class GestorEscena : MonoBehaviour
            $"║  Tráfico           : {(activarTrafico    ? "✓ ACTIVO" : "— desactivado"),-30} ║\n" +
            $"║  Ferroviario       : {(activarTren       ? "✓ ACTIVO" : "— desactivado"),-30} ║\n" +
            $"║  Vegetación        : {(activarVegetacion ? "✓ ACTIVO" : "— desactivado"),-30} ║\n" +
-            "╚══════════════════════════════════════════════════════════╝"
-        );
+            "╚══════════════════════════════════════════════════════════╝");
     }
 
     // ───────────────────────────────────────────────────────────────────────
@@ -222,11 +226,11 @@ public sealed class GestorEscena : MonoBehaviour
         if (sistemaPersonajes != null)
         {
             sistemaPersonajes.SetAlerta(true);
-            Debug.Log("[GestorEscena] ⚠ ALERTA ACTIVADA — GC y Policía Foral en patrulla intensiva.");
+            AlsasuaLogger.Info("GestorEscena", "⚠ ALERTA ACTIVADA — GC y Policía Foral en patrulla intensiva.");
         }
         else
         {
-            Debug.LogWarning("[GestorEscena] ActivarAlerta: SistemaPersonajes no disponible.");
+            AlsasuaLogger.Warn("GestorEscena", "ActivarAlerta: SistemaPersonajes no disponible.");
         }
     }
 
@@ -236,7 +240,7 @@ public sealed class GestorEscena : MonoBehaviour
         if (sistemaPersonajes != null)
             sistemaPersonajes.SetAlerta(false);
         else
-            Debug.LogWarning("[GestorEscena] DesactivarAlerta: SistemaPersonajes no disponible.");
+            AlsasuaLogger.Warn("GestorEscena", "DesactivarAlerta: SistemaPersonajes no disponible.");
     }
 
     /// <summary>Referencia al sistema de personajes activo.</summary>

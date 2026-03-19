@@ -51,6 +51,11 @@ public class SistemaDisparo : MonoBehaviour
     [Tooltip("Duración de la animación de recarga (segundos).")]
     [SerializeField] private float tiempoRecarga     = 2.0f;
 
+    [Header("═══ REFERENCIA ═══")]
+    [Tooltip("Velocidad máxima de carrera (m/s) usada para normalizar la dispersión en movimiento.\n" +
+             "Debe coincidir con ControladorJugador.velocidadCorrer para que el factor de penalización sea correcto.")]
+    [SerializeField] private float velocidadCorrerRef = 8.5f;
+
     [Header("═══ CAPAS ═══")]
     [Tooltip("Capas de Unity que pueden recibir impacto de bala. Por defecto todo excepto 'Ignore Raycast'.")]
     [SerializeField] private LayerMask capasImpacto;   // qué capas reciben impacto
@@ -325,7 +330,7 @@ public class SistemaDisparo : MonoBehaviour
             // BUG FIX: eliminado GetComponent<CharacterController>() por frame → ahora constante hardcoded.
             float velH = controlJugador.VelocidadHoriz;
             if (velH > 0.5f)
-                d += dispersionMovimiento * Mathf.Clamp01(velH / 8.5f);
+                d += dispersionMovimiento * Mathf.Clamp01(velH / velocidadCorrerRef);
 
             // Penalización en el aire
             if (!controlJugador.EstaEnSueloP)
@@ -380,7 +385,7 @@ public class SistemaDisparo : MonoBehaviour
 
         estaCargando = true;
         timerRecarga = tiempoRecarga;
-        Debug.Log("[Disparo] Recargando...");
+        AlsasuaLogger.Info("Disparo", "Recargando...");
     }
 
     private void FinRecarga()
@@ -391,7 +396,7 @@ public class SistemaDisparo : MonoBehaviour
         balasReserva   -= disponibles;
         estaCargando    = false;
         AudioManager.I?.Play(AudioManager.Clip.Recarga);   // clic de recarga completada
-        Debug.Log($"[Disparo] Recargado: {balas}/{balasMaxCargador}  Reserva: {balasReserva}");
+        AlsasuaLogger.Info("Disparo", $"Recargado: {balas}/{balasMaxCargador}  Reserva: {balasReserva}");
     }
 
     // ═══════════════════════════════════════════════════════════════════════

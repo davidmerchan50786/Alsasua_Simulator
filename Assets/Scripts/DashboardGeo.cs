@@ -183,7 +183,7 @@ public class DashboardGeo : MonoBehaviour
             anchorCamara = controladorJugador.GetComponent<CesiumGlobeAnchor>();
             if (anchorCamara != null)
             {
-                Debug.Log("[DashboardGeo] Anchor del jugador encontrado.");
+                AlsasuaLogger.Info("DashboardGeo", "Anchor del jugador encontrado.");
                 return;
             }
         }
@@ -196,7 +196,7 @@ public class DashboardGeo : MonoBehaviour
             if (anchorCamara == null)
             {
                 anchorCamara = Camera.main.gameObject.AddComponent<CesiumGlobeAnchor>();
-                Debug.Log("[DashboardGeo] CesiumGlobeAnchor añadido a Main Camera.");
+                AlsasuaLogger.Info("DashboardGeo", "CesiumGlobeAnchor añadido a Main Camera.");
             }
         }
     }
@@ -476,7 +476,7 @@ public class DashboardGeo : MonoBehaviour
 
         if (anchorCamara == null)
         {
-            Debug.LogWarning("[DashboardGeo] Sin CesiumGlobeAnchor — teleport cancelado.");
+            AlsasuaLogger.Warn("DashboardGeo", "Sin CesiumGlobeAnchor — teleport cancelado.");
             yield break;
         }
 
@@ -533,9 +533,9 @@ public class DashboardGeo : MonoBehaviour
         if (controladorJugador != null) controladorJugador.enabled = true;
         if (camaraDron         != null) camaraDron.enabled         = true;
 
-        Debug.Log($"[DashboardGeo] ✓ En destino: {obj.nombre}  " +
-                  $"({obj.lat:F4}°N, {obj.lon:F4}°E, {altDestino:F0}m)" +
-                  $"  [{(modoAPie ? "modo pie — cayendo al suelo" : "modo aéreo")}]");
+        AlsasuaLogger.Info("DashboardGeo", $"✓ En destino: {obj.nombre}  " +
+                           $"({obj.lat:F4}°N, {obj.lon:F4}°E, {altDestino:F0}m)" +
+                           $"  [{(modoAPie ? "modo pie — cayendo al suelo" : "modo aéreo")}]");
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -556,8 +556,8 @@ public class DashboardGeo : MonoBehaviour
 
         if (colorAdj == null)
         {
-            Debug.LogWarning("[DashboardGeo] Volume sin ColorAdjustments — verifica que " +
-                             "ControladorPostProcesado haya configurado el Volume profile.");
+            AlsasuaLogger.Warn("DashboardGeo", "Volume sin ColorAdjustments — verifica que " +
+                               "ControladorPostProcesado haya configurado el Volume profile.");
             return;
         }
 
@@ -568,7 +568,7 @@ public class DashboardGeo : MonoBehaviour
             case ModoVision.Termica: AplicarTermica(); break;
         }
 
-        Debug.Log($"[DashboardGeo] Modo visión → {modo}");
+        AlsasuaLogger.Info("DashboardGeo", $"Modo visión → {modo}");
     }
 
     // ── Normal — restaura preset de ControladorPostProcesado ────────────────

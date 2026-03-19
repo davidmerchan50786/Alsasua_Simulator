@@ -117,8 +117,8 @@ public sealed class SistemaFerroviario : MonoBehaviour
     {
         if (waypointsVia == null || waypointsVia.Length < 2)
         {
-            Debug.LogWarning("[SistemaFerroviario] Se necesitan al menos 2 waypoints de vía. " +
-                             "Asígnalos en el Inspector siguiendo el rail real de Cesium.");
+            AlsasuaLogger.Warn("SistemaFerroviario", "Se necesitan al menos 2 waypoints de vía. " +
+                              "Asígnalos en el Inspector siguiendo el rail real de Cesium.");
             enabled = false;
             return;
         }
@@ -206,7 +206,7 @@ public sealed class SistemaFerroviario : MonoBehaviour
         var meshFilter = temp.GetComponent<MeshFilter>();
         if (meshFilter == null)
         {
-            Debug.LogError("[SistemaFerroviario] MeshFilter no encontrado en primitivo Cube.");
+            AlsasuaLogger.Error("SistemaFerroviario", "MeshFilter no encontrado en primitivo Cube.");
             Object.DestroyImmediate(temp);
             return;
         }
@@ -222,8 +222,8 @@ public sealed class SistemaFerroviario : MonoBehaviour
         var litShader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
         if (litShader == null)
         {
-            Debug.LogError("[SistemaFerroviario] Shader URP/Lit no encontrado. " +
-                           "Añádelo a Always Included Shaders o asigna un Material en el Inspector.");
+            AlsasuaLogger.Error("SistemaFerroviario", "Shader URP/Lit no encontrado. " +
+                               "Añádelo a Always Included Shaders o asigna un Material en el Inspector.");
             litShader = Shader.Find("Hidden/InternalErrorShader");
             if (litShader == null) return;
         }

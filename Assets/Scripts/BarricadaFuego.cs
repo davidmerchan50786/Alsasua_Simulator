@@ -80,8 +80,8 @@ public class BarricadaFuego : MonoBehaviour
                   ?? Shader.Find("Standard");
         if (shader == null)
         {
-            Debug.LogError("[BarricadaFuego] MatURP: ningún shader URP/Standard encontrado. " +
-                           "Incluye 'Universal Render Pipeline/Lit' en Always Included Shaders.");
+            AlsasuaLogger.Error("BarricadaFuego", "MatURP: ningún shader URP/Standard encontrado. " +
+                               "Incluye 'Universal Render Pipeline/Lit' en Always Included Shaders.");
             shader = Shader.Find("Hidden/InternalErrorShader");
             if (shader == null) return null;
         }

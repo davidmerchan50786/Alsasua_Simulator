@@ -407,7 +407,7 @@ public class EnemigoPatrulla : MonoBehaviour
             r.SetPropertyBlock(mpbMuerto);
 
         Destroy(gameObject, 8f);
-        Debug.Log("[Enemigo] Derribado.");
+        AlsasuaLogger.Info("EnemigoPatrulla", $"{name}: derribado.");
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -431,8 +431,8 @@ public class EnemigoPatrulla : MonoBehaviour
                   ?? Shader.Find("Standard");
         if (shader == null)
         {
-            Debug.LogError("[EnemigoPatrulla] MatURP: ningún shader URP/Standard encontrado. " +
-                           "Incluye 'Universal Render Pipeline/Lit' en Always Included Shaders.");
+            AlsasuaLogger.Error("EnemigoPatrulla", "MatURP: ningún shader URP/Standard encontrado. " +
+                               "Incluye 'Universal Render Pipeline/Lit' en Always Included Shaders.");
             shader = Shader.Find("Hidden/InternalErrorShader");
             if (shader == null) return null;
         }

@@ -235,8 +235,8 @@ public sealed class SistemaMultitud : MonoBehaviour
                   ?? Shader.Find("Standard");
         if (shader == null)
         {
-            Debug.LogError("[SistemaMultitud] No se encontró shader URP/Lit. " +
-                           "Asigna un material en el Inspector.");
+            AlsasuaLogger.Error("SistemaMultitud", "No se encontró shader URP/Lit. " +
+                               "Asigna un material en el Inspector.");
             return null;
         }
         var matFallback = new Material(shader);  // sin Material intermedio → sin leak
@@ -502,7 +502,7 @@ public sealed class SistemaMultitud : MonoBehaviour
             if ((i + 1) % RAYCASTS_POR_FRAME == 0)
                 yield return null;
         }
-        Debug.Log("[Multitud] Alturas iniciales corregidas sin hitch de carga.");
+        AlsasuaLogger.Info("SistemaMultitud", "Alturas iniciales corregidas sin hitch de carga.");
     }
 
     // ══════════════════════════════════════════════════════════════════════

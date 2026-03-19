@@ -93,10 +93,10 @@ public class SistemaBombas : MonoBehaviour
     {
         if (bombasDisponibles <= 0)
         {
-            Debug.Log("[Bombas] Sin bombas disponibles.");
+            AlsasuaLogger.Info("Bombas", "Sin bombas disponibles.");
             return;
         }
-        if (camara == null) { Debug.LogWarning("[Bombas] Cámara no disponible."); return; }
+        if (camara == null) { AlsasuaLogger.Warn("Bombas", "Cámara no disponible."); return; }
 
         // Raycast al suelo desde delante del jugador para colocar la bomba
         Vector3 posicion;
@@ -115,7 +115,7 @@ public class SistemaBombas : MonoBehaviour
         bombas.Add(bomba);
         bombasDisponibles--;
 
-        Debug.Log($"[Bombas] Bomba colocada en {posicion:F1}. Quedan: {bombasDisponibles}");
+        AlsasuaLogger.Info("Bombas", $"Bomba colocada en {posicion:F1}. Quedan: {bombasDisponibles}");
         ActualizarHUD();
 
         // Si tiene timer, iniciar cuenta atrás
@@ -127,7 +127,7 @@ public class SistemaBombas : MonoBehaviour
     {
         if (bombas.Count == 0)
         {
-            Debug.Log("[Bombas] No hay bombas colocadas.");
+            AlsasuaLogger.Info("Bombas", "No hay bombas colocadas.");
             return;
         }
         var ultima = bombas[bombas.Count - 1];
@@ -154,7 +154,7 @@ public class SistemaBombas : MonoBehaviour
             Destroy(bomba.objetoFisico);
 
         SistemaExplosion.Explotar(bomba.posicion, radioExplosion, fuerzaExplosion, danoExplosion);
-        Debug.Log($"[Bombas] ¡BOOM! en {bomba.posicion:F1}");
+        AlsasuaLogger.Info("Bombas", $"¡BOOM! en {bomba.posicion:F1}");
         ActualizarHUD();
     }
 
@@ -189,7 +189,7 @@ public class SistemaBombas : MonoBehaviour
                 if (enemigo == null) continue;
                 if ((bomba.posicion - enemigo.transform.position).sqrMagnitude <= distSqr)
                 {
-                    Debug.Log("[Bombas] Enemigo detectado cerca. ¡DETONACIÓN POR PROXIMIDAD!");
+                    AlsasuaLogger.Info("Bombas", "Enemigo detectado cerca. ¡DETONACIÓN POR PROXIMIDAD!");
                     Detonar(bomba);
                     break;
                 }

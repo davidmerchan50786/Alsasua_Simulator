@@ -79,13 +79,13 @@ public class GestionTilesets : MonoBehaviour
         if (controlador != null)
         {
             observador = controlador.transform;
-            Debug.Log("[GestionTilesets] ✓ Usando posición del Jugador (Y≈1) para calidad dinámica — máxima resolución al nivel del suelo.");
+            AlsasuaLogger.Info("GestionTilesets", "✓ Usando posición del Jugador (Y≈1) para calidad dinámica — máxima resolución al nivel del suelo.");
         }
         else
         {
             // Fallback: cualquier cámara activa (mejor que Camera.main a Y=1500)
             observador = transform;
-            Debug.LogWarning("[GestionTilesets] Jugador no encontrado — usando posición del Manager para calidad dinámica.");
+            AlsasuaLogger.Warn("GestionTilesets", "Jugador no encontrado — usando posición del Manager para calidad dinámica.");
         }
 
         ConfigurarTilesetsIniciales();
@@ -117,7 +117,7 @@ public class GestionTilesets : MonoBehaviour
             tilesetGooglePhotorealistic.showCreditsOnScreen     = CREDITOS_GOOGLE_OBLIGATORIOS;
             tilesetGooglePhotorealistic.preloadAncestors        = true;
             tilesetGooglePhotorealistic.preloadSiblings         = true;
-            Debug.Log("[GestionTilesets] Google Photorealistic configurado (SSE inicial: " + sseCercano + ").");
+            AlsasuaLogger.Info("GestionTilesets", "Google Photorealistic configurado (SSE inicial: " + sseCercano + ").");
         }
 
         // Configurar terreno
@@ -125,14 +125,14 @@ public class GestionTilesets : MonoBehaviour
         {
             tilesetTerreno.maximumScreenSpaceError = sseCercano;
             tilesetTerreno.preloadAncestors        = true;
-            Debug.Log("[GestionTilesets] Terreno configurado.");
+            AlsasuaLogger.Info("GestionTilesets", "Terreno configurado.");
         }
 
         // Ocultar OSM si tenemos Google (evitar doble geometría)
         if (tilesetOSM != null && tilesetGooglePhotorealistic != null)
         {
             tilesetOSM.gameObject.SetActive(false);
-            Debug.Log("[GestionTilesets] OSM desactivado — usando Google Photorealistic.");
+            AlsasuaLogger.Info("GestionTilesets", "OSM desactivado — usando Google Photorealistic.");
         }
     }
 
@@ -214,14 +214,14 @@ public class GestionTilesets : MonoBehaviour
     {
         calidadDinamica = false;
         AplicarSSE(2f);
-        Debug.Log("[GestionTilesets] Calidad máxima activada (SSE = 2).");
+        AlsasuaLogger.Info("GestionTilesets", "Calidad máxima activada (SSE = 2).");
     }
 
     /// <summary>Restaurar calidad dinámica automática.</summary>
     public void RestaurarCalidadDinamica()
     {
         calidadDinamica = true;
-        Debug.Log("[GestionTilesets] Calidad dinámica restaurada.");
+        AlsasuaLogger.Info("GestionTilesets", "Calidad dinámica restaurada.");
     }
 
     /// <summary>Alternar entre Google Photorealistic y OSM.</summary>
@@ -237,7 +237,7 @@ public class GestionTilesets : MonoBehaviour
             tilesetOSM.gameObject.SetActive(googleActivo);
 
         string fuente = googleActivo ? "OSM (fallback)" : "Google Photorealistic";
-        Debug.Log($"[GestionTilesets] Fuente de edificios: {fuente}");
+        AlsasuaLogger.Info("GestionTilesets", $"Fuente de edificios: {fuente}");
     }
 
     // ============================================================

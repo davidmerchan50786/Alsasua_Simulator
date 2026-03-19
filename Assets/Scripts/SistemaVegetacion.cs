@@ -171,7 +171,7 @@ public sealed class SistemaVegetacion : MonoBehaviour
         }
 
         _arboles = lista.ToArray();
-        Debug.Log($"[SistemaVegetacion] Generados {_arboles.Length} árboles.");
+        AlsasuaLogger.Info("SistemaVegetacion", $"Generados {_arboles.Length} árboles.");
     }
 
     private float MuestrearTerreno(Vector3 pos)
@@ -427,8 +427,8 @@ public sealed class SistemaVegetacion : MonoBehaviour
               ?? Shader.Find("Standard");
         if (sh == null)
         {
-            Debug.LogError("[SistemaVegetacion] Shader no encontrado. " +
-                           "Incluye 'Universal Render Pipeline/Lit' en Always Included Shaders.");
+            AlsasuaLogger.Error("SistemaVegetacion", "Shader no encontrado. " +
+                               "Incluye 'Universal Render Pipeline/Lit' en Always Included Shaders.");
             sh = Shader.Find("Hidden/InternalErrorShader");
             if (sh == null) return null;
         }
@@ -465,7 +465,7 @@ public sealed class SistemaVegetacion : MonoBehaviour
     /// <summary>Añade árboles en una zona adicional en tiempo de ejecución.</summary>
     public void AñadirZona(Vector3 centro, float radio, int cantidad)
     {
-        if (_arboles == null) { Debug.LogWarning("[SistemaVegetacion] AñadirZona llamado antes de Awake."); return; }
+        if (_arboles == null) { AlsasuaLogger.Warn("SistemaVegetacion", "AñadirZona llamado antes de Awake."); return; }
         var lista = new List<ArbolData>(_arboles.Length + cantidad);
         lista.AddRange(_arboles);
 

@@ -279,7 +279,7 @@ public class ControladorJugador : MonoBehaviour
             camaraTP  = camGO.AddComponent<Camera>();
             if (FindFirstObjectByType<AudioListener>() == null)
                 camGO.AddComponent<AudioListener>();
-            Debug.LogWarning("[Jugador] Cámara no encontrada — se creó CamaraTP.");
+            AlsasuaLogger.Warn("Jugador", "Cámara no encontrada — se creó CamaraTP.");
         }
 
         // Desacoplar del jugador para orbitar libremente.
@@ -343,12 +343,12 @@ public class ControladorJugador : MonoBehaviour
                 // Culling Mode: solo animar cuando el personaje es visible en cámara (optimización).
                 animPersonaje.cullingMode = AnimatorCullingMode.CullUpdateTransforms;
 
-                Debug.Log($"[Jugador] ✓ Personaje Mixamo '{prefabPersonaje.name}' instanciado con Animator.");
+                AlsasuaLogger.Info("Jugador", $"✓ Personaje Mixamo '{prefabPersonaje.name}' instanciado con Animator.");
             }
             else
             {
-                Debug.LogWarning("[Jugador] El prefab no tiene Animator. " +
-                                 "Añade un Animator Controller al FBX en el Inspector de Import.");
+                AlsasuaLogger.Warn("Jugador", "El prefab no tiene Animator. " +
+                                  "Añade un Animator Controller al FBX en el Inspector de Import.");
             }
 
             return; // No crear el cuerpo procedural
@@ -423,8 +423,8 @@ public class ControladorJugador : MonoBehaviour
 
         if (shader == null)
         {
-            Debug.LogError("[ControladorJugador] MatURP: ningún shader compatible encontrado. " +
-                           "Incluye 'Universal Render Pipeline/Lit' en Always Included Shaders.");
+            AlsasuaLogger.Error("Jugador", "MatURP: ningún shader compatible encontrado. " +
+                               "Incluye 'Universal Render Pipeline/Lit' en Always Included Shaders.");
             // Fallback de emergencia — el material saldrá magenta pero no lanzará excepción.
             shader = Shader.Find("Hidden/InternalErrorShader") ?? Shader.Find("UI/Default");
             if (shader == null) return null;
@@ -676,7 +676,7 @@ public class ControladorJugador : MonoBehaviour
 
     private void Morir()
     {
-        Debug.Log("[Jugador] ¡Has muerto!");
+        AlsasuaLogger.Info("Jugador", "¡Has muerto!");
         animPersonaje?.SetTrigger(AnimMorir);
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible   = true;

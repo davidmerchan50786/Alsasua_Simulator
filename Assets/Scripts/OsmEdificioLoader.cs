@@ -163,16 +163,16 @@ public class OsmEdificioLoader : MonoBehaviour
         // FIX: guard singleton — impide doble carga si el componente es activado dos veces
         if (cargaEnCurso)
         {
-            Debug.LogWarning("[OsmLoader] Ya hay una carga en curso. " +
-                             "Usa 'Recargar edificios' en el Inspector para reiniciar.");
+            AlsasuaLogger.Warn("OsmLoader", "Ya hay una carga en curso. " +
+                               "Usa 'Recargar edificios' en el Inspector para reiniciar.");
             return;
         }
 
         georef = Object.FindFirstObjectByType<CesiumGeoreference>();
         if (georef == null)
         {
-            Debug.LogError("[OsmLoader] CesiumGeoreference no encontrado. " +
-                           "Ejecuta Alsasua → ⚙ Configurar Escena Completa primero.");
+            AlsasuaLogger.Error("OsmLoader", "CesiumGeoreference no encontrado. " +
+                                "Ejecuta Alsasua → ⚙ Configurar Escena Completa primero.");
             return;
         }
 
@@ -263,9 +263,9 @@ public class OsmEdificioLoader : MonoBehaviour
 
         if (uwr.result != UnityWebRequest.Result.Success)
         {
-            Debug.LogError($"[OsmLoader] No se pudo cargar '{ruta}': {uwr.error}\n" +
-                           "Comprueba que GeneradorFachadas.py se ejecutó y que los archivos " +
-                           "están en la carpeta OSMData/.");
+            AlsasuaLogger.Error("OsmLoader", $"No se pudo cargar '{ruta}': {uwr.error}\n" +
+                                "Comprueba que GeneradorFachadas.py se ejecutó y que los archivos " +
+                                "están en la carpeta OSMData/.");
             yield break;
         }
 
@@ -276,21 +276,21 @@ public class OsmEdificioLoader : MonoBehaviour
         }
         catch (Exception ex)
         {
-            Debug.LogError($"[OsmLoader] JSON malformado: {ex.Message}");
+            AlsasuaLogger.Error("OsmLoader", $"JSON malformado: {ex.Message}");
             yield break;
         }
 
         var edificiosToken = raiz["edificios"] as JArray;
         if (edificiosToken == null || edificiosToken.Count == 0)
         {
-            Debug.LogWarning("[OsmLoader] El JSON no contiene edificios. " +
-                             "¿Se ejecutó GeneradorFachadas.py correctamente?");
+            AlsasuaLogger.Warn("OsmLoader", "El JSON no contiene edificios. " +
+                               "¿Se ejecutó GeneradorFachadas.py correctamente?");
             yield break;
         }
 
         int totalEdif = raiz["total_edificios"]?.Value<int>() ?? edificiosToken.Count;
         int paredesSV = raiz["paredes_con_sv"]?.Value<int>()  ?? 0;
-        Debug.Log($"[OsmLoader] JSON cargado: {totalEdif} edificios, {paredesSV} paredes con Street View.");
+        AlsasuaLogger.Info("OsmLoader", $"JSON cargado: {totalEdif} edificios, {paredesSV} paredes con Street View.");
 
         yield return StartCoroutine(CrearEdificios(edificiosToken));
     }
@@ -319,7 +319,7 @@ public class OsmEdificioLoader : MonoBehaviour
             }
             catch (Exception ex)
             {
-                Debug.LogWarning($"[OsmLoader] Error al crear edificio [{i}]: {ex.Message}");
+                AlsasuaLogger.Warn("OsmLoader", $"Error al crear edificio [{i}]: {ex.Message}");
                 if (goCreado != null) Destroy(goCreado); // limpieza parcial
             }
 
@@ -333,8 +333,8 @@ public class OsmEdificioLoader : MonoBehaviour
         }
 
         cargaEdificiosCompleta = true;
-        Debug.Log($"[OsmLoader] ✓ {edificiosCargados} edificios creados. " +
-                  $"Cargando {colaTexturas.Count} texturas ({texturasPorFrame}/frame)...");
+        AlsasuaLogger.Info("OsmLoader", $"✓ {edificiosCargados} edificios creados. " +
+                           $"Cargando {colaTexturas.Count} texturas ({texturasPorFrame}/frame)...");
 
         // FIX: guard explícito antes de StartCoroutine — si el GO fue destruido durante el último yield
         if (this != null && !texturasEnCarga)
@@ -630,8 +630,8 @@ public class OsmEdificioLoader : MonoBehaviour
 
             // Log de progreso cada 500 texturas para visibilidad en la consola sin spam
             if (texturasCargadas > 0 && texturasCargadas % 500 == 0)
-                Debug.Log($"[OsmLoader] Texturas: {texturasCargadas}/{totalCola} " +
-                          $"({texturasCargadas * 100 / Mathf.Max(1, totalCola)}%)...");
+                AlsasuaLogger.Info("OsmLoader", $"Texturas: {texturasCargadas}/{totalCola} " +
+                                   $"({texturasCargadas * 100 / Mathf.Max(1, totalCola)}%)...");
 
             enEsteFrame++;
             if (enEsteFrame >= texturasPorFrame)
@@ -644,8 +644,8 @@ public class OsmEdificioLoader : MonoBehaviour
         texturasEnCarga       = false;
         cargaTexturasCompleta = true;
         cargaEnCurso          = false; // FIX: liberar el guard para permitir futuros Recargar
-        Debug.Log($"[OsmLoader] ✓ {texturasCargadas} texturas Street View aplicadas" +
-                  (texturasError > 0 ? $" ({texturasError} sin imagen → color cemento)." : "."));
+        AlsasuaLogger.Info("OsmLoader", $"✓ {texturasCargadas} texturas Street View aplicadas" +
+                           (texturasError > 0 ? $" ({texturasError} sin imagen → color cemento)." : "."));
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -661,8 +661,8 @@ public class OsmEdificioLoader : MonoBehaviour
 
         if (shader == null)
         {
-            Debug.LogError("[OsmLoader] Ningún shader URP/Standard encontrado. " +
-                           "Incluye 'Universal Render Pipeline/Lit' en Always Included Shaders.");
+            AlsasuaLogger.Error("OsmLoader", "Ningún shader URP/Standard encontrado. " +
+                                "Incluye 'Universal Render Pipeline/Lit' en Always Included Shaders.");
             shader = Shader.Find("Hidden/InternalErrorShader")
                   ?? Shader.Find("Sprites/Default")
                   ?? Shader.Find("UI/Default");

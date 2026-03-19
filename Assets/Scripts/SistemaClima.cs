@@ -181,7 +181,7 @@ public class SistemaClima : MonoBehaviour
         var datos = ObtenerDatos(climaActual);
         AplicarDatosInstantaneo(datos);
 
-        Debug.Log($"[Clima] Iniciado: {climaActual}");
+        AlsasuaLogger.Info("SistemaClima", $"Iniciado: {climaActual}");
     }
 
     private void Update()
@@ -202,11 +202,11 @@ public class SistemaClima : MonoBehaviour
                 _timerRetryVolumen = INTERVALO_RETRY_VOLUMEN;
 
                 if (colorAdjustments != null)
-                    Debug.Log($"[Clima] Efectos del Volume disponibles (intento {_intentosVolumen}).");
+                    AlsasuaLogger.Info("SistemaClima", $"Efectos del Volume disponibles (intento {_intentosVolumen}).");
                 else if (_intentosVolumen >= MAX_INTENTOS_VOLUMEN)
-                    Debug.LogWarning("[Clima] Efectos del Volume no encontrados tras " +
-                                     $"{MAX_INTENTOS_VOLUMEN} intentos — " +
-                                     "saturación, viñeta y DOF meteorológicos desactivados.");
+                    AlsasuaLogger.Warn("SistemaClima", $"Efectos del Volume no encontrados tras " +
+                                      $"{MAX_INTENTOS_VOLUMEN} intentos — " +
+                                      "saturación, viñeta y DOF meteorológicos desactivados.");
             }
         }
 
@@ -259,7 +259,7 @@ public class SistemaClima : MonoBehaviour
         progresoTransicion = 0f;
         velocidadTransicion = 1f / Mathf.Max(duracionTransicion, 0.1f);
 
-        Debug.Log($"[Clima] Transición: {climaActual} → {climaObjetivo} ({duracionTransicion}s)");
+        AlsasuaLogger.Info("SistemaClima", $"Transición: {climaActual} → {climaObjetivo} ({duracionTransicion}s)");
     }
 
     // Atajos de Inspector (clic derecho sobre el script)
@@ -552,7 +552,7 @@ public class SistemaClima : MonoBehaviour
         rend.material      = _matLluvia;
         rend.sortingOrder  = 10;
 
-        Debug.Log("[Clima] Sistema de lluvia creado.");
+        AlsasuaLogger.Verbose("SistemaClima", "Sistema de lluvia creado.");
     }
 
     private void CrearSistemaBruma()
@@ -606,7 +606,7 @@ public class SistemaClima : MonoBehaviour
         rend.material    = _matBruma;
         rend.sortingOrder = 5;
 
-        Debug.Log("[Clima] Sistema de bruma creado.");
+        AlsasuaLogger.Verbose("SistemaClima", "Sistema de bruma creado.");
     }
 
     // ═══════════════════════════════════════════════════════════════════════

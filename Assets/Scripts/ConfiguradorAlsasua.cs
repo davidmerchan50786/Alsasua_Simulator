@@ -119,7 +119,7 @@ public class ConfiguradorAlsasua : MonoBehaviour
             if (!anchor.transform.IsChildOf(georeference.transform))
             {
                 anchor.transform.SetParent(georeference.transform, worldPositionStays: true);
-                Debug.Log($"[Alsasua] ✓ '{anchor.gameObject.name}' re-emparentado bajo CesiumGeoreference (post-start).");
+                AlsasuaLogger.Info("Alsasua", $"✓ '{anchor.gameObject.name}' re-emparentado bajo CesiumGeoreference (post-start).");
             }
         }
 
@@ -133,7 +133,7 @@ public class ConfiguradorAlsasua : MonoBehaviour
             if (cam.farClipPlane < 2_000f)
             {
                 cam.farClipPlane = 1_000_000f;
-                Debug.Log($"[Alsasua] ✓ Far clip corregido en '{cam.gameObject.name}' post-start.");
+                AlsasuaLogger.Info("Alsasua", $"✓ Far clip corregido en '{cam.gameObject.name}' post-start.");
             }
         }
     }
@@ -159,7 +159,7 @@ public class ConfiguradorAlsasua : MonoBehaviour
             if (cos != null)
             {
                 Destroy(cos);
-                Debug.Log($"[Alsasua] CesiumOriginShift eliminado de '{cam.gameObject.name}' (estaba a Y={cam.transform.position.y:F0})");
+                AlsasuaLogger.Info("Alsasua", $"CesiumOriginShift eliminado de '{cam.gameObject.name}' (estaba a Y={cam.transform.position.y:F0})");
             }
         }
 
@@ -174,7 +174,7 @@ public class ConfiguradorAlsasua : MonoBehaviour
                 if (!anchor.transform.IsChildOf(georeference.transform))
                 {
                     anchor.transform.SetParent(georeference.transform, worldPositionStays: true);
-                    Debug.Log($"[Alsasua] ✓ '{anchor.gameObject.name}' re-emparentado bajo CesiumGeoreference (CesiumGlobeAnchor).");
+                    AlsasuaLogger.Info("Alsasua", $"✓ '{anchor.gameObject.name}' re-emparentado bajo CesiumGeoreference (CesiumGlobeAnchor).");
                 }
             }
         }
@@ -187,19 +187,19 @@ public class ConfiguradorAlsasua : MonoBehaviour
             if (georeference != null && !controlador.transform.IsChildOf(georeference.transform))
             {
                 controlador.transform.SetParent(georeference.transform, worldPositionStays: true);
-                Debug.Log("[Alsasua] ✓ Jugador re-emparentado bajo CesiumGeoreference.");
+                AlsasuaLogger.Info("Alsasua", "✓ Jugador re-emparentado bajo CesiumGeoreference.");
             }
 
             if (controlador.GetComponent<CesiumOriginShift>() == null)
             {
                 controlador.gameObject.AddComponent<CesiumOriginShift>();
-                Debug.Log("[Alsasua] ✓ CesiumOriginShift añadido al Jugador — tiles a nivel de suelo activados.");
+                AlsasuaLogger.Info("Alsasua", "✓ CesiumOriginShift añadido al Jugador — tiles a nivel de suelo activados.");
             }
             else
-                Debug.Log("[Alsasua] ✓ CesiumOriginShift ya estaba en el Jugador.");
+                AlsasuaLogger.Info("Alsasua", "✓ CesiumOriginShift ya estaba en el Jugador.");
         }
         else
-            Debug.LogWarning("[Alsasua] ⚠ Jugador no encontrado — CesiumOriginShift no asignado. Ejecuta 'Configurar Gameplay'.");
+            AlsasuaLogger.Warn("Alsasua", "⚠ Jugador no encontrado — CesiumOriginShift no asignado. Ejecuta 'Configurar Gameplay'.");
     }
 
     // ============================================================
@@ -234,7 +234,7 @@ public class ConfiguradorAlsasua : MonoBehaviour
             if (t.createPhysicsMeshes != necesitaFisica)
             {
                 t.createPhysicsMeshes = necesitaFisica;
-                Debug.Log($"[Alsasua] Tileset '{t.gameObject.name}': createPhysicsMeshes={necesitaFisica}");
+                AlsasuaLogger.Info("Alsasua", $"Tileset '{t.gameObject.name}': createPhysicsMeshes={necesitaFisica}");
             }
 
             // Calidad SSE
@@ -248,11 +248,11 @@ public class ConfiguradorAlsasua : MonoBehaviour
             if (georeference != null && !t.transform.IsChildOf(georeference.transform))
             {
                 t.transform.SetParent(georeference.transform, worldPositionStays: true);
-                Debug.Log($"[Alsasua] Tileset '{t.gameObject.name}' movido bajo CesiumGeoreference.");
+                AlsasuaLogger.Info("Alsasua", $"Tileset '{t.gameObject.name}' movido bajo CesiumGeoreference.");
             }
         }
 
-        Debug.Log($"[Alsasua] ✓ {todos.Length} tileset(s) existentes corregidos.");
+        AlsasuaLogger.Info("Alsasua", $"✓ {todos.Length} tileset(s) existentes corregidos.");
     }
 
     // ============================================================
@@ -289,7 +289,7 @@ public class ConfiguradorAlsasua : MonoBehaviour
                 _skyboxMat.SetFloat("_Exposure", 1.3f);
                 RenderSettings.skybox = _skyboxMat;
                 DynamicGI.UpdateEnvironment();
-                Debug.Log("[Alsasua] Skybox procedimental activado.");
+                AlsasuaLogger.Info("Alsasua", "Skybox procedimental activado.");
             }
         }
 
@@ -300,11 +300,11 @@ public class ConfiguradorAlsasua : MonoBehaviour
             cam.farClipPlane  = FAR_CESIUM;
             cam.nearClipPlane = NEAR_SUELO;
             cam.clearFlags    = CameraClearFlags.Skybox;
-            Debug.Log($"[Alsasua] Cámara '{cam.gameObject.name}': Near={NEAR_SUELO} Far={FAR_CESIUM}.");
+            AlsasuaLogger.Info("Alsasua", $"Cámara '{cam.gameObject.name}': Near={NEAR_SUELO} Far={FAR_CESIUM}.");
         }
 
         if (camaras.Length == 0)
-            Debug.LogWarning("[Alsasua] ⚠ No se encontraron cámaras para configurar el clipping plane.");
+            AlsasuaLogger.Warn("Alsasua", "⚠ No se encontraron cámaras para configurar el clipping plane.");
     }
 
     // ============================================================
@@ -322,7 +322,7 @@ public class ConfiguradorAlsasua : MonoBehaviour
             if (cam != null && cam.CompareTag("MainCamera"))
             {
                 al.enabled = false;
-                Debug.Log($"[Alsasua] AudioListener desactivado en '{cam.gameObject.name}'.");
+                AlsasuaLogger.Info("Alsasua", $"AudioListener desactivado en '{cam.gameObject.name}'.");
                 return;
             }
         }
@@ -338,20 +338,20 @@ public class ConfiguradorAlsasua : MonoBehaviour
 
         if (configTokens == null)
         {
-            Debug.LogWarning("[Alsasua] No se encontró ConfiguracionTokens.asset en Resources.");
+            AlsasuaLogger.Warn("Alsasua", "No se encontró ConfiguracionTokens.asset en Resources.");
             return;
         }
 
         if (string.IsNullOrEmpty(apiKeyGoogle) && !string.IsNullOrEmpty(configTokens.apiKeyGoogle))
         {
             apiKeyGoogle = configTokens.apiKeyGoogle;
-            Debug.Log("[Alsasua] ✓ API Key de Google cargada desde ConfiguracionTokens.asset");
+            AlsasuaLogger.Info("Alsasua", "✓ API Key de Google cargada desde ConfiguracionTokens.asset");
         }
 
         if (string.IsNullOrEmpty(tokenCesiumIon) && !string.IsNullOrEmpty(configTokens.tokenCesiumIon))
         {
             tokenCesiumIon = configTokens.tokenCesiumIon;
-            Debug.Log("[Alsasua] ✓ Token de Cesium Ion cargado desde ConfiguracionTokens.asset");
+            AlsasuaLogger.Info("Alsasua", "✓ Token de Cesium Ion cargado desde ConfiguracionTokens.asset");
         }
     }
 
@@ -366,14 +366,14 @@ public class ConfiguradorAlsasua : MonoBehaviour
         {
             GameObject geoObj = new GameObject("CesiumGeoreference");
             georeference = geoObj.AddComponent<CesiumGeoreference>();
-            Debug.Log("[Alsasua] CesiumGeoreference creado.");
+            AlsasuaLogger.Info("Alsasua", "CesiumGeoreference creado.");
         }
 
         georeference.latitude  = ALSASUA_LATITUD;
         georeference.longitude = ALSASUA_LONGITUD;
         georeference.height    = ALSASUA_ALTURA;
 
-        Debug.Log($"[Alsasua] Georreferencia → Lat: {ALSASUA_LATITUD}, Lon: {ALSASUA_LONGITUD}, Alt: {ALSASUA_ALTURA}m");
+        AlsasuaLogger.Info("Alsasua", $"Georreferencia → Lat: {ALSASUA_LATITUD}, Lon: {ALSASUA_LONGITUD}, Alt: {ALSASUA_ALTURA}m");
     }
 
     // ============================================================
@@ -392,17 +392,17 @@ public class ConfiguradorAlsasua : MonoBehaviour
             if (tieneToken || tieneURL || tieneAsset)
             {
                 hayTilesetsFuncionales = true;
-                Debug.Log($"[Alsasua] Tileset detectado: '{t.gameObject.name}' — conservando.");
+                AlsasuaLogger.Info("Alsasua", $"Tileset detectado: '{t.gameObject.name}' — conservando.");
             }
         }
 
         if (hayTilesetsFuncionales)
         {
-            Debug.Log($"[Alsasua] ✓ {tilesetsExistentes.Length} tileset(s) existentes — conservando todos.");
+            AlsasuaLogger.Info("Alsasua", $"✓ {tilesetsExistentes.Length} tileset(s) existentes — conservando todos.");
             return;
         }
 
-        Debug.Log("[Alsasua] No hay tilesets en la escena. Creando desde tokens...");
+        AlsasuaLogger.Info("Alsasua", "No hay tilesets en la escena. Creando desde tokens...");
 
         string[] nombresEliminar = {
             "Terreno_CesiumWorld",
@@ -416,7 +416,7 @@ public class ConfiguradorAlsasua : MonoBehaviour
         if (usarCesiumWorldTerrain && !string.IsNullOrEmpty(tokenCesiumIon))
             CargarTilesetTerreno();
         else if (usarCesiumWorldTerrain)
-            Debug.LogWarning("[Alsasua] ⚠ Sin token Cesium Ion — terreno no cargado. " +
+            AlsasuaLogger.Warn("Alsasua", "⚠ Sin token Cesium Ion — terreno no cargado. " +
                 "Usa Cesium → Connect to Cesium Ion → Add Cesium World Terrain.");
 
         // 2. Google Photorealistic (fachadas + tejados reales)
@@ -424,7 +424,7 @@ public class ConfiguradorAlsasua : MonoBehaviour
             CargarGooglePhotorealistic3DTiles();
         else if (usarOSMEdificiosFallback && !string.IsNullOrEmpty(tokenCesiumIon))
         {
-            Debug.LogWarning("[Alsasua] Sin API Key Google → fallback OSM.");
+            AlsasuaLogger.Warn("Alsasua", "Sin API Key Google → fallback OSM.");
             CargarEdificiosOSM();
         }
 
@@ -432,9 +432,9 @@ public class ConfiguradorAlsasua : MonoBehaviour
         var tilesetsFinal = Object.FindObjectsByType<Cesium3DTileset>(FindObjectsSortMode.None);
         if (tilesetsFinal.Length == 0)
         {
-            Debug.LogError(
+            AlsasuaLogger.Error("Alsasua",
                 "╔══════════════════════════════════════════════════════════════╗\n" +
-                "║  [Alsasua] ❌ SIN TILES — ESCENARIO COMPLETAMENTE NEGRO      ║\n" +
+                "║  ❌ SIN TILES — ESCENARIO COMPLETAMENTE NEGRO                ║\n" +
                 "║                                                              ║\n" +
                 "║  SOLUCIÓN (2 pasos):                                         ║\n" +
                 "║  1. Menú Unity: Cesium → Connect to Cesium Ion               ║\n" +
@@ -444,7 +444,7 @@ public class ConfiguradorAlsasua : MonoBehaviour
             );
         }
         else
-            Debug.Log($"[Alsasua] ✓ {tilesetsFinal.Length} tileset(s) creados.");
+            AlsasuaLogger.Info("Alsasua", $"✓ {tilesetsFinal.Length} tileset(s) creados.");
     }
 
     private void EliminarTilesetsDuplicados(string nombre)
@@ -454,7 +454,7 @@ public class ConfiguradorAlsasua : MonoBehaviour
             if (obj.name == nombre)
             {
                 Destroy(obj);
-                Debug.Log($"[Alsasua] Eliminado duplicado: {nombre}");
+                AlsasuaLogger.Info("Alsasua", $"Eliminado duplicado: {nombre}");
             }
         }
     }
@@ -480,7 +480,7 @@ public class ConfiguradorAlsasua : MonoBehaviour
         tileset.preloadSiblings         = true;
         tileset.createPhysicsMeshes     = true;   // NECESARIO: el jugador camina sobre el terreno
 
-        Debug.Log("[Alsasua] Cesium World Terrain cargado (ionAssetID=1). Física habilitada para colisión de suelo.");
+        AlsasuaLogger.Info("Alsasua", "Cesium World Terrain cargado (ionAssetID=1). Física habilitada para colisión de suelo.");
     }
 
     /// <summary>
@@ -502,7 +502,7 @@ public class ConfiguradorAlsasua : MonoBehaviour
         tileset.createPhysicsMeshes     = true;   // Colisión con edificios y terreno Google
         tileset.showCreditsOnScreen     = true;   // Obligatorio por licencia de Google
 
-        Debug.Log("[Alsasua] ✓ Google Photorealistic 3D Tiles cargados — fachadas y tejados reales.");
+        AlsasuaLogger.Info("Alsasua", "✓ Google Photorealistic 3D Tiles cargados — fachadas y tejados reales.");
     }
 
     /// <summary>
@@ -521,7 +521,7 @@ public class ConfiguradorAlsasua : MonoBehaviour
         tileset.maximumScreenSpaceError = maximumScreenSpaceError;
         tileset.createPhysicsMeshes     = false;  // Solo visual — física proviene del terreno
 
-        Debug.Log("[Alsasua] Edificios OSM cargados (fallback).");
+        AlsasuaLogger.Info("Alsasua", "Edificios OSM cargados (fallback).");
     }
 
     // ============================================================
@@ -601,23 +601,24 @@ public class ConfiguradorAlsasua : MonoBehaviour
 
         ConfigurarGeoreferenciaAlsasua();
         CargarTilesets();
-        Debug.Log("[Alsasua] Escena reconfigurada.");
+        AlsasuaLogger.Info("Alsasua", "Escena reconfigurada.");
     }
 
     [ContextMenu("Mostrar instrucciones API Key Google")]
     private void MostrarInstruccionesAPIKey()
     {
-        Debug.Log("════════════════════════════════════════════════");
-        Debug.Log("  CÓMO OBTENER API KEY DE GOOGLE MAPS PLATFORM  ");
-        Debug.Log("════════════════════════════════════════════════");
-        Debug.Log("1. Ve a: https://console.cloud.google.com/");
-        Debug.Log("2. Crea un proyecto nuevo");
-        Debug.Log("3. Activa 'Map Tiles API' en APIs y servicios");
-        Debug.Log("4. Ve a Credenciales → Crear credencial → API Key");
-        Debug.Log("5. Pega la clave en el campo 'Api Key Google' del Inspector");
-        Debug.Log("════════════════════════════════════════════════");
-        Debug.Log("  Google tiene fotogrametría 3D de toda España");
-        Debug.Log("  incluyendo Alsasua — fachadas y tejados reales");
-        Debug.Log("════════════════════════════════════════════════");
+        AlsasuaLogger.Info("Alsasua",
+            "════════════════════════════════════════════════\n" +
+            "  CÓMO OBTENER API KEY DE GOOGLE MAPS PLATFORM  \n" +
+            "════════════════════════════════════════════════\n" +
+            "1. Ve a: https://console.cloud.google.com/\n" +
+            "2. Crea un proyecto nuevo\n" +
+            "3. Activa 'Map Tiles API' en APIs y servicios\n" +
+            "4. Ve a Credenciales → Crear credencial → API Key\n" +
+            "5. Pega la clave en el campo 'Api Key Google' del Inspector\n" +
+            "════════════════════════════════════════════════\n" +
+            "  Google tiene fotogrametría 3D de toda España\n" +
+            "  incluyendo Alsasua — fachadas y tejados reales\n" +
+            "════════════════════════════════════════════════");
     }
 }
