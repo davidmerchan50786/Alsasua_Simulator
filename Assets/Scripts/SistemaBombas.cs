@@ -2,6 +2,7 @@
 // Colocar bombas (F), detonar en remoto (G) o por proximidad
 
 using UnityEngine;
+using UnityEngine.UI;
 using System.Collections.Generic;
 
 public class SistemaBombas : MonoBehaviour
@@ -26,11 +27,22 @@ public class SistemaBombas : MonoBehaviour
     private List<BombaColocada> bombas = new List<BombaColocada>();
     private Camera camara;
 
-    // BUG FIX RENDIMIENTO: caché de enemigos + throttle para no llamar
-    // FindObjectsByType cada frame (60+ veces/segundo → 5 veces/segundo)
-    private EnemigoPatrulla[] enemigosCache  = new EnemigoPatrulla[0];
-    private float timerProximidad            = 0f;
-    private const float INTERVALO_PROXIMIDAD = 0.2f;  // refrescar cada 200 ms
+    // FIX RENDIMIENTO: caché de enemigos con dos timers:
+    //   · INTERVALO_PROXIMIDAD (200ms) — comprobar distancia bomba↔enemigo, sin alloc.
+    //   · INTERVALO_REFRESH_CACHE (5s)  — re-poblar el array; alloca, pero poco frecuente.
+    // Los enemigos destruidos quedan como null → el null-check en ComprobarProximidad los filtra.
+    private EnemigoPatrulla[] enemigosCache      = new EnemigoPatrulla[0];
+    private float timerProximidad                = 0f;
+    private float timerRefreshCache              = 0f;
+    private const float INTERVALO_PROXIMIDAD     = 0.2f;   // comprobación de distancia
+    private const float INTERVALO_REFRESH_CACHE  = 5f;     // re-búsqueda de nuevos enemigos
+
+    // FIX HUD: sustitución del OnGUI() legacy por Canvas UGUI.
+    // OnGUI() corre fuera del ciclo de render de URP y no respeta DPI scaling.
+    private GameObject _hudCanvasGO;
+    private Text       _labelBombas;
+    private int        _bombasAnterior   = -1;
+    private int        _colocadasAnterior = -1;
 
     // ═══════════════════════════════════════════════════════════════════════
     //  UNITY
@@ -42,19 +54,35 @@ public class SistemaBombas : MonoBehaviour
         if (camara == null) camara = Camera.main;
     }
 
+    private void Start()
+    {
+        // Poblar la caché una vez al arrancar.
+        // Los refresos posteriores ocurren cada INTERVALO_REFRESH_CACHE segundos.
+        RefrescarCacheEnemigos();
+        InicializarHUD();
+    }
+
     private void Update()
     {
-        // BUG FIX RENDIMIENTO: comprobar proximidad sólo cada INTERVALO_PROXIMIDAD segundos
-        // y sólo si hay bombas activas (evitar trabajo inútil cuando no hay ninguna colocada)
+        // FIX RENDIMIENTO: separar el ciclo de detección de proximidad (200ms)
+        // del ciclo de re-búsqueda de enemigos (5s, que alloca un nuevo array).
+        // La mayoría de los frames solo hacen la comprobación de distancia → cero alloc.
+        timerRefreshCache -= Time.deltaTime;
+        if (timerRefreshCache <= 0f)
+        {
+            RefrescarCacheEnemigos();
+            timerRefreshCache = INTERVALO_REFRESH_CACHE;
+        }
+
         if (!proximidadActiva || bombas.Count == 0) return;
 
         timerProximidad -= Time.deltaTime;
         if (timerProximidad > 0f) return;
 
         timerProximidad = INTERVALO_PROXIMIDAD;
-        // Refrescar la caché de enemigos cada 200 ms (no cada frame)
-        enemigosCache = Object.FindObjectsByType<EnemigoPatrulla>(FindObjectsSortMode.None);
         ComprobarProximidad();
+
+        ActualizarHUD();
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -88,6 +116,7 @@ public class SistemaBombas : MonoBehaviour
         bombasDisponibles--;
 
         Debug.Log($"[Bombas] Bomba colocada en {posicion:F1}. Quedan: {bombasDisponibles}");
+        ActualizarHUD();
 
         // Si tiene timer, iniciar cuenta atrás
         if (timerAutodetonacion > 0f)
@@ -126,11 +155,22 @@ public class SistemaBombas : MonoBehaviour
 
         SistemaExplosion.Explotar(bomba.posicion, radioExplosion, fuerzaExplosion, danoExplosion);
         Debug.Log($"[Bombas] ¡BOOM! en {bomba.posicion:F1}");
+        ActualizarHUD();
     }
 
     // ═══════════════════════════════════════════════════════════════════════
     //  DETECCIÓN POR PROXIMIDAD
     // ═══════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Re-pobla la caché de enemigos. Alloca un nuevo array (FindObjectsByType no evitable),
+    /// pero solo se llama cada INTERVALO_REFRESH_CACHE segundos, no cada frame.
+    /// Los enemigos destruidos entre refrescos quedan como null y se filtran en ComprobarProximidad.
+    /// </summary>
+    private void RefrescarCacheEnemigos()
+    {
+        enemigosCache = Object.FindObjectsByType<EnemigoPatrulla>(FindObjectsSortMode.None);
+    }
 
     private void ComprobarProximidad()
     {
@@ -161,17 +201,20 @@ public class SistemaBombas : MonoBehaviour
     //  OBJETO 3D DE BOMBA
     // ═══════════════════════════════════════════════════════════════════════
 
-    // FIX LEAK: material compartido para todas las bombas — .material (instancia) fue sustituido
-    // por .sharedMaterial + MaterialPropertyBlock. Una sola instancia del material para N bombas.
-    private static Material _matBombaCache;
-    private static Material MatBomba()
+    // FIX STATIC: _matBombaCache era 'static' — si había N instancias de SistemaBombas,
+    // la primera en OnDestroy() destruía el material compartido y lo nullificaba.
+    // Las N-1 restantes tenían sharedMaterial apuntando a un objeto destruido → magenta.
+    // Solución: campo de instancia. Cada SistemaBombas crea y destruye su propio material.
+    // El overhead (N materiales idénticos vs 1) es despreciable — rara vez hay >1 instancia.
+    private Material _matBomba;
+    private Material ObtenerMatBomba()
     {
-        if (_matBombaCache != null) return _matBombaCache;
+        if (_matBomba != null) return _matBomba;
         var shader = Shader.Find("Universal Render Pipeline/Lit")
                   ?? Shader.Find("Universal Render Pipeline/Unlit")
                   ?? Shader.Find("Standard");
-        _matBombaCache = new Material(shader) { color = new Color(0.1f, 0.1f, 0.1f) };
-        return _matBombaCache;
+        _matBomba = new Material(shader) { color = new Color(0.1f, 0.1f, 0.1f) };
+        return _matBomba;
     }
 
     private GameObject CrearObjetoBomba(Vector3 posicion)
@@ -182,8 +225,7 @@ public class SistemaBombas : MonoBehaviour
         go.transform.position   = posicion + Vector3.up * 0.12f;
         go.transform.localScale = new Vector3(0.2f, 0.12f, 0.2f);
 
-        // FIX LEAK: sharedMaterial + material cacheado estático en vez de .material (instancia nueva por bomba)
-        go.GetComponent<Renderer>().sharedMaterial = MatBomba();
+        go.GetComponent<Renderer>().sharedMaterial = ObtenerMatBomba();
 
         // Luz parpadeante roja
         var luzGO = new GameObject("LuzBomba");
@@ -207,14 +249,11 @@ public class SistemaBombas : MonoBehaviour
 
     private void OnDestroy()
     {
-        // BUG FIX: _matBombaCache es estático → persiste en memoria al salir del modo Play
-        // en el Editor (los campos estáticos de MonoBehaviours NO se resetean al recargar).
-        // Destruirlo y nullificarlo aquí garantiza que el GC lo pueda recoger.
-        if (_matBombaCache != null)
-        {
-            Object.Destroy(_matBombaCache);
-            _matBombaCache = null;
-        }
+        // _matBomba es ahora campo de instancia → destruirla aquí solo afecta a esta instancia.
+        if (_matBomba != null) { Object.Destroy(_matBomba); _matBomba = null; }
+
+        // Destruir el Canvas HUD que creamos por código.
+        if (_hudCanvasGO != null) { Destroy(_hudCanvasGO); _hudCanvasGO = null; }
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -229,20 +268,73 @@ public class SistemaBombas : MonoBehaviour
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    //  HUD
+    //  HUD — Canvas UGUI (reemplaza OnGUI legacy)
     // ═══════════════════════════════════════════════════════════════════════
 
-    private void OnGUI()
+    /// <summary>
+    /// Crea el Canvas HUD por código.
+    /// OnGUI() (IMGUI legacy) corría fuera del pipeline URP y no respetaba DPI scaling.
+    /// Canvas ScreenSpaceOverlay se compone correctamente sobre el render de URP.
+    /// </summary>
+    private void InicializarHUD()
     {
-        float x = Screen.width - 160f;
-        float y = Screen.height - 70f;
+        // ── Canvas ──────────────────────────────────────────────────────
+        _hudCanvasGO = new GameObject("HUD_Bombas");
+        var canvas = _hudCanvasGO.AddComponent<Canvas>();
+        canvas.renderMode  = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 5;
+        _hudCanvasGO.AddComponent<CanvasScaler>();
+        _hudCanvasGO.AddComponent<GraphicRaycaster>();
 
-        GUI.color = new Color(0, 0, 0, 0.55f);
-        GUI.DrawTexture(new Rect(x - 4, y - 4, 155, 28), Texture2D.whiteTexture);
+        // ── Panel de fondo semitransparente ─────────────────────────────
+        var panelGO  = new GameObject("Panel");
+        panelGO.transform.SetParent(_hudCanvasGO.transform, false);
+        var panelImg = panelGO.AddComponent<Image>();
+        panelImg.color = new Color(0f, 0f, 0f, 0.55f);
 
-        GUI.color = bombasDisponibles > 0 ? Color.red : new Color(0.5f, 0.5f, 0.5f);
-        GUI.Label(new Rect(x, y, 150, 24),
-            $"💣 Bombas: {bombasDisponibles}   [{bombas.Count} colocadas]");
+        var rt = panelGO.GetComponent<RectTransform>();
+        rt.anchorMin        = new Vector2(1f, 0f);
+        rt.anchorMax        = new Vector2(1f, 0f);
+        rt.pivot            = new Vector2(1f, 0f);
+        rt.anchoredPosition = new Vector2(-12f, 12f);
+        rt.sizeDelta        = new Vector2(200f, 30f);
+
+        // ── Etiqueta de texto ───────────────────────────────────────────
+        var labelGO = new GameObject("Label");
+        labelGO.transform.SetParent(panelGO.transform, false);
+        _labelBombas = labelGO.AddComponent<Text>();
+
+        // Fuente built-in de Unity como fallback seguro
+        _labelBombas.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        _labelBombas.fontSize  = 15;
+        _labelBombas.color     = Color.red;
+        _labelBombas.alignment = TextAnchor.MiddleCenter;
+
+        var labelRT = labelGO.GetComponent<RectTransform>();
+        labelRT.anchorMin = Vector2.zero;
+        labelRT.anchorMax = Vector2.one;
+        labelRT.offsetMin = new Vector2(4f, 2f);
+        labelRT.offsetMax = new Vector2(-4f, -2f);
+
+        // Escribir valores iniciales
+        ActualizarHUD(force: true);
+    }
+
+    /// <summary>
+    /// Actualiza el texto del HUD solo cuando los valores han cambiado (cero GC por frame).
+    /// </summary>
+    private void ActualizarHUD(bool force = false)
+    {
+        if (_labelBombas == null) return;
+
+        if (!force && _bombasAnterior == bombasDisponibles && _colocadasAnterior == bombas.Count)
+            return;  // nada cambió → sin alloc de string
+
+        _bombasAnterior    = bombasDisponibles;
+        _colocadasAnterior = bombas.Count;
+
+        _labelBombas.color = bombasDisponibles > 0 ? Color.red : new Color(0.5f, 0.5f, 0.5f, 1f);
+        _labelBombas.text  = $"Bombas: {bombasDisponibles}   [{bombas.Count} colocadas]";
     }
 
     // ═══════════════════════════════════════════════════════════════════════
