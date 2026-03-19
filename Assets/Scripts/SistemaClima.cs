@@ -131,6 +131,15 @@ public class SistemaClima : MonoBehaviour
     private float anguloVientoPrev    = float.MaxValue;
     private float direccionVientoPrev = float.MaxValue;
 
+    // FIX POLLING: limitar los reintentos de ObtenerEfectosVolumen() para que no llame
+    // TryGet() cada frame indefinidamente si los efectos nunca se añaden al profile.
+    // ControladorPostProcesado.Start() [order 0] los añade justo después de
+    // SistemaClima.Start() [order -40], por lo que basta con unos pocos reintentos al inicio.
+    private int   _intentosVolumen    = 0;
+    private float _timerRetryVolumen  = 0f;
+    private const int   MAX_INTENTOS_VOLUMEN    = 20;   // ~10 segundos de margen
+    private const float INTERVALO_RETRY_VOLUMEN = 0.5f; // cada 500ms, no cada frame
+
     // ═══════════════════════════════════════════════════════════════════════
     //  DATOS POR ESTADO (tabla de configuración)
     // ═══════════════════════════════════════════════════════════════════════
@@ -177,13 +186,29 @@ public class SistemaClima : MonoBehaviour
 
     private void Update()
     {
-        // FIX: lazy-init de efectos del Volume.
-        // ObtenerEfectosVolumen() se llamó en Start() (DefaultExecutionOrder -40) ANTES de que
-        // ControladorPostProcesado.Start() (order 0) añadiera los efectos al profile con p.Add<T>().
-        // TryGet() devolvía false → colorAdjustments/vignette/dof = null → efectos meteorológicos
-        // de saturación, viñeta y DOF nunca se aplicaban. Reintentar hasta obtenerlos.
-        if (colorAdjustments == null && volumenPostProcesado != null)
-            ObtenerEfectosVolumen();
+        // FIX POLLING: lazy-init con límite de reintentos.
+        // ObtenerEfectosVolumen() se llamó en Start() [-40] ANTES de que
+        // ControladorPostProcesado.Start() [0] añadiera los efectos con p.Add<T>().
+        // Sin límite, TryGet() se invocaba cada frame para siempre si los efectos
+        // nunca estaban disponibles. Ahora: reintenta cada 500ms, máximo 20 veces (~10s).
+        if (colorAdjustments == null && volumenPostProcesado != null
+            && _intentosVolumen < MAX_INTENTOS_VOLUMEN)
+        {
+            _timerRetryVolumen -= Time.deltaTime;
+            if (_timerRetryVolumen <= 0f)
+            {
+                ObtenerEfectosVolumen();
+                _intentosVolumen++;
+                _timerRetryVolumen = INTERVALO_RETRY_VOLUMEN;
+
+                if (colorAdjustments != null)
+                    Debug.Log($"[Clima] Efectos del Volume disponibles (intento {_intentosVolumen}).");
+                else if (_intentosVolumen >= MAX_INTENTOS_VOLUMEN)
+                    Debug.LogWarning("[Clima] Efectos del Volume no encontrados tras " +
+                                     $"{MAX_INTENTOS_VOLUMEN} intentos — " +
+                                     "saturación, viñeta y DOF meteorológicos desactivados.");
+            }
+        }
 
         // Seguir la cámara con la lluvia
         SeguirCamara();
