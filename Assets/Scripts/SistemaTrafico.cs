@@ -130,6 +130,13 @@ public sealed class SistemaTrafico : MonoBehaviour
     // Raycast escalonado
     private int   _indiceRaycast;
 
+    // FIX O(n²) → O(1): índices de vehículos agrupados y ordenados por progreso en ruta,
+    // una lista por carril. PrepararOrdenCarriles() los rellena al inicio de cada tick;
+    // ActualizarVehiculos() consulta solo el vehículo inmediatamente delante → cero búsqueda.
+    private List<int>[] _vehiculosPorCarril;  // índices de vehículos activos, por carril
+    private float[]     _progresoEnCarril;    // score = waypointActual*10000 − distAlWP
+    private int[]       _posEnCarril;         // posición del vehículo i en su lista de carril
+
     // ══════════════════════════════════════════════════════════════════════
     //  PALETA DE COLORES DE COCHES
     // ══════════════════════════════════════════════════════════════════════
@@ -235,6 +242,13 @@ public sealed class SistemaTrafico : MonoBehaviour
         _colorListaLote = new List<Vector4>(MAX_LOTE);  // capacidad fija → cero GC
         _vehiculoAGO    = new int[_numVehiculos];
         for (int i = 0; i < _numVehiculos; i++) _vehiculoAGO[i] = -1;
+
+        // FIX O(n²): pre-allocar listas por carril (capacidad = nVehículos → sin resize en runtime)
+        _vehiculosPorCarril = new List<int>[carriles.Length];
+        for (int c = 0; c < carriles.Length; c++)
+            _vehiculosPorCarril[c] = new List<int>(_numVehiculos);
+        _progresoEnCarril = new float[_numVehiculos];
+        _posEnCarril      = new int[_numVehiculos];
     }
 
     private void InicializarVehiculos()
@@ -338,6 +352,10 @@ public sealed class SistemaTrafico : MonoBehaviour
 
     private void ActualizarVehiculos(float dt)
     {
+        // FIX O(n²) → O(1): clasificar y ordenar vehículos por carril UNA vez antes del bucle.
+        // Cada vehículo consulta después su vecino inmediato en O(1), sin iterar sobre todos.
+        PrepararOrdenCarriles();
+
         for (int i = 0; i < _numVehiculos; i++)
         {
             ref VehiculoData v = ref _vehiculos[i];
@@ -362,31 +380,21 @@ public sealed class SistemaTrafico : MonoBehaviour
                 v.waypointActual = (v.waypointActual + 1) % wps.Length;
             }
 
-            // ── 2. Detección de vehículo delante (mismo carril) ───────────
-            // FIX PERFORMANCE: guard fuera del bucle (evita evaluar v.velocidad N veces);
-            // velNorm cacheado (evita re-normalizar); salida temprana por distancia antes
-            // del dot product (evita sqrt+dot innecesarios); break al alcanzar umbral mínimo.
+            // ── 2. Detección de vehículo delante (mismo carril) — O(1) ────
+            // FIX O(n²) → O(1): PrepararOrdenCarriles() clasificó y ordenó los vehículos
+            // por progreso en ruta (waypointActual*10000 − distAlWP) antes de este bucle.
+            // Solo consultamos el vehículo inmediatamente siguiente en la lista del carril;
+            // cero iteración sobre todos los vehículos → complejidad total O(n) por tick.
             float distanciaAlFrente = float.MaxValue;
-            if (v.velocidad.sqrMagnitude >= 0.01f)
             {
-                Vector3 velNorm = v.velocidad.normalized;
-                for (int j = 0; j < _numVehiculos; j++)
+                var lista     = _vehiculosPorCarril[v.carrilIdx];
+                int posActual = _posEnCarril[i];
+                if (posActual + 1 < lista.Count)
                 {
-                    if (j == i || _vehiculos[j].carrilIdx != v.carrilIdx) continue;
-
+                    int j = lista[posActual + 1];
                     Vector3 diff = _vehiculos[j].posicion - v.posicion;
                     diff.y = 0f;
-                    float dist = diff.magnitude;
-
-                    if (dist >= distanciaAlFrente) continue;  // ya hay uno más cerca: skip
-
-                    float dot = Vector3.Dot(diff / dist, velNorm);
-                    if (dot > 0.7f)
-                    {
-                        distanciaAlFrente = dist;
-                        // Umbral de frenado máximo alcanzado: no hace falta buscar más cerca
-                        if (distanciaAlFrente <= distanciaSeguridad * 0.6f) break;
-                    }
+                    distanciaAlFrente = diff.magnitude;
                 }
             }
 
@@ -437,6 +445,68 @@ public sealed class SistemaTrafico : MonoBehaviour
         ref VehiculoData v = ref _vehiculos[_indiceRaycast];
         if (Physics.Raycast(v.posicion + Vector3.up * 8f, Vector3.down, out RaycastHit hit, 30f))
             v.alturaY = hit.point.y;
+    }
+
+    /// <summary>
+    /// Agrupa los índices de vehículos activos por carril y los ordena por progreso en ruta
+    /// (score = waypointActual * 10000 − distanciaAlWaypoint).
+    /// Llamar una vez al inicio de ActualizarVehiculos(); InsertionSort cero-alloc es óptimo
+    /// para N ≤ 20 vehículos por carril (típico en este simulador).
+    /// </summary>
+    private void PrepararOrdenCarriles()
+    {
+        // Vaciar listas sin allocar (Clear no libera la capacidad reservada)
+        for (int c = 0; c < _vehiculosPorCarril.Length; c++)
+            _vehiculosPorCarril[c].Clear();
+
+        // Calcular score de progreso y clasificar cada vehículo activo en su carril
+        for (int i = 0; i < _numVehiculos; i++)
+        {
+            ref VehiculoData v = ref _vehiculos[i];
+            if (v.estado == EstadoVehiculo.Parado) continue;
+
+            var wps = carriles[v.carrilIdx]?.waypoints;
+            if (wps == null || wps.Length == 0) continue;
+
+            // Score mayor = más avanzado en la ruta.
+            // Restar la distancia al waypoint actual desambigua vehículos en el mismo tramo.
+            float dist = (v.waypointActual < wps.Length && wps[v.waypointActual] != null)
+                ? Vector3.Distance(v.posicion, wps[v.waypointActual].position)
+                : 0f;
+            _progresoEnCarril[i] = v.waypointActual * 10000f - dist;
+
+            _vehiculosPorCarril[v.carrilIdx].Add(i);
+        }
+
+        // Ordenar cada carril por score ascendente y registrar la posición de cada vehículo
+        for (int c = 0; c < _vehiculosPorCarril.Length; c++)
+        {
+            var lista = _vehiculosPorCarril[c];
+            InsertionSortLista(lista);
+            for (int k = 0; k < lista.Count; k++)
+                _posEnCarril[lista[k]] = k;
+        }
+    }
+
+    /// <summary>
+    /// InsertionSort in-place sobre una List&lt;int&gt; usando _progresoEnCarril como clave.
+    /// Cero allocaciones. Optimal para N ≤ ~20 (típico por carril).
+    /// </summary>
+    private void InsertionSortLista(List<int> lista)
+    {
+        int n = lista.Count;
+        for (int i = 1; i < n; i++)
+        {
+            int   key      = lista[i];
+            float keyScore = _progresoEnCarril[key];
+            int   j        = i - 1;
+            while (j >= 0 && _progresoEnCarril[lista[j]] > keyScore)
+            {
+                lista[j + 1] = lista[j];
+                j--;
+            }
+            lista[j + 1] = key;
+        }
     }
 
     // ══════════════════════════════════════════════════════════════════════

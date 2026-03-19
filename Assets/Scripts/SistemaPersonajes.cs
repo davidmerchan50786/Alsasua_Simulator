@@ -737,17 +737,56 @@ public sealed class SistemaPersonajes : MonoBehaviour
     //  API PÚBLICA
     // ───────────────────────────────────────────────────────────────────────
 
-    /// <summary>Posiciones actuales de todos los agentes de un tipo dado.</summary>
+    /// <summary>
+    /// Posiciones actuales de todos los agentes de un tipo dado.
+    /// FIX GC: dos pasadas (contar + llenar) en lugar de List + ToArray().
+    /// Antes: new List (alloc) + Add (posibles resize) + ToArray (alloc) = 2+ allocaciones.
+    /// Ahora: 1 sola alloc del array resultado, tamaño exacto.
+    /// Para cero allocaciones usa <see cref="ObtenerPosicionesNonAlloc"/>.
+    /// </summary>
     public Vector3[] ObtenerPosiciones(TipoPersonaje tipo)
     {
         if (_personajes == null) return System.Array.Empty<Vector3>();
-        var lista = new List<Vector3>(_personajes.Length / 4);
+
+        // Pasada 1: contar agentes del tipo (sin alloc)
+        int count = 0;
         for (int i = 0; i < _personajes.Length; i++)
-            if (_personajes[i].tipo == tipo)
-                lista.Add(new Vector3(_personajes[i].posicion.x,
-                                      _personajes[i].alturaY,
-                                      _personajes[i].posicion.z));
-        return lista.ToArray();
+            if (_personajes[i].tipo == tipo) count++;
+
+        if (count == 0) return System.Array.Empty<Vector3>();
+
+        // Pasada 2: llenar array de tamaño exacto (1 sola alloc)
+        var result = new Vector3[count];
+        int idx    = 0;
+        for (int i = 0; i < _personajes.Length; i++)
+        {
+            if (_personajes[i].tipo != tipo) continue;
+            result[idx++] = new Vector3(_personajes[i].posicion.x,
+                                        _personajes[i].alturaY,
+                                        _personajes[i].posicion.z);
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Versión sin allocación de <see cref="ObtenerPosiciones"/>.
+    /// Escribe posiciones en el <paramref name="buffer"/> proporcionado por el llamador
+    /// y devuelve el número de entradas escritas.
+    /// El llamador debe dimensionar el buffer con al menos <see cref="TotalPersonajes"/> slots
+    /// para garantizar que no se trunca el resultado.
+    /// </summary>
+    public int ObtenerPosicionesNonAlloc(TipoPersonaje tipo, Vector3[] buffer)
+    {
+        if (_personajes == null || buffer == null) return 0;
+        int written = 0;
+        for (int i = 0; i < _personajes.Length && written < buffer.Length; i++)
+        {
+            if (_personajes[i].tipo != tipo) continue;
+            buffer[written++] = new Vector3(_personajes[i].posicion.x,
+                                            _personajes[i].alturaY,
+                                            _personajes[i].posicion.z);
+        }
+        return written;
     }
 
     /// <summary>

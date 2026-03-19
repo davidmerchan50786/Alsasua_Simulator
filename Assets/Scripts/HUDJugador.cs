@@ -51,6 +51,18 @@ public sealed class HUDJugador : MonoBehaviour
 
     private float _timerControles;
 
+    // ── Dirty-check: evita alloc de string cada frame si los valores no cambian ──
+    // FIX GC: $"❤  {vida} / {vidaMax}" y $"🔫 {balas}…" allocan aunque los int no cambien.
+    // Guardar el último valor renderizado y reconstruir el string solo cuando difiere.
+    private int    _vidaAnterior      = -1;
+    private int    _vidaMaxAnterior   = -1;
+    private string _estadoAnterior    = null;
+    private bool   _cargandoAnterior  = false;
+    private int    _balasAnterior     = -1;
+    private int    _balasCargAnterior = -1;
+    private int    _balasResAnterior  = -1;
+    private int    _timerRecargaTick  = -1;  // FloorToInt(timer * 10) — granularidad F1
+
     // ── Recursos estáticos (compartidos entre instancias) ────────────────
     private static Font   _font;
     private static Sprite _spriteBlanco;
@@ -284,8 +296,24 @@ public sealed class HUDJugador : MonoBehaviour
         _rellenoVida.color = Color.Lerp(
             new Color(0.85f, 0.10f, 0.10f),
             new Color(0.10f, 0.80f, 0.20f), ratio);
-        _textoVida.text   = $"❤  {jugador.Vida} / {jugador.VidaMax}";
-        _textoEstado.text = jugador.TextoEstado;
+
+        // FIX GC: reconstruir strings solo cuando los valores cambian.
+        // La interpolación de strings alloca heap aunque los int sean idénticos al frame anterior.
+        int vida    = jugador.Vida;
+        int vidaMax = jugador.VidaMax;
+        if (vida != _vidaAnterior || vidaMax != _vidaMaxAnterior)
+        {
+            _vidaAnterior    = vida;
+            _vidaMaxAnterior = vidaMax;
+            _textoVida.text  = $"❤  {vida} / {vidaMax}";
+        }
+
+        string estado = jugador.TextoEstado;
+        if (!string.Equals(estado, _estadoAnterior, System.StringComparison.Ordinal))
+        {
+            _estadoAnterior   = estado;
+            _textoEstado.text = estado;
+        }
     }
 
     private void ActualizarFlash() =>
@@ -305,19 +333,47 @@ public sealed class HUDJugador : MonoBehaviour
         if (disparo == null) return;
 
         bool cargando = disparo.EstaCargando;
-        _goFondoRecarga.SetActive(cargando);
-        _goBarraRecarga.SetActive(cargando);
+
+        // FIX GC: activar/desactivar GOs solo en el flanco de cambio, no cada frame.
+        if (cargando != _cargandoAnterior)
+        {
+            _goFondoRecarga.SetActive(cargando);
+            _goBarraRecarga.SetActive(cargando);
+            _cargandoAnterior = cargando;
+            // Invalidar caché de la otra rama para forzar rebuild al cambiar de modo
+            _timerRecargaTick = -1;
+            _balasAnterior    = -1;
+        }
 
         if (cargando)
         {
-            _textoAmmo.text      = $"RECARGANDO... {disparo.TimerRecarga:F1}s";
-            _textoAmmo.color     = Color.yellow;
             _barraRecarga.fillAmount = disparo.ProgressRecarga;
+
+            // FIX GC: "RECARGANDO... X.Xs" solo cambia cada 100 ms (F1 = 1 decimal).
+            // Usamos FloorToInt(timer*10) como clave dirty-check → 1 alloc cada 100 ms máx.
+            int tick = Mathf.FloorToInt(disparo.TimerRecarga * 10f);
+            if (tick != _timerRecargaTick)
+            {
+                _timerRecargaTick    = tick;
+                _textoAmmo.text      = $"RECARGANDO... {disparo.TimerRecarga:F1}s";
+                _textoAmmo.color     = Color.yellow;
+            }
         }
         else
         {
-            _textoAmmo.text  = $"🔫 {disparo.Balas} / {disparo.BalasMaxCargador}   [{disparo.BalasReserva}]";
-            _textoAmmo.color = Color.white;
+            int balas     = disparo.Balas;
+            int balasCarg = disparo.BalasMaxCargador;
+            int balasRes  = disparo.BalasReserva;
+
+            // FIX GC: reconstruir solo cuando cambian los contadores de munición.
+            if (balas != _balasAnterior || balasCarg != _balasCargAnterior || balasRes != _balasResAnterior)
+            {
+                _balasAnterior     = balas;
+                _balasCargAnterior = balasCarg;
+                _balasResAnterior  = balasRes;
+                _textoAmmo.text    = $"🔫 {balas} / {balasCarg}   [{balasRes}]";
+                _textoAmmo.color   = Color.white;
+            }
         }
     }
 
