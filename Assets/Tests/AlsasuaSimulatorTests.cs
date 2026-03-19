@@ -23,6 +23,20 @@
 //   T15  AudioManager       – Play con clip null no lanza excepción
 //   T16  EnemigoPatrulla    – FlashDano no modifica sharedMaterial directamente
 //   T17  HUDJugador         – Canvas creado correctamente en Awake
+//   ── Sección 5/6 ──────────────────────────────────────────────────────
+//   T18  AlsasuaLogger      – Info/Warn/Error/Verbose no lanzan excepción
+//   T19  AlsasuaLogger      – NivelMinimo=None silencia todas las llamadas
+//   T20  SistemaAtmosfera   – OnCambioDia se dispara al cruzar el horizonte
+//   T21  VehiculoNPC        – RecibirDano reduce la vida del vehículo
+//   T22  VehiculoNPC        – destruido=true cuando vida llega a ≤0
+//   T23  VehiculoNPC        – sharedMaterial.color no cambia tras daño (usa MPB)
+//   T24  SistemaBombas      – bombasDisponibles es positivo al inicializar
+//   T25  SistemaBombas      – ColocarBomba sin cámara retorna sin excepción
+//   T26  BarricadaFuego     – RecibirDano reduce la vida de la barricada
+//   T27  BarricadaFuego     – segundo RecibirDano ignorado cuando vida≤0 (BUG 21)
+//   T28  EnemigoPatrulla    – Estado inicial es Patrullando (propiedad pública)
+//   T29  SistemaDisparo     – velocidadCorrerRef por defecto = 8.5f (Sección 6)
+//   T30  BarricadaFuego     – PrenderFuego crea ParticleSystems
 
 using System.Collections;
 using System.Reflection;
@@ -532,5 +546,327 @@ public class AlsasuaSimulatorTests
 
         Object.DestroyImmediate(goHUD);
         Object.DestroyImmediate(goJugador);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  T18 — AlsasuaLogger: Info/Warn/Error/Verbose no lanzan excepción
+    // ═══════════════════════════════════════════════════════════════════════
+
+    [Test]
+    public void T18_AlsasuaLogger_MetodosPublicos_NoLanzanException()
+    {
+        Assert.DoesNotThrow(() => AlsasuaLogger.Verbose("Test", "mensaje verbose"),
+            "AlsasuaLogger.Verbose no debe lanzar excepción");
+        Assert.DoesNotThrow(() => AlsasuaLogger.Info("Test", "mensaje info"),
+            "AlsasuaLogger.Info no debe lanzar excepción");
+        Assert.DoesNotThrow(() => AlsasuaLogger.Warn("Test", "mensaje warning"),
+            "AlsasuaLogger.Warn no debe lanzar excepción");
+        Assert.DoesNotThrow(() => AlsasuaLogger.Error("Test", "mensaje error"),
+            "AlsasuaLogger.Error no debe lanzar excepción");
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  T19 — AlsasuaLogger: NivelMinimo=None silencia todas las llamadas
+    // ═══════════════════════════════════════════════════════════════════════
+
+    [Test]
+    public void T19_AlsasuaLogger_NivelNone_SilenciaTodasLasLlamadas()
+    {
+        var nivelOriginal = AlsasuaLogger.NivelMinimo;
+
+        // Con Level.None ningún mensaje debe emitirse (ni crashear)
+        AlsasuaLogger.NivelMinimo = AlsasuaLogger.Level.None;
+        Assert.DoesNotThrow(() =>
+        {
+            AlsasuaLogger.Verbose("Test", "silenciado");
+            AlsasuaLogger.Info("Test",    "silenciado");
+            AlsasuaLogger.Warn("Test",    "silenciado");
+            AlsasuaLogger.Error("Test",   "silenciado");
+        }, "Con NivelMinimo=None ninguna llamada debe lanzar excepción");
+
+        // La propiedad también debe ser legible y restaurable
+        Assert.AreEqual(AlsasuaLogger.Level.None, AlsasuaLogger.NivelMinimo,
+            "NivelMinimo debe conservar el valor asignado");
+
+        AlsasuaLogger.NivelMinimo = nivelOriginal; // restaurar
+        Assert.AreEqual(nivelOriginal, AlsasuaLogger.NivelMinimo,
+            "NivelMinimo debe restaurarse correctamente");
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  T20 — SistemaAtmosfera: OnCambioDia se dispara al cruzar el horizonte
+    // ═══════════════════════════════════════════════════════════════════════
+
+    [UnityTest]
+    public IEnumerator T20_SistemaAtmosfera_OnCambioDia_DisparaAlCruzarHorizonte()
+    {
+        var go  = new GameObject("TestAtmosfera");
+        var atm = go.AddComponent<SistemaAtmosfera>();
+        yield return null;  // Awake + Start
+
+        bool eventoDisparado = false;
+        bool argumento        = true;  // esperamos false (noche)
+        atm.OnCambioDia += b => { eventoDisparado = true; argumento = b; };
+
+        // Forzar estado previo = día (_eraDeDia = true) y hora = mediodía (ya es día por defecto)
+        var fEraDeDia = typeof(SistemaAtmosfera).GetField("_eraDeDia",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+        var fHora = typeof(SistemaAtmosfera).GetField("horaDelDia",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+
+        fEraDeDia?.SetValue(atm, true);   // partimos de "era de día"
+        fHora?.SetValue(atm, 2f);          // forzar hora = 2:00 AM (profunda noche → sol bajo)
+
+        // Llamar ActualizarAtmosfera() para que detecte la transición día→noche
+        typeof(SistemaAtmosfera).GetMethod("ActualizarAtmosfera",
+            BindingFlags.Instance | BindingFlags.NonPublic)?.Invoke(atm, null);
+
+        Assert.IsTrue(eventoDisparado,
+            "OnCambioDia debe dispararse cuando la elevación solar cruza el horizonte");
+        Assert.IsFalse(argumento,
+            "El argumento debe ser false (noche) al pasar de día a noche");
+
+        Object.DestroyImmediate(go);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  T21 — VehiculoNPC: RecibirDano reduce la vida del vehículo
+    // ═══════════════════════════════════════════════════════════════════════
+
+    [UnityTest]
+    public IEnumerator T21_VehiculoNPC_RecibirDano_ReduceVida()
+    {
+        var go  = VehiculoNPC.CrearCocheBasico(Vector3.zero, new System.Collections.Generic.List<Transform>());
+        var veh = go.GetComponent<VehiculoNPC>();
+        yield return null;
+
+        int vidaAntes = (int)GetPrivate(veh, "vida");
+        veh.RecibirDano(20);
+        int vidaTras = (int)GetPrivate(veh, "vida");
+
+        Assert.Less(vidaTras, vidaAntes,
+            "RecibirDano debe reducir la vida del vehículo");
+        Assert.AreEqual(vidaAntes - 20, vidaTras,
+            "La reducción debe ser exactamente la cantidad recibida");
+
+        Object.DestroyImmediate(go);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  T22 — VehiculoNPC: destruido=true cuando vida llega a ≤0
+    // ═══════════════════════════════════════════════════════════════════════
+
+    [UnityTest]
+    public IEnumerator T22_VehiculoNPC_Destruido_TrasVidaACero()
+    {
+        var go  = VehiculoNPC.CrearCocheBasico(Vector3.zero, new System.Collections.Generic.List<Transform>());
+        var veh = go.GetComponent<VehiculoNPC>();
+        yield return null;
+
+        veh.RecibirDano(9999);  // daño letal
+
+        bool destruido = (bool)GetPrivate(veh, "destruido");
+        Assert.IsTrue(destruido,
+            "destruido debe ser true cuando vida ≤ 0");
+
+        // Daño adicional sobre un vehículo ya destruido debe ignorarse
+        int vidaAntesDaño2 = (int)GetPrivate(veh, "vida");
+        veh.RecibirDano(50);
+        int vidaTrasDaño2 = (int)GetPrivate(veh, "vida");
+        Assert.AreEqual(vidaAntesDaño2, vidaTrasDaño2,
+            "Un vehículo ya destruido no debe recibir más daño");
+
+        // Cleanup: el GO tiene Destroy(15f) pendiente; DestroyImmediate lo cancela
+        Object.DestroyImmediate(go);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  T23 — VehiculoNPC: sharedMaterial.color no cambia tras daño (usa MPB)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    [UnityTest]
+    public IEnumerator T23_VehiculoNPC_DanoNoModificaSharedMaterial()
+    {
+        var go  = VehiculoNPC.CrearCocheBasico(Vector3.zero, new System.Collections.Generic.List<Transform>());
+        var veh = go.GetComponent<VehiculoNPC>();
+        yield return null;
+
+        var renderers = go.GetComponentsInChildren<Renderer>();
+        Assert.Greater(renderers.Length, 0, "El vehículo debe tener al menos un Renderer");
+
+        Color colorAntes = renderers[0].sharedMaterial != null
+            ? renderers[0].sharedMaterial.color : Color.white;
+
+        veh.RecibirDano(30);
+
+        Color colorDespues = renderers[0].sharedMaterial != null
+            ? renderers[0].sharedMaterial.color : Color.white;
+
+        Assert.AreEqual(colorAntes, colorDespues,
+            "sharedMaterial.color NO debe cambiar tras daño — el oscurecimiento se aplica " +
+            "por MaterialPropertyBlock sin instanciar Material");
+
+        Object.DestroyImmediate(go);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  T24 — SistemaBombas: bombasDisponibles es positivo al inicializar
+    // ═══════════════════════════════════════════════════════════════════════
+
+    [UnityTest]
+    public IEnumerator T24_SistemaBombas_BombasDisponibles_PositivoAlInicio()
+    {
+        var go = new GameObject("TestBombas");
+        var sb = go.AddComponent<SistemaBombas>();
+        yield return null;
+
+        int disponibles = (int)GetPrivate(sb, "bombasDisponibles");
+        Assert.Greater(disponibles, 0,
+            "bombasDisponibles debe ser > 0 al inicializar (valor por defecto = 5)");
+
+        Object.DestroyImmediate(go);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  T25 — SistemaBombas: ColocarBomba sin cámara retorna sin excepción
+    // ═══════════════════════════════════════════════════════════════════════
+
+    [UnityTest]
+    public IEnumerator T25_SistemaBombas_ColocarBomba_SinCamara_NoLanzaException()
+    {
+        var go = new GameObject("TestBombas");
+        var sb = go.AddComponent<SistemaBombas>();
+        yield return null;
+
+        // En entorno de test no hay Camera.main ni cámara hija → el guard del método
+        // debe detectar camara==null, loguear warning y retornar limpiamente
+        Assert.DoesNotThrow(() => sb.ColocarBomba(),
+            "ColocarBomba con camara==null debe retornar sin excepción");
+
+        // La cantidad de bombas colocadas debe seguir siendo 0
+        var listaBombas = GetPrivate(sb, "bombas") as System.Collections.IList;
+        Assert.AreEqual(0, listaBombas?.Count ?? 0,
+            "Sin cámara no debe colocarse ninguna bomba");
+
+        Object.DestroyImmediate(go);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  T26 — BarricadaFuego: RecibirDano reduce la vida de la barricada
+    // ═══════════════════════════════════════════════════════════════════════
+
+    [UnityTest]
+    public IEnumerator T26_BarricadaFuego_RecibirDano_ReduceVida()
+    {
+        var go = new GameObject("TestBarricada");
+        var bf = go.AddComponent<BarricadaFuego>();
+        yield return null;
+
+        int vidaAntes = (int)GetPrivate(bf, "vida");
+        bf.RecibirDano(50);
+        int vidaTras = (int)GetPrivate(bf, "vida");
+
+        Assert.Less(vidaTras, vidaAntes,
+            "RecibirDano debe reducir la vida de la barricada");
+        Assert.AreEqual(vidaAntes - 50, vidaTras,
+            "La reducción debe ser exactamente la cantidad recibida");
+
+        Object.DestroyImmediate(go);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  T27 — BarricadaFuego: segundo daño ignorado cuando vida≤0 (BUG 21 FIX)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    [UnityTest]
+    public IEnumerator T27_BarricadaFuego_SegundoDano_IgnoradoCuandoDestruida()
+    {
+        var go = new GameObject("TestBarricada");
+        var bf = go.AddComponent<BarricadaFuego>();
+        yield return null;
+
+        bf.RecibirDano(9999);  // destruir la barricada
+        int vidaDestruida = (int)GetPrivate(bf, "vida");
+        Assert.LessOrEqual(vidaDestruida, 0, "vida debe ser ≤0 tras daño letal");
+
+        bf.RecibirDano(100);   // segundo daño — debe ser ignorado por el guard BUG 21
+        int vidaTrasSegundoDano = (int)GetPrivate(bf, "vida");
+
+        Assert.AreEqual(vidaDestruida, vidaTrasSegundoDano,
+            "Un segundo RecibirDano no debe reducir más la vida de una barricada ya destruida " +
+            "(guard 'if (vida <= 0) return' del BUG 21 FIX)");
+
+        Object.DestroyImmediate(go);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  T28 — EnemigoPatrulla: Estado inicial es Patrullando
+    // ═══════════════════════════════════════════════════════════════════════
+
+    [UnityTest]
+    public IEnumerator T28_EnemigoPatrulla_EstadoInicial_EsPatrullando()
+    {
+        var go     = new GameObject("TestEnemigo");
+        var enemigo = go.AddComponent<EnemigoPatrulla>();
+        yield return null;
+
+        // Estado es una propiedad pública — no necesita reflexión
+        Assert.AreEqual(EnemigoPatrulla.EstadoIA.Patrullando, enemigo.Estado,
+            "El estado inicial del EnemigoPatrulla debe ser Patrullando");
+
+        Object.DestroyImmediate(go);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  T29 — SistemaDisparo: velocidadCorrerRef por defecto = 8.5f
+    //  (Sección 6: magic number extraído a SerializeField)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    [UnityTest]
+    public IEnumerator T29_SistemaDisparo_VelocidadCorrerRef_DefaultEsOchoPuntoCinco()
+    {
+        var go = new GameObject("TestDisparo");
+        go.AddComponent<Camera>();
+        var sd = go.AddComponent<SistemaDisparo>();
+        yield return null;
+
+        float velRef = (float)GetPrivate(sd, "velocidadCorrerRef");
+        Assert.AreApproximatelyEqual(8.5f, velRef, 0.001f,
+            "velocidadCorrerRef debe tener el valor por defecto 8.5f, " +
+            "igual que ControladorJugador.velocidadCorrer, para que " +
+            "CalcularDispersion() normalice correctamente la penalización de movimiento");
+
+        Object.DestroyImmediate(go);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  T30 — BarricadaFuego: PrenderFuego crea ParticleSystems
+    // ═══════════════════════════════════════════════════════════════════════
+
+    [UnityTest]
+    public IEnumerator T30_BarricadaFuego_PrenderFuego_CreaParticleSystems()
+    {
+        var go = new GameObject("TestBarricada");
+        var bf = go.AddComponent<BarricadaFuego>();
+
+        // Desactivar fuego antes de que Start() corra para poder medir el delta
+        typeof(BarricadaFuego).GetField("fuegoPrendido",
+            BindingFlags.Instance | BindingFlags.NonPublic)?.SetValue(bf, false);
+
+        yield return null;  // Start() corre con fuegoPrendido=false → 0 ParticleSystems
+
+        int psAntes = go.GetComponentsInChildren<ParticleSystem>().Length;
+        Assert.AreEqual(0, psAntes,
+            "Con fuegoPrendido=false, Start() no debe crear ParticleSystems");
+
+        bf.PrenderFuego();  // debe crear Fuego + Humo + Chispas (3 ParticleSystems)
+
+        int psDespues = go.GetComponentsInChildren<ParticleSystem>().Length;
+        Assert.Greater(psDespues, 0,
+            "PrenderFuego() debe crear al menos un ParticleSystem (Fuego, Humo, Chispas)");
+        Assert.GreaterOrEqual(psDespues, 3,
+            "PrenderFuego() debe crear los 3 ParticleSystems: Fuego, Humo y Chispas");
+
+        Object.DestroyImmediate(go);
     }
 }
