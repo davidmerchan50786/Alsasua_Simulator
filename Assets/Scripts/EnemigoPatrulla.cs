@@ -372,8 +372,14 @@ public class EnemigoPatrulla : MonoBehaviour
         // Caer
         transform.rotation = Quaternion.Euler(90f, transform.eulerAngles.y, 0f);
 
+        // FIX LEAK: r.material.color crea una instancia de Material por renderer (nunca destruida).
+        // O(renderers) leaks por muerte de enemigo. MaterialPropertyBlock sobreescribe las propiedades
+        // solo para cada renderer concreto, sin crear ninguna instancia → cero leak, cero GC.
+        var mpbMuerto = new MaterialPropertyBlock();
+        mpbMuerto.SetColor("_BaseColor", new Color(0.2f, 0.1f, 0.1f));
+        mpbMuerto.SetColor("_Color",     new Color(0.2f, 0.1f, 0.1f));
         foreach (var r in GetComponentsInChildren<Renderer>())
-            r.material.color = new Color(0.2f, 0.1f, 0.1f);
+            r.SetPropertyBlock(mpbMuerto);
 
         Destroy(gameObject, 8f);
         Debug.Log("[Enemigo] Derribado.");

@@ -12,6 +12,15 @@ public class SistemaExplosion : MonoBehaviour
     [SerializeField] public int   danoMaximo   = 150;
     [SerializeField] public float duracionFuego = 6f;
 
+    // FIX GC: HashSets pre-alloc estáticos para eliminar 5 allocaciones heap por explosión.
+    // Son estáticos seguros porque AplicarFisicasYDano() es síncrono —
+    // Unity no ejecuta dos explosiones en paralelo dentro del mismo frame.
+    private static readonly HashSet<Rigidbody>          _rbYaDanados         = new HashSet<Rigidbody>();
+    private static readonly HashSet<EnemigoPatrulla>    _enemigosYaDanados   = new HashSet<EnemigoPatrulla>();
+    private static readonly HashSet<ControladorJugador> _jugadoresYaDanados  = new HashSet<ControladorJugador>();
+    private static readonly HashSet<VehiculoNPC>        _vehiculosYaDanados  = new HashSet<VehiculoNPC>();
+    private static readonly HashSet<BarricadaFuego>     _barricadasYaDanadas = new HashSet<BarricadaFuego>();
+
     /// <summary>
     /// Crea una explosión en la posición indicada.
     /// Llamar estáticamente: SistemaExplosion.Explotar(pos, radio, fuerza, dano)
@@ -30,6 +39,10 @@ public class SistemaExplosion : MonoBehaviour
 
     public void Detonar()
     {
+        // FIX: las explosiones no tenían audio. AudioManager.Clip.Explosion está definido
+        // pero nunca se llamaba desde aquí → explosiones completamente silenciosas.
+        AudioManager.I?.Play(AudioManager.Clip.Explosion, transform.position);
+
         AplicarFisicasYDano();
         EfectoBolaFuego();
         EfectoHumo();
@@ -49,19 +62,19 @@ public class SistemaExplosion : MonoBehaviour
     {
         Collider[] afectados = Physics.OverlapSphere(transform.position, radio);
 
-        // BUG FIX: usar HashSets para evitar aplicar daño múltiple a la misma entidad
-        // cuando tiene varios colliders hijos (ej. enemigos con cuerpo + cabeza + arma).
-        var rbYaDanados         = new HashSet<Rigidbody>();
-        var enemigosYaDanados   = new HashSet<EnemigoPatrulla>();
-        var jugadoresYaDanados  = new HashSet<ControladorJugador>();
-        var vehiculosYaDanados  = new HashSet<VehiculoNPC>();
-        var barricadasYaDanadas = new HashSet<BarricadaFuego>(); // BUG 20 FIX
+        // FIX GC: limpiar los HashSets estáticos en lugar de crear 5 nuevos por explosión.
+        // Preservan el comportamiento anti-daño-doble con cero allocaciones en heap.
+        _rbYaDanados.Clear();
+        _enemigosYaDanados.Clear();
+        _jugadoresYaDanados.Clear();
+        _vehiculosYaDanados.Clear();
+        _barricadasYaDanadas.Clear();
 
         foreach (var col in afectados)
         {
             // Fuerza de explosión a Rigidbodies (una sola vez por objeto físico)
             var rb = col.GetComponent<Rigidbody>();
-            if (rb != null && rbYaDanados.Add(rb))
+            if (rb != null && _rbYaDanados.Add(rb))
                 rb.AddExplosionForce(fuerzaFisica, transform.position, radio, 1f);
 
             // Daño basado en la distancia al centro del objeto raíz
@@ -70,21 +83,19 @@ public class SistemaExplosion : MonoBehaviour
             int   dano   = Mathf.RoundToInt(danoMaximo * factor);
 
             var enemigo  = col.GetComponentInParent<EnemigoPatrulla>();
-            if (enemigo != null && enemigosYaDanados.Add(enemigo))
+            if (enemigo != null && _enemigosYaDanados.Add(enemigo))
                 enemigo.RecibirDano(dano);
 
             var jugador  = col.GetComponentInParent<ControladorJugador>();
-            if (jugador != null && jugadoresYaDanados.Add(jugador))
+            if (jugador != null && _jugadoresYaDanados.Add(jugador))
                 jugador.RecibirDano(dano);
 
             var vehiculo = col.GetComponentInParent<VehiculoNPC>();
-            if (vehiculo != null && vehiculosYaDanados.Add(vehiculo))
+            if (vehiculo != null && _vehiculosYaDanados.Add(vehiculo))
                 vehiculo.RecibirDano(dano);
 
-            // BUG 20 FIX: las barricadas también reciben daño de explosión.
-            // Antes se ignoraban porque no figuraban en este loop → eran inmunes.
             var barricada = col.GetComponentInParent<BarricadaFuego>();
-            if (barricada != null && barricadasYaDanadas.Add(barricada))
+            if (barricada != null && _barricadasYaDanadas.Add(barricada))
                 barricada.RecibirDano(dano);
         }
     }

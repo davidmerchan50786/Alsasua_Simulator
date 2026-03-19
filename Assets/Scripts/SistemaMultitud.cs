@@ -366,11 +366,16 @@ public sealed class SistemaMultitud : MonoBehaviour
             ref AgentData ag = ref _agentes[i];
 
             // ── 1. Fuerza de ruta ──────────────────────────────────────────
-            // FIX: guard nulo en el waypoint actual — puede haberse eliminado en Editor en runtime.
-            // Si el waypoint es nulo, avanzar al siguiente válido para no crashear.
-            while (ag.waypointActual < puntosRuta.Length - 1
-                   && puntosRuta[ag.waypointActual] == null)
-                ag.waypointActual++;
+            // FIX LOOP: skip nulos con un contador de intentos para no buclear infinitamente
+            // si todos los waypoints son nulos (ej. Editor borra los GOs en runtime).
+            // FIX PILE-UP: antes usaba < Length-1 → agentes se detenían en el último punto.
+            // Ahora usa módulo → vuelven al inicio y la ruta es circular permanente.
+            int intentosSkip = 0;
+            while (puntosRuta[ag.waypointActual] == null && intentosSkip < puntosRuta.Length)
+            {
+                ag.waypointActual = (ag.waypointActual + 1) % puntosRuta.Length;
+                intentosSkip++;
+            }
 
             if (puntosRuta[ag.waypointActual] == null) continue;   // todos nulos: skip agente
 
@@ -379,9 +384,9 @@ public sealed class SistemaMultitud : MonoBehaviour
             Vector3 dirWP  = wpPos - ag.posicion;
             float   distWP = dirWP.magnitude;
 
-            // Avanzar al siguiente waypoint cuando se está a <3m
-            if (distWP < 3f && ag.waypointActual < puntosRuta.Length - 1)
-                ag.waypointActual++;
+            // FIX PILE-UP: avanzar con módulo → ruta circular, sin detención en el último WP.
+            if (distWP < 3f)
+                ag.waypointActual = (ag.waypointActual + 1) % puntosRuta.Length;
 
             Vector3 fuerzaRuta = (distWP > 0.05f)
                 ? (dirWP / distWP) * velocidadMarcha * pesoRuta
