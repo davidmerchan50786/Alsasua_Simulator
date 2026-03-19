@@ -236,8 +236,9 @@ public class EnemigoPatrulla : MonoBehaviour
         dir += perpH * Random.Range(-precisionEnemy, precisionEnemy)
              + perpV * Random.Range(-precisionEnemy, precisionEnemy);
 
-        // Flash visual
+        // Flash visual + audio
         SistemaDisparo_Flash(origen, dir);
+        AudioManager.I?.Play(AudioManager.Clip.Disparo, origen);
 
         // Impacto
         if (Physics.Raycast(origen, dir, out RaycastHit hit, radioAtaque * 1.5f))
@@ -333,22 +334,30 @@ public class EnemigoPatrulla : MonoBehaviour
         if (vida <= 0) Morir();
     }
 
+    // BUG FIX: usar MaterialPropertyBlock (por instancia) en lugar de sharedMaterial.color.
+    // sharedMaterial.color modificaba el material compartido y afectaba a TODOS los
+    // enemigos que usaban ese mismo material → flash rojo en pantalla en todos ellos.
+    // MaterialPropertyBlock sobreescribe las propiedades solo para este Renderer concreto,
+    // sin crear nuevas instancias de material (cero GC, cero leak).
+    private static readonly MaterialPropertyBlock _pbFlash = new MaterialPropertyBlock();
+    private static readonly int _idColor = Shader.PropertyToID("_BaseColor");
+
     private IEnumerator FlashDano()
     {
-        // BUG FIX LEAK: usar sharedMaterial en vez de material (getter).
-        // El getter .material crea una instancia nueva del material cada llamada si el
-        // renderer aún no está instanciado → con armas automáticas (8 dis/seg) generaba
-        // decenas de instancias huérfanas. sharedMaterial modifica el material compartido
-        // directamente (sin instanciar) y funciona igual visualmente ya que cada enemigo
-        // tiene su propio material (creado individualmente en MatURP).
+        _pbFlash.SetColor(_idColor, Color.red);
+        _pbFlash.SetColor("_Color", Color.red);
         foreach (var r in GetComponentsInChildren<Renderer>())
-            if (r.sharedMaterial != null) r.sharedMaterial.color = Color.red;
+            r.SetPropertyBlock(_pbFlash);
+
         yield return new WaitForSeconds(0.15f);
+
         // BUG FIX: no restaurar color si el enemigo ya ha muerto durante el flash
         if (Estado != EstadoIA.Muerto)
         {
+            _pbFlash.SetColor(_idColor, colorUniforme);
+            _pbFlash.SetColor("_Color", colorUniforme);
             foreach (var r in GetComponentsInChildren<Renderer>())
-                if (r.sharedMaterial != null) r.sharedMaterial.color = colorUniforme;
+                r.SetPropertyBlock(_pbFlash);
         }
     }
 

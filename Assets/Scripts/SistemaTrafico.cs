@@ -404,8 +404,24 @@ public sealed class SistemaTrafico : MonoBehaviour
             Vector3 dirMovimiento = (distTarget > 0.1f) ? (dirTarget / distTarget) : v.velocidad.normalized;
             Vector3 velObjetivoVec = dirMovimiento * velObjetivo;
 
-            // Suavizar cambio de velocidad (aceleración/frenada realista)
-            float factorAcel = (velObjetivo > v.velocidad.magnitude) ? 2.5f : 6.0f;
+            // Suavizar cambio de velocidad.
+            // MEJORA: aceleración proporcional a la velocidad actual (ease-in desde parado).
+            // Un coche real tarda ~4-5s en alcanzar velocidad de crucero desde parado.
+            // Antes: factorAcel constante = 2.5 m/s² → coche alcanzaba 22 m/s en 9s (rápido).
+            // Ahora: rampa 0.5→2.5 m/s² según velocidad → transición suave desde parado.
+            float velActual  = v.velocidad.magnitude;
+            float factorAcel;
+            if (velObjetivo > velActual)
+            {
+                // Aceleración: empieza lenta (0.5 m/s²) y sube al máximo (2.5 m/s²)
+                // cuando el coche supera el 40% de su velocidad máxima.
+                float t = Mathf.Clamp01(velActual / Mathf.Max(v.velocidadMax * 0.4f, 0.1f));
+                factorAcel = Mathf.Lerp(0.5f, 2.5f, t);
+            }
+            else
+            {
+                factorAcel = 6.0f;  // frenada sigue siendo rápida
+            }
             v.velocidad = Vector3.MoveTowards(v.velocidad, velObjetivoVec, factorAcel * dt);
 
             // ── 5. Integración ─────────────────────────────────────────────
@@ -467,7 +483,12 @@ public sealed class SistemaTrafico : MonoBehaviour
             var go = _poolGO[p];
             go.transform.position = v.posicion + Vector3.up * 0.375f;
             if (v.velocidad.sqrMagnitude > 0.01f)
-                go.transform.rotation = Quaternion.LookRotation(v.velocidad.normalized, Vector3.up);
+            {
+                // BUG FIX: usar Slerp para evitar rotaciones instantáneas en giros bruscos.
+                // LookRotation directo generaba "snap" de 90° en cruces → coches girando al instante.
+                Quaternion rotDestino = Quaternion.LookRotation(v.velocidad.normalized, Vector3.up);
+                go.transform.rotation = Quaternion.Slerp(go.transform.rotation, rotDestino, Time.deltaTime * 10f);
+            }
 
             // FIX CRÍTICO: usar Renderer cacheado + MaterialPropertyBlock.
             // Antes: GetComponent<Renderer>() cada frame (lento) y
