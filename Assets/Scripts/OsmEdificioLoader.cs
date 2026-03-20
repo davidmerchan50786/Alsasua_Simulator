@@ -52,25 +52,25 @@ public class OsmEdificioLoader : MonoBehaviour
     [SerializeField] private string rutaJsonRelativa = "OSMData/alsasua_edificios.json";
 
     [Header("═══ CARGA ═══")]
-    [Range(1, 50)]
+    [UnityEngine.Range(1, 50)]
     [Tooltip("Edificios creados por frame — mayor = carga rápida, posibles micro-stutters")]
     [SerializeField] private int edificiosPorFrame = 5;
 
-    [Range(1, 20)]
+    [UnityEngine.Range(1, 20)]
     [Tooltip("Texturas Street View aplicadas por frame — mayor = carga más rápida\n" +
              "Defecto 4 (≈ 4× más rápido que 1/frame). En PC potente sube a 8-10.")]
     [SerializeField] private int texturasPorFrame = 4;
 
-    [Range(0, 1000)]
+    [UnityEngine.Range(0, 1000)]
     [Tooltip("Máximo de edificios a cargar (0 = todos). Útil para pruebas.")]
     [SerializeField] private int maxEdificios = 0;
 
     [Header("═══ GEOMETRÍA ═══")]
-    [Range(1f, 20f)]
+    [UnityEngine.Range(1f, 20f)]
     [Tooltip("Altura mínima de edificio en metros (evita geometría plana)")]
     [SerializeField] private float alturaMinima = 3.5f;
 
-    [Range(0.1f, 10f)]
+    [UnityEngine.Range(0.1f, 10f)]
     [Tooltip("Longitud mínima de pared en metros para crear quad (igual que GeneradorFachadas.py)")]
     [SerializeField] private float paredMinMetros = 0.5f;
 

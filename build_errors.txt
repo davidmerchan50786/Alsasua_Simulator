@@ -1,0 +1,11 @@
+C:\Program Files\dotnet\sdk\10.0.104\NuGet.targets(519,5): error MSB3202: No se encuentra el archivo del proyecto "C:\Users\coperenea\Alsasua_Simulator\Assembly-CSharp-Editor.csproj". [C:\Users\coperenea\Alsasua_Simulator\altsasu_simu.slnx]
+C:\Program Files\dotnet\sdk\10.0.104\NuGet.targets(519,5): error MSB3202: No se encuentra el archivo del proyecto "C:\Users\coperenea\Alsasua_Simulator\Assembly-CSharp.csproj". [C:\Users\coperenea\Alsasua_Simulator\altsasu_simu.slnx]
+
+ERROR al compilar.
+
+C:\Program Files\dotnet\sdk\10.0.104\NuGet.targets(519,5): error MSB3202: No se encuentra el archivo del proyecto "C:\Users\coperenea\Alsasua_Simulator\Assembly-CSharp-Editor.csproj". [C:\Users\coperenea\Alsasua_Simulator\altsasu_simu.slnx]
+C:\Program Files\dotnet\sdk\10.0.104\NuGet.targets(519,5): error MSB3202: No se encuentra el archivo del proyecto "C:\Users\coperenea\Alsasua_Simulator\Assembly-CSharp.csproj". [C:\Users\coperenea\Alsasua_Simulator\altsasu_simu.slnx]
+    0 Advertencia(s)
+    2 Errores
+
+Tiempo transcurrido 00:00:00.28
