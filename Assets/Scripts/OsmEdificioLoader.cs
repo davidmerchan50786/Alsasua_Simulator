@@ -168,7 +168,7 @@ public class OsmEdificioLoader : MonoBehaviour
             return;
         }
 
-        georef = Object.FindFirstObjectByType<CesiumGeoreference>();
+        georef = UnityEngine.Object.FindFirstObjectByType<CesiumGeoreference>();
         if (georef == null)
         {
             Debug.LogError("[OsmLoader] CesiumGeoreference no encontrado. " +

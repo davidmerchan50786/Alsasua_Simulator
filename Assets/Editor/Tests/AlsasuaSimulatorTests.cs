@@ -71,7 +71,7 @@ public class AlsasuaSimulatorTests
         var ctrl = go.AddComponent<ControladorJugador>();
         yield return null;  // ejecutar Awake + Start
 
-        Assert.AreApproximatelyEqual(1f, ctrl.RatioVida, 0.001f,
+        Assert.AreEqual(1f, ctrl.RatioVida, 0.001f,
             "RatioVida debe ser 1.0 con vida == vidaMax");
 
         Object.DestroyImmediate(go);
@@ -151,7 +151,7 @@ public class AlsasuaSimulatorTests
 
         Assert.AreEqual(ctrl.VidaMax, ctrl.Vida,
             "Curar con cantidad excesiva debe tapar en VidaMax");
-        Assert.AreApproximatelyEqual(1f, ctrl.RatioVida, 0.001f,
+        Assert.AreEqual(1f, ctrl.RatioVida, 0.001f,
             "RatioVida debe ser 1.0 tras curar completamente");
 
         Object.DestroyImmediate(go);
@@ -208,18 +208,18 @@ public class AlsasuaSimulatorTests
         fTiempoRecarga.SetValue(sd, 2f);
         fTimerRecarga.SetValue(sd,  2f);   // recién iniciada → progreso = 0
 
-        Assert.AreApproximatelyEqual(0f, sd.ProgressRecarga, 0.01f,
+        Assert.AreEqual(0f, sd.ProgressRecarga, 0.01f,
             "ProgressRecarga debe ser 0 al inicio de la recarga");
 
         // Simular recarga completada
         fTimerRecarga.SetValue(sd, 0f);    // timer expirado → progreso = 1
 
-        Assert.AreApproximatelyEqual(1f, sd.ProgressRecarga, 0.01f,
+        Assert.AreEqual(1f, sd.ProgressRecarga, 0.01f,
             "ProgressRecarga debe ser 1 cuando timerRecarga == 0");
 
         // Sin recarga → siempre 1
         fEstaCargando.SetValue(sd, false);
-        Assert.AreApproximatelyEqual(1f, sd.ProgressRecarga, 0.01f,
+        Assert.AreEqual(1f, sd.ProgressRecarga, 0.01f,
             "ProgressRecarga debe ser 1 cuando no está recargando");
 
         Object.DestroyImmediate(go);
@@ -395,9 +395,9 @@ public class AlsasuaSimulatorTests
 
         Assert.Less(factorDesdeParado, factorEnMovimiento,
             "La aceleración desde parado debe ser menor que a velocidad máxima");
-        Assert.AreApproximatelyEqual(0.5f, factorDesdeParado, 0.01f,
+        Assert.AreEqual(0.5f, factorDesdeParado, 0.01f,
             "Factor de aceleración desde parado debe ser 0.5 m/s²");
-        Assert.AreApproximatelyEqual(2.5f, factorEnMovimiento, 0.01f,
+        Assert.AreEqual(2.5f, factorEnMovimiento, 0.01f,
             "Factor de aceleración a velocidad máxima debe ser 2.5 m/s²");
     }
 
