@@ -120,7 +120,25 @@ public class SistemaExplosion : MonoBehaviour
             // Fuerza de explosión a Rigidbodies (una sola vez por objeto físico)
             var rb = col.GetComponent<Rigidbody>();
             if (rb != null && _rbYaDanados.Add(rb))
-                rb.AddExplosionForce(fuerzaFisica, transform.position, radio, 1f);
+            {
+                // V7 EXTREME CAR-BOMB PHYSICS (Operación Ogro Effect)
+                float forceMult = 1f;
+                float upwardMod = 1f; 
+
+                string n = rb.gameObject.name.ToLower();
+                if (n.Contains("vehiculo") || n.Contains("car") || n.Contains("police"))
+                {
+                    // Fuerzas hiperrealistas para hacer volar un coche blindado decenas de metros girando
+                    forceMult = 18f; 
+                    upwardMod = 60f; 
+                    
+                    // Remueve bloqueos de rotación para volar descontroladamente
+                    rb.constraints = RigidbodyConstraints.None; 
+                    rb.mass = 1200f; // Estandariza la masa para que la campana de Gauss no falle
+                }
+
+                rb.AddExplosionForce(fuerzaFisica * forceMult, transform.position, radio, upwardMod, ForceMode.Impulse);
+            }
 
             // Daño basado en la distancia al centro del objeto raíz
             float dist   = Vector3.Distance(transform.position, col.transform.position);
