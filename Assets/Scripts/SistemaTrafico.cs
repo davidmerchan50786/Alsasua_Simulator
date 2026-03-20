@@ -65,6 +65,10 @@ public sealed class SistemaTrafico : MonoBehaviour
     [Range(30f, 200f)] [SerializeField] private float radioPoolVisual = 80f;
     [SerializeField] private bool mostrarGizmos = true;
 
+    [Header("═══ GRÁFICOS (MYASSETS) ═══")]
+    [Tooltip("Asignar el Prefab del coche (SICS Police Car). Si se omite, usa cubos renderizados instanciados.")]
+    [SerializeField] private GameObject prefabVehiculo;
+
     // Estado Interno Nativos
     private int            _numVehiculos;
     private NativeArray<VehiculoData> _vehiculosWrite;
@@ -112,6 +116,16 @@ public sealed class SistemaTrafico : MonoBehaviour
             Debug.LogWarning("[SistemaTrafico] Sin carriles definidos.");
             enabled = false; return;
         }
+
+#if UNITY_EDITOR
+        // V4 AUTO-ASSIGN: Autodescubrir vehículo policial inyectado por MyAssets
+        if (prefabVehiculo == null)
+        {
+            string[] guids = UnityEditor.AssetDatabase.FindAssets("t:Prefab Police");
+            if (guids.Length > 0)
+                prefabVehiculo = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(UnityEditor.AssetDatabase.GUIDToAssetPath(guids[0]));
+        }
+#endif
 
         _numVehiculos = Mathf.Clamp(totalVehiculos, 1, 200);
         _propBlock    = new MaterialPropertyBlock();
@@ -271,6 +285,11 @@ public sealed class SistemaTrafico : MonoBehaviour
 
     private Mesh CrearMeshCoche()
     {
+        if (prefabVehiculo != null)
+        {
+            var filter = prefabVehiculo.GetComponentInChildren<MeshFilter>();
+            if (filter != null && filter.sharedMesh != null) return filter.sharedMesh;
+        }
         var temp = GameObject.CreatePrimitive(PrimitiveType.Cube);
         var mesh = Object.Instantiate(temp.GetComponent<MeshFilter>().sharedMesh);
         Object.DestroyImmediate(temp);
@@ -279,6 +298,17 @@ public sealed class SistemaTrafico : MonoBehaviour
 
     private Material CrearMaterialVehiculo()
     {
+        if (prefabVehiculo != null)
+        {
+            var r = prefabVehiculo.GetComponentInChildren<Renderer>();
+            if (r != null && r.sharedMaterial != null)
+            {
+                var matPrefab = new Material(r.sharedMaterial);
+                matPrefab.enableInstancing = true;
+                _matsCreados.Add(matPrefab);
+                return matPrefab;
+            }
+        }
         var shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
         var mat = new Material(shader) { enableInstancing = true };
         _matsCreados.Add(mat);
@@ -366,15 +396,28 @@ public sealed class SistemaTrafico : MonoBehaviour
 
         for (int i = 0; i < maxObjetosVisuales; i++)
         {
-            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            GameObject go;
+            if (prefabVehiculo != null)
+            {
+                go = Instantiate(prefabVehiculo);
+            }
+            else
+            {
+                go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                go.transform.localScale = new Vector3(1.8f, 0.75f, 4.2f);
+                var col = go.GetComponent<Collider>();
+                if (col != null) Object.Destroy(col);
+            }
             go.name = $"Vehiculo_Pool_{i:D2}";
             go.transform.SetParent(transform);
-            go.transform.localScale = new Vector3(1.8f, 0.75f, 4.2f);
             go.SetActive(false);
-            Object.Destroy(go.GetComponent<Collider>());
 
-            var rend = go.GetComponent<Renderer>();
-            rend.sharedMaterial = _matVehiculo;
+            var rend = go.GetComponentInChildren<Renderer>();
+            if (rend != null && prefabVehiculo == null)
+            {
+                rend.sharedMaterial = _matVehiculo;
+            }
+            
             _poolRenderers[i]   = rend;
             _poolGO[i]          = go;
         }

@@ -526,6 +526,21 @@ public class DashboardGeo : MonoBehaviour
         if (Camera.main != null && !modoAPie)
             Camera.main.transform.rotation = targetRot;
 
+        // V3 FIX: Protección contra caída en streaming de terreno (Async Topography Validation)
+        // Evita que el jugador caiga al infinito si los tiles de Cesium aún no se han descargado.
+        if (modoAPie && controladorJugador != null)
+        {
+            float maxEspera = 10f; // Timeout de seguridad
+            float t = 0f;
+            // Raycast hacia abajo buscando terreno real (ignorar Triggers)
+            // Mientras no encuentre suelo, el jugador permanecerá levitando congelado sin gravedad.
+            while (!Physics.Raycast(controladorJugador.transform.position, Vector3.down, (float)obj.altPie * 1.5f, ~0, QueryTriggerInteraction.Ignore) && t < maxEspera)
+            {
+                t += Time.deltaTime;
+                yield return null;
+            }
+        }
+
         enVuelo = false;
         destino = "";
 

@@ -12,6 +12,10 @@ public class SistemaExplosion : MonoBehaviour
     [SerializeField] public int   danoMaximo   = 150;
     [SerializeField] public float duracionFuego = 6f;
 
+    [Header("═══ FX CINEMÁTICOS (MYASSETS) ═══")]
+    [Tooltip("Asigna aquí el Prefab del Asset Store 'Cinematic Explosions FREE'. Ignorar para mantener FX procedurales.")]
+    [SerializeField] public GameObject prefabExplosionCinematica;
+
     // FIX GC: HashSets pre-alloc estáticos para eliminar 5 allocaciones heap por explosión.
     // Son estáticos seguros porque AplicarFisicasYDano() es síncrono —
     // Unity no ejecuta dos explosiones en paralelo dentro del mismo frame.
@@ -39,16 +43,52 @@ public class SistemaExplosion : MonoBehaviour
 
     public void Detonar()
     {
+#if UNITY_EDITOR
+        // V4 AUTO-ASSIGN: Buscar dinámicamente el prefab cinemático de explosión
+        if (prefabExplosionCinematica == null)
+        {
+            string[] guids = UnityEditor.AssetDatabase.FindAssets("t:Prefab CinematicExplosion");
+            if (guids.Length > 0)
+            {
+                prefabExplosionCinematica = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(UnityEditor.AssetDatabase.GUIDToAssetPath(guids[0]));
+            }
+            else
+            {
+                // Fallback secondary name search if "CinematicExplosion" isn't exactly matched
+                string[] guids2 = UnityEditor.AssetDatabase.FindAssets("t:Prefab Explosion");
+                foreach (var g in guids2)
+                {
+                    string path = UnityEditor.AssetDatabase.GUIDToAssetPath(g);
+                    if (path.Contains("Cinematic") || path.Contains("Mirza"))
+                    {
+                        prefabExplosionCinematica = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                        break;
+                    }
+                }
+            }
+        }
+#endif
+
         // FIX: las explosiones no tenían audio. AudioManager.Clip.Explosion está definido
         // pero nunca se llamaba desde aquí → explosiones completamente silenciosas.
         AudioManager.I?.Play(AudioManager.Clip.Explosion, transform.position);
 
         AplicarFisicasYDano();
-        EfectoBolaFuego();
-        EfectoHumo();
-        EfectoRescoldo();
-        EfectoLlamas();
-        EfectoOnda();
+
+        // V4: Redirección opcional a VFX PBR AAA
+        if (prefabExplosionCinematica != null)
+        {
+            var fx = Instantiate(prefabExplosionCinematica, transform.position, Quaternion.identity);
+            Destroy(fx, duracionFuego + 3f);
+        }
+        else
+        {
+            EfectoBolaFuego();
+            EfectoHumo();
+            EfectoRescoldo();
+            EfectoLlamas();
+            EfectoOnda();
+        }
 
         // Sacudir cámara si el jugador está cerca
         SacudirCamara();
@@ -58,9 +98,12 @@ public class SistemaExplosion : MonoBehaviour
 
     // ─── Físicas y daño ──────────────────────────────────────────────────
 
+    private static readonly Collider[] hitBuffer = new Collider[200];
+
     private void AplicarFisicasYDano()
     {
-        Collider[] afectados = Physics.OverlapSphere(transform.position, radio);
+        // V3 FIX: Zero-GC OverlapSphereNonAlloc
+        int numHits = Physics.OverlapSphereNonAlloc(transform.position, radio, hitBuffer);
 
         // FIX GC: limpiar los HashSets estáticos en lugar de crear 5 nuevos por explosión.
         // Preservan el comportamiento anti-daño-doble con cero allocaciones en heap.
@@ -70,8 +113,10 @@ public class SistemaExplosion : MonoBehaviour
         _vehiculosYaDanados.Clear();
         _barricadasYaDanadas.Clear();
 
-        foreach (var col in afectados)
+        for (int i = 0; i < numHits; i++)
         {
+            var col = hitBuffer[i];
+            
             // Fuerza de explosión a Rigidbodies (una sola vez por objeto físico)
             var rb = col.GetComponent<Rigidbody>();
             if (rb != null && _rbYaDanados.Add(rb))

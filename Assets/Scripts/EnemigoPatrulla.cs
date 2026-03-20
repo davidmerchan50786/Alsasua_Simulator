@@ -37,6 +37,10 @@ public class EnemigoPatrulla : MonoBehaviour
     [SerializeField] private float cadenciaAtaque     = 0.8f;
     [SerializeField] private float precisionEnemy     = 0.05f;  // dispersión
 
+    [Header("═══ GRÁFICOS (MYASSETS) ═══")]
+    [Tooltip("Asignar el Prefab del Soldado de 'Low Poly Soldiers Demo'. Si se deja vacío utilizará cajas procedurales con GPU instancing.")]
+    [SerializeField] private GameObject prefabVisual;
+
     [Header("═══ WAYPOINTS DE PATRULLA ═══")]
     [SerializeField] private Transform[] waypointsPatrulla;
     [SerializeField] private float tiempoEsperaWP = 2f;
@@ -52,6 +56,8 @@ public class EnemigoPatrulla : MonoBehaviour
     private float  timerAtaque      = 0f;
     private float  timerAlerta      = 0f;
     private bool   esperandoWP      = false;
+    private float  timerVision      = 0f;
+    private float  offsetVision     = 0f;
     private Vector3 ultimaPosJugador;
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -67,6 +73,8 @@ public class EnemigoPatrulla : MonoBehaviour
             jugador        = jp.transform;
             controlJugador = jp;
         }
+
+        offsetVision = Random.Range(0f, 0.1f); // Desincronizar Time-Slicing inicial
 
         // Crear cuerpo visual básico si no tiene hijos
         if (transform.childCount == 0)
@@ -92,9 +100,18 @@ public class EnemigoPatrulla : MonoBehaviour
             case EstadoIA.Atacando:     ActualizarAtacando();   break;
         }
 
-        // Comprobar visión siempre
+        // V3 FIX (TIME-SLICING): Reducir comprobación de visión de 60Hz a 10Hz
+        // Ahorra tiempo crítico O(N) CPU raycasts. _offsetVision evita que todos raycasteen en el mismo frame.
         if (Estado != EstadoIA.Atacando)
-            ComprobarVision();
+        {
+            timerVision += Time.deltaTime;
+            if (timerVision >= 0.1f + offsetVision)
+            {
+                ComprobarVision();
+                timerVision  = 0f;
+                offsetVision = 0f;
+            }
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -386,52 +403,79 @@ public class EnemigoPatrulla : MonoBehaviour
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    //  CUERPO VISUAL BÁSICO
+    //  CUERPO VISUAL BÁSICO (GPU INSTANCING)
     // ═══════════════════════════════════════════════════════════════════════
 
     private Color colorUniforme = new Color(0.25f, 0.28f, 0.22f); // verde militar
 
-    // BUG FIX LEAK: lista de materiales creados con new Material() para destruirlos en OnDestroy().
-    // MatURP era static → los materiales no podían ser rastreados por instancia → leak garantizado.
-    private readonly System.Collections.Generic.List<Material> _matsCreados =
-        new System.Collections.Generic.List<Material>();
+    // V3 FIX LEAK & DRAW CALLS: Compartir una única instancia estática de Material por Color.
+    // Combinado con enableInstancing = true, dibuja miles de soldados en 1 único Draw Call.
+    private static readonly System.Collections.Generic.Dictionary<Color, Material> _sharedMats = 
+        new System.Collections.Generic.Dictionary<Color, Material>();
 
-    // Crea un Material compatible con URP (evita el magenta por shader incorrecto)
-    // BUG FIX: null guard — new Material(null) lanza NullReferenceException si ningún shader está disponible.
-    // BUG FIX LEAK: método de instancia (no static) para poder rastrear el material en _matsCreados.
-    private Material MatURP(Color color)
+    private static Material ObtenerMaterialCompartido(Color color)
     {
+        if (_sharedMats.TryGetValue(color, out Material mat) && mat != null)
+            return mat;
+
         var shader = Shader.Find("Universal Render Pipeline/Lit")
                   ?? Shader.Find("Universal Render Pipeline/Unlit")
                   ?? Shader.Find("Standard");
+        
         if (shader == null)
         {
-            Debug.LogError("[EnemigoPatrulla] MatURP: ningún shader URP/Standard encontrado. " +
-                           "Incluye 'Universal Render Pipeline/Lit' en Always Included Shaders.");
             shader = Shader.Find("Hidden/InternalErrorShader");
-            if (shader == null) return null;
         }
-        var mat = new Material(shader) { color = color };
-        _matsCreados.Add(mat);
+
+        mat = new Material(shader) { color = color };
+        mat.enableInstancing = true; // BÁSICO para erradicar CPU Overhead de miles de Renderers
+        _sharedMats[color] = mat;
+        
         return mat;
     }
 
-    // BUG FIX LEAK: destruir los materiales del cuerpo al destruir el enemigo.
     private void OnDestroy()
     {
-        foreach (var m in _matsCreados)
-            if (m != null) Object.Destroy(m);
-        _matsCreados.Clear();
+        // Ya no es necesario destruir materiales locales instanciados (Eran O(N)). 
+        // El DIctionary y GC de Unity manejan la salida segura del Runtime.
     }
 
     private void CrearCuerpoBasico()
     {
+#if UNITY_EDITOR
+        // V4 AUTO-ASSIGN: Si estamos en el editor y el usuario le dio a "Play" sin configurar el prefab, autodescubrirlo.
+        if (prefabVisual == null)
+        {
+            string[] guids = UnityEditor.AssetDatabase.FindAssets("t:Prefab Soldier");
+            if (guids.Length > 0)
+            {
+                // Cargar el primer modelo de Soldado que el paquete haya inyectado
+                prefabVisual = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(UnityEditor.AssetDatabase.GUIDToAssetPath(guids[0]));
+            }
+        }
+#endif
+
+        // V4 FIX: Si el usuario ha acoplado un soldado 3D hiperrealista, instanciarlo y cancelar el procedural.
+        if (prefabVisual != null)
+        {
+            var modelo3D = Instantiate(prefabVisual, transform);
+            modelo3D.transform.localPosition = Vector3.down * 0.5f; // Alinear pies con el collider cápsula
+            
+            // Intento de anclaje de un Animator local si el modelo cuenta con uno
+            var aniLocal = modelo3D.GetComponentInChildren<Animator>();
+            if (aniLocal != null && animador == null) 
+                animador = aniLocal;
+
+            return;
+        }
+
+        // Cajas procedurales primitivas (GPU Instanced de alta reusabilidad)
         // Cuerpo
         var cuerpo = GameObject.CreatePrimitive(PrimitiveType.Capsule);
         cuerpo.transform.SetParent(transform);
         cuerpo.transform.localPosition = new Vector3(0f, 1f, 0f);
         cuerpo.transform.localScale    = new Vector3(0.6f, 0.9f, 0.6f);
-        var matCuerpo = MatURP(colorUniforme);
+        var matCuerpo = ObtenerMaterialCompartido(colorUniforme);
         if (matCuerpo != null) cuerpo.GetComponent<Renderer>().sharedMaterial = matCuerpo;
         Destroy(cuerpo.GetComponent<Collider>());
 
@@ -440,7 +484,7 @@ public class EnemigoPatrulla : MonoBehaviour
         cabeza.transform.SetParent(transform);
         cabeza.transform.localPosition = new Vector3(0f, 2.0f, 0f);
         cabeza.transform.localScale    = new Vector3(0.4f, 0.4f, 0.4f);
-        var matCabeza = MatURP(new Color(0.75f, 0.62f, 0.48f));
+        var matCabeza = ObtenerMaterialCompartido(new Color(0.75f, 0.62f, 0.48f));
         if (matCabeza != null) cabeza.GetComponent<Renderer>().sharedMaterial = matCabeza;
         Destroy(cabeza.GetComponent<Collider>());
 
@@ -449,7 +493,7 @@ public class EnemigoPatrulla : MonoBehaviour
         casco.transform.SetParent(transform);
         casco.transform.localPosition = new Vector3(0f, 2.15f, 0f);
         casco.transform.localScale    = new Vector3(0.45f, 0.35f, 0.45f);
-        var matCasco = MatURP(colorUniforme);
+        var matCasco = ObtenerMaterialCompartido(colorUniforme);
         if (matCasco != null) casco.GetComponent<Renderer>().sharedMaterial = matCasco;
         Destroy(casco.GetComponent<Collider>());
 
