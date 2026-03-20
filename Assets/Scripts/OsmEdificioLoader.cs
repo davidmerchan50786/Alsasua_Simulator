@@ -548,14 +548,18 @@ public class OsmEdificioLoader : MonoBehaviour
         if (!this) yield break;
 
         texturasEnCarga = true;
-        int enEsteFrame  = 0;
         int totalCola    = colaTexturas.Count; // snapshot para el log de progreso
         int texturasError = 0;
+        
+        // FIX OPT: Presupuesto de tiempo dinámico (aprox 12ms de los 16.6ms) para mantener >60 FPS
+        var watch = new System.Diagnostics.Stopwatch();
 
         while (colaTexturas.Count > 0)
         {
             // FIX: check tras cada yield — si el GO fue destruido mientras procesábamos, salir limpio
             if (!this) yield break;
+
+            watch.Restart();
 
             var (ruta, renderer) = colaTexturas.Dequeue();
 
@@ -572,6 +576,7 @@ public class OsmEdificioLoader : MonoBehaviour
 #endif
 
             using var uwr = UnityWebRequestTexture.GetTexture(url);
+            uwr.timeout = 5; // FIX SEGURIDAD: Previene cuelgues HTTP infinitos por red inestable (DoS local)
             yield return uwr.SendWebRequest();
 
             if (!this) yield break; // FIX: re-check tras la petición async
@@ -579,18 +584,21 @@ public class OsmEdificioLoader : MonoBehaviour
             if (uwr.result == UnityWebRequest.Result.Success)
             {
                 Texture2D tex = DownloadHandlerTexture.GetContent(uwr);
+                
+                // FIX SEGURIDAD (OOM & Zip Bombing): Restringir dimensiones para evitar colapso de VRAM
+                if (tex != null && (tex.width > 2048 || tex.height > 2048))
+                {
+                    Debug.LogWarning($"[Seguridad] Textura rechazada ({tex.width}x{tex.height}). Excede el límite seguro de VRAM.");
+                    Destroy(tex);
+                    texturasError++;
+                    continue;
+                }
+
                 if (tex != null && renderer != null)
                 {
                     // OPT: comprimir a DXT1 antes de subir a GPU
-                    //   640×480 RGBA32 = 1.17 MB/textura × 5.649 = 6.6 GB VRAM
-                    //   640×480 DXT1   = 0.15 MB/textura × 5.649 = 847 MB VRAM  (-88%)
-                    //   Apply(false, makeNoLongerReadable:true) libera además la copia en RAM.
                     if (comprimirTexturas)
                     {
-                        // MEJORA CALIDAD: generar cadena mipmap ANTES de comprimir.
-                        // Sin mipmaps, edificios a >50m shimmeran/aliasan. Con mipmaps
-                        // el mip correcto se muestra a cada distancia → imagen limpia.
-                        // Apply(true) genera los mip levels desde el nivel 0 (CPU side).
                         tex.Apply(true);           // genera mipmaps en RGBA32 (CPU)
                         tex.Compress(false);        // comprime RGBA32+mipmaps → DXT1+mipmaps
                         tex.Apply(false, true);     // sube DXT1+mipmaps a GPU, libera CPU
@@ -600,21 +608,12 @@ public class OsmEdificioLoader : MonoBehaviour
                         tex.Apply(true, true);      // genera mipmaps + sube + libera CPU
                     }
 
-                    // FIX LEAK: rastrear la textura para destruirla en OnDestroy/RecargarEdificios.
-                    // Aunque Apply(false, true) libera la copia CPU, el objeto Texture2D sigue
-                    // ocupando VRAM hasta que se llame Destroy(tex) explícitamente.
+                    // FIX LEAK: rastrear la textura para destruirla en OnDestroy
                     texturasCreadas.Add(tex);
 
-                    // MEJORA CALIDAD: Trilinear aprovecha los mipmaps para transición
-                    // suave entre niveles de detalle (vs Bilinear que produce "popping").
-                    // anisoLevel 4 = nitidez en fachadas vistas en ángulo oblicuo.
                     tex.filterMode = FilterMode.Trilinear;
                     tex.anisoLevel = 4;
 
-                    // OPT: MaterialPropertyBlock — textura por renderer sin instanciar material.
-                    // Todos los renderers siguen compartiendo matFachadaCompartido → GPU instancing OK.
-                    // FIX: usa texPropId (detectado en Start) en vez de PropBaseMap hardcodeado,
-                    // para que funcione tanto con URP/Lit (_BaseMap) como con Standard (_MainTex).
                     renderer.GetPropertyBlock(mpb);
                     mpb.SetTexture(texPropId, tex);
                     renderer.SetPropertyBlock(mpb);
@@ -628,16 +627,16 @@ public class OsmEdificioLoader : MonoBehaviour
                 texturasError++;
             }
 
-            // Log de progreso cada 500 texturas para visibilidad en la consola sin spam
+            // Log de progreso cada 500 texturas
             if (texturasCargadas > 0 && texturasCargadas % 500 == 0)
                 Debug.Log($"[OsmLoader] Texturas: {texturasCargadas}/{totalCola} " +
                           $"({texturasCargadas * 100 / Mathf.Max(1, totalCola)}%)...");
 
-            enEsteFrame++;
-            if (enEsteFrame >= texturasPorFrame)
+            // FIX ANTI-STUTTER: En lugar de un N fijo de texturas (que pueden ser pesadas), 
+            // medimos el tiempo CPU real y cedemos control si excedemos 8ms (mitad del frame rate de 60 FPS)
+            if (watch.ElapsedMilliseconds > 8)
             {
-                enEsteFrame = 0;
-                yield return null; // ceder control al motor cada N texturas
+                yield return null; 
             }
         }
 

@@ -1,0 +1,1 @@
+{ "name": "Alsasua.Scripts", "references": [ "CesiumForUnity", "Unity.Mathematics", "Unity.InputSystem", "Unity.RenderPipelines.Universal.Runtime" ], "autoReferenced": true }

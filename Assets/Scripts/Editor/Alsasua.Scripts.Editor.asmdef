@@ -1,0 +1,1 @@
+{ "name": "Alsasua.Scripts.Editor", "references": [ "Alsasua.Scripts" ], "includePlatforms": [ "Editor" ], "autoReferenced": true }
