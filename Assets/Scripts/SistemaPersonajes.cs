@@ -1,26 +1,22 @@
 // Assets/Scripts/SistemaPersonajes.cs
 // ═══════════════════════════════════════════════════════════════════════════
-//  Gestiona todos los tipos de personaje del simulador de Alsasua:
+//  Gestiona todos los tipos de personaje del simulador de Alsasua.
 //
-//  · GuardiaCivil      — uniforme verde oliva, tricornio, ruta patrulla
-//  · PoliciaForal      — uniforme azul marino, casco, ruta patrulla
-//  · ManifestantePalestino — ropa oscura, keffiyeh rojo/blanco procedural
-//  · ManifestanteJurrutu   — ropa negra, boina vasca
-//  · PortadorIkurriña  — manifestante con ikurriña en mástil (tex procedural)
-//  · PortadorNavarra   — manifestante con bandera Navarra en mástil
-//  · CivilianMale / CivilianFemale — civiles peatones por el pueblo
+//  · GuardiaCivil, PoliciaForal, Manifestantes, Civiles.
 //
-//  Arquitectura:
-//  · Un GameObject real por personaje (pool implícito vía parenting).
-//  · PersonajeData[] struct array — sin MonoBehaviour por agente.
-//  · MaterialPropertyBlock per-GO para variación de tono sin nuevas instancias.
-//  · Texturas de uniforme/bandera 100 % procedurales — sin assets externos.
-//  · Tick lógica a 20 FPS; raycast terreno escalonado 1/frame.
-//  · OnDestroy() limpia todos los new Material(), new Texture2D(), new Mesh().
+//  FIX V2 (ESCALABILIDAD EXTREMA - DATA ORIENTED DESIGN):
+//  · Migrado de arrays gestionados a NativeArray.
+//  · Lógica de movimiento migrada a IJobParallelForTransform (Worker Threads).
+//  · Eliminado el SincronizarGOs() mono-hilo.
+//  · Rendimiento masivo sin bloqueos en el hilo principal.
 // ═══════════════════════════════════════════════════════════════════════════
 
 using UnityEngine;
 using System.Collections.Generic;
+using Unity.Collections;
+using UnityEngine.Jobs;
+using Unity.Jobs;
+using AlsasuaSimulator.Scripts;
 
 public sealed class SistemaPersonajes : MonoBehaviour
 {
@@ -39,9 +35,9 @@ public sealed class SistemaPersonajes : MonoBehaviour
         CivilianFemale,
     }
 
-    private enum EstadoPersonaje : byte { Caminando, Parado, Patrullando }
+    public enum EstadoPersonaje : byte { Caminando, Parado, Patrullando }
 
-    private struct PersonajeData
+    public struct PersonajeData
     {
         public Vector3          posicion;
         public Vector3          velocidad;
@@ -50,8 +46,25 @@ public sealed class SistemaPersonajes : MonoBehaviour
         public EstadoPersonaje  estado;
         public int              waypointActual;
         public float            tiempoParado;
-        public float            varianteTono;   // 0-1
-        public Vector3          destinoCivil;   // objetivo aleatorio para civiles
+        public float            varianteTono;   
+        public Vector3          destinoCivil;   
+        
+        // PRNG (Pseudo-Random Number Generator) determinista para usar en el Worker Thread (sin UnityEngine.Random)
+        public uint rndState;
+        public float NextFloat()
+        {
+            rndState ^= rndState << 13;
+            rndState ^= rndState >> 17;
+            rndState ^= rndState << 5;
+            return (rndState & 0xFFFFFF) / 16777216f; // Rango 0.0 - 1.0
+        }
+        public float RndRange(float min, float max) => min + NextFloat() * (max - min);
+        public Vector2 RndInsideCircle()
+        {
+            float theta = NextFloat() * 2f * Mathf.PI;
+            float r     = Mathf.Sqrt(NextFloat());
+            return new Vector2(r * Mathf.Cos(theta), r * Mathf.Sin(theta));
+        }
     }
 
     // ───────────────────────────────────────────────────────────────────────
@@ -67,13 +80,9 @@ public sealed class SistemaPersonajes : MonoBehaviour
     [SerializeField] private int numCiviles              = 50;
 
     [Header("═══ RUTAS Y ÁREAS ═══")]
-    [Tooltip("Waypoints de patrulla Guardia Civil (en orden)")]
     [SerializeField] private Transform[] rutaGuardiaCivil;
-    [Tooltip("Waypoints de patrulla Policía Foral (en orden)")]
     [SerializeField] private Transform[] rutaPoliciaForal;
-    [Tooltip("Área de paseo civiles (centro Alsasua)")]
     [SerializeField] private Bounds areaCiviles = new Bounds(Vector3.zero, new Vector3(200f, 10f, 200f));
-    [Tooltip("Punto de origen de la manifestación")]
     [SerializeField] private Vector3 posicionManifestantes = new Vector3(-50f, 0f, 0f);
 
     [Header("═══ VELOCIDADES ═══")]
@@ -83,63 +92,112 @@ public sealed class SistemaPersonajes : MonoBehaviour
     [SerializeField] private float velocidadCivil   = 0.95f;
 
     // ───────────────────────────────────────────────────────────────────────
-    //  ESTADO INTERNO
+    //  ESTADO INTERNO (DATA-ORIENTED)
     // ───────────────────────────────────────────────────────────────────────
-    private PersonajeData[] _personajes;
-    private GameObject[]    _goPersonajes;
+    private NativeArray<PersonajeData> _personajesNative;
+    private TransformAccessArray       _transformAccess;
+    private NativeArray<Vector3>       _rutaGCNative;
+    private NativeArray<Vector3>       _rutaPFNative;
+    private JobHandle                  _movimientoJobHandle;
+    
+    private GameObject[] _goPersonajes; // Mantener referencias puras si es necesario liberar memoria
+    private int _totalInstancias;
 
-    // Materiales base por tipo (MaterialPropertyBlock aplica variantes por GO)
-    private Material[] _matsBase;   // índice = (int)TipoPersonaje
-    private readonly List<Material>  _matsCreados  = new List<Material>();
-    private readonly List<Texture2D> _texsCreadas  = new List<Texture2D>();
+    // Rendering procedural (sin assets)
+    private Material[] _matsBase;   
+    private readonly List<Material>  _matsCreados   = new List<Material>();
+    private readonly List<Texture2D> _texsCreadas   = new List<Texture2D>();
     private readonly List<Mesh>      _meshesCreados = new List<Mesh>();
 
     private Texture2D _texIkurriña;
     private Texture2D _texNavarra;
     private Texture2D _texKeffiyeh;
+    private Mesh _meshCuerpo;     
+    private Mesh _meshBandera;    
 
-    private Mesh _meshCuerpo;     // cápsula ~1.8 m
-    private Mesh _meshBandera;    // quad 0.6×1.2 m, doble cara
-
-    private float _acumTick     = 0f;
-    private const float TICK_DT = 1f / 20f;  // lógica a 20 FPS
-    private int   _idxRaycast   = 0;
+    private int _idxRaycast = 0;
 
     private static readonly int _idBaseColor   = Shader.PropertyToID("_BaseColor");
     private static readonly int _idBaseMap     = Shader.PropertyToID("_BaseMap");
 
     // ───────────────────────────────────────────────────────────────────────
-    //  UNITY
+    //  UNITY LIFECYCLE
     // ───────────────────────────────────────────────────────────────────────
     private void Awake()
     {
         CrearTexturas();
         CrearMeshes();
         CrearMaterialesBase();
+        
+        // Convertir rutas al inicio a NativeArrays antes del spawn
+        PrepararRutasNativas();
         SpawnTodos();
     }
 
     private void Update()
     {
-        _acumTick += Time.deltaTime;
-        if (_acumTick >= TICK_DT)
-        {
-            _acumTick -= TICK_DT;
-            TickLogica(TICK_DT);
-        }
+        // 1. Finalizar el trabajo multihilo del frame anterior (obligatorio antes de leer/escribir nativos)
+        _movimientoJobHandle.Complete();
 
-        // Raycast terreno escalonado: 1 por frame
-        if (_personajes != null && _personajes.Length > 0)
-        {
-            _idxRaycast = (_idxRaycast + 1) % _personajes.Length;
-            SampleTerreno(_idxRaycast);
-        }
+        if (_totalInstancias == 0 || !_personajesNative.IsCreated) return;
 
-        SincronizarGOs();
+        // 2. Ejecutar tareas seguras en el hilo principal (Raycast, muy pesado en Jobs si no se usa Command)
+        _idxRaycast = (_idxRaycast + 1) % _totalInstancias;
+        SampleTerreno(_idxRaycast);
+
+        // 3. Programar (Schedule) el Job masivo de simulación cinemática
+        var job = new PersonajesCaminarJob
+        {
+            dt = Time.deltaTime,
+            velGC = velocidadGC,
+            velPF = velocidadPF,
+            velManif = velocidadManif,
+            velCivil = velocidadCivil,
+            posManifestantes = posicionManifestantes,
+            centroCiviles = areaCiviles.center,
+            extentsCiviles = areaCiviles.extents,
+            rutaGC = _rutaGCNative,
+            rutaPF = _rutaPFNative,
+            personajes = _personajesNative
+        };
+
+        // Schedule reparte la carga en todos los núcleos lógicos del procesador
+        _movimientoJobHandle = job.Schedule(_transformAccess);
+        
+        // Empacar la ejecución inmediata para reducir latencia frame a frame
+        JobHandle.ScheduleBatchedJobs();
+    }
+
+    private void LateUpdate()
+    {
+        // Forzar la finalización en LateUpdate garantiza que para cuando Unity renderice las cámaras,
+        // los transforms modificados en el Job System ya hayan sido aplicados.
+        _movimientoJobHandle.Complete();
+    }
+
+    private void OnEnable()
+    {
+        GameEventBus.OnAlertaCambio += OnAlertaCambiada;
+    }
+
+    private void OnDisable()
+    {
+        GameEventBus.OnAlertaCambio -= OnAlertaCambiada;
+        _movimientoJobHandle.Complete(); // Seguridad antes de apagar
     }
 
     private void OnDestroy()
     {
+        // 1. Detener el job en curso pase lo que pase para evitar Data Races (Access Violation)
+        _movimientoJobHandle.Complete();
+
+        // 2. Liberar de memoria no-administrada los buffers nativos previniendo "Memory Leaks" gravísimos
+        if (_personajesNative.IsCreated) _personajesNative.Dispose();
+        if (_transformAccess.isCreated)  _transformAccess.Dispose();
+        if (_rutaGCNative.IsCreated)     _rutaGCNative.Dispose();
+        if (_rutaPFNative.IsCreated)     _rutaPFNative.Dispose();
+
+        // 3. Liberar texturas y mallas URP
         foreach (var m    in _matsCreados)   if (m    != null) Object.Destroy(m);
         foreach (var t    in _texsCreadas)   if (t    != null) Object.Destroy(t);
         foreach (var mesh in _meshesCreados) if (mesh != null) Object.Destroy(mesh);
@@ -149,46 +207,202 @@ public sealed class SistemaPersonajes : MonoBehaviour
     }
 
     // ───────────────────────────────────────────────────────────────────────
-    //  SPAWN
+    //  JOB MULTI-THREADING LÓGICA (ECS BASICO)
     // ───────────────────────────────────────────────────────────────────────
+    // Este struct se envía a un Worker Thread aislado. No puede tocar GameObjects ni Unity API.
+    // Solo matemática pura.
+    
+    // [BurstCompile] (Atributo potencial para máximo rendimiento, Omitido para mantener portabilidad sin requerir paquete externo Burst)
+    private struct PersonajesCaminarJob : IJobParallelForTransform
+    {
+        public float dt;
+        public float velGC;
+        public float velPF;
+        public float velManif;
+        public float velCivil;
+        
+        public Vector3 posManifestantes;
+        public Vector3 centroCiviles;
+        public Vector3 extentsCiviles;
+
+        [ReadOnly] public NativeArray<Vector3> rutaGC;
+        [ReadOnly] public NativeArray<Vector3> rutaPF;
+        
+        public NativeArray<PersonajeData> personajes;
+
+        public void Execute(int i, TransformAccess transform)
+        {
+            var p = personajes[i];
+
+            // 1. Lógica de Máquina de Estados
+            switch (p.estado)
+            {
+                case EstadoPersonaje.Patrullando: p = TickPatrulla(p); break;
+                case EstadoPersonaje.Caminando:   p = TickCaminar(p);  break;
+                case EstadoPersonaje.Parado:
+                    p.tiempoParado -= dt;
+                    if (p.tiempoParado <= 0f) p.estado = EstadoPersonaje.Caminando;
+                    p.velocidad = Vector3.zero;
+                    break;
+            }
+
+            // 2. Aplicar traslación a Transform mediante struct Access (Sincronizado atómicamente por Unity)
+            transform.position = new Vector3(p.posicion.x, p.alturaY, p.posicion.z);
+            
+            // 3. Aplicar rotación (LookAt hacia donde andan)
+            if (p.velocidad.sqrMagnitude > 0.0025f)
+            {
+                Vector3 flatH = new Vector3(p.velocidad.x, 0f, p.velocidad.z);
+                transform.rotation = Quaternion.LookRotation(flatH, Vector3.up);
+            }
+
+            // Guarda el valor modificado hacia la memoria principal compartida
+            personajes[i] = p;
+        }
+
+        private PersonajeData TickPatrulla(PersonajeData p)
+        {
+            NativeArray<Vector3> ruta = (p.tipo == TipoPersonaje.GuardiaCivil) ? rutaGC : rutaPF;
+            
+            if (!ruta.IsCreated || ruta.Length == 0) return TickCaminar(p); // Fallback
+
+            int wp = p.waypointActual % ruta.Length;
+            Vector3 destino = ruta[wp];
+            Vector3 dir = destino - p.posicion; 
+            dir.y = 0f;
+            float dist = dir.magnitude;
+
+            if (dist < 1.8f)
+            {
+                p.waypointActual = (p.waypointActual + 1) % ruta.Length;
+                if (p.RndRange(0f, 1f) < 0.12f)
+                {
+                    p.estado       = EstadoPersonaje.Parado;
+                    p.tiempoParado = p.RndRange(2f, 7f);
+                    p.velocidad    = Vector3.zero;
+                    return p;
+                }
+            }
+
+            float speed = (p.tipo == TipoPersonaje.GuardiaCivil) ? velGC : velPF;
+            p.velocidad = dir.normalized * speed;
+            p.posicion += p.velocidad * dt;
+            return p;
+        }
+
+        private PersonajeData TickCaminar(PersonajeData p)
+        {
+            if (p.tipo == TipoPersonaje.GuardiaCivil || p.tipo == TipoPersonaje.PoliciaForal)
+            { 
+                p.estado = EstadoPersonaje.Patrullando; 
+                return p; 
+            }
+
+            if (p.tipo == TipoPersonaje.ManifestantePalestino ||
+                p.tipo == TipoPersonaje.ManifestanteJurrutu   ||
+                p.tipo == TipoPersonaje.PortadorIkurriña      ||
+                p.tipo == TipoPersonaje.PortadorNavarra)
+            {
+                Vector3 dir = Vector3.right;
+                float speed = velManif + p.RndRange(-0.1f, 0.1f);
+                p.velocidad = dir * speed;
+                p.posicion += p.velocidad * dt;
+
+                if (p.posicion.x > posManifestantes.x + 200f)
+                    p.posicion.x = posManifestantes.x - 5f;
+                return p;
+            }
+
+            // Civiles
+            Vector3 diff = p.destinoCivil - p.posicion; diff.y = 0f;
+            if (diff.magnitude < 2f)
+            {
+                Vector2 rnd = p.RndInsideCircle() * extentsCiviles.x * 0.7f;
+                p.destinoCivil = centroCiviles + new Vector3(rnd.x, 0f, rnd.y);
+
+                if (p.RndRange(0f, 1f) < 0.30f)
+                {
+                    p.estado       = EstadoPersonaje.Parado;
+                    p.tiempoParado = p.RndRange(1f, 9f);
+                    p.velocidad    = Vector3.zero;
+                    return p;
+                }
+            }
+
+            p.velocidad = diff.normalized * velCivil;
+            p.posicion += p.velocidad * dt;
+
+            // Clamping the civil area manually (Mathf.Clamp works in Burst/Jobs)
+            float cx = Mathf.Clamp(p.posicion.x, centroCiviles.x - extentsCiviles.x, centroCiviles.x + extentsCiviles.x);
+            float cz = Mathf.Clamp(p.posicion.z, centroCiviles.z - extentsCiviles.z, centroCiviles.z + extentsCiviles.z);
+            if (cx != p.posicion.x || cz != p.posicion.z)
+            {
+                p.posicion.x = cx;
+                p.posicion.z = cz;
+                p.destinoCivil = centroCiviles;
+            }
+
+            return p;
+        }
+    }
+
+    // ───────────────────────────────────────────────────────────────────────
+    //  SPAWN Y RUTAS (MEMORIA PRINCIPAL)
+    // ───────────────────────────────────────────────────────────────────────
+
+    private void PrepararRutasNativas()
+    {
+        if (rutaGuardiaCivil != null && rutaGuardiaCivil.Length > 0)
+        {
+            _rutaGCNative = new NativeArray<Vector3>(rutaGuardiaCivil.Length, Allocator.Persistent);
+            for (int i = 0; i < rutaGuardiaCivil.Length; i++) _rutaGCNative[i] = rutaGuardiaCivil[i].position;
+        }
+        else
+            _rutaGCNative = new NativeArray<Vector3>(0, Allocator.Persistent);
+
+        if (rutaPoliciaForal != null && rutaPoliciaForal.Length > 0)
+        {
+            _rutaPFNative = new NativeArray<Vector3>(rutaPoliciaForal.Length, Allocator.Persistent);
+            for (int i = 0; i < rutaPoliciaForal.Length; i++) _rutaPFNative[i] = rutaPoliciaForal[i].position;
+        }
+        else
+            _rutaPFNative = new NativeArray<Vector3>(0, Allocator.Persistent);
+    }
+
     private void SpawnTodos()
     {
-        int total = numGuardiaCivil + numPoliciaForal
-                  + numManifestantesPales + numManifestantesJurrutu
-                  + numPortadoresIkurriña + numPortadoresNavarra
-                  + numCiviles;
+        _totalInstancias = numGuardiaCivil + numPoliciaForal
+                         + numManifestantesPales + numManifestantesJurrutu
+                         + numPortadoresIkurriña + numPortadoresNavarra
+                         + numCiviles;
 
-        _personajes   = new PersonajeData[total];
-        _goPersonajes = new GameObject[total];
+        if (_totalInstancias == 0) return;
+
+        // Allocator.Persistent: Esta memoria sobrevive múltiples frames y debe ser destruida manualmente
+        _personajesNative = new NativeArray<PersonajeData>(_totalInstancias, Allocator.Persistent);
+        _transformAccess  = new TransformAccessArray(_totalInstancias);
+        _goPersonajes     = new GameObject[_totalInstancias];
 
         int idx = 0;
-        // Guardia Civil — cerca del cuartel (rutaGC[0] o fallback)
-        Vector3 origenGC = (rutaGuardiaCivil != null && rutaGuardiaCivil.Length > 0)
-                         ? rutaGuardiaCivil[0].position
-                         : posicionManifestantes + new Vector3(100f, 0f, 0f);
-        idx = Spawn(idx, numGuardiaCivil,         TipoPersonaje.GuardiaCivil,         origenGC,                             6f,  EstadoPersonaje.Patrullando);
+        
+        Vector3 origenGC = _rutaGCNative.Length > 0 ? _rutaGCNative[0] : posicionManifestantes + new Vector3(100f, 0f, 0f);
+        idx = Spawn(idx, numGuardiaCivil, TipoPersonaje.GuardiaCivil, origenGC, 6f, EstadoPersonaje.Patrullando);
 
-        Vector3 origenPF = (rutaPoliciaForal != null && rutaPoliciaForal.Length > 0)
-                         ? rutaPoliciaForal[0].position
-                         : posicionManifestantes + new Vector3(120f, 0f, 0f);
-        idx = Spawn(idx, numPoliciaForal,         TipoPersonaje.PoliciaForal,          origenPF,                             6f,  EstadoPersonaje.Patrullando);
+        Vector3 origenPF = _rutaPFNative.Length > 0 ? _rutaPFNative[0] : posicionManifestantes + new Vector3(120f, 0f, 0f);
+        idx = Spawn(idx, numPoliciaForal, TipoPersonaje.PoliciaForal, origenPF, 6f, EstadoPersonaje.Patrullando);
 
         idx = Spawn(idx, numManifestantesPales,   TipoPersonaje.ManifestantePalestino, posicionManifestantes + new Vector3(20f, 0f,  10f), 14f, EstadoPersonaje.Caminando);
         idx = Spawn(idx, numManifestantesJurrutu, TipoPersonaje.ManifestanteJurrutu,   posicionManifestantes + new Vector3(30f, 0f, -10f), 12f, EstadoPersonaje.Caminando);
         idx = Spawn(idx, numPortadoresIkurriña,   TipoPersonaje.PortadorIkurriña,      posicionManifestantes + new Vector3(5f,  0f,   8f),  8f, EstadoPersonaje.Caminando);
-        idx = Spawn(idx, numPortadoresNavarra,    TipoPersonaje.PortadorNavarra,        posicionManifestantes + new Vector3(5f,  0f,  -8f),  6f, EstadoPersonaje.Caminando);
-        // BUG FIX: antes se spawneaban todos los civiles como CivilianMale y luego se
-        // cambiaba _personajes[i].tipo a CivilianFemale sin actualizar el MeshRenderer,
-        // haciendo que la mitad femenina se renderizara con material masculino.
-        // Solución: spawn por separado con tipo correcto desde el principio.
+        idx = Spawn(idx, numPortadoresNavarra,    TipoPersonaje.PortadorNavarra,       posicionManifestantes + new Vector3(5f,  0f,  -8f),  6f, EstadoPersonaje.Caminando);
+        
         int civilMale   = numCiviles / 2;
         int civilFemale = numCiviles - civilMale;
         idx = Spawn(idx, civilMale,   TipoPersonaje.CivilianMale,   areaCiviles.center, areaCiviles.extents.x * 0.8f, EstadoPersonaje.Caminando);
         idx = Spawn(idx, civilFemale, TipoPersonaje.CivilianFemale, areaCiviles.center, areaCiviles.extents.x * 0.8f, EstadoPersonaje.Caminando);
     }
 
-    private int Spawn(int baseIdx, int count, TipoPersonaje tipo,
-                      Vector3 centro, float radio, EstadoPersonaje estadoInicial)
+    private int Spawn(int baseIdx, int count, TipoPersonaje tipo, Vector3 centro, float radio, EstadoPersonaje estadoInicial)
     {
         for (int i = 0; i < count; i++)
         {
@@ -196,7 +410,10 @@ public sealed class SistemaPersonajes : MonoBehaviour
             Vector3 pos = centro + new Vector3(o.x, 0f, o.y);
             float variante = Random.value;
 
-            _personajes[baseIdx + i] = new PersonajeData
+            // Semilla determinista vital > 0 para evitar entropía estática
+            uint seed = (uint)(baseIdx + i + 1000) * 1103515245;
+
+            _personajesNative[baseIdx + i] = new PersonajeData
             {
                 posicion       = pos,
                 velocidad      = Vector3.zero,
@@ -207,16 +424,33 @@ public sealed class SistemaPersonajes : MonoBehaviour
                 tiempoParado   = 0f,
                 varianteTono   = variante,
                 destinoCivil   = pos,
+                rndState       = seed
             };
 
-            _goPersonajes[baseIdx + i] = CrearGO(pos, tipo, baseIdx + i, variante);
+            var go = CrearGO(pos, tipo, baseIdx + i, variante);
+            _goPersonajes[baseIdx + i] = go;
+            
+            // Inyectamos el root para la manipulación multi-hilo en la jerarquía Transform
+            _transformAccess.Add(go.transform);
         }
         return baseIdx + count;
     }
 
     // ───────────────────────────────────────────────────────────────────────
-    //  CREACIÓN DE GAMEOBJECTS
+    //  RESTO DE LA LOGICA MAIN THREAD (SIN CAMBIOS, PROCEDURAL GENERATION)
     // ───────────────────────────────────────────────────────────────────────
+
+    private void SampleTerreno(int idx)
+    {
+        var p = _personajesNative[idx];
+        Ray ray = new Ray(new Vector3(p.posicion.x, p.alturaY + 8f, p.posicion.z), Vector3.down);
+        if (Physics.Raycast(ray, out RaycastHit hit, 25f, ~0))
+        {
+            p.alturaY = Mathf.Lerp(p.alturaY, hit.point.y, 0.25f);
+            _personajesNative[idx] = p; // Re-asignar a NativeArray (solo main thread es seguro aquí entre complete y schedule)
+        }
+    }
+
     private GameObject CrearGO(Vector3 pos, TipoPersonaje tipo, int idx, float variante)
     {
         var go = new GameObject($"Personaje_{tipo}_{idx}");
@@ -224,13 +458,11 @@ public sealed class SistemaPersonajes : MonoBehaviour
         go.transform.SetParent(transform);
         go.layer = LayerMask.NameToLayer("Default");
 
-        // Cuerpo
         var mf = go.AddComponent<MeshFilter>();
         mf.sharedMesh = _meshCuerpo;
         var mr = go.AddComponent<MeshRenderer>();
         mr.sharedMaterial = _matsBase[(int)tipo];
 
-        // Variante de tono por-instancia via MaterialPropertyBlock (sin crear material nuevo)
         var mpb = new MaterialPropertyBlock();
         mr.GetPropertyBlock(mpb);
         Color bc = ColorBase(tipo);
@@ -241,7 +473,6 @@ public sealed class SistemaPersonajes : MonoBehaviour
             Mathf.Clamp01(bc.b + dt), 1f));
         mr.SetPropertyBlock(mpb);
 
-        // Accesorios
         switch (tipo)
         {
             case TipoPersonaje.GuardiaCivil:          AñadirTricornio(go);              break;
@@ -255,22 +486,16 @@ public sealed class SistemaPersonajes : MonoBehaviour
         return go;
     }
 
-    // ───────────────────────────────────────────────────────────────────────
-    //  ACCESORIOS
-    // ───────────────────────────────────────────────────────────────────────
     private void AñadirBandera(GameObject portador, Texture2D tex)
     {
-        // Mástil
         var mastil = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
         mastil.name = "Mastil";
         mastil.transform.SetParent(portador.transform);
         mastil.transform.localPosition = new Vector3(0.3f, 1.1f, 0f);
         mastil.transform.localScale    = new Vector3(0.04f, 1.3f, 0.04f);
-        var matM = MatURP(new Color(0.55f, 0.42f, 0.18f));
-        mastil.GetComponent<Renderer>().sharedMaterial = matM;
+        mastil.GetComponent<Renderer>().sharedMaterial = MatURP(new Color(0.55f, 0.42f, 0.18f));
         Object.Destroy(mastil.GetComponent<Collider>());
 
-        // Tela de bandera
         var tela = new GameObject("Bandera");
         tela.transform.SetParent(portador.transform);
         tela.transform.localPosition = new Vector3(0.3f, 2.22f, 0f);
@@ -309,7 +534,6 @@ public sealed class SistemaPersonajes : MonoBehaviour
 
     private void AñadirTricornio(GameObject portador)
     {
-        // Ala del tricornio (cilindro aplastado ancho)
         var ala = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
         ala.name = "TricornioAla";
         ala.transform.SetParent(portador.transform);
@@ -318,7 +542,6 @@ public sealed class SistemaPersonajes : MonoBehaviour
         ala.GetComponent<Renderer>().sharedMaterial = MatURP(new Color(0.06f, 0.06f, 0.06f));
         Object.Destroy(ala.GetComponent<Collider>());
 
-        // Copa alta
         var copa = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
         copa.name = "TricornioCopa";
         copa.transform.SetParent(portador.transform);
@@ -338,7 +561,6 @@ public sealed class SistemaPersonajes : MonoBehaviour
         go.GetComponent<Renderer>().sharedMaterial = MatURP(new Color(0.06f, 0.10f, 0.22f));
         Object.Destroy(go.GetComponent<Collider>());
 
-        // Franja amarilla hi-vis
         var franja = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
         franja.name = "FranjaHivis";
         franja.transform.SetParent(portador.transform);
@@ -348,141 +570,6 @@ public sealed class SistemaPersonajes : MonoBehaviour
         Object.Destroy(franja.GetComponent<Collider>());
     }
 
-    // ───────────────────────────────────────────────────────────────────────
-    //  TICK LÓGICA
-    // ───────────────────────────────────────────────────────────────────────
-    private void TickLogica(float dt)
-    {
-        for (int i = 0; i < _personajes.Length; i++)
-        {
-            ref var p = ref _personajes[i];
-            switch (p.estado)
-            {
-                case EstadoPersonaje.Patrullando: TickPatrulla(ref p, dt); break;
-                case EstadoPersonaje.Caminando:   TickCaminar(ref p, dt);  break;
-                case EstadoPersonaje.Parado:
-                    p.tiempoParado -= dt;
-                    if (p.tiempoParado <= 0f)
-                        p.estado = EstadoPersonaje.Caminando;
-                    p.velocidad = Vector3.zero;
-                    break;
-            }
-        }
-    }
-
-    private void TickPatrulla(ref PersonajeData p, float dt)
-    {
-        Transform[] ruta = (p.tipo == TipoPersonaje.GuardiaCivil)
-                         ? rutaGuardiaCivil : rutaPoliciaForal;
-
-        // Sin ruta asignada → caminar como civil dentro del área
-        if (ruta == null || ruta.Length == 0) { TickCaminar(ref p, dt); return; }
-
-        int wp = p.waypointActual % ruta.Length;
-        Vector3 destino = ruta[wp].position;
-        Vector3 dir = destino - p.posicion; dir.y = 0f;
-        float dist = dir.magnitude;
-
-        if (dist < 1.8f)
-        {
-            p.waypointActual = (p.waypointActual + 1) % ruta.Length;
-            // Pausa breve ocasional
-            if (Random.value < 0.12f)
-            {
-                p.estado       = EstadoPersonaje.Parado;
-                p.tiempoParado = Random.Range(2f, 7f);
-                p.velocidad    = Vector3.zero;
-                return;
-            }
-        }
-
-        float speed = (p.tipo == TipoPersonaje.GuardiaCivil) ? velocidadGC : velocidadPF;
-        p.velocidad = dir.normalized * speed;
-        p.posicion += p.velocidad * dt;
-    }
-
-    private void TickCaminar(ref PersonajeData p, float dt)
-    {
-        // GC/PF sin ruta → forzar patrulla
-        if (p.tipo == TipoPersonaje.GuardiaCivil || p.tipo == TipoPersonaje.PoliciaForal)
-        { p.estado = EstadoPersonaje.Patrullando; return; }
-
-        // Manifestantes siguen movimiento simple hacia la calle principal
-        if (p.tipo == TipoPersonaje.ManifestantePalestino ||
-            p.tipo == TipoPersonaje.ManifestanteJurrutu   ||
-            p.tipo == TipoPersonaje.PortadorIkurriña      ||
-            p.tipo == TipoPersonaje.PortadorNavarra)
-        {
-            // Avance hacia el este (+X) simulando marcha
-            Vector3 dir = Vector3.right;
-            float speed = velocidadManif + Random.Range(-0.1f, 0.1f);
-            p.velocidad = dir * speed;
-            p.posicion += p.velocidad * dt;
-
-            // Wrap-around: si pasan de 200m, reinician al inicio
-            if (p.posicion.x > posicionManifestantes.x + 200f)
-                p.posicion.x = posicionManifestantes.x - 5f;
-            return;
-        }
-
-        // Civiles: navegar hacia destinoCivil, elegir nuevo destino al llegar
-        Vector3 diff = p.destinoCivil - p.posicion; diff.y = 0f;
-        if (diff.magnitude < 2f)
-        {
-            // Nuevo destino aleatorio dentro del área
-            Vector2 rnd = Random.insideUnitCircle * areaCiviles.extents.x * 0.7f;
-            p.destinoCivil = areaCiviles.center + new Vector3(rnd.x, 0f, rnd.y);
-
-            // Pausa ocasional
-            if (Random.value < 0.30f)
-            {
-                p.estado       = EstadoPersonaje.Parado;
-                p.tiempoParado = Random.Range(1f, 9f);
-                p.velocidad    = Vector3.zero;
-                return;
-            }
-        }
-
-        p.velocidad = diff.normalized * velocidadCivil;
-        p.posicion += p.velocidad * dt;
-
-        // Mantenerse dentro del área
-        Vector3 clamped = new Vector3(
-            Mathf.Clamp(p.posicion.x, areaCiviles.min.x, areaCiviles.max.x),
-            p.posicion.y,
-            Mathf.Clamp(p.posicion.z, areaCiviles.min.z, areaCiviles.max.z));
-        if (clamped != p.posicion)
-        {
-            p.posicion      = clamped;
-            p.destinoCivil  = areaCiviles.center;
-        }
-    }
-
-    private void SampleTerreno(int idx)
-    {
-        ref var p = ref _personajes[idx];
-        Ray ray = new Ray(new Vector3(p.posicion.x, p.alturaY + 8f, p.posicion.z), Vector3.down);
-        if (Physics.Raycast(ray, out RaycastHit hit, 25f, ~0))
-            p.alturaY = Mathf.Lerp(p.alturaY, hit.point.y, 0.25f);
-    }
-
-    private void SincronizarGOs()
-    {
-        for (int i = 0; i < _personajes.Length; i++)
-        {
-            if (_goPersonajes[i] == null) continue;
-            ref var p = ref _personajes[i];
-            var t = _goPersonajes[i].transform;
-            t.position = new Vector3(p.posicion.x, p.alturaY, p.posicion.z);
-            if (p.velocidad.sqrMagnitude > 0.0025f)
-                t.rotation = Quaternion.LookRotation(
-                    new Vector3(p.velocidad.x, 0f, p.velocidad.z), Vector3.up);
-        }
-    }
-
-    // ───────────────────────────────────────────────────────────────────────
-    //  TEXTURAS PROCEDURALES
-    // ───────────────────────────────────────────────────────────────────────
     private void CrearTexturas()
     {
         _texIkurriña = GenIkurriña();   _texsCreadas.Add(_texIkurriña);
@@ -494,16 +581,11 @@ public sealed class SistemaPersonajes : MonoBehaviour
     {
         const int W = 256, H = 160;
         var tex = new Texture2D(W, H, TextureFormat.RGBA32, false);
-        tex.name = "Ikurrina";
         var px   = new Color32[W * H];
-
         Color32 verde  = new Color32(0,   130,  60,  255);
         Color32 blanco = new Color32(255, 255, 255,  255);
         Color32 rojo   = new Color32(210,  30,  30,  255);
-
         for (int i = 0; i < px.Length; i++) px[i] = verde;
-
-        // Aspa blanca diagonal (banda ancha ~8 % del lado)
         for (int y = 0; y < H; y++)
         for (int x = 0; x < W; x++)
         {
@@ -512,17 +594,10 @@ public sealed class SistemaPersonajes : MonoBehaviour
                 Mathf.Abs(fy - (1f - fx) * (float)H / W)        < 0.09f * H)
                 px[y * W + x] = blanco;
         }
-
-        // Cruz roja centrada (5 % del lado)
         int bandaV = (int)(W * 0.05f), bandaH = (int)(H * 0.08f);
         for (int y = 0; y < H; y++)
         for (int x = 0; x < W; x++)
-        {
-            bool enV = Mathf.Abs(x - W / 2) < bandaV;
-            bool enH = Mathf.Abs(y - H / 2) < bandaH;
-            if (enV || enH) px[y * W + x] = rojo;
-        }
-
+            if (Mathf.Abs(x - W / 2) < bandaV || Mathf.Abs(y - H / 2) < bandaH) px[y * W + x] = rojo;
         tex.SetPixels32(px); tex.Apply(false, false);
         return tex;
     }
@@ -531,32 +606,21 @@ public sealed class SistemaPersonajes : MonoBehaviour
     {
         const int W = 256, H = 160;
         var tex = new Texture2D(W, H, TextureFormat.RGBA32, false);
-        tex.name = "BanderaNavarra";
         var px   = new Color32[W * H];
-
         Color32 rojoN  = new Color32(175, 15,  30,  255);
         Color32 dorado = new Color32(210, 165, 30,  255);
-
         for (int i = 0; i < px.Length; i++) px[i] = rojoN;
-
-        // Cadena estilizada: círculos dorados en rejilla diagonal
         int paso = 20, radio = 5;
         for (int y = 0; y < H; y++)
         for (int x = 0; x < W; x++)
         {
-            // posición relativa al centro de la bandera
             int rx = x - W / 2, ry = y - H / 2;
             if (Mathf.Abs(rx) > W / 3 || Mathf.Abs(ry) > H / 3) continue;
-
-            // Coord en rejilla rotada 45°
-            int gx = ((rx + ry) / 2 + 200) % paso;
-            int gy = ((rx - ry) / 2 + 200) % paso;
+            int gx = ((rx + ry) / 2 + 200) % paso, gy = ((rx - ry) / 2 + 200) % paso;
             int cx = paso / 2, cy = paso / 2;
             float dd = Mathf.Sqrt((gx - cx) * (gx - cx) + (gy - cy) * (gy - cy));
-            if (dd < radio || (dd > radio + 1 && dd < radio + 3))
-                px[y * W + x] = dorado;
+            if (dd < radio || (dd > radio + 1 && dd < radio + 3)) px[y * W + x] = dorado;
         }
-
         tex.SetPixels32(px); tex.Apply(false, false);
         return tex;
     }
@@ -564,34 +628,24 @@ public sealed class SistemaPersonajes : MonoBehaviour
     private static Texture2D GenKeffiyeh()
     {
         const int W = 64, H = 64;
-        var tex = new Texture2D(W, H, TextureFormat.RGBA32, false);
-        tex.name      = "Keffiyeh";
-        tex.filterMode = FilterMode.Point;
-        tex.wrapMode   = TextureWrapMode.Repeat;
+        var tex = new Texture2D(W, H, TextureFormat.RGBA32, false) { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Repeat };
         var px         = new Color32[W * H];
-
         Color32 blanco = new Color32(240, 235, 228, 255);
         Color32 negro  = new Color32( 22,  22,  22, 255);
         Color32 rojo2  = new Color32(190,  30,  30, 255);
-
         const int cuad = 8;
         for (int y = 0; y < H; y++)
         for (int x = 0; x < W; x++)
         {
-            bool bX = (x / cuad) % 2 == 0;
-            bool bY = (y / cuad) % 2 == 0;
-            if (bX == bY)            px[y * W + x] = blanco;
+            bool bX = (x / cuad) % 2 == 0, bY = (y / cuad) % 2 == 0;
+            if (bX == bY) px[y * W + x] = blanco;
             else if ((x + y) % 3 == 0) px[y * W + x] = rojo2;
-            else                       px[y * W + x] = negro;
+            else px[y * W + x] = negro;
         }
-
         tex.SetPixels32(px); tex.Apply(false, false);
         return tex;
     }
 
-    // ───────────────────────────────────────────────────────────────────────
-    //  MESHES PROCEDURALES
-    // ───────────────────────────────────────────────────────────────────────
     private void CrearMeshes()
     {
         _meshCuerpo  = BuildCapsule(0.22f, 1.80f, 10, 6);
@@ -603,24 +657,16 @@ public sealed class SistemaPersonajes : MonoBehaviour
     private static Mesh BuildCapsule(float r, float h, int seg, int rings)
     {
         var mesh  = new Mesh { name = "PersonajeCapsule" };
-        var verts = new List<Vector3>();
-        var norms = new List<Vector3>();
-        var uvs   = new List<Vector2>();
-        var tris  = new List<int>();
-
+        var verts = new List<Vector3>(); var norms = new List<Vector3>();
+        var uvs   = new List<Vector2>(); var tris  = new List<int>();
         float halfH = h / 2f - r;
-
-        // Cilindro lateral
         for (int ri = 0; ri <= rings; ri++)
         {
-            float t = (float)ri / rings;
-            float y = Mathf.Lerp(-halfH, halfH, t);
+            float t = (float)ri / rings, y = Mathf.Lerp(-halfH, halfH, t);
             for (int si = 0; si <= seg; si++)
             {
-                float a = si * Mathf.PI * 2f / seg;
-                float x = Mathf.Cos(a) * r, z = Mathf.Sin(a) * r;
-                verts.Add(new Vector3(x, y, z));
-                norms.Add(new Vector3(x, 0f, z).normalized);
+                float a = si * Mathf.PI * 2f / seg, x = Mathf.Cos(a) * r, z = Mathf.Sin(a) * r;
+                verts.Add(new Vector3(x, y, z)); norms.Add(new Vector3(x, 0f, z).normalized);
                 uvs.Add(new Vector2((float)si / seg, t * 0.6f));
             }
         }
@@ -631,32 +677,23 @@ public sealed class SistemaPersonajes : MonoBehaviour
             tris.Add(b); tris.Add(b + seg + 1); tris.Add(b + 1);
             tris.Add(b + 1); tris.Add(b + seg + 1); tris.Add(b + seg + 2);
         }
-
-        // Casquetes
         AddHemi(verts, norms, uvs, tris,  halfH, r, seg, 5, false);
         AddHemi(verts, norms, uvs, tris, -halfH, r, seg, 5, true);
-
         mesh.SetVertices(verts); mesh.SetNormals(norms); mesh.SetUVs(0, uvs);
         mesh.SetTriangles(tris, 0); mesh.RecalculateBounds();
         return mesh;
     }
 
-    private static void AddHemi(List<Vector3> v, List<Vector3> n, List<Vector2> uv,
-                                 List<int> t, float baseY, float r, int seg, int rings, bool flip)
+    private static void AddHemi(List<Vector3> v, List<Vector3> n, List<Vector2> uv, List<int> t, float baseY, float r, int seg, int rings, bool flip)
     {
-        int bv = v.Count;
-        float signY = flip ? -1f : 1f;
+        int bv = v.Count; float signY = flip ? -1f : 1f;
         for (int ri = 0; ri <= rings; ri++)
         {
-            float phi = (float)ri / rings * (Mathf.PI / 2f);
-            float py  = signY * Mathf.Sin(phi) * r + baseY;
-            float pr  = Mathf.Cos(phi) * r;
+            float phi = (float)ri / rings * (Mathf.PI / 2f), py  = signY * Mathf.Sin(phi) * r + baseY, pr  = Mathf.Cos(phi) * r;
             for (int si = 0; si <= seg; si++)
             {
-                float a = si * Mathf.PI * 2f / seg;
-                float x = Mathf.Cos(a) * pr, z = Mathf.Sin(a) * pr;
-                v.Add(new Vector3(x, py, z));
-                n.Add(new Vector3(x, signY * Mathf.Sin(phi), z).normalized);
+                float a = si * Mathf.PI * 2f / seg, x = Mathf.Cos(a) * pr, z = Mathf.Sin(a) * pr;
+                v.Add(new Vector3(x, py, z)); n.Add(new Vector3(x, signY * Mathf.Sin(phi), z).normalized);
                 uv.Add(new Vector2((float)si / seg, flip ? 0f : 1f));
             }
         }
@@ -672,62 +709,36 @@ public sealed class SistemaPersonajes : MonoBehaviour
     private static Mesh BuildBanderaQuad(float W, float H)
     {
         var mesh = new Mesh { name = "BanderaQuad" };
-        mesh.vertices = new[]
-        {
-            // Cara delantera
-            new Vector3(0, 0, 0), new Vector3(W, 0, 0),
-            new Vector3(W, H, 0), new Vector3(0, H, 0),
-            // Cara trasera
-            new Vector3(W, 0, 0), new Vector3(0, 0, 0),
-            new Vector3(0, H, 0), new Vector3(W, H, 0),
-        };
-        mesh.uv = new[]
-        {
-            new Vector2(0,0), new Vector2(1,0), new Vector2(1,1), new Vector2(0,1),
-            new Vector2(1,0), new Vector2(0,0), new Vector2(0,1), new Vector2(1,1),
-        };
+        mesh.vertices = new[] { new Vector3(0, 0, 0), new Vector3(W, 0, 0), new Vector3(W, H, 0), new Vector3(0, H, 0), new Vector3(W, 0, 0), new Vector3(0, 0, 0), new Vector3(0, H, 0), new Vector3(W, H, 0) };
+        mesh.uv = new[] { new Vector2(0,0), new Vector2(1,0), new Vector2(1,1), new Vector2(0,1), new Vector2(1,0), new Vector2(0,0), new Vector2(0,1), new Vector2(1,1) };
         mesh.triangles = new[] { 0,1,2, 0,2,3, 4,5,6, 4,6,7 };
         mesh.RecalculateNormals(); mesh.RecalculateBounds();
         return mesh;
     }
 
-    // ───────────────────────────────────────────────────────────────────────
-    //  MATERIALES
-    // ───────────────────────────────────────────────────────────────────────
     private void CrearMaterialesBase()
     {
         var tipos = (TipoPersonaje[])System.Enum.GetValues(typeof(TipoPersonaje));
         _matsBase = new Material[tipos.Length];
-        for (int i = 0; i < tipos.Length; i++)
-            _matsBase[i] = MatURP(ColorBase(tipos[i]));
+        for (int i = 0; i < tipos.Length; i++) _matsBase[i] = MatURP(ColorBase(tipos[i]));
     }
 
-    /// <summary>Color base canónico por tipo de personaje.</summary>
     private static Color ColorBase(TipoPersonaje t) => t switch
     {
-        TipoPersonaje.GuardiaCivil          => new Color(0.50f, 0.53f, 0.28f),  // verde oliva
-        TipoPersonaje.PoliciaForal          => new Color(0.10f, 0.14f, 0.34f),  // azul marino
-        TipoPersonaje.ManifestantePalestino => new Color(0.18f, 0.18f, 0.20f),  // oscuro
-        TipoPersonaje.ManifestanteJurrutu   => new Color(0.06f, 0.06f, 0.06f),  // negro
-        TipoPersonaje.PortadorIkurriña      => new Color(0.12f, 0.12f, 0.14f),  // negro
-        TipoPersonaje.PortadorNavarra       => new Color(0.12f, 0.12f, 0.14f),  // negro
-        TipoPersonaje.CivilianMale          => new Color(0.52f, 0.46f, 0.40f),  // neutro
-        TipoPersonaje.CivilianFemale        => new Color(0.60f, 0.42f, 0.48f),  // cálido
+        TipoPersonaje.GuardiaCivil          => new Color(0.50f, 0.53f, 0.28f),
+        TipoPersonaje.PoliciaForal          => new Color(0.10f, 0.14f, 0.34f),
+        TipoPersonaje.ManifestantePalestino => new Color(0.18f, 0.18f, 0.20f),
+        TipoPersonaje.ManifestanteJurrutu   => new Color(0.06f, 0.06f, 0.06f),
+        TipoPersonaje.PortadorIkurriña      => new Color(0.12f, 0.12f, 0.14f),
+        TipoPersonaje.PortadorNavarra       => new Color(0.12f, 0.12f, 0.14f),
+        TipoPersonaje.CivilianMale          => new Color(0.52f, 0.46f, 0.40f),
+        TipoPersonaje.CivilianFemale        => new Color(0.60f, 0.42f, 0.48f),
         _                                   => Color.gray,
     };
 
     private Material MatURP(Color col)
     {
-        var sh = Shader.Find("Universal Render Pipeline/Lit")
-              ?? Shader.Find("Universal Render Pipeline/Unlit")
-              ?? Shader.Find("Standard");
-        if (sh == null)
-        {
-            Debug.LogError("[SistemaPersonajes] Shader no encontrado. " +
-                           "Incluye 'Universal Render Pipeline/Lit' en Always Included Shaders.");
-            sh = Shader.Find("Hidden/InternalErrorShader");
-            if (sh == null) return null;
-        }
+        var sh = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Standard") ?? Shader.Find("Hidden/InternalErrorShader");
         var mat = new Material(sh) { color = col };
         _matsCreados.Add(mat);
         return mat;
@@ -736,50 +747,56 @@ public sealed class SistemaPersonajes : MonoBehaviour
     // ───────────────────────────────────────────────────────────────────────
     //  API PÚBLICA
     // ───────────────────────────────────────────────────────────────────────
-
-    /// <summary>Posiciones actuales de todos los agentes de un tipo dado.</summary>
     public Vector3[] ObtenerPosiciones(TipoPersonaje tipo)
     {
-        if (_personajes == null) return System.Array.Empty<Vector3>();
-        var lista = new List<Vector3>(_personajes.Length / 4);
-        for (int i = 0; i < _personajes.Length; i++)
-            if (_personajes[i].tipo == tipo)
-                lista.Add(new Vector3(_personajes[i].posicion.x,
-                                      _personajes[i].alturaY,
-                                      _personajes[i].posicion.z));
+        _movimientoJobHandle.Complete(); // Asegurar datos recientes
+        if (!_personajesNative.IsCreated) return System.Array.Empty<Vector3>();
+        var lista = new List<Vector3>(_totalInstancias / 4);
+        for (int i = 0; i < _totalInstancias; i++)
+            if (_personajesNative[i].tipo == tipo)
+                lista.Add(new Vector3(_personajesNative[i].posicion.x, _personajesNative[i].alturaY, _personajesNative[i].posicion.z));
         return lista.ToArray();
     }
 
-    /// <summary>
-    /// Asigna rutas de patrulla desde GestorEscena.
-    /// Llamar ANTES de que los personajes empiecen a moverse (ideal en Awake/Start del gestor).
-    /// </summary>
     public void AsignarRutas(Transform[] rutaGC, Transform[] rutaPF)
     {
+        _movimientoJobHandle.Complete();
+        
         rutaGuardiaCivil = rutaGC;
         rutaPoliciaForal = rutaPF;
-        // Reiniciar índice de waypoint para que cojan la nueva ruta desde el principio
-        for (int i = 0; i < _personajes.Length; i++)
+
+        if (_rutaGCNative.IsCreated) _rutaGCNative.Dispose();
+        if (_rutaPFNative.IsCreated) _rutaPFNative.Dispose();
+        
+        PrepararRutasNativas();
+
+        if (!_personajesNative.IsCreated) return;
+        for (int i = 0; i < _totalInstancias; i++)
         {
-            ref var p = ref _personajes[i];
+            var p = _personajesNative[i];
             if (p.tipo == TipoPersonaje.GuardiaCivil || p.tipo == TipoPersonaje.PoliciaForal)
+            {
                 p.waypointActual = 0;
+                _personajesNative[i] = p;
+            }
         }
-        Debug.Log($"[SistemaPersonajes] Rutas asignadas — GC: {rutaGC?.Length ?? 0} wp, PF: {rutaPF?.Length ?? 0} wp.");
     }
 
-    /// <summary>Activa alerta: GC/PF aceleran y no se detienen.</summary>
-    public void SetAlerta(bool activo)
+    private void OnAlertaCambiada(bool activo)
     {
-        for (int i = 0; i < _personajes.Length; i++)
+        if (!activo) return;
+        _movimientoJobHandle.Complete();
+
+        if (!_personajesNative.IsCreated) return;
+        for (int i = 0; i < _totalInstancias; i++)
         {
-            ref var p = ref _personajes[i];
+            var p = _personajesNative[i];
             if (p.tipo != TipoPersonaje.GuardiaCivil && p.tipo != TipoPersonaje.PoliciaForal) continue;
             p.estado       = EstadoPersonaje.Patrullando;
             p.tiempoParado = 0f;
+            _personajesNative[i] = p;
         }
     }
 
-    /// <summary>Total de personajes activos.</summary>
-    public int TotalPersonajes => _personajes?.Length ?? 0;
+    public int TotalPersonajes => _totalInstancias;
 }

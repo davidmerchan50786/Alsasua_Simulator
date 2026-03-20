@@ -698,5 +698,16 @@ public class ControladorJugador : MonoBehaviour
         animPersonaje.SetBool(AnimEnSuelo,   estaEnSuelo);
     }
 
+    // ═══════════════════════════════════════════════════════════════════════
+    //  TESTING API (Sin Reflection)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /// <summary>Permite a la suite de tests sobreescribir el estado transaccional.</summary>
+    public void ForzarEstadoFisico(bool enSuelo, bool agachado)
+    {
+        estaEnSuelo  = enSuelo;
+        estaAgachado = agachado;
+    }
+
     // OnGUI() eliminado — HUDJugador.cs gestiona el HUD vía Canvas uGUI (sin legacy OnGUI).
 }

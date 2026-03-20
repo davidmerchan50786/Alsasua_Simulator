@@ -1,6 +1,7 @@
 // Assets/Tests/AlsasuaSimulatorTests.cs
 // Suite de tests de integración para Alsasua Simulator.
 // Cubre todos los objetivos implementados en las sesiones de mejora.
+// FIX V2: Se ha eliminado System.Reflection en favor de APIs públicas limpias y estado mockeable.
 //
 // ── CÓMO EJECUTAR ─────────────────────────────────────────────────────────
 //   Window > General > Test Runner > EditMode tab > Run All
@@ -25,7 +26,6 @@
 //   T17  HUDJugador         – Canvas creado correctamente en Awake
 
 using System.Collections;
-using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -35,22 +35,6 @@ public class AlsasuaSimulatorTests
     // ═══════════════════════════════════════════════════════════════════════
     //  HELPERS
     // ═══════════════════════════════════════════════════════════════════════
-
-    // Obtiene un campo privado por reflexión (sin exception si no existe → null)
-    private static object GetPrivate(object obj, string campo)
-    {
-        var f = obj.GetType().GetField(campo,
-            BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Static);
-        return f?.GetValue(obj);
-    }
-
-    // Llama a un método privado por reflexión
-    private static object CallPrivate(object obj, string metodo, params object[] args)
-    {
-        var m = obj.GetType().GetMethod(metodo,
-            BindingFlags.Instance | BindingFlags.NonPublic);
-        return m?.Invoke(obj, args);
-    }
 
     // Crea un ControladorJugador con las dependencias mínimas sin errores fatales
     private static GameObject CrearJugadorMinimo()
@@ -192,35 +176,17 @@ public class AlsasuaSimulatorTests
         var sd   = go.AddComponent<SistemaDisparo>();
         yield return null;
 
-        // Forzar inicio de recarga disparando con 0 balas
-        // Accedemos via reflexión para forzar el estado
-        var fBalas         = typeof(SistemaDisparo).GetField("balas",
-            BindingFlags.Instance | BindingFlags.NonPublic);
-        var fTimerRecarga  = typeof(SistemaDisparo).GetField("timerRecarga",
-            BindingFlags.Instance | BindingFlags.NonPublic);
-        var fEstaCargando  = typeof(SistemaDisparo).GetField("estaCargando",
-            BindingFlags.Instance | BindingFlags.NonPublic);
-        var fTiempoRecarga = typeof(SistemaDisparo).GetField("tiempoRecarga",
-            BindingFlags.Instance | BindingFlags.NonPublic);
-
-        // Simular inicio de recarga
-        fEstaCargando.SetValue(sd,  true);
-        fTiempoRecarga.SetValue(sd, 2f);
-        fTimerRecarga.SetValue(sd,  2f);   // recién iniciada → progreso = 0
+        // Iniciar recarga real a través de la API pública
+        sd.IniciarRecarga();
 
         Assert.AreEqual(0f, sd.ProgressRecarga, 0.01f,
             "ProgressRecarga debe ser 0 al inicio de la recarga");
 
-        // Simular recarga completada
-        fTimerRecarga.SetValue(sd, 0f);    // timer expirado → progreso = 1
+        // Simular avance del tiempo usando el hook de testing
+        sd._Test_AvanzarRecarga(999f);
 
         Assert.AreEqual(1f, sd.ProgressRecarga, 0.01f,
-            "ProgressRecarga debe ser 1 cuando timerRecarga == 0");
-
-        // Sin recarga → siempre 1
-        fEstaCargando.SetValue(sd, false);
-        Assert.AreEqual(1f, sd.ProgressRecarga, 0.01f,
-            "ProgressRecarga debe ser 1 cuando no está recargando");
+            "ProgressRecarga debe ser 1 cuando la recarga finaliza");
 
         Object.DestroyImmediate(go);
     }
@@ -237,9 +203,7 @@ public class AlsasuaSimulatorTests
         var sd = go.AddComponent<SistemaDisparo>();
         yield return null;
 
-        var pool = GetPrivate(sd, "_poolBursts") as System.Array;
-        Assert.IsNotNull(pool, "_poolBursts no debe ser null tras Awake");
-        Assert.AreEqual(20, pool.Length,
+        Assert.AreEqual(20, sd.TamañoPoolBursts,
             "POOL_BURSTS debe ser 20 según la constante de la clase");
 
         Object.DestroyImmediate(go);
@@ -257,9 +221,7 @@ public class AlsasuaSimulatorTests
         var sd = go.AddComponent<SistemaDisparo>();
         yield return null;
 
-        var pool = GetPrivate(sd, "_poolDecals") as System.Array;
-        Assert.IsNotNull(pool, "_poolDecals no debe ser null tras Awake");
-        Assert.AreEqual(50, pool.Length,
+        Assert.AreEqual(50, sd.TamañoPoolDecals,
             "POOL_DECALS debe ser 50 según la constante de la clase");
 
         Object.DestroyImmediate(go);
@@ -277,22 +239,15 @@ public class AlsasuaSimulatorTests
         var sd = go.AddComponent<SistemaDisparo>();
         yield return null;
 
-        var matCompartido = GetPrivate(sd, "_matDecalCompartido") as Material;
+        var matCompartido = sd.MaterialDecalCompartido;
 
-        // Verificar que los decals del pool referencian el mismo objeto material
-        var pool = GetPrivate(sd, "_poolDecals");
-        if (pool == null || matCompartido == null)
+        if (matCompartido == null || sd.TamañoPoolDecals == 0)
         {
             Assert.Inconclusive("Pool o material no disponibles (shader no encontrado en test env).");
             yield break;
         }
 
-        // Obtener el primer decal del pool
-        var arr      = pool as System.Array;
-        var slot0    = arr.GetValue(0);
-        var rendField = slot0.GetType().GetField("rend",
-            BindingFlags.Instance | BindingFlags.Public);
-        var rend0 = rendField?.GetValue(slot0) as Renderer;
+        var rend0 = sd.RendererDecal(0);
 
         if (rend0 != null && rend0.sharedMaterial != null)
             Assert.AreSame(matCompartido, rend0.sharedMaterial,
@@ -309,32 +264,23 @@ public class AlsasuaSimulatorTests
     public IEnumerator T10_Dispersion_AgachadoMenorQueDesPie()
     {
         var goJugador = CrearJugadorMinimo();
-        var ctrl      = goJugador.AddComponent<ControladorJugador>();
-        var goDisparo = new GameObject("TestDisparo");
-        goDisparo.AddComponent<Camera>();
-        var sd = goDisparo.AddComponent<SistemaDisparo>();
+        goJugador.AddComponent<Camera>();
+        var ctrl = goJugador.AddComponent<ControladorJugador>();
+        var sd   = goJugador.AddComponent<SistemaDisparo>(); // Cacheará ctrl en Awake()
         yield return null;
 
-        // Inyectar referencia al jugador por reflexión
-        var fCtrl = typeof(SistemaDisparo).GetField("controlJugador",
-            BindingFlags.Instance | BindingFlags.NonPublic);
-        fCtrl?.SetValue(sd, ctrl);
+        // De pie
+        ctrl.ForzarEstadoFisico(enSuelo: true, agachado: false);
+        float dispersionDePie = sd.CalcularDispersion();
 
-        // Dispersión de pie (EstaAgachadoP == false por defecto)
-        float dispersionDePie = (float)CallPrivate(sd, "CalcularDispersion");
-
-        // Simular agachado forzando el campo privado
-        var fAgachado = typeof(ControladorJugador).GetField("estaAgachado",
-            BindingFlags.Instance | BindingFlags.NonPublic);
-        fAgachado?.SetValue(ctrl, true);
-
-        float dispersionAgachado = (float)CallPrivate(sd, "CalcularDispersion");
+        // Agachado
+        ctrl.ForzarEstadoFisico(enSuelo: true, agachado: true);
+        float dispersionAgachado = sd.CalcularDispersion();
 
         Assert.Less(dispersionAgachado, dispersionDePie,
             "Dispersión agachado debe ser menor que dispersión de pie");
 
         Object.DestroyImmediate(goJugador);
-        Object.DestroyImmediate(goDisparo);
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -345,31 +291,23 @@ public class AlsasuaSimulatorTests
     public IEnumerator T11_Dispersion_AireMayorQueEnSuelo()
     {
         var goJugador = CrearJugadorMinimo();
-        var ctrl      = goJugador.AddComponent<ControladorJugador>();
-        var goDisparo = new GameObject("TestDisparo");
-        goDisparo.AddComponent<Camera>();
-        var sd = goDisparo.AddComponent<SistemaDisparo>();
+        goJugador.AddComponent<Camera>();
+        var ctrl = goJugador.AddComponent<ControladorJugador>();
+        var sd   = goJugador.AddComponent<SistemaDisparo>();
         yield return null;
 
-        var fCtrl = typeof(SistemaDisparo).GetField("controlJugador",
-            BindingFlags.Instance | BindingFlags.NonPublic);
-        fCtrl?.SetValue(sd, ctrl);
-
-        // En suelo (estaEnSuelo = true por defecto)
-        var fSuelo = typeof(ControladorJugador).GetField("estaEnSuelo",
-            BindingFlags.Instance | BindingFlags.NonPublic);
-        fSuelo?.SetValue(ctrl, true);
-        float dispersionEnSuelo = (float)CallPrivate(sd, "CalcularDispersion");
+        // En suelo
+        ctrl.ForzarEstadoFisico(enSuelo: true, agachado: false);
+        float dispersionEnSuelo = sd.CalcularDispersion();
 
         // En el aire
-        fSuelo?.SetValue(ctrl, false);
-        float dispersionEnAire = (float)CallPrivate(sd, "CalcularDispersion");
+        ctrl.ForzarEstadoFisico(enSuelo: false, agachado: false);
+        float dispersionEnAire = sd.CalcularDispersion();
 
         Assert.Greater(dispersionEnAire, dispersionEnSuelo,
             "Dispersión en el aire debe ser mayor que en suelo");
 
         Object.DestroyImmediate(goJugador);
-        Object.DestroyImmediate(goDisparo);
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -379,9 +317,6 @@ public class AlsasuaSimulatorTests
     [Test]
     public void T12_Trafico_AceleracionSuaveDesdeParado()
     {
-        // Verificar la lógica de aceleración directamente.
-        // La fórmula es: t = Clamp01(velActual / (velMax * 0.4))
-        //                factorAcel = Lerp(0.5, 2.5, t)
         const float velMax = 10f;
 
         float FactorAcel(float velActual)
@@ -408,7 +343,6 @@ public class AlsasuaSimulatorTests
     [UnityTest]
     public IEnumerator T13_AudioManager_Singleton_SoloUnaInstancia()
     {
-        // Limpiar instancia previa
         if (AudioManager.I != null) Object.DestroyImmediate(AudioManager.I.gameObject);
 
         var go1 = new GameObject("AM1");
@@ -439,13 +373,10 @@ public class AlsasuaSimulatorTests
         var am = go.AddComponent<AudioManager>();
         yield return null;
 
-        var pool = GetPrivate(am, "_pool") as AudioSource[];
-        Assert.IsNotNull(pool, "_pool no debe ser null");
-
         var fuentes = go.GetComponentsInChildren<AudioSource>();
-        Assert.AreEqual(pool.Length, fuentes.Length,
+        Assert.AreEqual(am.TamañoPool, fuentes.Length,
             "El número de AudioSources hijos debe coincidir con el tamaño del pool");
-        Assert.Greater(pool.Length, 0, "El pool debe tener al menos un AudioSource");
+        Assert.Greater(am.TamañoPool, 0, "El pool debe tener al menos un AudioSource");
 
         Object.DestroyImmediate(go);
     }
@@ -483,7 +414,6 @@ public class AlsasuaSimulatorTests
         var enemigo = go.AddComponent<EnemigoPatrulla>();
         yield return null;  // Start() → CrearCuerpoBasico()
 
-        // Registrar el color del shared material ANTES del daño
         var renderers      = go.GetComponentsInChildren<Renderer>();
         Assert.Greater(renderers.Length, 0,
             "El enemigo debe tener al menos un Renderer tras CrearCuerpoBasico()");
@@ -492,11 +422,8 @@ public class AlsasuaSimulatorTests
             ? renderers[0].sharedMaterial.color
             : Color.white;
 
-        // Recibir daño (dispara FlashDano coroutine)
         enemigo.RecibirDano(10);
 
-        // En el mismo frame (antes de yield), el sharedMaterial NO debe haber cambiado
-        // (MaterialPropertyBlock no toca sharedMaterial.color)
         Color colorDespues = renderers[0].sharedMaterial != null
             ? renderers[0].sharedMaterial.color
             : Color.white;
@@ -520,7 +447,7 @@ public class AlsasuaSimulatorTests
 
         var goHUD = new GameObject("TestHUD");
         var hud   = goHUD.AddComponent<HUDJugador>();
-        yield return null;  // Awake + Start del HUD
+        yield return null;
 
         var canvas = goHUD.GetComponentInChildren<Canvas>();
         Assert.IsNotNull(canvas,

@@ -18,11 +18,14 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 using UnityEngine;
+using AlsasuaSimulator.Scripts;
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
-[DefaultExecutionOrder(-10)]   // ejecutar ANTES que los sistemas
+// FIX V2: Se ha eliminado [DefaultExecutionOrder(-10)] para evitar fragilidad temporal.
+// El sistema ahora es defensivo y tolera inicializaciones asíncronas.
 public sealed class GestorEscena : MonoBehaviour
 {
     // ───────────────────────────────────────────────────────────────────────
@@ -219,24 +222,15 @@ public sealed class GestorEscena : MonoBehaviour
     /// <summary>Activa alerta general: GC y PF aceleran patrulla.</summary>
     public void ActivarAlerta()
     {
-        if (sistemaPersonajes != null)
-        {
-            sistemaPersonajes.SetAlerta(true);
-            Debug.Log("[GestorEscena] ⚠ ALERTA ACTIVADA — GC y Policía Foral en patrulla intensiva.");
-        }
-        else
-        {
-            Debug.LogWarning("[GestorEscena] ActivarAlerta: SistemaPersonajes no disponible.");
-        }
+        GameEventBus.TriggerAlerta(true);
+        Debug.Log("[GestorEscena] ⚠ ALERTA ACTIVADA — GameEventBus notificado.");
     }
 
     /// <summary>Cancela la alerta.</summary>
     public void DesactivarAlerta()
     {
-        if (sistemaPersonajes != null)
-            sistemaPersonajes.SetAlerta(false);
-        else
-            Debug.LogWarning("[GestorEscena] DesactivarAlerta: SistemaPersonajes no disponible.");
+        GameEventBus.TriggerAlerta(false);
+        Debug.Log("[GestorEscena] ⓘ ALERTA DESACTIVADA — GameEventBus notificado.");
     }
 
     /// <summary>Referencia al sistema de personajes activo.</summary>

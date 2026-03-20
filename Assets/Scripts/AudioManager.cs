@@ -197,6 +197,9 @@ public sealed class AudioManager : MonoBehaviour
         source.Play();
     }
 
+    /// <summary>Devuelve el tamaño del pool asignado (Usado en Testing).</summary>
+    public int TamañoPool => _pool?.Length ?? 0;
+
     // ═══════════════════════════════════════════════════════════════════════
     //  INTERNOS
     // ═══════════════════════════════════════════════════════════════════════

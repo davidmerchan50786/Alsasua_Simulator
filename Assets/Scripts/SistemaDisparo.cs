@@ -62,6 +62,14 @@ public class SistemaDisparo : MonoBehaviour
         ? Mathf.Clamp01(1f - timerRecarga / Mathf.Max(tiempoRecarga, 0.01f))
         : 1f;
 
+    // ── Testing APIs ─────────────────────────────────────────────────────
+    public int      TamañoPoolBursts        => _poolBursts?.Length ?? 0;
+    public int      TamañoPoolDecals        => _poolDecals?.Length ?? 0;
+    public Material MaterialDecalCompartido => _matDecalCompartido;
+    public Renderer RendererDecal(int index)=> _poolDecals[index].rend;
+    
+    public void _Test_AvanzarRecarga(float t) { timerRecarga -= t; if (timerRecarga <= 0) FinRecarga(); }
+
     // ── Object Pool ──────────────────────────────────────────────────────
 
     private const int POOL_BURSTS = 20;  // efectos de partículas (flash, polvo, sangre, chispas)
@@ -296,7 +304,7 @@ public class SistemaDisparo : MonoBehaviour
 
     // ── Dispersión dinámica ──────────────────────────────────────────────
 
-    private float CalcularDispersion()
+    public float CalcularDispersion()
     {
         float d = dispersionBase;
 
@@ -353,7 +361,7 @@ public class SistemaDisparo : MonoBehaviour
     //  RECARGA
     // ═══════════════════════════════════════════════════════════════════════
 
-    private void IniciarRecarga()
+    public void IniciarRecarga()
     {
         if (estaCargando) return;
         if (balasReserva <= 0) return;
