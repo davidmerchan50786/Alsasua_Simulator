@@ -106,8 +106,9 @@ public class OsmEdificioLoader : MonoBehaviour
     private const double DEG_TO_RAD = Math.PI / 180.0; // FIX: evita la operación inline × Math.PI/180 en el bucle por edificio
 
     // OPT: IDs cacheados en estático — evitan string hash lookup en cada SetTexture
-    private static readonly int PropBaseMap = Shader.PropertyToID("_BaseMap");  // URP/Lit
-    private static readonly int PropMainTex = Shader.PropertyToID("_MainTex"); // Standard (fallback)
+    private static readonly int PropBaseMap = Shader.PropertyToID("_BaseMap");
+    private static readonly int PropBumpMap = Shader.PropertyToID("_BumpMap"); // V5: Inyección de Normal Map PBR
+    private static readonly int PropMainTex = Shader.PropertyToID("_MainTex");
 
     // ═══════════════════════════════════════════════════════════════════════
     //  ESTADO INTERNO
@@ -588,7 +589,7 @@ public class OsmEdificioLoader : MonoBehaviour
                 // FIX SEGURIDAD (OOM & Zip Bombing): Restringir dimensiones para evitar colapso de VRAM
                 if (tex != null && (tex.width > 2048 || tex.height > 2048))
                 {
-                    Debug.LogWarning($"[Seguridad] Textura rechazada ({tex.width}x{tex.height}). Excede el límite seguro de VRAM.");
+                    Debug.LogWarning($"[Seguridad] Textura rechazada ({tex.width}x{tex.height}). Excede límite VRAM.");
                     Destroy(tex);
                     texturasError++;
                     continue;
@@ -596,28 +597,51 @@ public class OsmEdificioLoader : MonoBehaviour
 
                 if (tex != null && renderer != null)
                 {
-                    // OPT: comprimir a DXT1 antes de subir a GPU
+                    // V5 PBR: Extraer profundidad 3D de la foto plana en tiempo real (Sobel Filter)
+                    Texture2D bumpTex = GenerarNormalMap(tex);
+
                     if (comprimirTexturas)
                     {
-                        tex.Apply(true);           // genera mipmaps en RGBA32 (CPU)
-                        tex.Compress(false);        // comprime RGBA32+mipmaps → DXT1+mipmaps
-                        tex.Apply(false, true);     // sube DXT1+mipmaps a GPU, libera CPU
+                        tex.Apply(true);           
+                        tex.Compress(false);        
+                        tex.Apply(false, true);    
+
+                        if (bumpTex != null) 
+                        {
+                            bumpTex.Apply(true);
+                            bumpTex.Compress(true); // Normal maps prefieren formato DXT5
+                            bumpTex.Apply(false, true);
+                        }
                     }
                     else
                     {
-                        tex.Apply(true, true);      // genera mipmaps + sube + libera CPU
+                        tex.Apply(true, true);
+                        if (bumpTex != null) bumpTex.Apply(true, true);
                     }
 
                     // FIX LEAK: rastrear la textura para destruirla en OnDestroy
                     texturasCreadas.Add(tex);
+                    if (bumpTex != null) texturasCreadas.Add(bumpTex);
 
                     tex.filterMode = FilterMode.Trilinear;
                     tex.anisoLevel = 4;
+                    if (bumpTex != null) 
+                    {
+                        bumpTex.filterMode = FilterMode.Trilinear;
+                        bumpTex.anisoLevel = 4;
+                    }
 
                     renderer.GetPropertyBlock(mpb);
                     mpb.SetTexture(texPropId, tex);
-                    renderer.SetPropertyBlock(mpb);
+                    
+                    if (bumpTex != null)
+                    {
+                        mpb.SetTexture(PropBumpMap, bumpTex);
+                        // Encender keyword localmente si estamos en URP (requerido para que lea _BumpMap)
+                        renderer.sharedMaterial.EnableKeyword("_NORMALMAP");
+                    }
 
+                    renderer.SetPropertyBlock(mpb);
                     texturasCargadas++;
                 }
             }
@@ -668,6 +692,53 @@ public class OsmEdificioLoader : MonoBehaviour
         }
 
         return new Material(shader) { color = color };
+    }
+
+    // V5 PBR (Gemelo Digital): Convierte la foto plana de Street View en muescas físicas de luz
+    private static Texture2D GenerarNormalMap(Texture2D albedo)
+    {
+        if (albedo.width > 1024) return null; // Limite de seguridad anti-stuttering de V5 (O(N^2))
+        
+        int w = albedo.width;
+        int h = albedo.height;
+        Texture2D nMap = new Texture2D(w, h, TextureFormat.RGBA32, true, true);
+        Color32[] pixCols;
+        
+        try { pixCols = albedo.GetPixels32(); } 
+        catch { return null; } // Falla si Unity bloquea lectura
+
+        Color32[] nCols = new Color32[pixCols.Length];
+        
+        // Sobel filter pass rápido (Simula topografía de ventanas, persianas o ladrillos desde la foto)
+        for (int y = 1; y < h - 1; y++)
+        {
+            for (int x = 1; x < w - 1; x++)
+            {
+                float xL = GetG(pixCols, x - 1, y, w); float xR = GetG(pixCols, x + 1, y, w);
+                float yD = GetG(pixCols, x, y - 1, w); float yU = GetG(pixCols, x, y + 1, w);
+
+                float dX = (xR - xL) * 3f; // Intensidad de profundidad
+                float dY = (yU - yD) * 3f;
+                
+                Vector3 n = new Vector3(-dX, -dY, 1f).normalized;
+                
+                // Unity lee Normal Maps en URP mapeados 0..1
+                nCols[y * w + x] = new Color32(
+                    (byte)((n.x * 0.5f + 0.5f) * 255), 
+                    (byte)((n.y * 0.5f + 0.5f) * 255), 
+                    255, // Blue = Up depth
+                    255);
+            }
+        }
+        
+        nMap.SetPixels32(nCols);
+        return nMap;
+    }
+
+    private static float GetG(Color32[] p, int x, int y, int w)
+    {
+        Color32 c = p[y * w + x]; 
+        return (c.r * 0.3f + c.g * 0.59f + c.b * 0.11f) / 255f;
     }
 
     // ═══════════════════════════════════════════════════════════════════════
