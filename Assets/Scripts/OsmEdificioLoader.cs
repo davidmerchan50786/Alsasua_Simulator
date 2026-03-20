@@ -34,6 +34,8 @@ using UnityEngine;
 using UnityEngine.Networking;
 using CesiumForUnity;
 using Unity.Mathematics;
+using Unity.Collections;
+using Unity.Jobs;
 
 // BUG GUARD: orden de ejecución 20 asegura que Start() de OsmEdificioLoader corre
 // DESPUÉS de ConfiguradorAlsasua (DefaultExecutionOrder 0), de modo que el
@@ -694,51 +696,84 @@ public class OsmEdificioLoader : MonoBehaviour
         return new Material(shader) { color = color };
     }
 
-    // V5 PBR (Gemelo Digital): Convierte la foto plana de Street View en muescas físicas de luz
+    // V6 PBR BLAZING FAST: Convierte la foto plana de Street View en muescas físicas usando Worker Threads
     private static Texture2D GenerarNormalMap(Texture2D albedo)
     {
-        if (albedo.width > 1024) return null; // Limite de seguridad anti-stuttering de V5 (O(N^2))
+        if (albedo.width > 2048) return null; 
         
         int w = albedo.width;
         int h = albedo.height;
         Texture2D nMap = new Texture2D(w, h, TextureFormat.RGBA32, true, true);
-        Color32[] pixCols;
         
-        try { pixCols = albedo.GetPixels32(); } 
-        catch { return null; } // Falla si Unity bloquea lectura
-
-        Color32[] nCols = new Color32[pixCols.Length];
-        
-        // Sobel filter pass rápido (Simula topografía de ventanas, persianas o ladrillos desde la foto)
-        for (int y = 1; y < h - 1; y++)
+        try 
         {
-            for (int x = 1; x < w - 1; x++)
-            {
-                float xL = GetG(pixCols, x - 1, y, w); float xR = GetG(pixCols, x + 1, y, w);
-                float yD = GetG(pixCols, x, y - 1, w); float yU = GetG(pixCols, x, y + 1, w);
+            // Zero-allocation read directly from native memory
+            NativeArray<Color32> pixCols = albedo.GetRawTextureData<Color32>();
+            NativeArray<Color32> nCols = new NativeArray<Color32>(pixCols.Length, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
 
-                float dX = (xR - xL) * 3f; // Intensidad de profundidad
-                float dY = (yU - yD) * 3f;
-                
-                Vector3 n = new Vector3(-dX, -dY, 1f).normalized;
-                
-                // Unity lee Normal Maps en URP mapeados 0..1
-                nCols[y * w + x] = new Color32(
-                    (byte)((n.x * 0.5f + 0.5f) * 255), 
-                    (byte)((n.y * 0.5f + 0.5f) * 255), 
-                    255, // Blue = Up depth
-                    255);
-            }
-        }
-        
-        nMap.SetPixels32(nCols);
+            var job = new SobelFilterJob
+            {
+                w = w,
+                h = h,
+                pixCols = pixCols,
+                nCols = nCols
+            };
+
+            // Ejecutar en hilos paralelos de la CPU (Batches de 1024 pixeles por Worker)
+            job.Schedule(pixCols.Length, 1024).Complete();
+
+            nMap.SetPixelData(nCols, 0);
+            nCols.Dispose();
+        } 
+        catch { return null; } 
+
         return nMap;
     }
 
-    private static float GetG(Color32[] p, int x, int y, int w)
+    [Unity.Burst.BurstCompile(CompileSynchronously = true)]
+    private struct SobelFilterJob : IJobParallelFor
     {
-        Color32 c = p[y * w + x]; 
-        return (c.r * 0.3f + c.g * 0.59f + c.b * 0.11f) / 255f;
+        public int w;
+        public int h;
+        [ReadOnly] public NativeArray<Color32> pixCols;
+        [WriteOnly] public NativeArray<Color32> nCols;
+
+        public void Execute(int i)
+        {
+            int y = i / w;
+            int x = i % w;
+
+            // V6 FIX: Rellenar bordes con Normal Plana para evitar sombras negras
+            if (x == 0 || x == w - 1 || y == 0 || y == h - 1)
+            {
+                nCols[i] = new Color32(128, 128, 255, 255);
+                return;
+            }
+
+            Color32 cL = pixCols[y * w + (x - 1)];
+            Color32 cR = pixCols[y * w + (x + 1)];
+            Color32 cD = pixCols[(y - 1) * w + x];
+            Color32 cU = pixCols[(y + 1) * w + x];
+
+            float xL = (cL.r * 0.3f + cL.g * 0.59f + cL.b * 0.11f) * 0.003921569f; // / 255f
+            float xR = (cR.r * 0.3f + cR.g * 0.59f + cR.b * 0.11f) * 0.003921569f;
+            float yD = (cD.r * 0.3f + cD.g * 0.59f + cD.b * 0.11f) * 0.003921569f;
+            float yU = (cU.r * 0.3f + cU.g * 0.59f + cU.b * 0.11f) * 0.003921569f;
+
+            float dX = (xR - xL) * 3f;
+            float dY = (yU - yD) * 3f;
+
+            // Inlined magnitude and normalization
+            float mag = math.sqrt(dX * dX + dY * dY + 1f);
+            float nx = -dX / mag;
+            float ny = -dY / mag;
+
+            nCols[i] = new Color32(
+                (byte)((nx * 0.5f + 0.5f) * 255f), 
+                (byte)((ny * 0.5f + 0.5f) * 255f), 
+                255, 
+                255);
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════════════
