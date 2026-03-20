@@ -1,0 +1,10 @@
+=== ESTADO DE LAS CARPETAS ORIGINALES EN C: ===
+OK_JUNCTION: C:\Users\coperenea\AppData\Local\Unity\cache\packages
+OK_JUNCTION: C:\Users\coperenea\AppData\Local\Unity\cache\npm
+OK_JUNCTION: C:\Users\coperenea\.nuget\packages
+OK_JUNCTION: C:\Users\coperenea\.gradle\caches
+=== ESTADO DESTINO (E:\DevCaches) ===
+Gradle_Caches
+NuGet_Packages
+Unity_NPM
+Unity_UPM_Packages
