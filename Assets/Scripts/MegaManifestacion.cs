@@ -62,7 +62,7 @@ public class MegaManifestacion : MonoBehaviour
         {
             GameObject lider = EnsamblarClonPunk(true);
             lider.name = "Lider_Manifestacion_" + i;
-            Vector3 spawn = epicentroIncial + new Vector3(Random.Range(-30f, 30f), 0, Random.Range(-30f, 30f));
+            Vector3 spawn = epicentroInicial + new Vector3(Random.Range(-30f, 30f), 0, Random.Range(-30f, 30f));
             lider.transform.position = spawn;
 
             var nav = lider.AddComponent<NavMeshAgent>();
@@ -122,25 +122,19 @@ public class MegaManifestacion : MonoBehaviour
         return punk;
     }
 
+    // V15: La creación de Pancartas y Banderas ha sido transferida a la abstracta FabricaSintetica.
+    // Los bloques estáticos de texturas siguen siendo inyectados temporalmente aquí o se usan nulos para blanco puro.
     private void CrearBandera(Transform portador)
     {
-        GameObject bandera = new GameObject("Bandera_Abertzale");
-        bandera.transform.SetParent(portador);
-        bandera.transform.localPosition = new Vector3(0.6f, 2.5f, 0f);
+        GameObject bandera = FabricaSintetica.EnsamblarBandera(portador);
+        bandera.name = "Bandera_Abertzale";
 
         // Mastil
-        var palo = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        palo.transform.SetParent(bandera.transform);
-        palo.transform.localPosition = Vector3.zero;
-        palo.transform.localScale = new Vector3(0.05f, 1.5f, 0.05f);
-        palo.GetComponent<Renderer>().sharedMaterial = matCueroNegro;
-        Destroy(palo.GetComponent<Collider>());
+        var palo = bandera.transform.Find("Mastil").GetComponent<Renderer>();
+        palo.sharedMaterial = matCueroNegro;
 
         // Tela rotando al viento proceduralmente
-        var tela = GameObject.CreatePrimitive(PrimitiveType.Quad);
-        tela.transform.SetParent(bandera.transform);
-        tela.transform.localPosition = new Vector3(0.6f, 1.2f, 0f);
-        tela.transform.localScale = new Vector3(1.2f, 0.8f, 1f);
+        var tela = bandera.transform.Find("Tela").GetComponent<Renderer>();
         
         Material matTela = new Material(Shader.Find("Unlit/Color"));
         // 50% Roja (Comunista/Sindical), 50% Rojinegra (Anarquista) o Ikurriña abstracta (Verde/Roja)
@@ -149,8 +143,6 @@ public class MegaManifestacion : MonoBehaviour
         else if(r < 0.6f) matTela.color = new Color(0.1f, 0.5f, 0.1f); // Verde
         else matTela.color = new Color(0.2f, 0f, 0f); // Rojinegra oscura
         
-        tela.GetComponent<Renderer>().sharedMaterial = matTela;
-        tela.AddComponent<OsciladorViento>();
         Destroy(tela.GetComponent<Collider>());
     }
 
