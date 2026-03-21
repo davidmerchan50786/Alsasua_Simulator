@@ -5,6 +5,10 @@ using UnityEngine.UI;
 [AddComponentMenu("Alsasua V8/Misil Termonuclear (Game Over)")]
 public class EventoTermonuclear : MonoBehaviour
 {
+    [Header("Modelos 3D (Se autoasignan desde AutoSetup)")]
+    public GameObject prefabMisil;
+    public GameObject prefabHongo;
+
     private bool detonado = false;
     private float tiempoDestruccion = 0f;
     private GameObject misilObjeto;
@@ -40,11 +44,18 @@ public class EventoTermonuclear : MonoBehaviour
         AudioManager.I?.Play(AudioManager.Clip.Explosion, Camera.main.transform.position);
 
         // Crear modelo de misil ICBM bajando desde la estratosfera
-        misilObjeto = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        if (prefabMisil != null)
+        {
+            misilObjeto = Instantiate(prefabMisil);
+        }
+        else
+        {
+            misilObjeto = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            misilObjeto.GetComponent<Renderer>().material.color = Color.black;
+        }
         misilObjeto.name = "Misil_Termonuclear_V8";
         misilObjeto.transform.position = Camera.main.transform.position + Camera.main.transform.forward * 500f + Vector3.up * 3000f;
         misilObjeto.transform.localScale = new Vector3(10f, 50f, 10f);
-        misilObjeto.GetComponent<Renderer>().material.color = Color.black;
     }
 
     private void ExplotarMundo()
@@ -73,6 +84,12 @@ public class EventoTermonuclear : MonoBehaviour
 
     private void GenerarHongoNuclear(Vector3 centro)
     {
+        if (prefabHongo != null)
+        {
+            Instantiate(prefabHongo, centro, Quaternion.identity);
+            return;
+        }
+
         GameObject hongo = new GameObject("Hongo_Nuclear");
         hongo.transform.position = centro;
         ParticleSystem ps = hongo.AddComponent<ParticleSystem>();

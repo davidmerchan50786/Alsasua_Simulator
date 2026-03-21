@@ -5,6 +5,11 @@ using System.Collections.Generic;
 [AddComponentMenu("Alsasua V8/Generador de Ambiente Callejero")]
 public class GeneradorAmbienteUrbano : MonoBehaviour
 {
+    [Header("Modelos 3D (Se autoasignan desde AutoSetup)")]
+    public GameObject prefabPunk;
+    public GameObject prefabPerro;
+    public GameObject prefabRata;
+
     private void Start()
     {
         GenerarPunksYFauna();
@@ -15,7 +20,7 @@ public class GeneradorAmbienteUrbano : MonoBehaviour
         // Generar Punks (Izquierda Abertzale Aesthetic Placeholder) con Humo (Consumo)
         for(int i = 0; i < 15; i++)
         {
-            GameObject punk = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            GameObject punk = prefabPunk != null ? Instantiate(prefabPunk) : GameObject.CreatePrimitive(PrimitiveType.Capsule);
             punk.name = "NPC_Punk_Abertzale_" + i;
             punk.transform.position = new Vector3(Random.Range(-200f, 200f), 550f, Random.Range(-200f, 200f));
             punk.GetComponent<Renderer>().material.color = new Color(0.2f, 0f, 0f); // Rojinegro oscuro
@@ -35,7 +40,7 @@ public class GeneradorAmbienteUrbano : MonoBehaviour
         // Generar Perros Callejeros
         for(int i = 0; i < 20; i++)
         {
-            GameObject perro = GameObject.CreatePrimitive(PrimitiveType.Cube); // Cube placeholder
+            GameObject perro = prefabPerro != null ? Instantiate(prefabPerro) : GameObject.CreatePrimitive(PrimitiveType.Cube);
             perro.name = "Perro_Vagabundo_" + i;
             perro.transform.localScale = new Vector3(0.4f, 0.6f, 0.8f);
             perro.transform.position = new Vector3(Random.Range(-200f, 200f), 550f, Random.Range(-200f, 200f));
@@ -52,7 +57,7 @@ public class GeneradorAmbienteUrbano : MonoBehaviour
         // Generar Ratas de Alcantarilla
         for(int i = 0; i < 40; i++)
         {
-            GameObject rata = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            GameObject rata = prefabRata != null ? Instantiate(prefabRata) : GameObject.CreatePrimitive(PrimitiveType.Sphere);
             rata.name = "Rata_Alcantarilla_" + i;
             rata.transform.localScale = new Vector3(0.2f, 0.2f, 0.4f);
             rata.transform.position = new Vector3(Random.Range(-200f, 200f), 550f, Random.Range(-200f, 200f));

@@ -12,16 +12,13 @@ public class AutoSetupAlsasua
 
     private static void ReajustarAuto()
     {
-        if (SessionState.GetBool("AlsasuaAjustadoV9", false)) return;
-        SessionState.SetBool("AlsasuaAjustadoV9", true);
+        // V10: Forzamos la ejecución de AutoSetup cada vez para rastrear nuevos pacakges
+        if (SessionState.GetBool("AlsasuaAjustadoV10", false)) return;
+        SessionState.SetBool("AlsasuaAjustadoV10", true);
 
-        // Si no existen los soldados, probablemente nada está importado.
-        string[] soldados = AssetDatabase.FindAssets("t:Prefab Soldier");
-        if (soldados.Length == 0)
-        {
-            Debug.Log("[Alsasua V4] Detectada primera ejecución. Importando MyAssets AAA automáticamente...");
-            ImportMyAssetsTool.ImportarAssets();
-        }
+        // Auto-importar CUALQUIER unitypackage nuevo que haya descargado el usuario ahora mismo
+        Debug.Log("[Alsasua V10] Escaneando si has descargado nuevos Assets de la Store para inyectarlos...");
+        ImportMyAssetsTool.ImportarAssets();
 
         // V7 ZERO-CLICK AUTOLOAD: Instalar Sandbox Dinámico en la Escena Actual
         InyectarSistemasV7();
@@ -44,18 +41,39 @@ public class AutoSetupAlsasua
         // 2. Inyectar Gestor de Mundo Sandbox Autónomo
         if (Object.FindObjectOfType<SistemaCicloDia>() == null)
         {
-            GameObject worldManager = new GameObject("Alsasua_V9_AAA_Manager");
+            GameObject worldManager = new GameObject("Alsasua_V10_Ultra_Manager");
             worldManager.AddComponent<SistemaCicloDia>();
             worldManager.AddComponent<SistemaClima>();
             worldManager.AddComponent<SistemaDialogos>(); 
-            worldManager.AddComponent<GeneradorAmbienteUrbano>(); 
-            worldManager.AddComponent<EventoTermonuclear>(); 
-            worldManager.AddComponent<GestorAmbienteEspacial>(); // V9 Audio 3D
+            var genAmb = worldManager.AddComponent<GeneradorAmbienteUrbano>(); 
+            var nukeEv = worldManager.AddComponent<EventoTermonuclear>(); 
+            worldManager.AddComponent<GestorAmbienteEspacial>();
+
+            // AUTOCONEXIÓN DE ASSETS 3D DESCARGADOS (V10)
+            genAmb.prefabPunk = EncontrarPrefabUnico("Punk", "Character");
+            genAmb.prefabPerro = EncontrarPrefabUnico("Dog", "Hound", "Wolf");
+            genAmb.prefabRata = EncontrarPrefabUnico("Rat", "Mouse");
             
-            Debug.Log("[V9 AAA] Instalados: Audio Espacial 3D, Ragdolls Nucleares, Coches Calcinables y NavMesh.");
+            nukeEv.prefabMisil = EncontrarPrefabUnico("Missile", "Nuke", "Rocket");
+            nukeEv.prefabHongo = EncontrarPrefabUnico("Mushroom", "NuclearFx", "ExplosionHuge");
+            
+            Debug.Log("[V10 Ultra] Buscador de AssetDatabase ha escaneado e inyectado modelos 3D a los scripts.");
             
             // Marcar la escena como modificada
             UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene());
         }
+    }
+
+    private static GameObject EncontrarPrefabUnico(params string[] palabrasClave)
+    {
+        foreach(string palabra in palabrasClave)
+        {
+            string[] guids = AssetDatabase.FindAssets("t:Prefab " + palabra);
+            if (guids.Length > 0)
+            {
+                return AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guids[0]));
+            }
+        }
+        return null;
     }
 }
