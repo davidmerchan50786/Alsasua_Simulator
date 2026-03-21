@@ -65,25 +65,6 @@ public static class SintetizadorAudioProcedural
     }
 
     // V14: Ruido blanco profundo filtrado (Simula voces lejanas ininteligibles de 1000 personas)
-    public static void PlayEstaticaTurba(AudioSource src)
-    {
-        int sampleRate = 44100;
-        int length = sampleRate * 5; // 5 segundos en bucle
-        float[] samples = new float[length];
-        
-        for (int i = 0; i < length; i++)
-        {
-            // Mezcla de baja frecuencia modulada
-            float lfo = Mathf.Sin(i * 0.0005f) * 0.5f + 0.5f;
-            float babbleNoise = Random.Range(-1f, 1f) * lfo;
-            // Filtro LowPass rudimentario (Promedio con el anterior)
-            float filtered = i > 0 ? (samples[i-1] + babbleNoise) * 0.5f : babbleNoise; 
-            samples[i] = filtered * 0.2f;
-        }
-
-        AudioClip clip = AudioClip.Create("TurbaBabble", samples.Length, 1, sampleRate, false);
-        clip.SetData(samples, 0);
-        src.clip = clip;
         src.loop = true;
         src.volume = 0.6f;
         src.Play();
