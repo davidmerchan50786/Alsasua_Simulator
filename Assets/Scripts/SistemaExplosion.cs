@@ -158,6 +158,7 @@ public class SistemaExplosion : MonoBehaviour
             {
                 vehiculo.RecibirDano(dano);
                 InstanciarFuegoPersistente(vehiculo.transform);
+                ConvertirEnCarroceriaQuemada(vehiculo.gameObject);
             }
 
             var barricada = col.GetComponentInParent<BarricadaFuego>();
@@ -166,6 +167,69 @@ public class SistemaExplosion : MonoBehaviour
                 barricada.RecibirDano(dano);
                 InstanciarFuegoPersistente(barricada.transform);
             }
+
+            // V9: Aplicar físicas cinemáticas (Ragdoll Throw) a humanos muertos por explosión
+            AplicarLanzamientoRagdoll(col.gameObject);
+        }
+    }
+
+    // ─── V9 Físicas Avanzadas y Persistencia ──────────────────────────
+
+    private void ConvertirEnCarroceriaQuemada(GameObject coche)
+    {
+        // 1. Quitar IA y scripts para que sea un trozo de metal inerte
+        Destroy(coche.GetComponent<VehiculoNPC>());
+        
+        // 2. Mesh Swapping / Tintado Negro Carbón
+        Renderer[] renderers = coche.GetComponentsInChildren<Renderer>();
+        foreach(Renderer r in renderers)
+        {
+            r.material.color = new Color(0.05f, 0.05f, 0.05f); // Negro calcinado
+            r.material.SetFloat("_Glossiness", 0f); // Sin reflejos
+            r.material.SetFloat("_Metallic", 0.9f); // Metal oxidado
+            
+            // Si es un cristal (luna), destruirlo para simular que ha estallado
+            if (r.gameObject.name.ToLower().Contains("glass") || r.gameObject.name.ToLower().Contains("window"))
+            {
+                Destroy(r.gameObject);
+            }
+        }
+
+        // 3. Añadir peso muerto para bloquear la calle
+        Rigidbody rb = coche.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.mass = 3000f; 
+            rb.drag = 2f;
+        }
+        
+        coche.name = "Vehiculo_Calcinado_Obstaculo";
+    }
+
+    private void AplicarLanzamientoRagdoll(GameObject entidad)
+    {
+        // Si es un humano (Punks, Policías, Soldados) o Animal (V8)
+        string n = entidad.name.ToLower();
+        if (n.Contains("enemigo") || n.Contains("soldier") || n.Contains("punk") || n.Contains("npc"))
+        {
+            // Matar animador rígido
+            Animator anim = entidad.GetComponentInParent<Animator>();
+            if (anim != null) anim.enabled = false;
+
+            // Asegurar que tiene Rigidbody para salir volando libremente
+            Rigidbody rb = entidad.GetComponentInParent<Rigidbody>();
+            if (rb == null) rb = entidad.transform.parent ? entidad.transform.parent.gameObject.AddComponent<Rigidbody>() : entidad.AddComponent<Rigidbody>();
+            
+            rb.isKinematic = false;
+            rb.useGravity = true;
+            rb.mass = 80f; // Peso humano estándar
+            rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+
+            // Desbloquear rotación para que dé vueltas de campana en el aire como un muñeco de trapo
+            rb.constraints = RigidbodyConstraints.None;
+
+            // Recalcular fuerza de Ragdoll
+            rb.AddExplosionForce(fuerzaFisica * 2f, transform.position, radio, 5f, ForceMode.Impulse);
         }
     }
 

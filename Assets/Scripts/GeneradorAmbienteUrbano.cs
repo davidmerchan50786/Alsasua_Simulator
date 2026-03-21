@@ -41,7 +41,12 @@ public class GeneradorAmbienteUrbano : MonoBehaviour
             perro.transform.position = new Vector3(Random.Range(-200f, 200f), 550f, Random.Range(-200f, 200f));
             perro.GetComponent<Renderer>().material.color = new Color(0.4f, 0.3f, 0.2f); // Marrón sucio
             perro.AddComponent<GravedadCalles>();
-            perro.AddComponent<MovimientoErratico>().velocidad = 3f;
+            
+            // V9: Inteligencia Artificial NavMesh en lugar de movimiento matemático
+            var nav = perro.AddComponent<UnityEngine.AI.NavMeshAgent>();
+            nav.speed = 3f;
+            nav.radius = 0.3f;
+            perro.AddComponent<NavegacionAnimalIA>();
         }
 
         // Generar Ratas de Alcantarilla
@@ -53,7 +58,11 @@ public class GeneradorAmbienteUrbano : MonoBehaviour
             rata.transform.position = new Vector3(Random.Range(-200f, 200f), 550f, Random.Range(-200f, 200f));
             rata.GetComponent<Renderer>().material.color = Color.black;
             rata.AddComponent<GravedadCalles>();
-            rata.AddComponent<MovimientoErratico>().velocidad = 7f; // Corren rápido
+            
+            var nav = rata.AddComponent<UnityEngine.AI.NavMeshAgent>();
+            nav.speed = 7f; // Corren rápido
+            nav.radius = 0.1f;
+            rata.AddComponent<NavegacionAnimalIA>();
         }
     }
 }
@@ -70,22 +79,29 @@ public class GravedadCalles : MonoBehaviour
     }
 }
 
-public class MovimientoErratico : MonoBehaviour
+public class NavegacionAnimalIA : MonoBehaviour
 {
-    public float velocidad = 5f;
-    private Vector3 direccion;
-    private float tiempoCambio = 0f;
+    private UnityEngine.AI.NavMeshAgent agente;
+    private float tiempoSiguienteRuta = 0f;
+
+    private void Start()
+    {
+        agente = GetComponent<UnityEngine.AI.NavMeshAgent>();
+    }
 
     private void Update()
     {
-        if (Time.time > tiempoCambio)
+        if (agente == null || !agente.isOnNavMesh) return;
+
+        if (Time.time > tiempoSiguienteRuta || agente.remainingDistance < 1f)
         {
-            direccion = new Vector3(Random.Range(-1f, 1f), 0, Random.Range(-1f, 1f)).normalized;
-            tiempoCambio = Time.time + Random.Range(1f, 4f);
+            // Buscar un punto al azar en 40 metros
+            Vector3 puntoAleatorio = transform.position + new Vector3(Random.Range(-40f, 40f), 0, Random.Range(-40f, 40f));
+            if (UnityEngine.AI.NavMesh.SamplePosition(puntoAleatorio, out UnityEngine.AI.NavMeshHit hit, 40f, UnityEngine.AI.NavMesh.AllAreas))
+            {
+                agente.SetDestination(hit.position);
+                tiempoSiguienteRuta = Time.time + Random.Range(5f, 15f);
+            }
         }
-        
-        transform.Translate(direccion * velocidad * Time.deltaTime, Space.World);
-        if (direccion != Vector3.zero)
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(direccion), 10f * Time.deltaTime);
     }
 }

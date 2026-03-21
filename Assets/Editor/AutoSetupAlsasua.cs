@@ -12,8 +12,8 @@ public class AutoSetupAlsasua
 
     private static void ReajustarAuto()
     {
-        if (SessionState.GetBool("AlsasuaAjustadoV7", false)) return;
-        SessionState.SetBool("AlsasuaAjustadoV7", true);
+        if (SessionState.GetBool("AlsasuaAjustadoV9", false)) return;
+        SessionState.SetBool("AlsasuaAjustadoV9", true);
 
         // Si no existen los soldados, probablemente nada está importado.
         string[] soldados = AssetDatabase.FindAssets("t:Prefab Soldier");
@@ -44,14 +44,15 @@ public class AutoSetupAlsasua
         // 2. Inyectar Gestor de Mundo Sandbox Autónomo
         if (Object.FindObjectOfType<SistemaCicloDia>() == null)
         {
-            GameObject worldManager = new GameObject("Alsasua_Apocalypse_V8_Manager");
+            GameObject worldManager = new GameObject("Alsasua_V9_AAA_Manager");
             worldManager.AddComponent<SistemaCicloDia>();
             worldManager.AddComponent<SistemaClima>();
-            worldManager.AddComponent<SistemaDialogos>(); // V8 Diálogos Ramificados
-            worldManager.AddComponent<GeneradorAmbienteUrbano>(); // V8 Punks, Ratas, Perros
-            worldManager.AddComponent<EventoTermonuclear>(); // V8 Misil Termonuclear (Pulsa N)
+            worldManager.AddComponent<SistemaDialogos>(); 
+            worldManager.AddComponent<GeneradorAmbienteUrbano>(); 
+            worldManager.AddComponent<EventoTermonuclear>(); 
+            worldManager.AddComponent<GestorAmbienteEspacial>(); // V9 Audio 3D
             
-            Debug.Log("[V8 Apocalypse] Ecosistema Climático, Lore Ácido, Ratas y Eventos Nucleares inyectados en el nivel.");
+            Debug.Log("[V9 AAA] Instalados: Audio Espacial 3D, Ragdolls Nucleares, Coches Calcinables y NavMesh.");
             
             // Marcar la escena como modificada
             UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene());
