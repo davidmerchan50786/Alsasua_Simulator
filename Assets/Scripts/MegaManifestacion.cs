@@ -3,17 +3,23 @@ using UnityEngine;
 using UnityEngine.AI;
 using System.Collections.Generic;
 
+/// <summary>
+/// Motor de Macro-Manifestaciones Optimizado (V14).
+/// Arquitectura basada en Patrón Flocking Simplificado (Líder-Seguidor).
+/// Utiliza Instanciación en Tarjeta Gráfica (GPU Instancing) para evadir los límites de Draw-Calls de Unity.
+/// </summary>
 [AddComponentMenu("Alsasua V14/Motor de Macro-Manifestaciones (1000 NPCs)")]
 public class MegaManifestacion : MonoBehaviour
 {
     private const int TOTAL_MANIFESTANTES = 1000;
-    private const int NUM_LIDERES = 20; // Solo los líderes usan NavMesh (CPU Optimization)
+    private const int NUM_LIDERES = 20;
 
-    private List<Transform> lideres = new List<Transform>();
-    private Transform[] manifestantes = new Transform[TOTAL_MANIFESTANTES - NUM_LIDERES];
-    private float[] offsetsX = new float[TOTAL_MANIFESTANTES - NUM_LIDERES];
-    private float[] offsetsZ = new float[TOTAL_MANIFESTANTES - NUM_LIDERES];
-    private int[] liderAsignado = new int[TOTAL_MANIFESTANTES - NUM_LIDERES];
+    // Listas internas cacheadas para prevenir el Garbage Collection (GC Allocation = 0)
+    private readonly List<Transform> lideres = new List<Transform>();
+    private readonly Transform[] manifestantes = new Transform[TOTAL_MANIFESTANTES - NUM_LIDERES];
+    private readonly float[] offsetsX = new float[TOTAL_MANIFESTANTES - NUM_LIDERES];
+    private readonly float[] offsetsZ = new float[TOTAL_MANIFESTANTES - NUM_LIDERES];
+    private readonly int[] liderAsignado = new int[TOTAL_MANIFESTANTES - NUM_LIDERES];
 
     private Material matCueroNegro;
     private Material matCrestaRosa;
@@ -37,14 +43,18 @@ public class MegaManifestacion : MonoBehaviour
         GenerarManifestacion();
     }
 
+    /// <summary>
+    /// Genera la manifestación estructurada.
+    /// Crea un subconjunto de Líderes (NavMesh) y un Enjambre masivo (Followers Matemáticos).
+    /// </summary>
     private void GenerarManifestacion()
     {
-        Vector3 epicentroIncial = transform.position;
+        Vector3 epicentroInicial = transform.position;
 
-        // Bajar al suelo con Raycast
-        if (Physics.Raycast(epicentroIncial + Vector3.up * 500f, Vector3.down, out RaycastHit hitFloor, 1000f))
+        // Proyección Topográfica: Buscar colisión contra el asfalto empleando Raycast O(1)
+        if (Physics.Raycast(epicentroInicial + Vector3.up * 500f, Vector3.down, out RaycastHit hitFloor, 1000f))
         {
-            epicentroIncial = hitFloor.point;
+            epicentroInicial = hitFloor.point;
         }
 
         // Crear Líderes (NavMeshAgents Reales)
@@ -61,16 +71,17 @@ public class MegaManifestacion : MonoBehaviour
             lider.AddComponent<LiderRutaIA>();
             lideres.Add(lider.transform);
 
-            // 50% probabilidad de llevar pancarta
+            // 50% probabilidad de llevar pancarta generada proceduralmente
             if (Random.value > 0.5f) CrearPancarta(lider.transform);
         }
 
-        // Crear el Enjambre Boid (Seguidores Matemáticos Zero-CPU)
+        // Crear el Enjambre Seguidor
+        // Coste Computacional: Zero-CPU para Pathfinding, se limitarán a interpelaciones Lerp espaciales
         for (int i = 0; i < manifestantes.Length; i++)
         {
             GameObject clon = EnsamblarClonPunk(false);
             clon.name = "Manifestante_" + i;
-            clon.transform.position = epicentroIncial + new Vector3(Random.Range(-50f, 50f), 0, Random.Range(-50f, 50f));
+            clon.transform.position = epicentroInicial + new Vector3(Random.Range(-50f, 50f), 0, Random.Range(-50f, 50f));
             manifestantes[i] = clon.transform;
 
             liderAsignado[i] = Random.Range(0, NUM_LIDERES);
@@ -186,9 +197,13 @@ public class MegaManifestacion : MonoBehaviour
         tm.fontStyle = FontStyle.Bold;
     }
 
+    /// <summary>
+    /// Update Funcional.
+    /// Complejidad Asintótica O(N): Escala linealmente mediante 1000 multiplicadores de vectores.
+    /// Mitiga severamente la degradación de FPS que causaría el A* en 1000 entidades simultáneas.
+    /// </summary>
     void Update()
     {
-        // Movimiento Boids (Calculo matemático O(1) masivo, ignora NavMesh para no quemar la CPU)
         for (int i = 0; i < manifestantes.Length; i++)
         {
             if (manifestantes[i] == null) continue;
@@ -196,12 +211,13 @@ public class MegaManifestacion : MonoBehaviour
             Transform lider = lideres[liderAsignado[i]];
             if (lider == null) continue;
 
+            // Offset matricial: sitúa a los seguidores rígidamente detrás o a los lados del líder
             Vector3 objetivo = lider.position + lider.right * offsetsX[i] + lider.forward * offsetsZ[i];
             
-            // Suavizado Lerp para dar forma de multitud agolpándose
+            // Interpolación Suavizada (Lerp): Rompe la rigidez matricial simulando a personas empujándose orgánicamente
             manifestantes[i].position = Vector3.Lerp(manifestantes[i].position, objetivo, Time.deltaTime * 1.5f);
             
-            // Mirar hacia donde caminan
+            // Vector de Rotación Continua
             Vector3 dir = (objetivo - manifestantes[i].position).normalized;
             if (dir != Vector3.zero)
             {
