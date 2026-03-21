@@ -65,6 +65,9 @@ public class AutoSetupAlsasua
             worldManager.AddComponent<ControladorDisturbios>();
             worldManager.AddComponent<EscuadraAntiDisturbios>();
 
+            // V14: The Final Splendor (Manifestación Masiva)
+            worldManager.AddComponent<MegaManifestacion>();
+
             // AUTOCONEXIÓN DE ASSETS 3D DESCARGADOS (V10)
             genAmb.prefabPunk = EncontrarPrefabUnico("Punk", "Character");
             genAmb.prefabPerro = EncontrarPrefabUnico("Dog", "Hound", "Wolf");

@@ -13,6 +13,7 @@ public class GeneradorAmbienteUrbano : MonoBehaviour
     private void Start()
     {
         GenerarPunksYFauna();
+        GenerarCallejonesOscuros(); // V14: Lore crudo de decadencia urbana
     }
 
     private void GenerarPunksYFauna()
@@ -69,6 +70,59 @@ public class GeneradorAmbienteUrbano : MonoBehaviour
             nav.radius = 0.1f;
             rata.AddComponent<NavegacionAnimalIA>();
             rata.AddComponent<SistemaReaccionVital>(); // V12
+        }
+    }
+
+    private void GenerarCallejonesOscuros()
+    {
+        for (int i=0; i < 15; i++)
+        {
+            // Encontrar punto aleatorio para el callejón decadente
+            Vector3 pos = new Vector3(Random.Range(-180f, 180f), 550f, Random.Range(-180f, 180f));
+            if (Physics.Raycast(pos, Vector3.down, out RaycastHit hit, 1000f))
+            {
+                pos = hit.point + Vector3.up * 0.1f;
+            }
+
+            // Cuerpo del NPC Desplomado (Adicción/Decaimiento)
+            GameObject adicto = EnsamblarPunkProcedural();
+            adicto.name = "NPC_Decadente_Desplomado";
+            adicto.transform.position = pos + Vector3.up * 0.5f;
+            
+            // Inmovilizamos y lo tumbamos en el suelo
+            Destroy(adicto.GetComponent<SistemaReaccionVital>());
+            Destroy(adicto.GetComponent<GravedadCalles>());
+            adicto.transform.localRotation = Quaternion.Euler(0, 0, 90f); // Postura fetal colapsada
+
+            // Parafernalia (Jeringuilla física y cucharas)
+            GameObject jeringa = new GameObject("Props_Jeringuilla");
+            jeringa.transform.position = pos + new Vector3(0.5f, 0, 0.5f);
+            var cilindro = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            cilindro.transform.SetParent(jeringa.transform);
+            cilindro.transform.localPosition = Vector3.zero;
+            cilindro.transform.localScale = new Vector3(0.01f, 0.08f, 0.01f);
+            cilindro.transform.localRotation = Quaternion.Euler(90, 45, 0);
+            cilindro.GetComponent<Renderer>().material.color = new Color(0.8f, 0.9f, 0.9f, 0.5f); // Plástico translúcido
+            Destroy(cilindro.GetComponent<Collider>());
+            
+            // Sangre seca y mugre
+            GameObject charco = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            charco.name = "Mancha_SangreSeca_Callejon";
+            charco.transform.position = pos + Vector3.up * 0.02f;
+            charco.transform.rotation = Quaternion.Euler(90, 0, Random.Range(0, 360));
+            charco.transform.localScale = Vector3.one * Random.Range(0.8f, 1.5f);
+            charco.GetComponent<Renderer>().material.color = new Color(0.2f, 0.02f, 0.02f); 
+            Destroy(charco.GetComponent<Collider>());
+
+            // Ratas atraídas al cuerpo
+            for(int r=0; r<2; r++)
+            {
+                GameObject rata = prefabRata != null ? Instantiate(prefabRata) : GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                rata.transform.position = pos + new Vector3(Random.Range(-1.5f, 1.5f), 0.5f, Random.Range(-1.5f, 1.5f));
+                rata.transform.localScale = new Vector3(0.2f, 0.2f, 0.4f);
+                rata.AddComponent<GravedadCalles>();
+                rata.GetComponent<Renderer>().material.color = Color.black;
+            }
         }
     }
 
