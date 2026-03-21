@@ -170,6 +170,10 @@ public class SistemaExplosion : MonoBehaviour
                 InstanciarFuegoPersistente(barricada.transform);
             }
 
+            // V13: Cristalería Urbana (Las ventanas explotan por la onda térmica y de choque)
+            var cristales = col.GetComponentInParent<CristalDestructible>();
+            if (cristales != null) cristales.RecibirOndaExpansiva(dist, radio * 2f); // El cristal es más frágil, se rompe desde más lejos
+
             // V12: Biomecánica de Supervivencia, Gore y Carbonización
             var serVivo = col.GetComponentInParent<SistemaReaccionVital>();
             if (serVivo != null && _seresVivosYaProcesados.Add(serVivo))

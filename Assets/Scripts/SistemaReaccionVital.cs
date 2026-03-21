@@ -15,6 +15,23 @@ public class SistemaReaccionVital : MonoBehaviour
     private float maxCombustion = 4.5f;
     private GameObject fuegoAdherido;
 
+    public void RecibirImpactoBalistico()
+    {
+        if (estadoActual == EstadoVital.Cenizas) return;
+        
+        // V13: Balística de Supervivencia
+        DetectarPeligro(transform.position); // Grita y huye
+        
+        // Desconectar animación/rutina y activar físicas crudas para tropezar
+        if (agente != null) { agente.isStopped = true; agente.enabled = false; }
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb == null) rb = gameObject.AddComponent<Rigidbody>();
+        rb.isKinematic = false;
+        rb.mass = 80f; // Peso humano
+        
+        // La bala empujará el Rigidbody externamente
+    }
+
     private void Start()
     {
         agente = GetComponent<NavMeshAgent>();

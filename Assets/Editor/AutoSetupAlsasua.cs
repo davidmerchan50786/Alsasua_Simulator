@@ -37,6 +37,10 @@ public class AutoSetupAlsasua
             cam.gameObject.AddComponent<ControladorCamaraSandbox>();
             Debug.Log("[V7 Sandbox] ControladorCamaraSandbox inyectado nativamente en Main Camera.");
         }
+        } else if (cam != null) {
+            camParams = cam.GetComponent<ControladorCamaraSandbox>();
+        }
+
 
         // 2. Inyectar Gestor de Mundo Sandbox Autónomo
         if (Object.FindObjectOfType<SistemaCicloDia>() == null)
@@ -46,8 +50,20 @@ public class AutoSetupAlsasua
             worldManager.AddComponent<SistemaClima>();
             worldManager.AddComponent<SistemaDialogos>(); 
             var genAmb = worldManager.AddComponent<GeneradorAmbienteUrbano>(); 
+            
+            if (camParams != null) {
+                camParams.transform.localPosition = new Vector3(0, 0, -15);
+                camParams.gameObject.AddComponent<SistemaBalistico>(); // V13: Inyección de Armamento Balístico al Player
+            }
+
+            // Conectar el sistema GodCamera a las teclas y control
+            var inputSim = worldManager.AddComponent<UnityEngine.InputSystem.PlayerInput>(); 
             var nukeEv = worldManager.AddComponent<EventoTermonuclear>(); 
             worldManager.AddComponent<GestorAmbienteEspacial>();
+
+            // V13: Ley Marcial y Disturbios Masivos
+            worldManager.AddComponent<ControladorDisturbios>();
+            worldManager.AddComponent<EscuadraAntiDisturbios>();
 
             // AUTOCONEXIÓN DE ASSETS 3D DESCARGADOS (V10)
             genAmb.prefabPunk = EncontrarPrefabUnico("Punk", "Character");
