@@ -707,11 +707,14 @@ public class OsmEdificioLoader : MonoBehaviour
         int h = albedo.height;
         Texture2D nMap = new Texture2D(w, h, TextureFormat.RGBA32, true, true);
         
+        // V25 AUDIT: Declaramos puntero al array no administrado fuera del Try
+        NativeArray<Color32> nCols = default;
+
         try 
         {
             // Zero-allocation read directly from native memory
             NativeArray<Color32> pixCols = albedo.GetRawTextureData<Color32>();
-            NativeArray<Color32> nCols = new NativeArray<Color32>(pixCols.Length, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
+            nCols = new NativeArray<Color32>(pixCols.Length, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
 
             var job = new SobelFilterJob
             {
@@ -725,9 +728,21 @@ public class OsmEdificioLoader : MonoBehaviour
             job.Schedule(pixCols.Length, 1024).Complete();
 
             nMap.SetPixelData(nCols, 0);
-            nCols.Dispose();
         } 
-        catch { return null; } 
+        catch 
+        { 
+            // V25 AUDIT: Si el algoritmo del Shader explota (ej: textura corrupta),
+            // destruimos el contenedor nativo VRAM para no inundar eternamente la GPU.
+            if (nMap != null) UnityEngine.Object.Destroy(nMap);
+            return null; 
+        } 
+        finally
+        {
+            // V25 AUDIT: Ejecución Incondicional C++. 
+            // Si el código tuvo éxito o falló en el catch, soltemos incondicionalmente
+            // la memoria fuera del alcance del Garbage Collector.
+            if (nCols.IsCreated) nCols.Dispose();
+        }
 
         return nMap;
     }

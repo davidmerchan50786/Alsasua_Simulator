@@ -139,8 +139,8 @@ public class ControladorClimatico : MonoBehaviour
 
         if (luzSolar != null)
         {
-            // V16: Ciclo Noche/Día Acelerado (Rotación). ~10 minutos reales = día completo. (0.6 grados por segundo cruzado)
-            luzSolar.transform.Rotate(Vector3.right * Time.deltaTime * 0.6f);
+            // V23 FIX: Rotación Solar delegada a SistemaAtmosfera.cs para precisión astronómica O(1).
+            // Se elimina `luzSolar.transform.Rotate()` para detener el Z-Fighting y temblores de sombras globales.
 
             // Recuperación suave del brillo solar base vs Tormenta
             intensidadBaseLuz = Mathf.Lerp(intensidadBaseLuz, Mathf.Lerp(1.2f, 0.3f, intensidadTormenta), Time.deltaTime * 2f);
@@ -156,7 +156,7 @@ public class ControladorClimatico : MonoBehaviour
                 luzSolar.intensity = Mathf.Lerp(luzSolar.intensity, intensidadBaseLuz, Time.deltaTime * 15f);
             }
             
-            luzSolar.color = Color.Lerp(Color.white, new Color(0.4f, 0.5f, 0.6f), intensidadTormenta);
+            // Delegamos el color a SistemaAtmosfera, excepto en flashes de tormenta masivos
         }
 
         // 4. Mecánica de Truenos Retrasados (Velocidad del Sonido)

@@ -206,6 +206,9 @@ public class MecanicaHongoNuclear : MonoBehaviour
     void Start()
     {
         tiempoNacimiento = Time.time;
+        // V23 FIX: Prevenir "Infinity Scale Crash". Destruir el hongo tras 60 segundos
+        // para que la onda de choque expansiva no colapse el motor de Culling por tamaño excesivo.
+        Destroy(gameObject, 60f);
     }
 
     void Update()

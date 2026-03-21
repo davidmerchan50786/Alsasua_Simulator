@@ -28,6 +28,7 @@ public class GeneradorAmbienteUrbano : MonoBehaviour
         {
             GameObject punk = prefabPunk != null ? Instantiate(prefabPunk) : EnsamblarPunkProcedural();
             punk.name = "NPC_Punk_Procedural_" + i;
+            punk.transform.SetParent(this.transform); // V24 FIX: Mantener jerarquía limpia
             punk.transform.position = new Vector3(Random.Range(-200f, 200f), 550f, Random.Range(-200f, 200f));
             
             // Simulación de Humo (Sustancias)
@@ -48,6 +49,7 @@ public class GeneradorAmbienteUrbano : MonoBehaviour
         {
             GameObject perro = prefabPerro != null ? Instantiate(prefabPerro) : GameObject.CreatePrimitive(PrimitiveType.Cube);
             perro.name = "Perro_Vagabundo_" + i;
+            perro.transform.SetParent(this.transform); // V24 FIX
             perro.transform.localScale = new Vector3(0.4f, 0.6f, 0.8f);
             perro.transform.position = new Vector3(Random.Range(-200f, 200f), 550f, Random.Range(-200f, 200f));
             perro.GetComponent<Renderer>().material.color = new Color(0.4f, 0.3f, 0.2f); // Marrón sucio
@@ -67,6 +69,7 @@ public class GeneradorAmbienteUrbano : MonoBehaviour
         {
             GameObject rata = prefabRata != null ? Instantiate(prefabRata) : GameObject.CreatePrimitive(PrimitiveType.Sphere);
             rata.name = "Rata_Alcantarilla_" + i;
+            rata.transform.SetParent(this.transform); // V24 FIX
             rata.transform.localScale = new Vector3(0.2f, 0.2f, 0.4f);
             rata.transform.position = new Vector3(Random.Range(-200f, 200f), 550f, Random.Range(-200f, 200f));
             rata.GetComponent<Renderer>().material.color = Color.black;
@@ -95,6 +98,7 @@ public class GeneradorAmbienteUrbano : MonoBehaviour
             // Cuerpo del NPC Desplomado (Adicción/Decaimiento)
             GameObject adicto = EnsamblarPunkProcedural();
             adicto.name = "NPC_Decadente_Desplomado";
+            adicto.transform.SetParent(this.transform); // V24 FIX
             adicto.transform.position = pos + Vector3.up * 0.5f;
             
             // Inmovilizamos y lo tumbamos en el suelo
@@ -104,15 +108,18 @@ public class GeneradorAmbienteUrbano : MonoBehaviour
 
             // Parafernalia delegada a FabricaSintetica
             GameObject jeringa = FabricaSintetica.InstanciarJeringuillaFisica(pos + new Vector3(0.5f, 0, 0.5f));
+            jeringa.transform.SetParent(this.transform); // V24 FIX
             
             // Sangre delegada a FabricaSintetica
             GameObject charco = FabricaSintetica.InstanciarManchaGore(pos + Vector3.up * 0.02f, Random.Range(0.8f, 1.5f), new Color(0.2f, 0.02f, 0.02f));
             charco.name = "Mancha_SangreSeca_Callejon";
+            charco.transform.SetParent(this.transform); // V24 FIX
 
             // Ratas atraídas al cuerpo
             for(int r=0; r<2; r++)
             {
                 GameObject rata = prefabRata != null ? Instantiate(prefabRata) : GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                rata.transform.SetParent(this.transform); // V24 FIX
                 rata.transform.position = pos + new Vector3(Random.Range(-1.5f, 1.5f), 0.5f, Random.Range(-1.5f, 1.5f));
                 rata.transform.localScale = new Vector3(0.2f, 0.2f, 0.4f);
                 rata.AddComponent<GravedadCalles>();
@@ -148,12 +155,24 @@ public class GeneradorAmbienteUrbano : MonoBehaviour
 
 public class GravedadCalles : MonoBehaviour
 {
+    private int intentosV24 = 0;
+
     private void Update()
     {
         if (Physics.Raycast(transform.position + Vector3.up * 50f, Vector3.down, out RaycastHit hit, 2000f))
         {
             transform.position = hit.point + Vector3.up * (transform.localScale.y / 2f);
             Destroy(this); // Anclado permanente
+        }
+        else
+        {
+            // V24 AUDIT FIX: Mitigación Fallo Estructural. Evitar estrangular la CPU en bucle infinito
+            // si un animal "spawneó" en una región sin colisionador (fuera del mapa/caída libre).
+            intentosV24++;
+            if (intentosV24 > 50)
+            {
+                Destroy(gameObject);
+            }
         }
     }
 }

@@ -14,11 +14,21 @@ public class SistemaClima : MonoBehaviour
     [Tooltip("Cota Z absoluta (altura nivel del mar Cesium) para inyectar el río Arakil proceduralmente.")]
     public float nivelDelRioY = 520f; 
 
+    private Material matAguaActivo; // V23 FIX: Prevenir fuga de RAM
+
     private void Start()
     {
         CrearVenaFluvial();
-        InicializarAtmósfera();
-        StartCoroutine(CicloClimaticoProcedural());
+        // V23 FIX: Atmósfera y Clima ya gestionados por ControladorClimatico (V16) y SistemaAtmosfera.
+        // Se desactiva el duplicado para prevenir peleas en el Thread de RenderSettings por el control de la niebla.
+        // InicializarAtmósfera();
+        // StartCoroutine(CicloClimaticoProcedural());
+    }
+
+    private void OnDestroy()
+    {
+        // V23 FIX: Sellar memory leak severo de generacion de material procedimental
+        if (matAguaActivo != null) Destroy(matAguaActivo);
     }
 
     private void CrearVenaFluvial()
@@ -52,6 +62,7 @@ public class SistemaClima : MonoBehaviour
         matAgua.DisableKeyword("_ALPHAPREMULTIPLY_ON");
         matAgua.renderQueue = 3000;
         
+        matAguaActivo = matAgua;
         rend.sharedMaterial = matAgua;
     }
 

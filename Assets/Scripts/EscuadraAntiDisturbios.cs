@@ -40,6 +40,9 @@ public class EscuadraAntiDisturbios : MonoBehaviour
         furgon.transform.localScale = new Vector3(2.5f, 3f, 6f);
         furgon.GetComponent<Renderer>().material.color = new Color(0.1f, 0.1f, 0.4f); // Azul oscuro
         
+        // V24 FIX: Autodestrucción paramétrica para purgar Fuga Masiva O(N) de Memoria (480 furgones / 2 horas)
+        Destroy(furgon, 90f);
+        
         // 3. Luces Rotativas Procedurales (Sirenas V13 Volumétricas)
         var luces = furgon.AddComponent<SirenaPolicialPolimetrica>();
 

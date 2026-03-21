@@ -118,9 +118,9 @@ public class SistemaBombas : MonoBehaviour
         Debug.Log($"[Bombas] Bomba colocada en {posicion:F1}. Quedan: {bombasDisponibles}");
         ActualizarHUD();
 
-        // Si tiene timer, iniciar cuenta atrás
+        // Si tiene timer, iniciar cuenta atrás y guardar referencia anti-fuga (V23)
         if (timerAutodetonacion > 0f)
-            StartCoroutine(TimerBomba(bomba));
+            bomba.rutinaTimer = StartCoroutine(TimerBomba(bomba));
     }
 
     public void DetonarUltima()
@@ -148,6 +148,10 @@ public class SistemaBombas : MonoBehaviour
     {
         if (bomba.explotada) return;
         bomba.explotada = true;
+        
+        // V23 AUDIT FIX: Destruir la Corrutina Timer explícitamente para evitar ejecución zombie (Memory Leak).
+        if (bomba.rutinaTimer != null) StopCoroutine(bomba.rutinaTimer);
+        
         bombas.Remove(bomba);
 
         if (bomba.objetoFisico != null)
@@ -346,6 +350,7 @@ public class SistemaBombas : MonoBehaviour
         public GameObject objetoFisico;
         public Vector3    posicion;
         public bool       explotada;
+        public Coroutine  rutinaTimer; // V23 AUDIT
     }
 }
 
@@ -354,10 +359,22 @@ public class ParpadeoLuz : MonoBehaviour
 {
     public Light luz;
     private float timer;
+    
+    // API Exclusiva de TDD
+    public float TestTimer => timer;
+    public void AvanzarTimer(float dt) => UpdateLogic(dt);
 
     private void Update()
     {
-        timer += Time.deltaTime * 4f;
+        UpdateLogic(Time.deltaTime);
+    }
+    
+    private void UpdateLogic(float dt)
+    {
+        timer += dt * 4f;
+        // V23 AUDIT FIX: Previene desbordamiento en GPU e inestabilidad del Mathf.Sin
+        if (timer > Mathf.PI * 2f) timer -= Mathf.PI * 2f;
+        
         if (luz != null)
             luz.enabled = Mathf.Sin(timer) > 0f;
     }

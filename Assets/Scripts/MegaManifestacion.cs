@@ -46,6 +46,14 @@ public class MegaManifestacion : MonoBehaviour
         GenerarManifestacion();
     }
 
+    private void OnDestroy()
+    {
+        // V23 FIX: Prevenir Memory Leak de materiales de instancia de GPU al recargar la escena.
+        if (matCueroNegro != null) Destroy(matCueroNegro);
+        if (matPiel != null) Destroy(matPiel);
+        if (matCrestaRosa != null) Destroy(matCrestaRosa);
+    }
+
     /// <summary>
     /// Genera la manifestación estructurada.
     /// Crea un subconjunto de Líderes (NavMesh) y un Enjambre masivo (Followers Matemáticos).
@@ -65,6 +73,7 @@ public class MegaManifestacion : MonoBehaviour
         {
             GameObject lider = EnsamblarClonPunk(true);
             lider.name = "Lider_Manifestacion_" + i;
+            lider.transform.SetParent(this.transform); // V23 FIX: Mantener jerarquía limpia
             Vector3 spawn = epicentroInicial + new Vector3(Random.Range(-30f, 30f), 0, Random.Range(-30f, 30f));
             lider.transform.position = spawn;
 
@@ -84,6 +93,7 @@ public class MegaManifestacion : MonoBehaviour
         {
             GameObject clon = EnsamblarClonPunk(false);
             clon.name = "Manifestante_" + i;
+            clon.transform.SetParent(this.transform); // V23 FIX: Mantener jerarquía limpia
             clon.transform.position = epicentroInicial + new Vector3(Random.Range(-50f, 50f), 0, Random.Range(-50f, 50f));
             manifestantes[i] = clon.transform;
 
@@ -215,7 +225,31 @@ public class MegaManifestacion : MonoBehaviour
             }
 
             Transform lider = lideres[liderAsignado[i]];
-            if (lider == null) continue;
+            if (lider == null)
+            {
+                // V23 FIX (Zombie Followers): Si el líder fue destruido, los seguidores
+                // se quedaban congelados como estatuas. Ahora buscan un nuevo líder vivo.
+                bool reasignado = false;
+                for (int k = 0; k < lideres.Count; k++)
+                {
+                    if (lideres[k] != null)
+                    {
+                        liderAsignado[i] = k;
+                        lider = lideres[k];
+                        reasignado = true;
+                        break;
+                    }
+                }
+
+                // Si no queda ningún líder vivo en toda la ciudad, se dispersan (Despawn)
+                if (!reasignado)
+                {
+                    manifestantes[i].localRotation = Quaternion.Euler(0f, Random.Range(0, 360f), 0f); // Mirar a otro lado
+                    Destroy(manifestantes[i].gameObject, Random.Range(0.5f, 2f));
+                    manifestantes[i] = null;
+                    continue;
+                }
+            }
 
             // Offset matricial: sitúa a los seguidores rígidamente detrás o a los lados del líder
             Vector3 objetivo = lider.position + lider.right * offsetsX[i] + lider.forward * offsetsZ[i];

@@ -414,14 +414,18 @@ public class SistemaDisparo : MonoBehaviour
 
     // ── Activar un slot de burst del pool ───────────────────────────────
 
+    private int _ultimoBurstRotativoV24 = 0;
+
     private void CrearBurst(Vector3 pos, Color color, float tamano, int cantidad, float duracion)
     {
         int slot = SlotBurstLibre();
         if (slot < 0)
         {
-            // Pool lleno: reciclar el más antiguo (siempre tiene slot 0 como fallback)
-            DevolverBurst(0);
-            slot = 0;
+            // V24 AUDIT FIX: Evitar "Object Pool Starvation" y glitcheos visuales forzados
+            // al usar siempre el índice 0. Se implementa Round-Robin orgánico.
+            slot = _ultimoBurstRotativoV24;
+            _ultimoBurstRotativoV24 = (_ultimoBurstRotativoV24 + 1) % POOL_BURSTS;
+            DevolverBurst(slot);
         }
 
         ref SlotBurst s = ref _poolBursts[slot];
