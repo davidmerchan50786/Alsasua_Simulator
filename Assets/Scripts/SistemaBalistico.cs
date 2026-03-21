@@ -43,7 +43,8 @@ public class SistemaBalistico : MonoBehaviour
         cam.transform.localRotation *= Quaternion.Euler(-Random.Range(0.5f, 2f), Random.Range(-1f, 1f), 0);
 
         Ray ray = new Ray(cam.transform.position, cam.transform.forward);
-        if (Physics.Raycast(ray, out RaycastHit hit, rangoMaximo))
+        // V22 AUDIT: Forzar 'QueryTriggerInteraction.Collide' para que la bala lea las cápsulas huecas (Followers).
+        if (Physics.Raycast(ray, out RaycastHit hit, rangoMaximo, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide))
         {
             ProcesarImpacto(hit, ray.direction);
         }
@@ -70,6 +71,19 @@ public class SistemaBalistico : MonoBehaviour
             {
                 rbEnemigo.AddForceAtPosition(direccion * 400f, hit.point, ForceMode.Impulse);
             }
+        }
+        else if (hit.collider.gameObject.layer == 9)
+        {
+            // V22 AUDIT FIX: Los seguidores no tienen SistemaReaccion (para ahorrar RAM). 
+            // Si la bala impacta su Trigger, emulamos una muerte hiper-ligera matemáticamente.
+            SintetizadorGore.EsparcirSangre(hit.point, 0.4f);
+            
+            Transform punk = hit.collider.transform;
+            punk.localRotation = Quaternion.Euler(90f, 0, 0); // Tirado
+            punk.position += Vector3.down * 0.9f;
+            
+            // Destruir el collider y el mesh proceduralmente para liberar memoria
+            Destroy(hit.collider.gameObject, Random.Range(1f, 4f));
         }
         else
         {
