@@ -155,12 +155,41 @@ public class SistemaExplosion : MonoBehaviour
 
             var vehiculo = col.GetComponentInParent<VehiculoNPC>();
             if (vehiculo != null && _vehiculosYaDanados.Add(vehiculo))
+            {
                 vehiculo.RecibirDano(dano);
+                InstanciarFuegoPersistente(vehiculo.transform);
+            }
 
             var barricada = col.GetComponentInParent<BarricadaFuego>();
             if (barricada != null && _barricadasYaDanadas.Add(barricada))
+            {
                 barricada.RecibirDano(dano);
+                InstanciarFuegoPersistente(barricada.transform);
+            }
         }
+    }
+
+    private void InstanciarFuegoPersistente(Transform victima)
+    {
+        // V8 APOCALYPSE: Fuego perpetuo en los restos que quema durante horas
+        GameObject fuegoPersistente = new GameObject("Fuego_Persistente_V8");
+        fuegoPersistente.transform.SetParent(victima);
+        fuegoPersistente.transform.localPosition = Vector3.up * 1f;
+
+        ParticleSystem ps = fuegoPersistente.AddComponent<ParticleSystem>();
+        var main = ps.main;
+        main.duration = 800f; // Fuego infinito/largo plazo
+        main.loop = true;
+        main.startLifetime = new ParticleSystem.MinMaxCurve(1f, 2.5f);
+        main.startSpeed = new ParticleSystem.MinMaxCurve(2f, 4f);
+        main.startSize = new ParticleSystem.MinMaxCurve(1f, 3f);
+        main.startColor = new ParticleSystem.MinMaxGradient(new Color(1f, 0.4f, 0f, 0.9f), new Color(1f, 0.1f, 0f, 0.6f));
+        main.gravityModifier = -0.3f;
+        
+        var em = ps.emission; em.rateOverTime = 40f;
+        var shape = ps.shape; shape.shapeType = ParticleSystemShapeType.Sphere; shape.radius = 2f;
+        
+        ps.Play();
     }
 
     // ─── Efectos visuales ────────────────────────────────────────────────

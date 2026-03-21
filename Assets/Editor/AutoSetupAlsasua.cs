@@ -44,11 +44,14 @@ public class AutoSetupAlsasua
         // 2. Inyectar Gestor de Mundo Sandbox Autónomo
         if (Object.FindObjectOfType<SistemaCicloDia>() == null)
         {
-            GameObject worldManager = new GameObject("Alsasua_Sandbox_V7_Ecosystem");
+            GameObject worldManager = new GameObject("Alsasua_Apocalypse_V8_Manager");
             worldManager.AddComponent<SistemaCicloDia>();
             worldManager.AddComponent<SistemaClima>();
-            worldManager.AddComponent<SistemaDialogos>();
-            Debug.Log("[V7 Sandbox] Ecosistema Climático, Ciclo Solar y Lore inyectados en el nivel.");
+            worldManager.AddComponent<SistemaDialogos>(); // V8 Diálogos Ramificados
+            worldManager.AddComponent<GeneradorAmbienteUrbano>(); // V8 Punks, Ratas, Perros
+            worldManager.AddComponent<EventoTermonuclear>(); // V8 Misil Termonuclear (Pulsa N)
+            
+            Debug.Log("[V8 Apocalypse] Ecosistema Climático, Lore Ácido, Ratas y Eventos Nucleares inyectados en el nivel.");
             
             // Marcar la escena como modificada
             UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene());
