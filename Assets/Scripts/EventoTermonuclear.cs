@@ -9,6 +9,11 @@ public class EventoTermonuclear : MonoBehaviour
     public GameObject prefabMisil;
     public GameObject prefabHongo;
 
+    // V19 AUDIT: Variables estáticas para cálculos balísticos O(1) masivos
+    public static Vector3 EpicentroUltimaBomba;
+    public static float RadioDestruccion = 0f;
+    public static float TiempoBomba = -999f;
+
     private bool detonado = false;
     private float tiempoDestruccion = 0f;
     private GameObject misilObjeto;
@@ -60,6 +65,11 @@ public class EventoTermonuclear : MonoBehaviour
 
     private void ExplotarMundo()
     {
+        // V19 AUDIT: Reportar coordenadas de detonación al resto de sistemas
+        EpicentroUltimaBomba = misilObjeto.transform.position;
+        RadioDestruccion = 8000f; // Radio masivo (destrucción total del valle)
+        TiempoBomba = Time.time;
+
         Destroy(misilObjeto);
         
         // Efecto Ceguera y Onda Térmica (Manipulando Post-Procesado global y Skybox)

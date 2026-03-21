@@ -119,7 +119,10 @@ public class ControladorClimatico : MonoBehaviour
 
         // 2. Aplicar Densidad de Niebla Lúgubre
         RenderSettings.fogDensity = Mathf.Lerp(densidadNieblaDespejado, densidadNieblaTormenta, intensidadTormenta);
-        RenderSettings.fogColor = Color.Lerp(RenderSettings.ambientSkyColor, colorNieblaTormenta, intensidadTormenta);
+        
+        // V19 AUDIT: Sincronización Nocturna (Desvincular del Skybox estático Unity)
+        Color cieloVirtualOscuro = Color.Lerp(RenderSettings.ambientSkyColor, Color.black, intensidadBaseLuz < 0.5f ? 0.9f : 0f);
+        RenderSettings.fogColor = Color.Lerp(cieloVirtualOscuro, colorNieblaTormenta, intensidadTormenta);
 
         // 3. Ciclo Noche/Día y Lluvia
         if (lluviaPS != null)

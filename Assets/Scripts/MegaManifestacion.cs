@@ -178,10 +178,27 @@ public class MegaManifestacion : MonoBehaviour
     /// </summary>
     void Update()
     {
+        // V19 AUDIT: Chequeo O(1) Termonuclear Falsa Físcia para los 1000 Boids Inmortales
+        bool hayBombaExplota = Time.time < EventoTermonuclear.TiempoBomba + 5f;
+
         for (int i = 0; i < manifestantes.Length; i++)
         {
             if (manifestantes[i] == null) continue;
             
+            if (hayBombaExplota)
+            {
+                float distSq = (manifestantes[i].position - EventoTermonuclear.EpicentroUltimaBomba).sqrMagnitude;
+                if (distSq < EventoTermonuclear.RadioDestruccion * EventoTermonuclear.RadioDestruccion)
+                {
+                    // Asesinato matemático masivo sin físicas (O(1))
+                    manifestantes[i].localRotation = Quaternion.Euler(90f, 0, 0); // Tirado
+                    manifestantes[i].position += Vector3.down * 0.9f;
+                    Destroy(manifestantes[i].gameObject, Random.Range(1f, 4f)); // Borrar en diferido
+                    manifestantes[i] = null;
+                    continue;
+                }
+            }
+
             Transform lider = lideres[liderAsignado[i]];
             if (lider == null) continue;
 
