@@ -90,17 +90,61 @@ public class EventoTermonuclear : MonoBehaviour
             return;
         }
 
-        GameObject hongo = new GameObject("Hongo_Nuclear");
-        hongo.transform.position = centro;
-        ParticleSystem ps = hongo.AddComponent<ParticleSystem>();
+        // V11: SÍNTESIS PROCEDURAL DEL HONGO NUCLEAR Y ONDA EXPANSIVA (SIN ASSETS)
+        GameObject raizNuke = new GameObject("Hongo_Nuclear_Procedural");
+        raizNuke.transform.position = centro;
+
+        // 1. Flash Cegador Hiper-Intenso
+        GameObject flashObj = new GameObject("Ceguera_Atomica");
+        flashObj.transform.SetParent(raizNuke.transform);
+        flashObj.transform.localPosition = Vector3.zero;
+        Light flashluz = flashObj.AddComponent<Light>();
+        flashluz.type = LightType.Point;
+        flashluz.color = new Color(1f, 0.9f, 0.8f);
+        flashluz.range = 8000f;
+        flashluz.intensity = 1000f; // Blanco absoluto
         
+        // 2. Columna de Humo (Cilindro creciendo al cielo)
+        GameObject columna = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        columna.transform.SetParent(raizNuke.transform);
+        columna.transform.localPosition = Vector3.up * 200f;
+        columna.transform.localScale = new Vector3(80f, 200f, 80f);
+        columna.GetComponent<Renderer>().material.color = new Color(0.2f, 0.1f, 0.05f); // Tono fuego oscuro ceniza
+        
+        // 3. Sombrero del Hongo (Esfera Gorda arriba)
+        GameObject sombrero = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        sombrero.transform.SetParent(raizNuke.transform);
+        sombrero.transform.localPosition = Vector3.up * 500f;
+        sombrero.transform.localScale = new Vector3(300f, 150f, 300f);
+        sombrero.GetComponent<Renderer>().material.color = new Color(1f, 0.4f, 0f); // Naranja radiactivo
+
+        // 4. Anillo Expansivo de Presión Magnética (Disco aplastado expandiéndose)
+        GameObject ondaExpansiva = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        ondaExpansiva.transform.SetParent(raizNuke.transform);
+        ondaExpansiva.transform.localPosition = Vector3.up * 10f;
+        ondaExpansiva.transform.localScale = new Vector3(10f, 1f, 10f); // Aplastado
+        ondaExpansiva.GetComponent<Renderer>().material.color = new Color(1f, 1f, 1f, 0.8f); // Blanco translúcido
+        
+        // Aislar físicas
+        Destroy(columna.GetComponent<Collider>());
+        Destroy(sombrero.GetComponent<Collider>());
+        Destroy(ondaExpansiva.GetComponent<Collider>());
+
+        // 5. Animador Matemático de la Nuke
+        var animador = raizNuke.AddComponent<MecanicaHongoNuclear>();
+        animador.flash = flashluz;
+        animador.columna = columna.transform;
+        animador.sombrero = sombrero.transform;
+        animador.ondaExpansiva = ondaExpansiva.transform;
+
+        // 6. Inyección de Partículas Complementarias Subyacentes
+        ParticleSystem ps = raizNuke.AddComponent<ParticleSystem>();
         var main = ps.main;
-        main.duration = 60f; main.startLifetime = 10f; main.startSpeed = 80f; main.startSize = 200f; 
-        main.startColor = new Color(1f, 0.3f, 0f, 0.8f);
+        main.duration = 60f; main.startLifetime = 15f; main.startSpeed = 150f; main.startSize = 300f; 
+        main.startColor = new Color(0.1f, 0.1f, 0.1f, 0.8f); // Ceniza cubriendo Alsasua
         main.maxParticles = 5000;
-        
-        var em = ps.emission; em.rateOverTime = 800;
-        var shape = ps.shape; shape.shapeType = ParticleSystemShapeType.Hemisphere; shape.radius = 300f;
+        var em = ps.emission; em.rateOverTime = 1200;
+        var shape = ps.shape; shape.shapeType = ParticleSystemShapeType.Hemisphere; shape.radius = 400f;
     }
 
     private void MostrarPantallaMuerte()
@@ -138,5 +182,44 @@ public class EventoTermonuclear : MonoBehaviour
 
         txt.rectTransform.anchorMin = Vector2.zero; txt.rectTransform.anchorMax = Vector2.one;
         txt.rectTransform.sizeDelta = Vector2.zero;
+    }
+}
+
+public class MecanicaHongoNuclear : MonoBehaviour
+{
+    public Light flash;
+    public Transform columna;
+    public Transform sombrero;
+    public Transform ondaExpansiva;
+    private float tiempoNacimiento;
+
+    void Start()
+    {
+        tiempoNacimiento = Time.time;
+    }
+
+    void Update()
+    {
+        float t = Time.time - tiempoNacimiento;
+
+        // Flash se apaga drásticamente
+        if (flash != null) flash.intensity = Mathf.Lerp(1000f, 0f, t / 4f);
+
+        // La onda expansiva supersónica arrasa el nivel horizontalmente
+        if (ondaExpansiva != null) ondaExpansiva.localScale += new Vector3(800f, 0f, 800f) * Time.deltaTime;
+
+        // El hongo asciende y se ensancha
+        if (sombrero != null)
+        {
+            sombrero.position += Vector3.up * 60f * Time.deltaTime;
+            sombrero.localScale += new Vector3(40f, 10f, 40f) * Time.deltaTime;
+        }
+
+        // La columna crece con el hongo
+        if (columna != null)
+        {
+            columna.localScale += new Vector3(20f, 30f, 20f) * Time.deltaTime;
+            columna.position += Vector3.up * 30f * Time.deltaTime;
+        }
     }
 }

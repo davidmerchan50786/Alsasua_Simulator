@@ -17,15 +17,14 @@ public class GeneradorAmbienteUrbano : MonoBehaviour
 
     private void GenerarPunksYFauna()
     {
-        // Generar Punks (Izquierda Abertzale Aesthetic Placeholder) con Humo (Consumo)
+        // Generar Punks (Procedural Mohawk Assembly) con Humo (Consumo)
         for(int i = 0; i < 15; i++)
         {
-            GameObject punk = prefabPunk != null ? Instantiate(prefabPunk) : GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            punk.name = "NPC_Punk_Abertzale_" + i;
+            GameObject punk = prefabPunk != null ? Instantiate(prefabPunk) : EnsamblarPunkProcedural();
+            punk.name = "NPC_Punk_Procedural_" + i;
             punk.transform.position = new Vector3(Random.Range(-200f, 200f), 550f, Random.Range(-200f, 200f));
-            punk.GetComponent<Renderer>().material.color = new Color(0.2f, 0f, 0f); // Rojinegro oscuro
             
-            // Simulación de Humo (Porro/Sustancias)
+            // Simulación de Humo (Sustancias)
             GameObject humo = new GameObject("Humo_Sustancia");
             humo.transform.SetParent(punk.transform);
             humo.transform.localPosition = new Vector3(0, 0.8f, 0.5f);
@@ -69,6 +68,45 @@ public class GeneradorAmbienteUrbano : MonoBehaviour
             nav.radius = 0.1f;
             rata.AddComponent<NavegacionAnimalIA>();
         }
+    }
+
+    private GameObject EnsamblarPunkProcedural()
+    {
+        GameObject punk = new GameObject("Estructura_Punk");
+        
+        // Cuerpo de Cuero Negro
+        GameObject cuerpo = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+        cuerpo.transform.SetParent(punk.transform);
+        cuerpo.transform.localPosition = Vector3.up * 1f;
+        cuerpo.GetComponent<Renderer>().material.color = new Color(0.1f, 0.1f, 0.1f);
+        Destroy(cuerpo.GetComponent<Collider>()); // Quitamos colisionador interno
+
+        // Cabeza
+        GameObject cabeza = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        cabeza.transform.SetParent(punk.transform);
+        cabeza.transform.localPosition = Vector3.up * 2.2f;
+        cabeza.transform.localScale = Vector3.one * 0.8f;
+        cabeza.GetComponent<Renderer>().material.color = new Color(0.9f, 0.8f, 0.7f);
+        Destroy(cabeza.GetComponent<Collider>());
+
+        // Cresta Punk (Mohawk Fucsia Intenso)
+        for(int i = -3; i <= 3; i++)
+        {
+            GameObject pelo = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            pelo.transform.SetParent(cabeza.transform);
+            pelo.transform.localPosition = new Vector3(0f, 0.45f, i * 0.12f);
+            pelo.transform.localScale = new Vector3(0.1f, 0.5f - Mathf.Abs(i)*0.05f, 0.2f);
+            pelo.transform.localRotation = Quaternion.Euler(i*12f, 0, 0);
+            pelo.GetComponent<Renderer>().material.color = Color.magenta;
+            Destroy(pelo.GetComponent<Collider>());
+        }
+
+        // Colisionador Maestro
+        var col = punk.AddComponent<CapsuleCollider>();
+        col.center = Vector3.up * 1f;
+        col.height = 2f;
+        
+        return punk;
     }
 }
 
