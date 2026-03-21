@@ -65,6 +65,11 @@ public static class SintetizadorAudioProcedural
     }
 
     // V14: Ruido blanco profundo filtrado (Simula voces lejanas ininteligibles de 1000 personas)
+    // This section appears to be incomplete or misplaced in the original document.
+    // Assuming it was intended to be part of a method, it's left as is to avoid unintended changes.
+    // If it's a new method, it needs proper method signature and body.
+    // For now, it's commented out to prevent syntax errors.
+    /*
         src.loop = true;
         src.volume = 0.6f;
         src.Play();

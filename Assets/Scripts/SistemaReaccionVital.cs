@@ -1,6 +1,7 @@
 // Assets/Scripts/SistemaReaccionVital.cs
 using UnityEngine;
 using UnityEngine.AI;
+using System.Collections;
 
 public enum EstadoVital { Tranquilo, Panico_Huyendo, Ardiendo, Cenizas }
 
@@ -29,7 +30,34 @@ public class SistemaReaccionVital : MonoBehaviour
         rb.isKinematic = false;
         rb.mass = 80f; // Peso humano
         
-        // La bala empujará el Rigidbody externamente
+        // V17 AUDIT FIX: Iniciar ciclo de checkeo para que el NPC se recupere si no arde
+        StartCoroutine(RecuperacionRagdollSegura());
+    }
+
+    private IEnumerator RecuperacionRagdollSegura()
+    {
+        yield return new WaitForSeconds(3.5f); // Tiempo promedio de vuelo balístico y estabilización en el suelo
+        if (estadoActual == EstadoVital.Ardiendo || estadoActual == EstadoVital.Cenizas) yield break;
+
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null) rb.isKinematic = true;
+
+        // V17 AUDITORÍA: Validar si ha caído en una zona ruteable o en un tejado inalcanzable.
+        if (NavMesh.SamplePosition(transform.position, out NavMeshHit hit, 2.0f, NavMesh.AllAreas))
+        {
+            transform.position = hit.position; // Teleportación sutil al grid real del NavMesh para evitar bugs C++
+            if (agente != null)
+            {
+                agente.enabled = true;
+                DetectarPeligro(transform.position + Random.insideUnitSphere * 10f); // Reiniciar huida
+            }
+        }
+        else
+        {
+            // Ha caído fuera del mapa. Para evitar la excepción fatal "SetDestination can only be called on an active agent"
+            // Desintegramos la IA por completo simulando muerte por aplastamiento/caída masiva.
+            ConvertirEnCenizas();
+        }
     }
 
     private void Start()
