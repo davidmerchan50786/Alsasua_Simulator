@@ -61,15 +61,30 @@ public static class SintetizadorAudioProcedural
         src.clip = clip;
         src.Play();
 
-        Object.Destroy(go, (float)data.Length / rate + 0.1f);
+        float duracion = (float)data.Length / rate + 0.1f;
+        Object.Destroy(go, duracion);
+        // V21 AUDIT: FIX MEMORY LEAK. Destruir el clip en diferido para liberar la RAM pura instanciada
+        Object.Destroy(clip, duracion);
     }
 
-    // V14: Ruido blanco profundo filtrado (Simula voces lejanas ininteligibles de 1000 personas)
-    // This section appears to be incomplete or misplaced in the original document.
-    // Assuming it was intended to be part of a method, it's left as is to avoid unintended changes.
-    // If it's a new method, it needs proper method signature and body.
-    // For now, it's commented out to prevent syntax errors.
-    /*
+    // V14 / V21 AUDIT: Ruido blanco profundo filtrado (Simula voces ininteligibles de 1000 personas)
+    public static void PlayEstaticaTurba(AudioSource src)
+    {
+        int sampleRate = 44100;
+        int length = sampleRate * 2; // Loop de 2 segundos de murmullo constante
+        float[] samples = new float[length];
+        
+        for (int i = 0; i < length; i++)
+        {
+            // Ruido marrón de multitudes (baja frecuencia oscilante temporal)
+            float murmullo = Random.Range(-1f, 1f) * 0.2f;
+            float modulacionMasiva = (Mathf.Sin(i * 0.0005f) * 0.5f + 0.5f);
+            samples[i] = murmullo * modulacionMasiva;
+        }
+
+        AudioClip clip = AudioClip.Create("SynthCrowd", length, 1, sampleRate, false);
+        clip.SetData(samples, 0);
+        src.clip = clip;
         src.loop = true;
         src.volume = 0.6f;
         src.Play();

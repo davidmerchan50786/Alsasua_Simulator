@@ -186,7 +186,8 @@ public sealed class SistemaTrafico : MonoBehaviour
 
         foreach (var m in _matsCreados) if (m != null) Object.Destroy(m);
         _matsCreados.Clear();
-        if (_meshCoche != null) Object.Destroy(_meshCoche);
+        // V21 AUDIT: Proteger la malla original del Prefab. Solo destruir si la creamos en Runtime con CreatePrimitive.
+        if (_meshCoche != null && _meshCoche.name == "CocheInstanciado_MyAssets") Object.Destroy(_meshCoche);
     }
 
     // ── JOB ───────────────────────────────────────────────────────────────────
@@ -292,6 +293,7 @@ public sealed class SistemaTrafico : MonoBehaviour
         }
         var temp = GameObject.CreatePrimitive(PrimitiveType.Cube);
         var mesh = Object.Instantiate(temp.GetComponent<MeshFilter>().sharedMesh);
+        mesh.name = "CocheInstanciado_MyAssets"; // Marcador para saber que es nuestra
         Object.DestroyImmediate(temp);
         return mesh;
     }
