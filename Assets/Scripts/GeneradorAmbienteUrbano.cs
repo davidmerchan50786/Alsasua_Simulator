@@ -94,25 +94,12 @@ public class GeneradorAmbienteUrbano : MonoBehaviour
             Destroy(adicto.GetComponent<GravedadCalles>());
             adicto.transform.localRotation = Quaternion.Euler(0, 0, 90f); // Postura fetal colapsada
 
-            // Parafernalia (Jeringuilla física y cucharas)
-            GameObject jeringa = new GameObject("Props_Jeringuilla");
-            jeringa.transform.position = pos + new Vector3(0.5f, 0, 0.5f);
-            var cilindro = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            cilindro.transform.SetParent(jeringa.transform);
-            cilindro.transform.localPosition = Vector3.zero;
-            cilindro.transform.localScale = new Vector3(0.01f, 0.08f, 0.01f);
-            cilindro.transform.localRotation = Quaternion.Euler(90, 45, 0);
-            cilindro.GetComponent<Renderer>().material.color = new Color(0.8f, 0.9f, 0.9f, 0.5f); // Plástico translúcido
-            Destroy(cilindro.GetComponent<Collider>());
+            // Parafernalia delegada a FabricaSintetica
+            GameObject jeringa = FabricaSintetica.InstanciarJeringuillaFisica(pos + new Vector3(0.5f, 0, 0.5f));
             
-            // Sangre seca y mugre
-            GameObject charco = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            // Sangre delegada a FabricaSintetica
+            GameObject charco = FabricaSintetica.InstanciarManchaGore(pos + Vector3.up * 0.02f, Random.Range(0.8f, 1.5f), new Color(0.2f, 0.02f, 0.02f));
             charco.name = "Mancha_SangreSeca_Callejon";
-            charco.transform.position = pos + Vector3.up * 0.02f;
-            charco.transform.rotation = Quaternion.Euler(90, 0, Random.Range(0, 360));
-            charco.transform.localScale = Vector3.one * Random.Range(0.8f, 1.5f);
-            charco.GetComponent<Renderer>().material.color = new Color(0.2f, 0.02f, 0.02f); 
-            Destroy(charco.GetComponent<Collider>());
 
             // Ratas atraídas al cuerpo
             for(int r=0; r<2; r++)
@@ -128,41 +115,21 @@ public class GeneradorAmbienteUrbano : MonoBehaviour
 
     private GameObject EnsamblarPunkProcedural()
     {
-        GameObject punk = new GameObject("Estructura_Punk");
+        // Materiales locales no instanciados (uso básico)
+        Material mCuero = new Material(Shader.Find("Standard")) { color = new Color(0.1f, 0.1f, 0.1f) };
+        Material mPiel = new Material(Shader.Find("Standard")) { color = new Color(0.9f, 0.8f, 0.7f) };
+        Material mCresta = new Material(Shader.Find("Standard")) { color = Color.magenta };
+
+        // V15 CLEAN ARCHITECTURE: Delegar a Factoría Externa
+        GameObject punk = FabricaSintetica.EnsamblarPunkBase(mCuero, mPiel, mCresta, optimizadoParaBoids: false);
+        punk.name = "Estructura_Punk";
         
-        // Cuerpo de Cuero Negro
-        GameObject cuerpo = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-        cuerpo.transform.SetParent(punk.transform);
-        cuerpo.transform.localPosition = Vector3.up * 1f;
-        cuerpo.GetComponent<Renderer>().material.color = new Color(0.1f, 0.1f, 0.1f);
-        Destroy(cuerpo.GetComponent<Collider>()); // Quitamos colisionador interno
-
-        // Cabeza
-        GameObject cabeza = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        cabeza.transform.SetParent(punk.transform);
-        cabeza.transform.localPosition = Vector3.up * 2.2f;
-        cabeza.transform.localScale = Vector3.one * 0.8f;
-        cabeza.GetComponent<Renderer>().material.color = new Color(0.9f, 0.8f, 0.7f);
-        Destroy(cabeza.GetComponent<Collider>());
-
-        // Cresta Punk (Mohawk Fucsia Intenso)
-        for(int i = -3; i <= 3; i++)
-        {
-            GameObject pelo = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            pelo.transform.SetParent(cabeza.transform);
-            pelo.transform.localPosition = new Vector3(0f, 0.45f, i * 0.12f);
-            pelo.transform.localScale = new Vector3(0.1f, 0.5f - Mathf.Abs(i)*0.05f, 0.2f);
-            pelo.transform.localRotation = Quaternion.Euler(i*12f, 0, 0);
-            pelo.GetComponent<Renderer>().material.color = Color.magenta;
-            Destroy(pelo.GetComponent<Collider>());
-        }
-
-        // Colisionador Maestro
+        // Colisionador Maestro y Rutinas de Supervivencia Exclusivas
         var col = punk.AddComponent<CapsuleCollider>();
         col.center = Vector3.up * 1f;
         col.height = 2f;
         
-        punk.AddComponent<SistemaReaccionVital>(); // V12
+        punk.AddComponent<SistemaReaccionVital>();
         punk.AddComponent<GravedadCalles>();
 
         return punk;

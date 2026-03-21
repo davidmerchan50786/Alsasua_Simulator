@@ -106,29 +106,11 @@ public class MegaManifestacion : MonoBehaviour
 
     private GameObject EnsamblarClonPunk(bool esLider)
     {
-        GameObject punk = new GameObject("Cuerpo_Manifestante");
-        
-        GameObject cuerpo = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-        cuerpo.transform.SetParent(punk.transform);
-        cuerpo.transform.localPosition = Vector3.up * 1f;
-        cuerpo.GetComponent<Renderer>().sharedMaterial = matCueroNegro;
-        Destroy(cuerpo.GetComponent<Collider>()); // Colisiones desactivadas en seguidores para max FPS
+        // V15 CLEAN ARCHITECTURE: Delegamos síntesis estructural a Factoría, usando Materiales GPU instanciados cacheados
+        GameObject punk = FabricaSintetica.EnsamblarPunkBase(matCueroNegro, matPiel, matCrestaRosa, optimizadoParaBoids: true);
+        punk.name = "Cuerpo_Manifestante";
 
-        GameObject cabeza = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        cabeza.transform.SetParent(punk.transform);
-        cabeza.transform.localPosition = Vector3.up * 2.2f;
-        cabeza.transform.localScale = Vector3.one * 0.8f;
-        cabeza.GetComponent<Renderer>().sharedMaterial = matPiel;
-        Destroy(cabeza.GetComponent<Collider>());
-
-        // Cresta Punk Low-Poly (solo 1 cubo central para ahorrar vértices x1000)
-        GameObject pelo = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        pelo.transform.SetParent(cabeza.transform);
-        pelo.transform.localPosition = new Vector3(0f, 0.45f, 0f);
-        pelo.transform.localScale = new Vector3(0.1f, 0.4f, 0.6f);
-        pelo.GetComponent<Renderer>().sharedMaterial = matCrestaRosa;
-        Destroy(pelo.GetComponent<Collider>());
-
+        // Comportamientos IA específicos
         if (esLider)
         {
             var col = punk.AddComponent<CapsuleCollider>();
