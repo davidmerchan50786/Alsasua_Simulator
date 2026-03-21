@@ -27,6 +27,9 @@ public class MegaManifestacion : MonoBehaviour
 
     void Start()
     {
+        // V20 AUDIT: Desactivar colisiones entre los cuerpos de los Punks (Layer 9) para mantener 60 FPS
+        Physics.IgnoreLayerCollision(9, 9, true);
+
         // 1. Optimización GPU (GPU Instancing para 1000 modelos)
         matCueroNegro = new Material(Shader.Find("Standard"));
         matCueroNegro.color = new Color(0.1f, 0.1f, 0.1f);
@@ -117,6 +120,18 @@ public class MegaManifestacion : MonoBehaviour
             col.center = Vector3.up * 1f;
             col.height = 2f;
             punk.AddComponent<SistemaReaccionVital>(); // Solo los líderes reaccionan al gore por optimización masiva RAM
+        }
+        else
+        {
+            // V20 AUDIT: Kinematic Triggers para interceptar Balas Raycast (evita que las balas sean fantasmas)
+            punk.layer = 9; 
+            var col = punk.AddComponent<CapsuleCollider>();
+            col.center = Vector3.up * 1f;
+            col.height = 2f;
+            col.isTrigger = true; // Actúa solo como barrera óptica para Raycasts
+            
+            var rb = punk.AddComponent<Rigidbody>();
+            rb.isKinematic = true; // El physics solver no calcula esta masa a la hora de moverse, optimización extrema.
         }
         
         return punk;

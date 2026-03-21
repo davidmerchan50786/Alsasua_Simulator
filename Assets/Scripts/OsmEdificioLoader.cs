@@ -428,6 +428,7 @@ public class OsmEdificioLoader : MonoBehaviour
     {
         var go = new GameObject($"Pared_{indice}");
         go.transform.SetParent(parent, worldPositionStays: false);
+        go.isStatic = true; // V20 AUDIT: Forzar Static Batching para GPU
 
         var verts = new Vector3[]
         {
@@ -492,6 +493,7 @@ public class OsmEdificioLoader : MonoBehaviour
 
         var go = new GameObject("Tejado");
         go.transform.SetParent(parent, worldPositionStays: false);
+        go.isStatic = true; // V20 AUDIT: Forzar Static Batching para GPU
 
         int n = pts.Length;
 
