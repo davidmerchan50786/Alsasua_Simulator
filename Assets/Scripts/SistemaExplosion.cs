@@ -24,6 +24,7 @@ public class SistemaExplosion : MonoBehaviour
     private static readonly HashSet<ControladorJugador> _jugadoresYaDanados  = new HashSet<ControladorJugador>();
     private static readonly HashSet<VehiculoNPC>        _vehiculosYaDanados  = new HashSet<VehiculoNPC>();
     private static readonly HashSet<BarricadaFuego>     _barricadasYaDanadas = new HashSet<BarricadaFuego>();
+    private static readonly HashSet<SistemaReaccionVital> _seresVivosYaProcesados = new HashSet<SistemaReaccionVital>();
 
     /// <summary>
     /// Crea una explosión en la posición indicada.
@@ -103,15 +104,16 @@ public class SistemaExplosion : MonoBehaviour
     private void AplicarFisicasYDano()
     {
         // V3 FIX: Zero-GC OverlapSphereNonAlloc
-        int numHits = Physics.OverlapSphereNonAlloc(transform.position, radio, hitBuffer);
+        // V12: Ampliar radio detección para generar pánico lejano
+        int numHits = Physics.OverlapSphereNonAlloc(transform.position, radio * 3f, hitBuffer);
 
-        // FIX GC: limpiar los HashSets estáticos en lugar de crear 5 nuevos por explosión.
-        // Preservan el comportamiento anti-daño-doble con cero allocaciones en heap.
+        // FIX GC: limpiar los HashSets estáticos en lugar de crear nuevos.
         _rbYaDanados.Clear();
         _enemigosYaDanados.Clear();
         _jugadoresYaDanados.Clear();
         _vehiculosYaDanados.Clear();
         _barricadasYaDanadas.Clear();
+        _seresVivosYaProcesados.Clear();
 
         for (int i = 0; i < numHits; i++)
         {
@@ -162,14 +164,33 @@ public class SistemaExplosion : MonoBehaviour
             }
 
             var barricada = col.GetComponentInParent<BarricadaFuego>();
-            if (barricada != null && _barricadasYaDanadas.Add(barricada))
+            if (barricada != null && dist <= radio && _barricadasYaDanadas.Add(barricada))
             {
                 barricada.RecibirDano(dano);
                 InstanciarFuegoPersistente(barricada.transform);
             }
 
-            // V9: Aplicar físicas cinemáticas (Ragdoll Throw) a humanos muertos por explosión
-            AplicarLanzamientoRagdoll(col.gameObject);
+            // V12: Biomecánica de Supervivencia, Gore y Carbonización
+            var serVivo = col.GetComponentInParent<SistemaReaccionVital>();
+            if (serVivo != null && _seresVivosYaProcesados.Add(serVivo))
+            {
+                if (dist <= radio * 0.4f)
+                {
+                    // Zona Cero: Muerte instantánea, Ragdoll sangriento extremo
+                    SintetizadorGore.EsparcirSangre(serVivo.transform.position, 1.5f);
+                    AplicarLanzamientoRagdoll(serVivo.gameObject);
+                }
+                else if (dist <= radio)
+                {
+                    // Zona Media: Se prende fuego y corre en llamas hasta ser ceniza
+                    serVivo.PrenderFuegoVivo();
+                }
+                else
+                {
+                    // Zona Exterior: Oye la bomba y entra en Panico huyendo
+                    serVivo.DetectarPeligro(transform.position);
+                }
+            }
         }
     }
 

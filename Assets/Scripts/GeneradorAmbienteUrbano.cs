@@ -51,6 +51,7 @@ public class GeneradorAmbienteUrbano : MonoBehaviour
             nav.speed = 3f;
             nav.radius = 0.3f;
             perro.AddComponent<NavegacionAnimalIA>();
+            perro.AddComponent<SistemaReaccionVital>(); // V12
         }
 
         // Generar Ratas de Alcantarilla
@@ -67,6 +68,7 @@ public class GeneradorAmbienteUrbano : MonoBehaviour
             nav.speed = 7f; // Corren rápido
             nav.radius = 0.1f;
             rata.AddComponent<NavegacionAnimalIA>();
+            rata.AddComponent<SistemaReaccionVital>(); // V12
         }
     }
 
@@ -106,6 +108,9 @@ public class GeneradorAmbienteUrbano : MonoBehaviour
         col.center = Vector3.up * 1f;
         col.height = 2f;
         
+        punk.AddComponent<SistemaReaccionVital>(); // V12
+        punk.AddComponent<GravedadCalles>();
+
         return punk;
     }
 }
