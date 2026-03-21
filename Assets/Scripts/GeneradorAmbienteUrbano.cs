@@ -12,11 +12,16 @@ public class GeneradorAmbienteUrbano : MonoBehaviour
 
     private void Start()
     {
-        GenerarPunksYFauna();
-        GenerarCallejonesOscuros(); // V14: Lore crudo de decadencia urbana
+        StartCoroutine(GenerarEntornoUrbanoAsincronamente());
     }
 
-    private void GenerarPunksYFauna()
+    private System.Collections.IEnumerator GenerarEntornoUrbanoAsincronamente()
+    {
+        yield return StartCoroutine(GenerarPunksYFaunaAsync());
+        yield return StartCoroutine(GenerarCallejonesOscurosAsync()); 
+    }
+
+    private System.Collections.IEnumerator GenerarPunksYFaunaAsync()
     {
         // Generar Punks (Procedural Mohawk Assembly) con Humo (Consumo)
         for(int i = 0; i < 15; i++)
@@ -35,6 +40,7 @@ public class GeneradorAmbienteUrbano : MonoBehaviour
             var shape = ps.shape; shape.shapeType = ParticleSystemShapeType.Cone; shape.angle = 10f;
 
             punk.AddComponent<GravedadCalles>();
+            if (i % 5 == 0) yield return null;
         }
 
         // Generar Perros Callejeros
@@ -53,6 +59,7 @@ public class GeneradorAmbienteUrbano : MonoBehaviour
             nav.radius = 0.3f;
             perro.AddComponent<NavegacionAnimalIA>();
             perro.AddComponent<SistemaReaccionVital>(); // V12
+            if (i % 5 == 0) yield return null;
         }
 
         // Generar Ratas de Alcantarilla
@@ -70,10 +77,11 @@ public class GeneradorAmbienteUrbano : MonoBehaviour
             nav.radius = 0.1f;
             rata.AddComponent<NavegacionAnimalIA>();
             rata.AddComponent<SistemaReaccionVital>(); // V12
+            if (i % 10 == 0) yield return null;
         }
     }
 
-    private void GenerarCallejonesOscuros()
+    private System.Collections.IEnumerator GenerarCallejonesOscurosAsync()
     {
         for (int i=0; i < 15; i++)
         {
@@ -110,6 +118,8 @@ public class GeneradorAmbienteUrbano : MonoBehaviour
                 rata.AddComponent<GravedadCalles>();
                 rata.GetComponent<Renderer>().material.color = Color.black;
             }
+            
+            yield return null; // Pausa 1 frame por cada callejón instanciado
         }
     }
 

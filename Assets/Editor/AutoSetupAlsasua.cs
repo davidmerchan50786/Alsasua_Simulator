@@ -55,7 +55,6 @@ public class AutoSetupAlsasua
             // V13
             worldManager.AddComponent<ControladorDisturbios>();
             worldManager.AddComponent<EscuadraAntiDisturbios>();
-            worldManager.AddComponent<MotorArmamentoClandestino>();
             
             // V14
             worldManager.AddComponent<MegaManifestacion>();
