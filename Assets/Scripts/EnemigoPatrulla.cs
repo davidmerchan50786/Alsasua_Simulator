@@ -469,7 +469,7 @@ public class EnemigoPatrulla : MonoBehaviour
         cuerpo.transform.localScale    = new Vector3(0.6f, 0.9f, 0.6f);
         var matCuerpo = MatURP(colorUniforme);
         if (matCuerpo != null) cuerpo.GetComponent<Renderer>().sharedMaterial = matCuerpo;
-        Destroy(cuerpo.GetComponent<Collider>());
+        { var c = cuerpo.GetComponent<Collider>(); if (c != null) { if (Application.isPlaying) Destroy(c); else DestroyImmediate(c); } }
 
         // Cabeza
         var cabeza = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -478,7 +478,7 @@ public class EnemigoPatrulla : MonoBehaviour
         cabeza.transform.localScale    = new Vector3(0.4f, 0.4f, 0.4f);
         var matCabeza = MatURP(new Color(0.75f, 0.62f, 0.48f));
         if (matCabeza != null) cabeza.GetComponent<Renderer>().sharedMaterial = matCabeza;
-        Destroy(cabeza.GetComponent<Collider>());
+        { var c = cabeza.GetComponent<Collider>(); if (c != null) { if (Application.isPlaying) Destroy(c); else DestroyImmediate(c); } }
 
         // Casco
         var casco = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -487,7 +487,7 @@ public class EnemigoPatrulla : MonoBehaviour
         casco.transform.localScale    = new Vector3(0.45f, 0.35f, 0.45f);
         var matCasco = MatURP(colorUniforme);
         if (matCasco != null) casco.GetComponent<Renderer>().sharedMaterial = matCasco;
-        Destroy(casco.GetComponent<Collider>());
+        { var c = casco.GetComponent<Collider>(); if (c != null) { if (Application.isPlaying) Destroy(c); else DestroyImmediate(c); } }
 
         // Colisionador
         var col = gameObject.AddComponent<CapsuleCollider>();

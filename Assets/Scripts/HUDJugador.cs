@@ -125,7 +125,7 @@ public sealed class HUDJugador : MonoBehaviour
     private void ConstruirCanvas()
     {
         // ── Canvas raíz ──────────────────────────────────────────────────
-        var cvGO = new GameObject("_Canvas_HUD", typeof(RectTransform));
+        var cvGO = new GameObject("_Canvas_HUD");
         cvGO.transform.SetParent(transform, false);
 
         var cv = cvGO.AddComponent<Canvas>();
@@ -454,7 +454,7 @@ public sealed class HUDJugador : MonoBehaviour
     private static Text Txt(GameObject go, string contenido, int tamano, Color color)
     {
         var t = go.AddComponent<Text>();
-        t.font               = _font;
+        if (_font != null) t.font = _font;
         t.text               = contenido;
         t.fontSize           = tamano;
         t.color              = color;

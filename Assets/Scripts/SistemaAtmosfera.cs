@@ -255,6 +255,7 @@ public class SistemaAtmosfera : MonoBehaviour
 
     private void AplicarAmbiente()
     {
+        if (colorAmbiente == null) colorAmbiente = GradienteAmbiente();
         float t         = horaDelDia / 24f;
         Color colorBase = colorAmbiente.Evaluate(t) * intensidadAmbiente;
 

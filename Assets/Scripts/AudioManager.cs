@@ -95,7 +95,12 @@ public sealed class AudioManager : MonoBehaviour
     private void Awake()
     {
         // Singleton: destruir duplicados
-        if (I != null && I != this) { Destroy(gameObject); return; }
+        if (I != null && I != this)
+        {
+            if (Application.isPlaying) Destroy(gameObject);
+            else DestroyImmediate(gameObject);
+            return;
+        }
         I = this;
         DontDestroyOnLoad(gameObject);
 

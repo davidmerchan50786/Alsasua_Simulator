@@ -439,7 +439,7 @@ public class ControladorJugador : MonoBehaviour
     private void OnDestroy()
     {
         foreach (var m in _matsCreados)
-            if (m != null) Object.Destroy(m);
+            if (m != null) { if (Application.isPlaying) Object.Destroy(m); else Object.DestroyImmediate(m); }
         _matsCreados.Clear();
     }
 
@@ -455,7 +455,7 @@ public class ControladorJugador : MonoBehaviour
         r.material              = MatURP(c);
         r.shadowCastingMode     = UnityEngine.Rendering.ShadowCastingMode.On;
         r.receiveShadows        = true;
-        Object.Destroy(go.GetComponent<Collider>());
+        { var c2 = go.GetComponent<Collider>(); if (c2 != null) { if (Application.isPlaying) Object.Destroy(c2); else Object.DestroyImmediate(c2); } }
         return go;
     }
 
@@ -470,7 +470,7 @@ public class ControladorJugador : MonoBehaviour
         r.material              = MatURP(c);
         r.shadowCastingMode     = UnityEngine.Rendering.ShadowCastingMode.On;
         r.receiveShadows        = true;
-        Object.Destroy(go.GetComponent<Collider>());
+        { var c2 = go.GetComponent<Collider>(); if (c2 != null) { if (Application.isPlaying) Object.Destroy(c2); else Object.DestroyImmediate(c2); } }
         return go;
     }
 

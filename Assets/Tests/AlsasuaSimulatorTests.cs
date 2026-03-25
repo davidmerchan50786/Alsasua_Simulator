@@ -561,6 +561,7 @@ public class AlsasuaSimulatorTests
             "AlsasuaLogger.Info no debe lanzar excepción");
         Assert.DoesNotThrow(() => AlsasuaLogger.Warn("Test", "mensaje warning"),
             "AlsasuaLogger.Warn no debe lanzar excepción");
+        LogAssert.Expect(LogType.Error, "[Test] mensaje error");
         Assert.DoesNotThrow(() => AlsasuaLogger.Error("Test", "mensaje error"),
             "AlsasuaLogger.Error no debe lanzar excepción");
     }
