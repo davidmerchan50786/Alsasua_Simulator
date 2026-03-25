@@ -2736,8 +2736,8 @@ MonoBehaviour:
   tilesetTerreno: {fileID: 0}
   tilesetOSM: {fileID: 0}
   calidadDinamica: 1
-  sseCercano: 4
-  sseLejano: 16
+  sseCercano: 2
+  sseLejano: 12
   alturaVistaCercana: 100
   alturaVistaLejana: 500
   mostrarDebugOverlay: 0
