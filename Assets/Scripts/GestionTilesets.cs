@@ -3,11 +3,14 @@ using CesiumForUnity;
 using System.Collections;
 
 /// <summary>
-/// Gestor de tilesets fotorrealistas para Alsasua.
+/// Gestor de tilesets fotorrealistas para Pamplona.
 /// Controla en tiempo real la calidad, visibilidad y LOD de los tilesets
 /// para mantener el balance entre rendimiento y realismo visual.
 ///
-/// FACHADAS REALES: Se consiguen con Google Photorealistic 3D Tiles.
+/// FACHADAS REALES: Google Photorealistic 3D Tiles cubre Pamplona con
+/// fotogrametría aérea completa — edificios, calles, vegetación y terreno.
+/// OsmEdificioLoader NO es necesario; Google 3D es la única fuente de edificios.
+///
 /// Este script ajusta automáticamente el nivel de detalle según
 /// la distancia del JUGADOR (no la cámara dron) para maximizar
 /// la calidad en el área visible desde el suelo.
@@ -34,14 +37,15 @@ public class GestionTilesets : MonoBehaviour
     [Tooltip("Activar ajuste automático de LOD según la altura del observador")]
     [SerializeField] private bool calidadDinamica = true;
 
-    [Tooltip("SSE cuando el observador está cerca del suelo (< 100m) — mayor detalle")]
+    [Tooltip("SSE cuando el observador está cerca del suelo (< 100m).\n" +
+             "Pamplona: Google 3D Tiles tiene cobertura completa — SSE 2 da máxima resolución de fachadas.")]
     [Range(2f, 16f)]
-    [SerializeField] private float sseCercano = 4f;   // Alta calidad
+    [SerializeField] private float sseCercano = 2f;   // Pamplona: Google 3D disponible → máxima calidad
 
-    [Tooltip("SSE cuando el observador está lejos (> 500m) — menor detalle.\n" +
-             "Reducido de 24 a 16: salto de LOD 6× → 4× para transición más suave y menos pop-in.")]
+    [Tooltip("SSE cuando el observador está lejos (> 500m).\n" +
+             "Pamplona es ciudad grande — mantener 12 (vs 16 de Alsasua) para ver más tiles a distancia.")]
     [Range(8f, 64f)]
-    [SerializeField] private float sseLejano = 16f;   // MEJORA: reducido para menos pop-in de tiles
+    [SerializeField] private float sseLejano = 12f;   // Pamplona: rango urbano mayor, más tiles visibles
 
     [Header("═══ UMBRALES DE ALTURA (metros) ═══")]
     [SerializeField] private float alturaVistaCercana = 100f;
@@ -111,13 +115,24 @@ public class GestionTilesets : MonoBehaviour
         }
 
         // Configurar Google Photorealistic
+        // Pamplona: cobertura completa con fotogrametría aérea → precargar vecinos para scroll suave
         if (tilesetGooglePhotorealistic != null)
         {
             tilesetGooglePhotorealistic.maximumScreenSpaceError = sseCercano;
             tilesetGooglePhotorealistic.showCreditsOnScreen     = CREDITOS_GOOGLE_OBLIGATORIOS;
             tilesetGooglePhotorealistic.preloadAncestors        = true;
             tilesetGooglePhotorealistic.preloadSiblings         = true;
-            AlsasuaLogger.Info("GestionTilesets", "Google Photorealistic configurado (SSE inicial: " + sseCercano + ").");
+            AlsasuaLogger.Info("GestionTilesets", $"Google Photorealistic 3D (Pamplona) configurado — SSE inicial: {sseCercano}. " +
+                               "Fotogrametría completa: edificios, calles y vegetación.");
+        }
+        else
+        {
+            AlsasuaLogger.Error("GestionTilesets",
+                "╔══════════════════════════════════════════════════════════════╗\n" +
+                "║  ❌ GOOGLE PHOTOREALISTIC 3D TILES NO ENCONTRADO             ║\n" +
+                "║  Pamplona tiene cobertura Google 3D — configura la API Key:  ║\n" +
+                "║  Inspector → ConfiguradorAlsasua → API Key Google           ║\n" +
+                "╚══════════════════════════════════════════════════════════════╝");
         }
 
         // Configurar terreno
@@ -125,7 +140,8 @@ public class GestionTilesets : MonoBehaviour
         {
             tilesetTerreno.maximumScreenSpaceError = sseCercano;
             tilesetTerreno.preloadAncestors        = true;
-            AlsasuaLogger.Info("GestionTilesets", "Terreno configurado.");
+            tilesetTerreno.preloadSiblings         = true;
+            AlsasuaLogger.Info("GestionTilesets", "Cesium World Terrain configurado (colisión de suelo).");
         }
 
         // Ocultar OSM si tenemos Google (evitar doble geometría)

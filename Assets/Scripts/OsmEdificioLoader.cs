@@ -1,4 +1,17 @@
 // Assets/Scripts/OsmEdificioLoader.cs
+// ═══════════════════════════════════════════════════════════════════════
+// ⚠  RAMA PAMPLONA — COMPONENTE DESHABILITADO POR DEFECTO
+//
+//    Pamplona dispone de Google Photorealistic 3D Tiles que ya incluye
+//    edificios fotorreales con fotogrametría aérea completa.
+//    Este componente (OSM + Street View manual) queda como fallback
+//    opcional para zonas sin cobertura Google 3D.
+//
+//    Para activarlo: añade este componente a un GO en escena y apunta
+//    rutaJsonRelativa a un archivo pamplona_edificios.json generado
+//    con GeneradorFachadas.py.
+// ═══════════════════════════════════════════════════════════════════════
+//
 // Lee pamplona_edificios.json generado por GeneradorFachadas.py
 // y crea mallas extruidas con texturas de Street View por fachada.
 //

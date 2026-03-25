@@ -1,6 +1,6 @@
 // Assets/Scripts/SistemaAtmosfera.cs
-// Sistema de atmósfera realista para Alsasua Simulator
-// - Posición solar calculada astronómicamente (lat 42.9037° N)
+// Sistema de atmósfera realista para Pamplona Simulator
+// - Posición solar calculada astronómicamente (lat 42.8169° N — Plaza del Castillo)
 // - Ciclo día/noche con colores correctos
 // - Niebla atmosférica exponencial adaptada a la hora
 // - Iluminación ambiente dinámica
@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 
 /// <summary>
-/// Simula el sol, la niebla y la iluminación ambiente de Alsasua con cálculo astronómico real.
+/// Simula el sol, la niebla y la iluminación ambiente de Pamplona con cálculo astronómico real.
 /// Ejecutar antes que otros scripts (DefaultExecutionOrder -50).
 /// </summary>
 [DefaultExecutionOrder(-50)]
@@ -99,8 +99,8 @@ public class SistemaAtmosfera : MonoBehaviour
     //  ESTADO INTERNO
     // ═══════════════════════════════════════════════════════════════════════
 
-    // Latitud de Alsasua en radianes
-    private const float LAT_RAD = 42.9037f * Mathf.Deg2Rad;
+    // Latitud de Pamplona (Plaza del Castillo) en radianes
+    private const float LAT_RAD = 42.8169f * Mathf.Deg2Rad;
 
     private float elevacionSolar;  // grados sobre el horizonte
     private float azimutSolar;     // grados (0=N, 90=E, 180=S, 270=O)
@@ -189,7 +189,7 @@ public class SistemaAtmosfera : MonoBehaviour
     }
 
     /// <summary>
-    /// Cálculo astronómico simplificado de la posición solar para lat 42.9037° N.
+    /// Cálculo astronómico simplificado de la posición solar para lat 42.8169° N (Pamplona).
     /// Referencias: NOAA Solar Position Algorithms (simplificado).
     /// </summary>
     private void CalcularPosicionSolar()

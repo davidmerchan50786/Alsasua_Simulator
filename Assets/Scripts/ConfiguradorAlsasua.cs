@@ -47,13 +47,15 @@ public class ConfiguradorAlsasua : MonoBehaviour
     [Tooltip("Activa terreno Cesium World Terrain (relieve real)")]
     [SerializeField] private bool usarCesiumWorldTerrain = true;
 
-    [Tooltip("Fallback: edificios OSM si no hay Google API Key")]
-    [SerializeField] private bool usarOSMEdificiosFallback = true;
+    [Tooltip("Fallback: edificios OSM (Cesium Ion) si no hay Google API Key.\n" +
+             "Pamplona: mantener false — Google 3D Tiles cubre la ciudad completa.")]
+    [SerializeField] private bool usarOSMEdificiosFallback = false;
 
     [Header("═══ CALIDAD ═══")]
     [Range(2, 32)]
-    [Tooltip("Error de pantalla para tilesets — menor = más detalle (más GPU). 4 = equilibrio calidad/rendimiento, 2 = máximo detalle")]
-    [SerializeField] private float maximumScreenSpaceError = 4f;
+    [Tooltip("Error de pantalla para tilesets — menor = más detalle (más GPU).\n" +
+             "Pamplona con Google 3D Tiles: 2 = máximo detalle fotogramétrico. 4 = equilibrio.")]
+    [SerializeField] private float maximumScreenSpaceError = 2f;
 
     // Referencias privadas
     private CesiumGeoreference georeference;
@@ -535,10 +537,13 @@ public class ConfiguradorAlsasua : MonoBehaviour
                 "╔══════════════════════════════════════════════════════════════╗\n" +
                 "║  ❌ SIN TILES — ESCENARIO COMPLETAMENTE NEGRO                ║\n" +
                 "║                                                              ║\n" +
-                "║  SOLUCIÓN (2 pasos):                                         ║\n" +
-                "║  1. Menú Unity: Cesium → Connect to Cesium Ion               ║\n" +
-                "║  2. Menú Unity: Cesium → Add Cesium World Terrain            ║\n" +
-                "║     + Cesium → Add Google Photorealistic 3D Tiles            ║\n" +
+                "║  PAMPLONA usa Google Photorealistic 3D Tiles (obligatorio).  ║\n" +
+                "║  SOLUCIÓN (3 pasos):                                         ║\n" +
+                "║  1. Obtén API Key en console.cloud.google.com                ║\n" +
+                "║     (activa Map Tiles API)                                   ║\n" +
+                "║  2. Inspector → ConfiguradorAlsasua → API Key Google         ║\n" +
+                "║  3. Menú Unity: Cesium → Connect to Cesium Ion               ║\n" +
+                "║     + Cesium → Add Cesium World Terrain                      ║\n" +
                 "╚══════════════════════════════════════════════════════════════╝"
             );
         }
@@ -584,8 +589,8 @@ public class ConfiguradorAlsasua : MonoBehaviour
 
     /// <summary>
     /// Carga Google Photorealistic 3D Tiles.
-    /// Incluye fachadas, tejados, árboles y terreno fotogramétrico de Alsasua.
-    /// Física habilitada para colisión tanto con edificios como con el suelo.
+    /// Pamplona tiene cobertura completa: edificios, calles, vegetación y terreno fotogramétrico.
+    /// No es necesario OsmEdificioLoader — Google 3D reemplaza completamente los edificios OSM.
     /// Requiere API Key de Google Maps Platform con "Map Tiles API" activado.
     /// </summary>
     private void CargarGooglePhotorealistic3DTiles()
@@ -598,10 +603,10 @@ public class ConfiguradorAlsasua : MonoBehaviour
         tileset.maximumScreenSpaceError = maximumScreenSpaceError;
         tileset.preloadAncestors        = true;
         tileset.preloadSiblings         = true;
-        tileset.createPhysicsMeshes     = true;   // Colisión con edificios y terreno Google
+        tileset.createPhysicsMeshes     = true;   // Colisión con edificios y suelo de Pamplona
         tileset.showCreditsOnScreen     = true;   // Obligatorio por licencia de Google
 
-        AlsasuaLogger.Info("Alsasua", "✓ Google Photorealistic 3D Tiles cargados — fachadas y tejados reales.");
+        AlsasuaLogger.Info("Alsasua", "✓ Google Photorealistic 3D Tiles cargados (Pamplona) — fotogrametría completa: edificios, calles y vegetación.");
     }
 
     /// <summary>

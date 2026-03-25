@@ -467,17 +467,26 @@ public static class SetupEscenaAlsasua
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    //  8. GestorTexturas — TexturizadorEdificiosReales
+    //  8. GestorTexturas — OMITIDO en rama Pamplona
+    //  Pamplona dispone de Google Photorealistic 3D Tiles que ya incluye
+    //  edificios fotorrealistas con textura real (fotogrametría aérea).
+    //  TexturizadorEdificiosReales era un workaround para Alsasua (ciudad
+    //  pequeña sin cobertura Google 3D) — aquí duplicaría geometría y capas
+    //  de satélite innecesarias encima de los tiles de Google.
     // ═══════════════════════════════════════════════════════════════════════
     static void AsegurarGestorTexturas()
     {
-        if (Object.FindFirstObjectByType<TexturizadorEdificiosReales>() != null)
-        { Debug.Log("[Setup]   GestorTexturas ya existe"); return; }
-
-        var go = new GameObject("GestorTexturas");
-        Undo.RegisterCreatedObjectUndo(go, "Crear GestorTexturas");
-        go.AddComponent<TexturizadorEdificiosReales>();
-        Debug.Log("[Setup] ✓ GestorTexturas CREADO con TexturizadorEdificiosReales");
+        // Limpiar GestorTexturas si existía de una escena anterior (Alsasua)
+        var tex = Object.FindFirstObjectByType<TexturizadorEdificiosReales>();
+        if (tex != null)
+        {
+            Undo.DestroyObjectImmediate(tex.gameObject);
+            Debug.Log("[Setup Pamplona] ✓ GestorTexturas eliminado — Google Photorealistic 3D Tiles cubre edificios y texturas.");
+        }
+        else
+        {
+            Debug.Log("[Setup Pamplona]   GestorTexturas omitido — Google Photorealistic 3D Tiles es la fuente de edificios.");
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════════════
