@@ -231,7 +231,6 @@ public class SistemaExplosion : MonoBehaviour
         mat.color    = new Color(1f, 0.8f, 0.5f, 0.3f);
         rend.material = mat;
 
-        float t       = 0f;
         float dur     = 0.3f;
         float maxScale = radio * 2.5f;
 

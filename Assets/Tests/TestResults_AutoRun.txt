@@ -1,0 +1,71 @@
+═══ ALSASUA SIMULATOR — TEST RUN ═══
+  ✓ T01_RatioVida_EsUnoAlInicio (66ms)
+  ✓ T01b_RatioVida_ReduceDespuesDeDano (49ms)
+  ✓ T02_FlashDano_PositivoTrasRecibirDano (31ms)
+  ✓ T03_TextoEstado_MuertoAlMorir (27ms)
+  ✓ T04_Curar_NoSuperaVidaMax (29ms)
+  ✓ T05_PropiedadesEstado_AccesiblesSinException (20ms)
+  ✓ T06_ProgressRecarga_CeroAlInicioYUnoAlTerminar (29ms)
+  ✗ T07_ObjectPool_Bursts_TamañoCorrecto (31ms)
+    FALLO: _poolBursts no debe ser null tras Awake
+  Expected: not null
+  But was:  null
+  ✗ T08_ObjectPool_Decals_TamañoCorrecto (12ms)
+    FALLO: _poolDecals no debe ser null tras Awake
+  Expected: not null
+  But was:  null
+  ○ T09_Decals_UsanMaterialCompartido (15ms)
+  ✓ T10_Dispersion_AgachadoMenorQueDesPie (58ms)
+  ✓ T11_Dispersion_AireMayorQueEnSuelo (63ms)
+  ✓ T12_Trafico_AceleracionSuaveDesdeParado (3ms)
+  ✗ T13_AudioManager_Singleton_SoloUnaInstancia (21ms)
+    FALLO: Solo debe existir una instancia de AudioManager (Singleton)
+  Expected: 1
+  But was:  2
+  ✗ T14_AudioManager_Pool_TamañoCorrecto (12ms)
+    FALLO: _pool no debe ser null
+  Expected: not null
+  But was:  null
+  ✗ T15_AudioManager_PlayConClipNull_SinException (15ms)
+    FALLO: Play con clip null (no asignado en Inspector) no debe lanzar excepción
+  Expected: No Exception to be thrown
+  But was:  <System.NullReferenceException: Object reference not set to an instance of an object
+  at AlsasuaSimulatorTests+<>c.<T15_AudioManager_PlayConClipNull_SinException>b__18_0 () [0x00000] in C:\Users\coperenea\Desktop\DAM\02_PROYECTOS_PRACTICAS\Alsasua_Simulator\Assets\Tests\AlsasuaSimulatorTests.cs:482 
+  at NUnit.Framework.Constraints.ThrowsConstraint+VoidInvocationDescriptor.Invoke () [0x00000] in <f577cd9686154d6ab10efd7e65e64366>:0 
+  at NUnit.Framework.Constraints.ThrowsConstraint+ExceptionInterceptor.Intercept (System.Object invocation) [0x00041] in <f577cd9686154d6ab10efd7e65e64366>:0 >
+  ✗ T16_EnemigoPatrulla_FlashDano_NoModificaSharedMaterial (14ms)
+    FALLO: El enemigo debe tener al menos un Renderer tras CrearCuerpoBasico()
+  Expected: greater than 0
+  But was:  0
+  ✗ T17_HUDJugador_Canvas_CreadoEnAwake (29ms)
+    FALLO: HUDJugador debe crear un Canvas hijo en Awake()
+  Expected: not null
+  But was:  null
+  ✗ T18_AlsasuaLogger_MetodosPublicos_NoLanzanException (4ms)
+    FALLO: Unhandled log message: '[Error] [Test] mensaje error'. Use UnityEngine.TestTools.LogAssert.Expect
+  ✓ T19_AlsasuaLogger_NivelNone_SilenciaTodasLasLlamadas (4ms)
+  ✗ T20_SistemaAtmosfera_OnCambioDia_DisparaAlCruzarHorizonte (19ms)
+    FALLO: System.Reflection.TargetInvocationException : Exception has been thrown by the target of an invocation.
+  ----> System.NullReferenceException : Object reference not set to an instance of an object
+  ✗ T21_VehiculoNPC_RecibirDano_ReduceVida (20ms)
+    FALLO: Unhandled log message: '[Error] Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.'. Use UnityEngine.TestTools.LogAssert.Expect
+  ✗ T22_VehiculoNPC_Destruido_TrasVidaACero (37ms)
+    FALLO: Unhandled log message: '[Error] Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.'. Use UnityEngine.TestTools.LogAssert.Expect
+  ✗ T23_VehiculoNPC_DanoNoModificaSharedMaterial (22ms)
+    FALLO: Unhandled log message: '[Error] Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.'. Use UnityEngine.TestTools.LogAssert.Expect
+  ✓ T24_SistemaBombas_BombasDisponibles_PositivoAlInicio (32ms)
+  ✓ T25_SistemaBombas_ColocarBomba_SinCamara_NoLanzaException (79ms)
+  ✓ T26_BarricadaFuego_RecibirDano_ReduceVida (30ms)
+  ✓ T27_BarricadaFuego_SegundoDano_IgnoradoCuandoDestruida (61ms)
+  ✓ T28_EnemigoPatrulla_EstadoInicial_EsPatrullando (44ms)
+  ✓ T29_SistemaDisparo_VelocidadCorrerRef_DefaultEsOchoPuntoCinco (32ms)
+  ✓ T30_BarricadaFuego_PrenderFuego_CreaParticleSystems (41ms)
+
+RESULTADO: ✗ 12 FALLARON
+Pasados : 18/31
+Fallados: 12/31
+Omitidos: 1/31
+Duración: 1,01s

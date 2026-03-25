@@ -21,8 +21,6 @@ public class EnemigoPatrulla : MonoBehaviour
     [Header("═══ VIDA ═══")]
     [Tooltip("Puntos de vida actuales del enemigo.")]
     [SerializeField] private int vida    = 100;
-    [Tooltip("Puntos de vida máximos del enemigo.")]
-    [SerializeField] private int vidaMax = 100;
 
     [Header("═══ VISIÓN ═══")]
     [Tooltip("Radio de detección visual (m). El jugador debe estar dentro de este radio y en el ángulo de visión para ser detectado.")]
@@ -63,6 +61,12 @@ public class EnemigoPatrulla : MonoBehaviour
     // FIX OBSERVABILIDAD: ProfilerMarker de coste cero cuando el Profiler no está conectado.
     private static readonly ProfilerMarker _markerUpdate = new ProfilerMarker("EnemigoPatrulla.Update");
 
+    // FIX CRASH: MaterialPropertyBlock NO puede inicializarse como campo estático (static readonly).
+    // Unity lo prohíbe expresamente: CreateImpl no está permitido en constructores de MonoBehaviour.
+    // Se inicializa en Awake() como campo de instancia — garantizado antes del primer Update().
+    private MaterialPropertyBlock _pbFlash;
+    private int _idColor;
+
     public  EstadoIA Estado  { get; private set; } = EstadoIA.Patrullando;
     private Transform jugador;
     private ControladorJugador controlJugador;
@@ -75,6 +79,14 @@ public class EnemigoPatrulla : MonoBehaviour
     // ═══════════════════════════════════════════════════════════════════════
     //  UNITY
     // ═══════════════════════════════════════════════════════════════════════
+
+    private void Awake()
+    {
+        // FIX CRASH: inicializar MaterialPropertyBlock en Awake(), no como campo estático.
+        // Unity no permite crear objetos UnityEngine en constructores / inicializadores de campo.
+        _pbFlash = new MaterialPropertyBlock();
+        _idColor = Shader.PropertyToID("_BaseColor");
+    }
 
     private void Start()
     {
@@ -364,8 +376,7 @@ public class EnemigoPatrulla : MonoBehaviour
     // enemigos que usaban ese mismo material → flash rojo en pantalla en todos ellos.
     // MaterialPropertyBlock sobreescribe las propiedades solo para este Renderer concreto,
     // sin crear nuevas instancias de material (cero GC, cero leak).
-    private static readonly MaterialPropertyBlock _pbFlash = new MaterialPropertyBlock();
-    private static readonly int _idColor = Shader.PropertyToID("_BaseColor");
+    // NOTA: _pbFlash e _idColor se declaran arriba y se inicializan en Awake().
 
     private IEnumerator FlashDano()
     {

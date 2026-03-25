@@ -24,8 +24,10 @@ public class ControladorPostProcesado : MonoBehaviour
     // ═══════════════════════════════════════════════════════════════════════
 
     [Header("═══ TONEMAPPING ═══")]
-    [Tooltip("ACES = aspecto de cine. Neutral = más fiel al color original.")]
-    [SerializeField] private TonemappingMode modoTonemapping = TonemappingMode.ACES;
+    [Tooltip("ACES requiere HDR color grading en el URP Asset (m_ColorGradingMode=1).\n" +
+             "Neutral funciona en LDR y HDR — usar si la pantalla aparece negra con ACES.\n" +
+             "ACES = aspecto de cine. Neutral = más fiel al color original.")]
+    [SerializeField] private TonemappingMode modoTonemapping = TonemappingMode.Neutral;
 
     // ═══════════════════════════════════════════════════════════════════════
     //  COLOR GRADING
@@ -253,6 +255,17 @@ public class ControladorPostProcesado : MonoBehaviour
 
     private void ObtenerEfectos()
     {
+        // FIX CRASH: verificar primero que sharedProfile (el asset original) existe y es válido
+        // antes de llamar a volumenGlobal.profile, que internamente llama a Object.Instantiate().
+        // Si el asset tiene efectos destruidos, Instantiate() lanza MissingReferenceException.
+        if (volumenGlobal.sharedProfile == null)
+        {
+            AlsasuaLogger.Warn("PostProcesado", "sharedProfile es null — el Volume no tiene perfil asignado.");
+            return;
+        }
+
+        // volume.profile: devuelve una copia editable (instancia en memoria).
+        // Necesario aquí porque usamos p.Add<T>() para crear efectos que no existan todavía.
         var p = volumenGlobal.profile;
 
         ObtenerOCrear(ref tonemapping);

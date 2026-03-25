@@ -185,8 +185,18 @@ public sealed class AssetLinksEditor : EditorWindow
         EditorGUILayout.EndScrollView();
         EditorGUILayout.Space(6);
 
-        if (GUILayout.Button("Abrir menú Cesium (tilesets fotorrealistas)", GUILayout.Height(32)))
-            EditorApplication.ExecuteMenuItem("Cesium/Connect to Cesium Ion");
+        if (GUILayout.Button("Abrir Cesium Ion en el navegador (token + tilesets)", GUILayout.Height(32)))
+        {
+            // FIX: "Cesium/Connect to Cesium Ion" no existe en Cesium for Unity 2.x.
+            // Abrimos directamente cesium.com/ion — el usuario hace login y copia su token
+            // en Unity → ventana Cesium → campo "ion Access Token".
+            Application.OpenURL("https://cesium.com/ion/tokens");
+
+            // Intentar también abrir el panel Cesium de Unity si existe en esta versión.
+            // El nombre exacto varía entre versiones: "Cesium/Cesium" en 2.x.
+            try { EditorApplication.ExecuteMenuItem("Cesium/Cesium"); }
+            catch { /* panel no disponible en esta versión — solo se usa el navegador */ }
+        }
 
         if (GUILayout.Button("Copiar todas las URLs al portapapeles", GUILayout.Height(28)))
         {

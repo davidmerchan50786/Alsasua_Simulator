@@ -306,7 +306,7 @@ public class SistemaAtmosfera : MonoBehaviour
         // Flat ilumina uniformemente desde todos los ángulos → plástico.
         // Trilinear separa sky (frío/azul), equator (neutro) y ground (cálido/oscuro).
         // Se establece UNA SOLA VEZ aquí (Start) en vez de cada frame en AplicarAmbiente().
-        RenderSettings.ambientMode = AmbientMode.Trilinear;
+        RenderSettings.ambientMode = AmbientMode.Trilight;
     }
 
     // ═══════════════════════════════════════════════════════════════════════

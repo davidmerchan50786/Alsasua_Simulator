@@ -1,9 +1,10 @@
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 using CesiumForUnity;
 using Unity.Mathematics;
 
 /// <summary>
-/// Configurador principal del escenario de Alsasua.
+/// Configurador principal del escenario de Pamplona.
 /// Lee los tokens desde Assets/Resources/ConfiguracionTokens.asset
 /// y carga los tilesets fotorrealistas automáticamente al hacer Play.
 ///
@@ -19,11 +20,12 @@ using Unity.Mathematics;
 public class ConfiguradorAlsasua : MonoBehaviour
 {
     // ============================================================
-    //  COORDENADAS DE ALSASUA (Nafarroa / Navarra, España)
+    //  COORDENADAS DE PAMPLONA (Nafarroa / Navarra, España)
+    //  Centro: Plaza del Castillo
     // ============================================================
-    private const double ALSASUA_LATITUD   =  42.9037;  // 42°54'13" N
-    private const double ALSASUA_LONGITUD  =  -2.1668;  // 2°10'0" W
-    private const double ALSASUA_ALTURA    = 530.0;     // ~530 m sobre el mar
+    private const double ALSASUA_LATITUD   =  42.8169;  // 42°49'01" N
+    private const double ALSASUA_LONGITUD  =  -1.6432;  // 1°38'35" W
+    private const double ALSASUA_ALTURA    = 450.0;     // ~450 m sobre el mar
 
     // ============================================================
     //  INSPECTOR
@@ -85,9 +87,8 @@ public class ConfiguradorAlsasua : MonoBehaviour
         CorregirTilesetsExistentes();       // Arreglar tilesets YA en escena (physics, SSE)
         CargarTilesets();
         CorregirCesiumOriginShift();        // Re-parenta Jugador y añade CesiumOriginShift
+        LimpiarComponentesCesiumCamera();   // FIX: quitar CesiumFlyToController/CameraController de drones
         CorregirCamaras();                  // Far Clipping = 1M m, skybox
-        // BUG FIX: CorregirAudioListeners() estaba definido pero nunca llamado →
-        // si había múltiples AudioListeners en escena, Unity emitía warnings de audio.
         CorregirAudioListeners();
 
         // PERF FIX: cachear Camera.main para OnGUI() — evita búsqueda por tag cada frame.
@@ -293,18 +294,98 @@ public class ConfiguradorAlsasua : MonoBehaviour
             }
         }
 
-        // ── Clipping planes ─────────────────────────────────────────────────────
+        // ── Clipping planes + renderPostProcessing ──────────────────────────────
         var camaras = Object.FindObjectsByType<Camera>(FindObjectsSortMode.None);
         foreach (var cam in camaras)
         {
             cam.farClipPlane  = FAR_CESIUM;
             cam.nearClipPlane = NEAR_SUELO;
             cam.clearFlags    = CameraClearFlags.Skybox;
-            AlsasuaLogger.Info("Alsasua", $"Cámara '{cam.gameObject.name}': Near={NEAR_SUELO} Far={FAR_CESIUM}.");
+
+            // FIX PANTALLA NEGRA: habilitar post-procesado en runtime.
+            // Sin esto, aunque ControladorPostProcesado esté en la cámara, URP no aplica
+            // los efectos del Volume → imagen sin tonemapping, sin bloom → fondo negro.
+            var camData = cam.GetUniversalAdditionalCameraData();
+            if (camData != null)
+                camData.renderPostProcessing = true;
+
+            AlsasuaLogger.Info("Alsasua", $"Cámara '{cam.gameObject.name}': Near={NEAR_SUELO} Far={FAR_CESIUM} PostFX=ON.");
         }
 
         if (camaras.Length == 0)
             AlsasuaLogger.Warn("Alsasua", "⚠ No se encontraron cámaras para configurar el clipping plane.");
+    }
+
+    // ============================================================
+    //  LIMPIAR COMPONENTES CESIUM DE CÁMARAS DRON (FIX PANTALLA NEGRA)
+    // ============================================================
+
+    /// <summary>
+    /// FIX CRÍTICO: CesiumCameraController y CesiumFlyToController añadidos desde el panel
+    /// Cesium al DynamicCamera generan errores porque requieren CesiumOriginShift en el mismo
+    /// GameObject. Nuestro sistema usa ControladorJugador propio → estos componentes sobran
+    /// y además colocan la cámara a Y=1499m (altitud de órbita), causando pantalla negra.
+    ///
+    /// También asegura que CamaraFPS (la cámara del jugador en el suelo) tiene el tag
+    /// 'MainCamera' para que Game view muestre la perspectiva correcta.
+    /// </summary>
+    private void LimpiarComponentesCesiumCamera()
+    {
+        foreach (var cam in Object.FindObjectsByType<Camera>(FindObjectsSortMode.None))
+        {
+            // Solo limpiar cámaras que NO son la FPS del jugador
+            bool esFPS = cam.gameObject.name.Contains("FPS") || cam.gameObject.name == "CamaraFPS";
+            if (esFPS)
+            {
+                // CamaraFPS: profundidad alta para que gane siempre. ClearFlags explícito.
+                cam.depth      = 1f;
+                cam.clearFlags = CameraClearFlags.Skybox;
+                continue;
+            }
+
+            // Quitar CesiumCameraController (necesita CesiumOriginShift en el mismo GO)
+            var cc = cam.GetComponent<CesiumForUnity.CesiumCameraController>();
+            if (cc != null)
+            {
+                Destroy(cc);
+                AlsasuaLogger.Info("Alsasua", $"CesiumCameraController eliminado de '{cam.gameObject.name}'.");
+            }
+
+            // Quitar CesiumFlyToController (ídem)
+            var fc = cam.GetComponent<CesiumForUnity.CesiumFlyToController>();
+            if (fc != null)
+            {
+                Destroy(fc);
+                AlsasuaLogger.Info("Alsasua", $"CesiumFlyToController eliminado de '{cam.gameObject.name}'.");
+            }
+
+            // FIX PANTALLA NEGRA: DynamicCamera (Y=1499m) tiene depth=0 igual que CamaraFPS.
+            // Con mismo depth, Unity renderiza la última en orden de escena, pintando negro
+            // encima del jugador (sin tiles a 1500m de altitud = vista completamente negra).
+            // Solución: deshabilitar el Camera component de cámaras no-FPS en Play.
+            // El script CamaraDron (si existe) puede re-activarla cuando se necesite.
+            if (cam.gameObject.name == "DynamicCamera" || cam.gameObject.name == "Main Camera")
+            {
+                cam.enabled = false;
+                AlsasuaLogger.Info("Alsasua", $"Cámara '{cam.gameObject.name}' desactivada (no es la cámara del jugador — evita pantalla negra).");
+            }
+
+            // Quitar el tag MainCamera de cualquier cámara no-FPS
+            if (cam.CompareTag("MainCamera"))
+            {
+                cam.gameObject.tag = "Untagged";
+                AlsasuaLogger.Info("Alsasua", $"Tag 'MainCamera' quitado de '{cam.gameObject.name}'.");
+            }
+        }
+
+        // Asegurar que CamaraFPS tiene el tag MainCamera
+        var fps = GameObject.Find("CamaraFPS");
+        if (fps == null) fps = GameObject.Find("Main Camera");
+        if (fps != null && !fps.CompareTag("MainCamera"))
+        {
+            fps.tag = "MainCamera";
+            AlsasuaLogger.Info("Alsasua", $"Tag 'MainCamera' asignado a '{fps.name}'.");
+        }
     }
 
     // ============================================================
@@ -316,15 +397,33 @@ public class ConfiguradorAlsasua : MonoBehaviour
         var listeners = Object.FindObjectsByType<AudioListener>(FindObjectsSortMode.None);
         if (listeners.Length <= 1) return;
 
+        // Estrategia: mantener UN solo listener activo.
+        // Prioridad: listener que NO está en una cámara (p.ej. en el Jugador) → más correcto.
+        // Fallback: el que tiene tag "MainCamera".
+        // Todos los demás se desactivan.
+        AudioListener mantener = null;
         foreach (var al in listeners)
         {
-            var cam = al.GetComponent<Camera>();
-            if (cam != null && cam.CompareTag("MainCamera"))
+            if (al.GetComponent<Camera>() == null) { mantener = al; break; }  // No-cámara = prioritario
+        }
+        if (mantener == null)
+        {
+            foreach (var al in listeners)
             {
-                al.enabled = false;
-                AlsasuaLogger.Info("Alsasua", $"AudioListener desactivado en '{cam.gameObject.name}'.");
-                return;
+                if (al.CompareTag("MainCamera") || (al.GetComponent<Camera>() != null && al.GetComponent<Camera>().CompareTag("MainCamera")))
+                {
+                    mantener = al; break;
+                }
             }
+        }
+        if (mantener == null) mantener = listeners[0]; // fallback: cualquiera
+
+        foreach (var al in listeners)
+        {
+            if (al == mantener) continue;
+            if (!al.enabled) continue;
+            al.enabled = false;
+            AlsasuaLogger.Info("Alsasua", $"AudioListener desactivado en '{al.gameObject.name}'.");
         }
     }
 

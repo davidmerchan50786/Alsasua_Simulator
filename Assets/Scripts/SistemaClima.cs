@@ -388,7 +388,13 @@ public class SistemaClima : MonoBehaviour
 
         var velocidad = psLluvia.velocityOverLifetime;
         velocidad.enabled = true;
+
+        // FIX: los 3 ejes deben tener el MISMO modo de MinMaxCurve.
+        // Antes: solo x y z se asignaban como Constant → y quedaba en modo diferente (default).
+        // Unity lanzaba: "Particle Velocity curves must all be in the same mode".
+        // Solución: asignar los 3 ejes explícitamente como Constant.
         velocidad.x = new ParticleSystem.MinMaxCurve(incX);
+        velocidad.y = new ParticleSystem.MinMaxCurve(0f);   // sin velocidad vertical extra (cae por gravedad)
         velocidad.z = new ParticleSystem.MinMaxCurve(incZ);
     }
 
@@ -428,7 +434,16 @@ public class SistemaClima : MonoBehaviour
     private void ObtenerEfectosVolumen()
     {
         if (volumenPostProcesado == null) return;
-        var p = volumenPostProcesado.profile;
+
+        // FIX CRASH: volume.profile (getter) llama a Object.Instantiate() internamente para crear
+        // una copia editable del VolumeProfile. Si algún efecto dentro del asset (p.ej. Tonemapping)
+        // fue destruido o está en estado inválido, Instantiate() lanza MissingReferenceException.
+        // La solución es volume.sharedProfile, que devuelve directamente el asset sin clonar.
+        // NOTA: sharedProfile es de solo lectura — SistemaClima solo LEE los efectos (TryGet),
+        // nunca escribe en el perfil directamente, así que sharedProfile es correcto aquí.
+        var p = volumenPostProcesado.sharedProfile;
+        if (p == null) return;
+
         p.TryGet(out colorAdjustments);
         p.TryGet(out whiteBalance);
         p.TryGet(out vignette);

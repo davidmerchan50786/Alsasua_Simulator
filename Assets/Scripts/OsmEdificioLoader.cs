@@ -1,5 +1,5 @@
 // Assets/Scripts/OsmEdificioLoader.cs
-// Lee alsasua_edificios.json generado por GeneradorFachadas.py
+// Lee pamplona_edificios.json generado por GeneradorFachadas.py
 // y crea mallas extruidas con texturas de Street View por fachada.
 //
 // JERARQUÍA EN ESCENA:
@@ -47,9 +47,9 @@ public class OsmEdificioLoader : MonoBehaviour
 
     [Header("═══ ARCHIVO JSON ═══")]
     [Tooltip("Ruta relativa a la carpeta de datos OSM.\n" +
-             "• Editor: relativa a Assets/  (p.ej. OSMData/alsasua_edificios.json)\n" +
+             "• Editor: relativa a Assets/  (p.ej. OSMData/pamplona_edificios.json)\n" +
              "• Build:  relativa a StreamingAssets/ (igual ruta, misma carpeta copiada)")]
-    [SerializeField] private string rutaJsonRelativa = "OSMData/alsasua_edificios.json";
+    [SerializeField] private string rutaJsonRelativa = "OSMData/pamplona_edificios.json";
 
     [Header("═══ CARGA ═══")]
     [Range(1, 50)]
@@ -75,9 +75,9 @@ public class OsmEdificioLoader : MonoBehaviour
     [SerializeField] private float paredMinMetros = 0.5f;
 
     [Header("═══ ALTITUD DEL TERRENO ═══")]
-    [Tooltip("Altura elipsoidal WGS84 aproximada del suelo de Alsasua (metros). " +
-             "ConfiguradorAlsasua usa 530 m.")]
-    [SerializeField] private double altitudTerreno = 530.0;
+    [Tooltip("Altura elipsoidal WGS84 aproximada del suelo de Pamplona (metros). " +
+             "ConfiguradorAlsasua usa 450 m.")]
+    [SerializeField] private double altitudTerreno = 450.0;
 
     [Header("═══ MATERIALES ═══")]
     [Tooltip("Material de fachada sin imagen (si null, se crea uno URP en runtime). " +
@@ -95,8 +95,10 @@ public class OsmEdificioLoader : MonoBehaviour
     [Header("═══ ESTADO (solo lectura) ═══")]
     [SerializeField] private int edificiosCargados;
     [SerializeField] private int texturasCargadas;
+#pragma warning disable 0414
     [SerializeField] private bool cargaEdificiosCompleta;
     [SerializeField] private bool cargaTexturasCompleta;
+#pragma warning restore 0414
 
     // ═══════════════════════════════════════════════════════════════════════
     //  CONSTANTES
@@ -168,7 +170,7 @@ public class OsmEdificioLoader : MonoBehaviour
             return;
         }
 
-        georef = Object.FindFirstObjectByType<CesiumGeoreference>();
+        georef = UnityEngine.Object.FindFirstObjectByType<CesiumGeoreference>();
         if (georef == null)
         {
             AlsasuaLogger.Error("OsmLoader", "CesiumGeoreference no encontrado. " +
@@ -291,6 +293,18 @@ public class OsmEdificioLoader : MonoBehaviour
         int totalEdif = raiz["total_edificios"]?.Value<int>() ?? edificiosToken.Count;
         int paredesSV = raiz["paredes_con_sv"]?.Value<int>()  ?? 0;
         AlsasuaLogger.Info("OsmLoader", $"JSON cargado: {totalEdif} edificios, {paredesSV} paredes con Street View.");
+
+        // MEM FIX: liberar el JObject raíz del JSON — ya no lo necesitamos.
+        // El árbol Newtonsoft puede ocupar varios MB para cientos de edificios.
+        // Nullarlo aquí permite que el GC lo recoja ANTES del bucle pesado de construcción.
+        raiz = null;
+        // Hint al GC para que limpie antes de la fase de construcción más exigente.
+        // No garantizado pero reduce la probabilidad de OOM en máquinas con poca RAM.
+        System.GC.Collect();
+        System.GC.WaitForPendingFinalizers();
+
+        // Ceder un frame para que el motor procese la limpieza antes de empezar.
+        yield return null;
 
         yield return StartCoroutine(CrearEdificios(edificiosToken));
     }
