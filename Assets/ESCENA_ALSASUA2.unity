@@ -2702,9 +2702,9 @@ MonoBehaviour:
   colorNieblaLluvia: {r: 0.6, g: 0.63, b: 0.68, a: 1}
   colorNieblaLimpia: {r: 0.82, g: 0.86, b: 0.9, a: 1}
   colorNieblaEspesa: {r: 0.78, g: 0.8, b: 0.82, a: 1}
-  atmosfera: {fileID: 0}
-  luzSolar: {fileID: 0}
-  volumenPostProcesado: {fileID: 0}
+  atmosfera: {fileID: 1233726148}
+  luzSolar: {fileID: 746016307}
+  volumenPostProcesado: {fileID: 848139571}
 --- !u!114 &1233726148
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2721,7 +2721,7 @@ MonoBehaviour:
   diaDelAnio: 172
   tiempoAnimado: 0
   velocidadTiempo: 120
-  luzSolar: {fileID: 0}
+  luzSolar: {fileID: 746016307}
   intensidadMaximaSol: 1.8
   intensidadNoche: 0.04
   colorDelSol:
@@ -2821,8 +2821,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4608156d280b83d42bcd61f0127e020e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: AlsasuaScripts::ConfiguradorAlsasua
-  tokenCesiumIon: 
-  apiKeyGoogle: 
+  tokenCesiumIon: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+  apiKeyGoogle: AIzaSyAIXBPGknxIOof5odgqXI4_mHYDtO93esY
   usarGooglePhotorealistic: 1
   usarCesiumWorldTerrain: 1
   usarOSMEdificiosFallback: 1
@@ -3418,8 +3418,8 @@ MonoBehaviour:
   fovNormal: 68
   fovApuntando: 48
   anguloVertDefault: 5
-  prefabPersonaje: {fileID: 0}
-  controladorAnimaciones: {fileID: 0}
+  prefabPersonaje: {fileID: 100100000, guid: 5d1cdc601b4c8f04b8bd12377af19962, type: 3}
+  controladorAnimaciones: {fileID: 9100000, guid: 70e2c685e9568c04ababf02957b6236d, type: 2}
   offsetModelo: {x: 0, y: 0, z: 0}
   escalaModelo: 1
   vida: 100
