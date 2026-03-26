@@ -2090,9 +2090,9 @@ MonoBehaviour:
   _ellipsoidOverride: {fileID: 0}
   _originPlacement: 1
   _originAuthority: 0
-  _latitude: 42.9037
-  _longitude: -2.1668
-  _height: 530
+  _latitude: 42.8169
+  _longitude: -1.6432
+  _height: 450
   _ecefX: 4676285.098170966
   _ecefY: -176931.14377947157
   _ecefZ: 4320032.314142868
