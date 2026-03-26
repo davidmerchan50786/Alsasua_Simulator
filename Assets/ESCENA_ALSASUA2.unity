@@ -1589,9 +1589,9 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 714164748}
   serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 1.5
-  m_AngularDamping: 0.05
+  m_Mass: 1200
+  m_LinearDamping: 5
+  m_AngularDamping: 0.5
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -1628,7 +1628,7 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 1.8, y: 1.4, z: 4.2}
-  m_Center: {x: 0, y: 0.45, z: 0}
+  m_Center: {x: 0, y: 0.7, z: 0}
 --- !u!1 &722732000
 GameObject:
   m_ObjectHideFlags: 0
@@ -1704,9 +1704,9 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 722732000}
   serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 1.5
-  m_AngularDamping: 0.05
+  m_Mass: 1200
+  m_LinearDamping: 5
+  m_AngularDamping: 0.5
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -1743,7 +1743,7 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 1.8, y: 1.4, z: 4.2}
-  m_Center: {x: 0, y: 0.45, z: 0}
+  m_Center: {x: 0, y: 0.7, z: 0}
 --- !u!1 &746016305
 GameObject:
   m_ObjectHideFlags: 0
@@ -1992,6 +1992,7 @@ GameObject:
   m_Component:
   - component: {fileID: 928385122}
   - component: {fileID: 928385123}
+  - component: {fileID: 928385124}
   m_Layer: 0
   m_Name: EnemigoPatrulla_Estacion
   m_TagString: Untagged
@@ -2042,6 +2043,28 @@ MonoBehaviour:
   - {fileID: 266392279}
   - {fileID: 981290126}
   tiempoEsperaWP: 2
+--- !u!136 &928385124
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 928385121}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  m_Radius: 0.35
+  m_Height: 1.8
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.9, z: 0}
 --- !u!1 &939711618
 GameObject:
   m_ObjectHideFlags: 0
@@ -2908,6 +2931,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1368203136}
   - component: {fileID: 1368203137}
+  - component: {fileID: 1368203138}
   m_Layer: 0
   m_Name: EnemigoPatrulla_CalleM
   m_TagString: Untagged
@@ -2959,6 +2983,28 @@ MonoBehaviour:
   - {fileID: 1860184950}
   - {fileID: 1730097955}
   tiempoEsperaWP: 2
+--- !u!136 &1368203138
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1368203135}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  m_Radius: 0.35
+  m_Height: 1.8
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.9, z: 0}
 --- !u!1 &1534954804
 GameObject:
   m_ObjectHideFlags: 0
@@ -3430,6 +3476,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1731434905}
   - component: {fileID: 1731434906}
+  - component: {fileID: 1731434907}
   m_Layer: 0
   m_Name: EnemigoPatrulla_Plaza
   m_TagString: Untagged
@@ -3481,6 +3528,28 @@ MonoBehaviour:
   - {fileID: 1272190298}
   - {fileID: 1054424505}
   tiempoEsperaWP: 2
+--- !u!136 &1731434907
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1731434904}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  m_Radius: 0.35
+  m_Height: 1.8
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.9, z: 0}
 --- !u!1 &1860184949
 GameObject:
   m_ObjectHideFlags: 0
