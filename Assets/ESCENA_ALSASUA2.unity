@@ -3927,10 +3927,10 @@ MonoBehaviour:
   clipImpactoSuelo: {fileID: 8300000, guid: 75adfe9a619833445a701305b983e548, type: 3}
   clipImpactoSangre: {fileID: 8300000, guid: a37f44cbf8c2a7443a3c361efa2f233a, type: 3}
   clipImpactoMetal: {fileID: 8300000, guid: 2e071f5b8b8467d45a5e6e24c23c6ad4, type: 3}
-  clipRecarga: {fileID: 0}
-  clipPasoNormal: {fileID: 0}
-  clipPasoCorrer: {fileID: 0}
-  clipMotorCoche: {fileID: 0}
+  clipRecarga: {fileID: 8300000, guid: 126a7914023294e2faf8108acc1e9a71, type: 3}
+  clipPasoNormal: {fileID: 8300000, guid: 9b713c76b05f8b04882a23a60605b0d2, type: 3}
+  clipPasoCorrer: {fileID: 8300000, guid: 9b713c76b05f8b04882a23a60605b0d2, type: 3}
+  clipMotorCoche: {fileID: 8300000, guid: c9934708a5ee2417685f05d0396f8f92, type: 3}
   clipExplosion: {fileID: 8300000, guid: 1fd31868d68903d4f9e2c4a3b7ef98f3, type: 3}
   clipSilbato: {fileID: 0}
   volEfectos: 0.8
@@ -3983,7 +3983,7 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier: AlsasuaScripts::SistemaAssets
   prefabPatrullaGC: {fileID: 100100000, guid: 7be733fca5977484eab72a8eca73b1b2, type: 3}
-  prefabCocheCivil: {fileID: 0}
+  prefabCocheCivil: {fileID: 100100000, guid: 892c76bcd476c4480acd83f5e08765c4, type: 3}
   prefabPino: {fileID: 0}
   prefabRoble: {fileID: 0}
   prefabExplosion: {fileID: 100100000, guid: b70fbea4bc8994749ba52e4f560f9f28, type: 3}
@@ -3991,6 +3991,128 @@ MonoBehaviour:
   audioMultitud: {fileID: 8300000, guid: eee16e2e6580b4b97b2ff6b3804297a1, type: 3}
   audioSirena: {fileID: 0}
   audioTren: {fileID: 0}
+--- !u!1 &3500000020
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3500000021}
+  - component: {fileID: 3500000022}
+  m_Layer: 0
+  m_Name: GestorEscena
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3500000021
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3500000020}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3500000022
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3500000020}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d80188299e581f48af1a2f5f590dafc, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: AlsasuaScripts::GestorEscena
+  sistemaMultitud: {fileID: 0}
+  sistemaPersonajes: {fileID: 3500000032}
+  sistemaTrafico: {fileID: 0}
+  sistemaFerroviario: {fileID: 0}
+  sistemaVegetacion: {fileID: 0}
+  activarMultitud: 1
+  activarPersonajes: 1
+  activarTrafico: 1
+  activarTren: 1
+  activarVegetacion: 1
+  origenMundo: {x: 0, y: 0, z: 0}
+--- !u!1 &3500000030
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3500000031}
+  - component: {fileID: 3500000032}
+  m_Layer: 0
+  m_Name: SistemaPersonajes
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3500000031
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3500000030}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3500000032
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3500000030}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2ce67304f1dae744bf4a6b3bd12d32a, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: AlsasuaScripts::SistemaPersonajes
+  numGuardiaCivil: 8
+  numPoliciaForal: 6
+  numManifestantesPales: 40
+  numManifestantesJurrutu: 30
+  numPortadoresIkurriña: 8
+  numPortadoresNavarra: 4
+  numCiviles: 50
+  rutaGuardiaCivil: []
+  rutaPoliciaForal: []
+  areaCiviles:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 100, y: 5, z: 100}
+  posicionManifestantes: {x: -50, y: 0, z: 0}
+  prefabGuardiaCivil: {fileID: 100100000, guid: 6555cf81a36adb94e95c1d891cb3deb0, type: 3}
+  prefabPoliciaForal: {fileID: 100100000, guid: 6555cf81a36adb94e95c1d891cb3deb0, type: 3}
+  prefabManifestante: {fileID: 100100000, guid: 3ee442e2d341b414d997d8a3555795b0, type: 3}
+  prefabJarrai: {fileID: 100100000, guid: 2b8d4866a0799a94cb56b4b579153213, type: 3}
+  prefabCivilMasculino: {fileID: 100100000, guid: a510464c60460b94fa0acb8d80441856, type: 3}
+  prefabCivilFemenino: {fileID: 100100000, guid: 7d2c7a514bee2ec47aa0601c893cb367, type: 3}
+  velocidadGC: 1.2
+  velocidadPF: 1.4
+  velocidadManif: 1.1
+  velocidadCivil: 0.95
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -4008,3 +4130,5 @@ SceneRoots:
   - {fileID: 446168987}
   - {fileID: 3500000002}
   - {fileID: 3500000011}
+  - {fileID: 3500000021}
+  - {fileID: 3500000031}
