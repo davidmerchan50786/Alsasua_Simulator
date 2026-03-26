@@ -317,7 +317,11 @@ public class ControladorJugador : MonoBehaviour
     private void CrearCuerpoJugador()
     {
         // ── Opción A: Personaje Mixamo ───────────────────────────────────────
+        // FIX: FBX con fileIdsGeneration:2 puede deserializarse como tipo no-GameObject
+        // aunque el campo sea [SerializeField] private GameObject. Envolvemos toda la
+        // opción A en try-catch para caer al cuerpo procedural sin bloquear Start().
         if (prefabPersonaje != null)
+        try
         {
             // Destruir modelo anterior si existía (p.ej. al reconfigurar en runtime)
             var anterior = transform.Find("_PersonajeMixamo");
@@ -361,6 +365,15 @@ public class ControladorJugador : MonoBehaviour
             }
 
             return; // No crear el cuerpo procedural
+        }
+        catch (System.InvalidCastException ice)
+        {
+            AlsasuaLogger.Warn("Jugador",
+                $"prefabPersonaje no es un GameObject válido (FBX sin Prefab asignado) — " +
+                $"usando cuerpo procedural. Crea un Prefab desde el FBX en el Editor. " +
+                $"Detalle: {ice.Message}");
+            prefabPersonaje = null; // evitar reintentos en llamadas futuras
+            // cae a Opción B ↓
         }
 
         // ── Opción B: Cuerpo procedural (fallback sin prefab) ───────────────
