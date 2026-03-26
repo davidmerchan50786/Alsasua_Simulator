@@ -266,7 +266,19 @@ public class ControladorPostProcesado : MonoBehaviour
 
         // volume.profile: devuelve una copia editable (instancia en memoria).
         // Necesario aquí porque usamos p.Add<T>() para crear efectos que no existan todavía.
-        var p = volumenGlobal.profile;
+        // FIX: si el sharedProfile contiene VolumeComponents destruidos, Instantiate() lanza
+        // MissingReferenceException. Capturamos y recaemos en sharedProfile (solo lectura).
+        UnityEngine.Rendering.VolumeProfile p;
+        try
+        {
+            p = volumenGlobal.profile;
+        }
+        catch (System.Exception e)
+        {
+            AlsasuaLogger.Warn("PostProcesado",
+                $"profile inaccesible ({e.GetType().Name}) — usando sharedProfile (solo lectura).");
+            p = volumenGlobal.sharedProfile;
+        }
 
         ObtenerOCrear(ref tonemapping);
         ObtenerOCrear(ref colorAdjustments);
