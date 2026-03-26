@@ -528,7 +528,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: AlsasuaScripts::ControladorPostProcesado
   volumenGlobal: {fileID: 848139571}
-  modoTonemapping: 2
+  modoTonemapping: 1
   temperaturaColor: -10
   tintColor: 3
   saturacion: 90
@@ -1409,7 +1409,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: AlsasuaScripts::ControladorPostProcesado
   volumenGlobal: {fileID: 848139571}
-  modoTonemapping: 2
+  modoTonemapping: 1
   temperaturaColor: -10
   tintColor: 3
   saturacion: 90
@@ -3418,7 +3418,7 @@ MonoBehaviour:
   fovNormal: 68
   fovApuntando: 48
   anguloVertDefault: 5
-  prefabPersonaje: {fileID: 100100000, guid: 5d1cdc601b4c8f04b8bd12377af19962, type: 3}
+  prefabPersonaje: {fileID: 0}
   controladorAnimaciones: {fileID: 9100000, guid: 70e2c685e9568c04ababf02957b6236d, type: 2}
   offsetModelo: {x: 0, y: 0, z: 0}
   escalaModelo: 1
