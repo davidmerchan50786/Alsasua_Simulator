@@ -922,11 +922,11 @@ MonoBehaviour:
   _ionAssetID: 1
   _ionAccessToken: 
   _ionServer: {fileID: 11400000, guid: cdac3a1c1b307034aabf9c8b8dff9fb3, type: 2}
-  _maximumScreenSpaceError: 16
+  _maximumScreenSpaceError: 8
   _preloadAncestors: 1
   _preloadSiblings: 1
-  _forbidHoles: 0
-  _maximumSimultaneousTileLoads: 20
+  _forbidHoles: 1
+  _maximumSimultaneousTileLoads: 40
   _maximumCachedBytes: 536870912
   _loadingDescendantLimit: 20
   _enableFrustumCulling: 1
@@ -1106,11 +1106,11 @@ MonoBehaviour:
   _ionAssetID: 0
   _ionAccessToken: 
   _ionServer: {fileID: 11400000, guid: cdac3a1c1b307034aabf9c8b8dff9fb3, type: 2}
-  _maximumScreenSpaceError: 16
+  _maximumScreenSpaceError: 8
   _preloadAncestors: 1
   _preloadSiblings: 1
-  _forbidHoles: 0
-  _maximumSimultaneousTileLoads: 20
+  _forbidHoles: 1
+  _maximumSimultaneousTileLoads: 40
   _maximumCachedBytes: 536870912
   _loadingDescendantLimit: 20
   _enableFrustumCulling: 1
@@ -2485,11 +2485,11 @@ MonoBehaviour:
   _ionAssetID: 96188
   _ionAccessToken: 
   _ionServer: {fileID: 11400000, guid: cdac3a1c1b307034aabf9c8b8dff9fb3, type: 2}
-  _maximumScreenSpaceError: 16
+  _maximumScreenSpaceError: 8
   _preloadAncestors: 1
   _preloadSiblings: 1
-  _forbidHoles: 0
-  _maximumSimultaneousTileLoads: 20
+  _forbidHoles: 1
+  _maximumSimultaneousTileLoads: 40
   _maximumCachedBytes: 536870912
   _loadingDescendantLimit: 20
   _enableFrustumCulling: 1
@@ -2590,11 +2590,11 @@ MonoBehaviour:
   _ionAssetID: 2275207
   _ionAccessToken: 
   _ionServer: {fileID: 11400000, guid: cdac3a1c1b307034aabf9c8b8dff9fb3, type: 2}
-  _maximumScreenSpaceError: 16
+  _maximumScreenSpaceError: 8
   _preloadAncestors: 1
   _preloadSiblings: 1
-  _forbidHoles: 0
-  _maximumSimultaneousTileLoads: 20
+  _forbidHoles: 1
+  _maximumSimultaneousTileLoads: 40
   _maximumCachedBytes: 536870912
   _loadingDescendantLimit: 20
   _enableFrustumCulling: 1
