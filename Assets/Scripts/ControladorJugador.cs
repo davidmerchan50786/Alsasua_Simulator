@@ -250,22 +250,27 @@ public class ControladorJugador : MonoBehaviour
     /// <summary>
     /// Espera a que Cesium genere los physics meshes y hace snap al suelo.
     /// Funciona con Google Photorealistic 3D Tiles, Cesium World Terrain y SueloBase.
+    /// NOTA: no deshabilita el CharacterController — hacerlo acumula velVert durante
+    /// la espera y provoca que el jugador caiga a >60 m/s al reactivarse → negro.
     /// </summary>
     private System.Collections.IEnumerator AjustarAlturaTerreno()
     {
-        // Deshabilitar CC durante el reposicionamiento (evita que empuje tiles)
-        cc.enabled = false;
-
         // 3 segundos = tiempo medio para que Cesium genere physics meshes del tile inicial
         yield return new WaitForSeconds(3f);
+
+        // Resetear velocidad vertical acumulada antes del snap
+        velVert = Vector3.zero;
 
         // Raycast desde 200 m arriba hacia abajo: cubre cualquier offset de GeoReference
         Vector3 origen = transform.position + Vector3.up * 200f;
         int maskTerreno = ~LayerMask.GetMask("Player", "Ignore Raycast");
         if (Physics.Raycast(origen, Vector3.down, out RaycastHit hit, 400f, maskTerreno))
         {
-            // Colocar pies (transform.y = punto de impacto, CC.center.y sube la cápsula)
+            // Colocar pies sobre el punto de impacto (CC.center.y sube la cápsula)
+            cc.enabled = false;   // deshabilitar solo el instante del teleport
             transform.position = new Vector3(transform.position.x, hit.point.y, transform.position.z);
+            cc.enabled = true;
+            velVert = Vector3.zero;   // limpiar de nuevo tras el teleport
             AlsasuaLogger.Info("Jugador", $"Snap terreno Cesium → y={hit.point.y:F1} m ({hit.collider.gameObject.name})");
         }
         else
@@ -274,8 +279,6 @@ public class ControladorJugador : MonoBehaviour
                 "AjustarAlturaTerreno: sin colisionador bajo el jugador — " +
                 "comprueba que 'Create Physics Meshes' está activo en el Cesium Tileset.");
         }
-
-        cc.enabled = true;
     }
 
     private void Update()
