@@ -594,14 +594,27 @@ public class ControladorJugador : MonoBehaviour
 
     private void Gravedad()
     {
-        estaEnSuelo = cc.isGrounded;
+        // FIX ASCENSO CESIUM: suplementar cc.isGrounded con un raycast corto hacia abajo.
+        // Cuando CesiumGlobeAnchor reorienta el jugador en cada tick, el CharacterController
+        // puede reportar !isGrounded durante 1-2 frames aunque el jugador esté sobre el suelo.
+        // Un raycast de 0.5 m hacia abajo (origen a 0.2 m de la planta) cubre esa ventana.
+        bool groundRay = Physics.Raycast(
+            transform.position + Vector3.up * 0.2f,
+            Vector3.down, 0.5f,
+            ~LayerMask.GetMask("Player", "Ignore Raycast"),
+            QueryTriggerInteraction.Ignore);
+        estaEnSuelo = cc.isGrounded || groundRay;
 
         if (estaEnSuelo)
         {
             // BUG 5 FIX: asignar -2f Y salir — no sumar gravedad este frame.
-            // Antes: velVert.y = -2f luego += gravedad*dt (negativo) → llegaba a ≈-2.2 cada frame
-            // → CharacterController se empujaba al suelo extra → micro-saltos / "temblor" al caminar.
             if (velVert.y < 0f) velVert.y = -2f;
+
+            // FIX ASCENSO CESIUM: si velVert.y es positivo sin que el jugador haya saltado
+            // (Saltar() lo pone a ≈15 f), es que algo externo (CesiumGlobeAnchor, tile spawn)
+            // ha empujado el transform hacia arriba. Resetear a -2 para pegar al suelo.
+            else if (velVert.y > 0f && velVert.y < fuerzaSalto * 0.3f)
+                velVert.y = -2f;
         }
         else
         {

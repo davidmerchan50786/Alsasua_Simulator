@@ -48,6 +48,11 @@ public class EnemigoPatrulla : MonoBehaviour
     [Tooltip("Dispersión angular de los disparos (0 = perfecta puntería, 0.1 = muy errática).")]
     [SerializeField] private float precisionEnemy     = 0.05f;
 
+    [Header("═══ MODELO 3D ═══")]
+    [Tooltip("Prefab del modelo 3D del enemigo (ej. GuardiaCivil.prefab, Jarrai.prefab).\n" +
+             "Si está vacío se genera el cuerpo procedural de cápsulas como fallback.")]
+    [SerializeField] private GameObject prefabModelo;
+
     [Header("═══ WAYPOINTS DE PATRULLA ═══")]
     [Tooltip("Puntos de patrulla en orden. El enemigo los recorre en bucle indefinido.")]
     [SerializeField] private Transform[] waypointsPatrulla;
@@ -91,7 +96,42 @@ public class EnemigoPatrulla : MonoBehaviour
         // FIX TEST T16: CrearCuerpoBasico movido de Start() a Awake() para que los tests
         // edit-mode (que no ejecutan Start()) encuentren los Renderers correctamente.
         if (transform.childCount == 0)
+        {
+            if (prefabModelo != null)
+                InstanciarModeloPrefab();
+            else
+                CrearCuerpoBasico();
+        }
+    }
+
+    // Instancia el prefab 3D del enemigo (Kenney GuardiaCivil, Jarrai, etc.)
+    // y desactiva sus colisionadores propios (el CapsuleCollider del GO raíz gestiona la física).
+    private void InstanciarModeloPrefab()
+    {
+        try
+        {
+            var go = Object.Instantiate(prefabModelo, transform);
+            go.name = "_ModeloEnemigo";
+            go.transform.localPosition = Vector3.zero;
+            go.transform.localRotation = Quaternion.identity;
+            go.transform.localScale    = Vector3.one;
+
+            // Desactivar colisionadores del modelo — el CapsuleCollider raíz gestiona la física.
+            foreach (var col in go.GetComponentsInChildren<Collider>(true))
+                col.enabled = false;
+
+            // Si el prefab tiene Animator, dejarlo activo para que reproduzca idle/andar.
+            // (No asignamos RuntimeAnimatorController aquí — el prefab ya tiene el suyo.)
+            AlsasuaLogger.Info("EnemigoPatrulla", $"{name}: modelo 3D '{prefabModelo.name}' instanciado.");
+        }
+        catch (System.Exception ex)
+        {
+            AlsasuaLogger.Warn("EnemigoPatrulla",
+                $"{name}: error instanciando prefabModelo '{prefabModelo.name}' — " +
+                $"usando cuerpo procedural. Detalle: {ex.Message}");
+            prefabModelo = null;
             CrearCuerpoBasico();
+        }
     }
 
     private void Start()

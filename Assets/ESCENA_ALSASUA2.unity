@@ -2027,6 +2027,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8e544cd051801a4fa8dba5bf76de8ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: AlsasuaScripts::EnemigoPatrulla
+  prefabModelo: {fileID: 1757837229002055313, guid: 2b8d4866a0799a94cb56b4b579153213, type: 3}
   vida: 100
   radioVision: 25
   anguloVision: 110
@@ -3011,6 +3012,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8e544cd051801a4fa8dba5bf76de8ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: AlsasuaScripts::EnemigoPatrulla
+  prefabModelo: {fileID: 1757837229002055313, guid: 2b8d4866a0799a94cb56b4b579153213, type: 3}
   vida: 100
   radioVision: 25
   anguloVision: 110
@@ -3317,7 +3319,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74f14e1eb550b9a4fb6c0a2f0456845b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: CesiumForUnity::CesiumForUnity.CesiumGlobeAnchor
-  _adjustOrientationForGlobeWhenMoving: 1
+  _adjustOrientationForGlobeWhenMoving: 0
   _detectTransformChanges: 1
   _localToGlobeFixedMatrix:
     c0:
@@ -3418,7 +3420,7 @@ MonoBehaviour:
   fovNormal: 68
   fovApuntando: 48
   anguloVertDefault: 5
-  prefabPersonaje: {fileID: 0}
+  prefabPersonaje: {fileID: 5496704094960040369, guid: 6555cf81a36adb94e95c1d891cb3deb0, type: 3}
   controladorAnimaciones: {fileID: 9100000, guid: 70e2c685e9568c04ababf02957b6236d, type: 2}
   offsetModelo: {x: 0, y: 0, z: 0}
   escalaModelo: 1
@@ -3556,6 +3558,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8e544cd051801a4fa8dba5bf76de8ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: AlsasuaScripts::EnemigoPatrulla
+  prefabModelo: {fileID: 1757837229002055313, guid: 2b8d4866a0799a94cb56b4b579153213, type: 3}
   vida: 100
   radioVision: 25
   anguloVision: 110

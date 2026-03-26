@@ -110,6 +110,7 @@ public class VehiculoNPC : MonoBehaviour
         DetectarObstaculos();
         MoverHaciaWaypoint();
         CambiarWaypointSiLlegamos();
+        AplicarGravedadTerrenoVehiculo();
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -161,6 +162,41 @@ public class VehiculoNPC : MonoBehaviour
             {
                 if (bucleWaypoints) wpActual = 0;
                 else { velocidadActual = 0f; enabled = false; }
+            }
+        }
+    }
+
+    // FIX ASCENSO CESIUM: cuando los tiles de Cesium cargan un colisionador sobre el vehículo,
+    // el Rigidbody es empujado hacia arriba sin freno (no hay restricción Y).
+    // Este método detecta si el coche ha subido más de 0.4 m por encima del suelo real
+    // (medido con raycast) y aplica un impulso hacia abajo para corregirlo.
+    private void AplicarGravedadTerrenoVehiculo()
+    {
+        // Raycast desde el centro del coche hacia abajo — hasta 4 m (tiles y suelo)
+        Vector3 origen = rb.position + Vector3.up * 0.8f;
+        if (Physics.Raycast(origen, Vector3.down, out RaycastHit hit, 5f,
+            ~LayerMask.GetMask("Ignore Raycast"), QueryTriggerInteraction.Ignore))
+        {
+            float deltaY = rb.position.y - hit.point.y;
+
+            if (deltaY > 0.4f)
+            {
+                // El coche está más de 0.4 m sobre el suelo → añadir impulso hacia abajo
+                // proporcional a cuánto ha subido. Damping extra evita oscilación.
+                var vel = rb.linearVelocity;
+                if (vel.y > 0f) vel.y = 0f;                    // cancelar velocidad ascendente
+                vel.y -= Mathf.Min(deltaY * 3f, 8f);           // impulso proporcional hacia abajo
+                rb.linearVelocity = vel;
+            }
+            else if (deltaY < -0.1f)
+            {
+                // El coche se ha hundido (nuevo tile más alto debajo) → snapear hacia arriba
+                Vector3 pos = rb.position;
+                pos.y = hit.point.y + 0.05f;
+                rb.MovePosition(pos);
+                var vel = rb.linearVelocity;
+                vel.y = 0f;
+                rb.linearVelocity = vel;
             }
         }
     }

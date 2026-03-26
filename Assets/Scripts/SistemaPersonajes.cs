@@ -76,6 +76,27 @@ public sealed class SistemaPersonajes : MonoBehaviour
     [Tooltip("Punto de origen de la manifestación")]
     [SerializeField] private Vector3 posicionManifestantes = new Vector3(-50f, 0f, 0f);
 
+    [Header("═══ MODELOS 3D (opcionales) ═══")]
+    [Tooltip("Prefab para Guardia Civil. Si está vacío se usa la cápsula procedural.\n" +
+             "Arrastra Assets/Personajes/Prefabs/GuardiaCivil.prefab")]
+    [SerializeField] private GameObject prefabGuardiaCivil;
+
+    [Tooltip("Prefab para Policía Foral. Arrastra Assets/Personajes/Prefabs/GuardiaCivil.prefab o uno específico.")]
+    [SerializeField] private GameObject prefabPoliciaForal;
+
+    [Tooltip("Prefab para manifestantes (Palestino + Jurrutu + Portadores).\n" +
+             "Arrastra Assets/Personajes/Prefabs/Manifestante.prefab")]
+    [SerializeField] private GameObject prefabManifestante;
+
+    [Tooltip("Prefab para Jarrai. Arrastra Assets/Personajes/Prefabs/Jarrai.prefab")]
+    [SerializeField] private GameObject prefabJarrai;
+
+    [Tooltip("Prefab para civil masculino. Arrastra Assets/Personajes/Prefabs/CivilMasculino.prefab")]
+    [SerializeField] private GameObject prefabCivilMasculino;
+
+    [Tooltip("Prefab para civil femenino. Arrastra Assets/Personajes/Prefabs/CivilFemenino.prefab")]
+    [SerializeField] private GameObject prefabCivilFemenino;
+
     [Header("═══ VELOCIDADES ═══")]
     [SerializeField] private float velocidadGC      = 1.2f;
     [SerializeField] private float velocidadPF      = 1.4f;
@@ -224,7 +245,46 @@ public sealed class SistemaPersonajes : MonoBehaviour
         go.transform.SetParent(transform);
         go.layer = LayerMask.NameToLayer("Default");
 
-        // Cuerpo
+        // ── Seleccionar prefab 3D si está asignado ──────────────────────────
+        // Si el usuario ha arrastrado un prefab en el Inspector, se instancia bajo el GO raíz.
+        // Si no hay prefab, se genera la cápsula procedural (comportamiento anterior).
+        GameObject prefab = PrefabParaTipo(tipo);
+        if (prefab != null)
+        {
+            try
+            {
+                var modelo = Object.Instantiate(prefab, go.transform);
+                modelo.name = "_Modelo";
+                modelo.transform.localPosition = Vector3.zero;
+                modelo.transform.localRotation = Quaternion.identity;
+                modelo.transform.localScale    = Vector3.one;
+                // Desactivar colisionadores propios del prefab
+                foreach (var col in modelo.GetComponentsInChildren<Collider>(true))
+                    col.enabled = false;
+                // Variante de tono en los Renderers del prefab
+                var mpb2 = new MaterialPropertyBlock();
+                Color bc2 = ColorBase(tipo);
+                float dv2 = variante * 0.12f - 0.06f;
+                Color cv2 = new Color(Mathf.Clamp01(bc2.r + dv2), Mathf.Clamp01(bc2.g + dv2),
+                                      Mathf.Clamp01(bc2.b + dv2), 1f);
+                mpb2.SetColor(_idBaseColor, cv2);
+                mpb2.SetColor("_Color", cv2);
+                foreach (var r in modelo.GetComponentsInChildren<Renderer>())
+                    r.SetPropertyBlock(mpb2);
+                // Para portadores de banderas añadirles el mástil igualmente
+                if (tipo == TipoPersonaje.PortadorIkurriña)  AñadirBandera(go, _texIkurriña);
+                if (tipo == TipoPersonaje.PortadorNavarra)    AñadirBandera(go, _texNavarra);
+                return go;
+            }
+            catch (System.Exception ex)
+            {
+                AlsasuaLogger.Warn("SistemaPersonajes",
+                    $"Error instanciando prefab '{prefab.name}' para {tipo}: {ex.Message} — usando procedural.");
+                // cae al fallback procedural ↓
+            }
+        }
+
+        // ── Fallback: cápsula procedural ────────────────────────────────────
         var mf = go.AddComponent<MeshFilter>();
         mf.sharedMesh = _meshCuerpo;
         var mr = go.AddComponent<MeshRenderer>();
@@ -253,6 +313,23 @@ public sealed class SistemaPersonajes : MonoBehaviour
         }
 
         return go;
+    }
+
+    // Devuelve el prefab 3D para cada tipo (null = usar cápsula procedural)
+    private GameObject PrefabParaTipo(TipoPersonaje tipo)
+    {
+        return tipo switch
+        {
+            TipoPersonaje.GuardiaCivil          => prefabGuardiaCivil,
+            TipoPersonaje.PoliciaForal          => prefabPoliciaForal,
+            TipoPersonaje.ManifestantePalestino => prefabManifestante,
+            TipoPersonaje.ManifestanteJurrutu   => prefabJarrai,
+            TipoPersonaje.PortadorIkurriña      => prefabManifestante,
+            TipoPersonaje.PortadorNavarra        => prefabManifestante,
+            TipoPersonaje.CivilianMale          => prefabCivilMasculino,
+            TipoPersonaje.CivilianFemale        => prefabCivilFemenino,
+            _                                   => null,
+        };
     }
 
     // ───────────────────────────────────────────────────────────────────────
