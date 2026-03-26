@@ -126,3 +126,19 @@ UnsafeCommandBuffer.cs
 null
 nul
 
+# ══════════════════════════════════════════════════════════════════
+#  HERRAMIENTAS Y ARCHIVOS TEMPORALES LOCALES
+# ══════════════════════════════════════════════════════════════════
+# Plastic SCM (control de versiones alternativo de Unity)
+.plastic/
+
+# Escenas de recuperación automática de Unity
+/[Aa]ssets/_Recovery/
+
+# Artefactos de importación de paquetes (archivos con sufijo numérico)
+Packages/manifest.json00
+*.json00
+
+# Claude Code configuración local (permisos de sesión, no compartir)
+.claude/settings.local.json
+
