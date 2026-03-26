@@ -230,6 +230,16 @@ public sealed class AudioManager : MonoBehaviour
         }
     }
 
+    private void OnDestroy()
+    {
+        // FIX TEST T13-T15: resetear la instancia estática cuando el objeto es destruido.
+        // Sin esto, si el test destruye el AudioManager con DestroyImmediate() y luego crea
+        // uno nuevo, I apunta al objeto destruido → el segundo AddComponent ve I != null
+        // y se autodestruye aunque I es basura → 0 instancias vivas (o 2 si DontDestroyOnLoad
+        // mueve el objeto a otra escena antes de la destrucción).
+        if (I == this) I = null;
+    }
+
 #if UNITY_EDITOR
     private void OnDrawGizmos()
     {

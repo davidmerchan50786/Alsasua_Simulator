@@ -87,21 +87,22 @@ public class EnemigoPatrulla : MonoBehaviour
         // Unity no permite crear objetos UnityEngine en constructores / inicializadores de campo.
         _pbFlash = new MaterialPropertyBlock();
         _idColor = Shader.PropertyToID("_BaseColor");
+
+        // FIX TEST T16: CrearCuerpoBasico movido de Start() a Awake() para que los tests
+        // edit-mode (que no ejecutan Start()) encuentren los Renderers correctamente.
+        if (transform.childCount == 0)
+            CrearCuerpoBasico();
     }
 
     private void Start()
     {
-        // Buscar jugador
+        // Buscar jugador (solo disponible en Play Mode; en edit-mode tests jp será null)
         var jp = Object.FindFirstObjectByType<ControladorJugador>();
         if (jp != null)
         {
             jugador        = jp.transform;
             controlJugador = jp;
         }
-
-        // Crear cuerpo visual básico si no tiene hijos
-        if (transform.childCount == 0)
-            CrearCuerpoBasico();
     }
 
     private void Update()
@@ -446,7 +447,8 @@ public class EnemigoPatrulla : MonoBehaviour
         foreach (var r in GetComponentsInChildren<Renderer>())
             r.SetPropertyBlock(mpbMuerto);
 
-        Destroy(gameObject, 8f);
+        if (Application.isPlaying) Destroy(gameObject, 8f);
+        else DestroyImmediate(gameObject);
         AlsasuaLogger.Info("EnemigoPatrulla", $"{name}: derribado.");
     }
 

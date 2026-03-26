@@ -172,6 +172,13 @@ public class SistemaAtmosfera : MonoBehaviour
 
     private void ActualizarAtmosfera()
     {
+        // FIX TEST T20: en tests edit-mode los Gradient [SerializeField] pueden no
+        // deserializarse automáticamente → null → NullReferenceException en Evaluate().
+        // Awake ya los inicializa pero la doble comprobación aquí hace el método
+        // robusto ante cualquier llamada externa (reflexión, hotreload, etc.).
+        if (colorDelSol   == null || colorDelSol.colorKeys.Length   < 3) colorDelSol   = GradienteSolar();
+        if (colorAmbiente == null || colorAmbiente.colorKeys.Length < 3) colorAmbiente = GradienteAmbiente();
+
         CalcularPosicionSolar();
         AplicarLuzSolar();
         AplicarAmbiente();

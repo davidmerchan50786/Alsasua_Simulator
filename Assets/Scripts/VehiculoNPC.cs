@@ -224,7 +224,11 @@ public class VehiculoNPC : MonoBehaviour
 
         // Desactivar física controlada
         rb.constraints = RigidbodyConstraints.None;
-        Destroy(gameObject, 15f);
+        // FIX TEST T21-T23: Destroy() no puede llamarse en edit-mode (tests unitarios).
+        // En play-mode usamos Destroy con delay de 15 s para que la explosión sea visible.
+        // En edit-mode (tests) usamos DestroyImmediate sincrono para limpiar correctamente.
+        if (Application.isPlaying) Destroy(gameObject, 15f);
+        else DestroyImmediate(gameObject);
         enabled = false;
     }
 
