@@ -188,7 +188,7 @@ MonoBehaviour:
       y: -176931.14377947157
       z: 4320032.314142868
       w: 1
-  _localToGlobeFixedMatrixIsValid: 1
+  _localToGlobeFixedMatrixIsValid: 0
 --- !u!114 &152392619
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1336,7 +1336,7 @@ MonoBehaviour:
       y: -176972.68610602786
       z: 4321053.466708851
       w: 1
-  _localToGlobeFixedMatrixIsValid: 1
+  _localToGlobeFixedMatrixIsValid: 0
 --- !u!81 &683288716
 AudioListener:
   m_ObjectHideFlags: 0
@@ -3249,7 +3249,7 @@ MonoBehaviour:
       y: -176931.3001694666
       z: 4320029.332417503
       w: 1
-  _localToGlobeFixedMatrixIsValid: 1
+  _localToGlobeFixedMatrixIsValid: 0
 --- !u!114 &1713834058
 MonoBehaviour:
   m_ObjectHideFlags: 0
