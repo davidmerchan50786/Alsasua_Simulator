@@ -255,29 +255,39 @@ public class ControladorJugador : MonoBehaviour
     /// </summary>
     private System.Collections.IEnumerator AjustarAlturaTerreno()
     {
-        // 3 segundos = tiempo medio para que Cesium genere physics meshes del tile inicial
+        // 3 s = tiempo medio para que Cesium genere physics meshes del tile inicial
         yield return new WaitForSeconds(3f);
 
-        // Resetear velocidad vertical acumulada antes del snap
         velVert = Vector3.zero;
 
-        // Raycast desde 200 m arriba hacia abajo: cubre cualquier offset de GeoReference
-        Vector3 origen = transform.position + Vector3.up * 200f;
         int maskTerreno = ~LayerMask.GetMask("Player", "Ignore Raycast");
-        if (Physics.Raycast(origen, Vector3.down, out RaycastHit hit, 400f, maskTerreno))
+
+        // RaycastAll desde 200 m arriba → recogemos TODOS los impactos.
+        // Tomamos el de menor Y (nivel de calle/terreno) en vez del primero
+        // que encuentra el raycast estándar (que puede ser el tejado de un edificio
+        // y provocaría que el jugador aparezca en un tejado con vista aérea).
+        Vector3 origen = transform.position + Vector3.up * 200f;
+        var hits = Physics.RaycastAll(origen, Vector3.down, 400f, maskTerreno);
+
+        if (hits.Length > 0)
         {
-            // Colocar pies sobre el punto de impacto (CC.center.y sube la cápsula)
-            cc.enabled = false;   // deshabilitar solo el instante del teleport
-            transform.position = new Vector3(transform.position.x, hit.point.y, transform.position.z);
+            // Ordenar por Y ascendente → hits[0] es la superficie más baja = calle/SueloBase
+            System.Array.Sort(hits, (a, b) => a.point.y.CompareTo(b.point.y));
+            float pisoY  = hits[0].point.y;
+            string nombre = hits[0].collider.gameObject.name;
+
+            cc.enabled = false;
+            transform.position = new Vector3(transform.position.x, pisoY, transform.position.z);
             cc.enabled = true;
-            velVert = Vector3.zero;   // limpiar de nuevo tras el teleport
-            AlsasuaLogger.Info("Jugador", $"Snap terreno Cesium → y={hit.point.y:F1} m ({hit.collider.gameObject.name})");
+            velVert = Vector3.zero;
+            AlsasuaLogger.Info("Jugador",
+                $"Snap suelo → y={pisoY:F1} m ('{nombre}') — {hits.Length} superficies detectadas");
         }
         else
         {
             AlsasuaLogger.Warn("Jugador",
-                "AjustarAlturaTerreno: sin colisionador bajo el jugador — " +
-                "comprueba que 'Create Physics Meshes' está activo en el Cesium Tileset.");
+                "AjustarAlturaTerreno: sin colisionador bajo el jugador. " +
+                "Comprueba que 'Create Physics Meshes' está activo en los Cesium Tilesets.");
         }
     }
 
