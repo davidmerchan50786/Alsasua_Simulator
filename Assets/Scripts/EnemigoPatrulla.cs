@@ -75,6 +75,7 @@ public class EnemigoPatrulla : MonoBehaviour
     private float  timerAlerta      = 0f;
     private bool   esperandoWP      = false;
     private Vector3 ultimaPosJugador;
+    private float   _velY = 0f;   // gravedad simple — Cesium no mueve NPCs solos
 
     // ═══════════════════════════════════════════════════════════════════════
     //  UNITY
@@ -126,6 +127,10 @@ public class EnemigoPatrulla : MonoBehaviour
         // Comprobar visión siempre
         if (Estado != EstadoIA.Atacando)
             ComprobarVision();
+
+        // Gravedad simple: los NPCs no tienen CharacterController ni Rigidbody.
+        // Raycast corto hacia abajo para pegarse al suelo Cesium o SueloBase.
+        AplicarGravedad();
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -301,6 +306,30 @@ public class EnemigoPatrulla : MonoBehaviour
     // ═══════════════════════════════════════════════════════════════════════
     //  MOVIMIENTO
     // ═══════════════════════════════════════════════════════════════════════
+
+    // Gravedad simple basada en raycast.
+    // Se activa cada frame: si hay suelo a menos de 3m abajo nos deslizamos hasta él;
+    // si no, acumulamos velocidad de caída libre hasta encontrarlo.
+    private void AplicarGravedad()
+    {
+        Vector3 origen = transform.position + Vector3.up * 0.5f;
+        if (Physics.Raycast(origen, Vector3.down, out RaycastHit hit, 3f,
+            ~LayerMask.GetMask("Ignore Raycast")))
+        {
+            _velY = 0f;
+            float objetivoY = hit.point.y;
+            if (Mathf.Abs(transform.position.y - objetivoY) > 0.01f)
+                transform.position = new Vector3(
+                    transform.position.x,
+                    Mathf.MoveTowards(transform.position.y, objetivoY, 8f * Time.deltaTime),
+                    transform.position.z);
+        }
+        else
+        {
+            _velY -= 9.81f * Time.deltaTime;
+            transform.position += Vector3.up * _velY * Time.deltaTime;
+        }
+    }
 
     private void MoverHacia(Vector3 destino, float velocidad)
     {
