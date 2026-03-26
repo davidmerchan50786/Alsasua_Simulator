@@ -241,54 +241,14 @@ public class ControladorJugador : MonoBehaviour
         ConfigurarCamara();
         CrearCuerpoJugador();
 
-        // Snap al terreno Cesium: los physics meshes de los tiles tardan ~2-3 s en
-        // generarse. Esperamos y luego hacemos un raycast para colocar al jugador
-        // exactamente sobre la superficie, independientemente de la altura del GeoReference.
-        StartCoroutine(AjustarAlturaTerreno());
-    }
-
-    /// <summary>
-    /// Espera a que Cesium genere los physics meshes y hace snap al suelo.
-    /// Funciona con Google Photorealistic 3D Tiles, Cesium World Terrain y SueloBase.
-    /// NOTA: no deshabilita el CharacterController — hacerlo acumula velVert durante
-    /// la espera y provoca que el jugador caiga a >60 m/s al reactivarse → negro.
-    /// </summary>
-    private System.Collections.IEnumerator AjustarAlturaTerreno()
-    {
-        // 3 s = tiempo medio para que Cesium genere physics meshes del tile inicial
-        yield return new WaitForSeconds(3f);
-
+        // El jugador parte a Y=10 sobre el origen del GeoReference (Plaza del Castillo).
+        // El CharacterController + gravedad lo bajan hasta el SueloBase (Y=0) o hasta
+        // los physics meshes de Cesium conforme se generan (~2-3 s).
+        // No se necesita snap por raycast: ese enfoque era frágil cuando los tiles
+        // aún no habían generado sus colliders, o cuando el primer hit era un tejado.
         velVert = Vector3.zero;
-
-        int maskTerreno = ~LayerMask.GetMask("Player", "Ignore Raycast");
-
-        // RaycastAll desde 200 m arriba → recogemos TODOS los impactos.
-        // Tomamos el de menor Y (nivel de calle/terreno) en vez del primero
-        // que encuentra el raycast estándar (que puede ser el tejado de un edificio
-        // y provocaría que el jugador aparezca en un tejado con vista aérea).
-        Vector3 origen = transform.position + Vector3.up * 200f;
-        var hits = Physics.RaycastAll(origen, Vector3.down, 400f, maskTerreno);
-
-        if (hits.Length > 0)
-        {
-            // Ordenar por Y ascendente → hits[0] es la superficie más baja = calle/SueloBase
-            System.Array.Sort(hits, (a, b) => a.point.y.CompareTo(b.point.y));
-            float pisoY  = hits[0].point.y;
-            string nombre = hits[0].collider.gameObject.name;
-
-            cc.enabled = false;
-            transform.position = new Vector3(transform.position.x, pisoY, transform.position.z);
-            cc.enabled = true;
-            velVert = Vector3.zero;
-            AlsasuaLogger.Info("Jugador",
-                $"Snap suelo → y={pisoY:F1} m ('{nombre}') — {hits.Length} superficies detectadas");
-        }
-        else
-        {
-            AlsasuaLogger.Warn("Jugador",
-                "AjustarAlturaTerreno: sin colisionador bajo el jugador. " +
-                "Comprueba que 'Create Physics Meshes' está activo en los Cesium Tilesets.");
-        }
+        AlsasuaLogger.Info("Jugador",
+            "Inicio en Plaza del Castillo Y=10 — gravedad bajará al jugador al nivel de calle.");
     }
 
     private void Update()
