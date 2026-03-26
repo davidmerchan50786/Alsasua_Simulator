@@ -544,7 +544,13 @@ public class SistemaClima : MonoBehaviour
         var vel = psLluvia.velocityOverLifetime;
         vel.enabled = true;
         vel.space   = ParticleSystemSimulationSpace.World;
-        vel.y       = new ParticleSystem.MinMaxCurve(-velocidadGota);  // caída constante
+        // FIX: los 3 ejes deben estar en el mismo modo (Constant).
+        // Asignar explícitamente x y z a 0 evita el warning "Particle Velocity
+        // curves must all be in the same mode" que Unity lanza si algún eje queda
+        // en modo distinto al resto. ActualizarAnguloLluvia() sobreescribirá los 3.
+        vel.x = new ParticleSystem.MinMaxCurve(0f);
+        vel.y = new ParticleSystem.MinMaxCurve(-velocidadGota);  // caída constante
+        vel.z = new ParticleSystem.MinMaxCurve(0f);
 
         // ── Colisión con el terreno (opcional) ───────────────────────────
         // MEJORA RENDIMIENTO: quality Low usa malla simplificada → ~60% menos coste
@@ -602,7 +608,11 @@ public class SistemaClima : MonoBehaviour
         var vel = psBruma.velocityOverLifetime;
         vel.enabled = true;
         vel.space   = ParticleSystemSimulationSpace.World;
-        vel.y       = new ParticleSystem.MinMaxCurve(-0.3f, -1.5f);
+        // FIX: vel.y usa TwoConstants (dos floats) → x y z deben usar el mismo modo
+        // para evitar "Particle Velocity curves must all be in the same mode".
+        vel.x = new ParticleSystem.MinMaxCurve(0f, 0f);    // TwoConstants, sin desplazamiento H
+        vel.y = new ParticleSystem.MinMaxCurve(-0.3f, -1.5f);
+        vel.z = new ParticleSystem.MinMaxCurve(0f, 0f);    // TwoConstants, sin desplazamiento H
 
         // ── Tamaño sobre vida ────────────────────────────────────────────
         var sizeOL = psBruma.sizeOverLifetime;
