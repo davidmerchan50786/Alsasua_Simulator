@@ -12,6 +12,11 @@ public class SistemaExplosion : MonoBehaviour
     [SerializeField] public int   danoMaximo   = 150;
     [SerializeField] public float duracionFuego = 6f;
 
+    // ── Asset externo (asignado por SistemaAssets en Awake) ──────────────────
+    // Se usa en Detonar() si no es null; de lo contrario se generan partículas
+    // procedurales como fallback para garantizar que siempre haya efecto visual.
+    public static GameObject PrefabExplosion;
+
     // FIX GC: HashSets pre-alloc estáticos para eliminar 5 allocaciones heap por explosión.
     // Son estáticos seguros porque AplicarFisicasYDano() es síncrono —
     // Unity no ejecuta dos explosiones en paralelo dentro del mismo frame.
@@ -44,16 +49,48 @@ public class SistemaExplosion : MonoBehaviour
         AudioManager.I?.Play(AudioManager.Clip.Explosion, transform.position);
 
         AplicarFisicasYDano();
-        EfectoBolaFuego();
-        EfectoHumo();
-        EfectoRescoldo();
-        EfectoLlamas();
+
+        // Usar el prefab de explosión real si está disponible; fallback a partículas procedurales.
+        if (PrefabExplosion != null)
+            EfectoExplosionPrefab();
+        else
+        {
+            EfectoBolaFuego();
+            EfectoHumo();
+            EfectoRescoldo();
+            EfectoLlamas();
+        }
+
         EfectoOnda();
 
         // Sacudir cámara si el jugador está cerca
         SacudirCamara();
 
         Destroy(gameObject, duracionFuego + 2f);
+    }
+
+    // ─── Efecto con prefab real ───────────────────────────────────────────
+
+    private void EfectoExplosionPrefab()
+    {
+        try
+        {
+            var go = Object.Instantiate(PrefabExplosion, transform.position, Quaternion.identity);
+            go.name = "ExplosionVFX";
+            // Escalar proporcionalmente al radio de la explosión (referencia: radio=12 → escala 1)
+            float escala = Mathf.Max(0.5f, radio / 12f);
+            go.transform.localScale = Vector3.one * escala;
+            Object.Destroy(go, duracionFuego + 2f);
+        }
+        catch (System.Exception ex)
+        {
+            AlsasuaLogger.Warn("SistemaExplosion", $"Error al instanciar PrefabExplosion: {ex.Message}. Usando fallback procedural.");
+            PrefabExplosion = null;  // evitar que falle en futuras explosiones
+            EfectoBolaFuego();
+            EfectoHumo();
+            EfectoRescoldo();
+            EfectoLlamas();
+        }
     }
 
     // ─── Físicas y daño ──────────────────────────────────────────────────

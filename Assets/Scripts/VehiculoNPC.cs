@@ -46,6 +46,12 @@ public class VehiculoNPC : MonoBehaviour
     [SerializeField] private int vidaMax = 80;
     private bool destruido = false;
 
+    [Header("═══ MODELO 3D ═══")]
+    [Tooltip("Prefab del modelo visual del vehículo (ej. Interceptor.prefab). " +
+             "Si se asigna, se instancia como hijo y se desactivan sus colliders. " +
+             "Si está vacío, se usa la malla básica de cajas.")]
+    [SerializeField] private GameObject prefabModelo;
+
     // ═══════════════════════════════════════════════════════════════════════
     //  COLOR DEL COCHE (aleatorio)
     // ═══════════════════════════════════════════════════════════════════════
@@ -86,6 +92,10 @@ public class VehiculoNPC : MonoBehaviour
 
         if (capasObstaculo == 0) capasObstaculo = ~0;
 
+        // Instanciar modelo 3D externo si está asignado; si no, montar malla básica de cajas.
+        if (prefabModelo != null) InstanciarModeloPrefab();
+        else                      CrearCuerpoBasico_Inline();
+
         // BUG 17 FIX: cachear el renderer en Awake() para no buscarlo en cada impacto.
         rendererPrincipal = GetComponentInChildren<Renderer>();
 
@@ -100,6 +110,94 @@ public class VehiculoNPC : MonoBehaviour
             _mpbCoche.SetColor("_BaseColor", c);   // URP/Lit
             _mpbCoche.SetColor("_Color",     c);   // Standard (fallback)
             rendererPrincipal.SetPropertyBlock(_mpbCoche);
+        }
+    }
+
+    // ─── Modelo 3D externo ───────────────────────────────────────────────
+
+    /// <summary>
+    /// Instancia el prefab visual como hijo del GO del vehículo,
+    /// desactiva sus colliders internos (el BoxCollider del padre es el real)
+    /// y normaliza la escala para que mida ~4.5 m de largo.
+    /// </summary>
+    private void InstanciarModeloPrefab()
+    {
+        try
+        {
+            var go = Object.Instantiate(prefabModelo, transform);
+            go.name = "_ModeloVehiculo";
+            go.transform.localPosition = Vector3.zero;
+            go.transform.localRotation = Quaternion.identity;
+
+            // Normalizar escala: medir bbox y ajustar a longitudObjetivo
+            float longitudObjetivo = 4.5f;
+            var renderers = go.GetComponentsInChildren<Renderer>(true);
+            if (renderers.Length > 0)
+            {
+                Bounds b = renderers[0].bounds;
+                foreach (var r in renderers) b.Encapsulate(r.bounds);
+                float dim = Mathf.Max(b.size.x, b.size.z);
+                if (dim > 0.001f)
+                    go.transform.localScale = Vector3.one * (longitudObjetivo / dim);
+            }
+
+            // Desactivar colliders del modelo (el BoxCollider del padre es el físico)
+            foreach (var col in go.GetComponentsInChildren<Collider>(true))
+                col.enabled = false;
+
+            AlsasuaLogger.Info("VehiculoNPC", $"{name}: modelo 3D '{prefabModelo.name}' instanciado.");
+        }
+        catch (System.Exception ex)
+        {
+            AlsasuaLogger.Warn("VehiculoNPC", $"{name}: error instanciando prefab '{prefabModelo.name}' — {ex.Message}. Usando malla básica.");
+            prefabModelo = null;
+            CrearCuerpoBasico_Inline();
+        }
+    }
+
+    /// <summary>
+    /// Crea la malla simple de cajas/cilindros en el GO actual (fallback sin prefab).
+    /// Idéntico a CrearCocheBasico pero como método de instancia para reutilizar desde Awake().
+    /// </summary>
+    private void CrearCuerpoBasico_Inline()
+    {
+        // Carrocería
+        var cuerpo = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        cuerpo.transform.SetParent(transform);
+        cuerpo.transform.localPosition = new Vector3(0f, 0.45f, 0f);
+        cuerpo.transform.localScale    = new Vector3(1.8f, 0.8f, 4.2f);
+        { var c = cuerpo.GetComponent<Collider>(); if (c) Object.Destroy(c); }
+
+        // Techo
+        var techo = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        techo.transform.SetParent(transform);
+        techo.transform.localPosition = new Vector3(0f, 1.05f, -0.2f);
+        techo.transform.localScale    = new Vector3(1.6f, 0.55f, 2.4f);
+        { var c = techo.GetComponent<Collider>(); if (c) Object.Destroy(c); }
+
+        // Ruedas (4)
+        float[] posX = { -1.0f, 1.0f, -1.0f, 1.0f };
+        float[] posZ = {  1.3f, 1.3f, -1.3f,-1.3f };
+        for (int i = 0; i < 4; i++)
+        {
+            var rueda = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            rueda.transform.SetParent(transform);
+            rueda.transform.localPosition = new Vector3(posX[i], 0.22f, posZ[i]);
+            rueda.transform.localScale    = new Vector3(0.35f, 0.22f, 0.35f);
+            rueda.transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
+            var mpbR = new MaterialPropertyBlock();
+            mpbR.SetColor("_BaseColor", new Color(0.1f, 0.1f, 0.1f));
+            mpbR.SetColor("_Color",     new Color(0.1f, 0.1f, 0.1f));
+            rueda.GetComponent<Renderer>().SetPropertyBlock(mpbR);
+            { var c = rueda.GetComponent<Collider>(); if (c) Object.Destroy(c); }
+        }
+
+        // Asegurar BoxCollider en el GO raíz
+        if (GetComponent<BoxCollider>() == null)
+        {
+            var boxCol = gameObject.AddComponent<BoxCollider>();
+            boxCol.center = new Vector3(0, 0.45f, 0);
+            boxCol.size   = new Vector3(1.8f, 1.4f, 4.2f);
         }
     }
 

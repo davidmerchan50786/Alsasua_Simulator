@@ -17,6 +17,12 @@ public class BarricadaFuego : MonoBehaviour
     [Tooltip("Radio de la zona de bloqueo visible en el Editor (Gizmo). No afecta a la colisión física.")]
     [SerializeField] private float radioBloqueo    = 2.5f;
 
+    [Header("═══ VFX EXTERNO (opcional) ═══")]
+    [Tooltip("Prefab de fuego/VFX externo (ej. VFX_Fire_Floor_01.prefab). " +
+             "Si se asigna, reemplaza las partículas procedurales de fuego y humo. " +
+             "Dejar vacío para usar el sistema procedural de fallback.")]
+    [SerializeField] private GameObject prefabVFXFuego;
+
     // BUG 5 FIX: rastrear materiales creados con new Material() para destruirlos en OnDestroy().
     // MatURP() era static → los materiales no pertenecían a ninguna instancia y Unity no los
     // liberaba al salir del modo Play en el Editor, acumulando leaks cada vez que se entraba.
@@ -27,6 +33,9 @@ public class BarricadaFuego : MonoBehaviour
     private ParticleSystem psChispas;
     private Light          luzFuego;
     private float          timerParpadeo = 0f;
+
+    // GO instanciado del VFX externo (para poder .Stop() al recibir daño letal)
+    private GameObject     _vfxFuegoInstancia;
 
     // ═══════════════════════════════════════════════════════════════════════
     //  UNITY
@@ -138,10 +147,41 @@ public class BarricadaFuego : MonoBehaviour
     public void PrenderFuego()
     {
         fuegoPrendido = true;
-        CrearFuego();
-        CrearHumo();
-        CrearChispas();
+
+        // Si hay prefab VFX externo, usarlo en lugar de las partículas procedurales.
+        if (prefabVFXFuego != null)
+            InstanciarVFXExterno();
+        else
+        {
+            CrearFuego();
+            CrearHumo();
+            CrearChispas();
+        }
+
+        // Luz dinámica siempre (da ambiente aunque el prefab tenga su propia luz)
         CrearLuzFuego();
+    }
+
+    private void InstanciarVFXExterno()
+    {
+        try
+        {
+            _vfxFuegoInstancia = Object.Instantiate(prefabVFXFuego, transform);
+            _vfxFuegoInstancia.name = "_VFXFuego";
+            _vfxFuegoInstancia.transform.localPosition = new Vector3(0f, 0.1f, 0f);
+            _vfxFuegoInstancia.transform.localRotation = Quaternion.identity;
+            // Escalar para que el fuego cubra la barricada (~1.5 m de ancho)
+            _vfxFuegoInstancia.transform.localScale = Vector3.one * intensidadFuego * 1.5f;
+            AlsasuaLogger.Info("BarricadaFuego", $"{name}: VFX '{prefabVFXFuego.name}' instanciado.");
+        }
+        catch (System.Exception ex)
+        {
+            AlsasuaLogger.Warn("BarricadaFuego", $"{name}: error al instanciar VFX fuego: {ex.Message}. Usando partículas procedurales.");
+            prefabVFXFuego = null;
+            CrearFuego();
+            CrearHumo();
+            CrearChispas();
+        }
     }
 
     private void CrearFuego()
@@ -266,6 +306,8 @@ public class BarricadaFuego : MonoBehaviour
             if (psHumo   != null) psHumo.Stop();
             if (psChispas!= null) psChispas.Stop();
             if (luzFuego != null) luzFuego.enabled = false;
+            // Apagar también el VFX externo si estaba en uso
+            if (_vfxFuegoInstancia != null) _vfxFuegoInstancia.SetActive(false);
             AlsasuaLogger.Info("BarricadaFuego", $"{name}: destruida en {transform.position}");
         }
     }

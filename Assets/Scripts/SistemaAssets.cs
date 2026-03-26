@@ -63,6 +63,14 @@ public sealed class SistemaAssets : MonoBehaviour
     [Tooltip("Prefab árbol roble/caducifolio (Environment Pack Free Forest)")]
     [SerializeField] private GameObject prefabRoble;
 
+    [Header("═══ VFX ═══")]
+    [Tooltip("Prefab de explosión (Mirza Beig — Cinematic Explosions FREE). " +
+             "Asignar 'Explosion FREE 1 Variant.prefab'. Se propaga a SistemaExplosion.PrefabExplosion.")]
+    [SerializeField] private GameObject prefabExplosion;
+    [Tooltip("Prefab de fuego suelo (Free Fire VFX — VFX_Fire_Floor_01.prefab). " +
+             "Se propaga a BarricadaFuego.prefabVFXFuego vía SistemaAssets.")]
+    [SerializeField] private GameObject prefabVFXFuego;
+
     [Header("═══ AUDIO ═══")]
     [Tooltip("Sonido ambiente multitud (loop)")]
     [SerializeField] private AudioClip audioMultitud;
@@ -85,6 +93,8 @@ public sealed class SistemaAssets : MonoBehaviour
     private const string PATH_COCHE_CIVIL     = "Vehiculos/Civil/CocheCivil";
     private const string PATH_PREFAB_PINO     = "Vegetacion/Pino";
     private const string PATH_PREFAB_ROBLE    = "Vegetacion/Roble";
+    private const string PATH_EXPLOSION       = "VFX/Explosion";
+    private const string PATH_VFX_FUEGO       = "VFX/FuegoSuelo";
 
     // ───────────────────────────────────────────────────────────────────────
     //  PROPIEDADES PÚBLICAS (usadas por GestorEscena y los sistemas)
@@ -100,6 +110,8 @@ public sealed class SistemaAssets : MonoBehaviour
     public GameObject  PrefabCocheCivil   => prefabCocheCivil;
     public GameObject  PrefabPino         => prefabPino;
     public GameObject  PrefabRoble        => prefabRoble;
+    public GameObject  PrefabExplosion    => prefabExplosion;
+    public GameObject  PrefabVFXFuego     => prefabVFXFuego;
     public AudioClip   AudioMultitud      => audioMultitud;
     public AudioClip   AudioSirena        => audioSirena;
     public AudioClip   AudioTren          => audioTren;
@@ -120,6 +132,7 @@ public sealed class SistemaAssets : MonoBehaviour
         Instancia = this;
 
         CargarDesdeResources();
+        PropagarAssets();
         LogEstadoAssets();
     }
 
@@ -154,6 +167,26 @@ public sealed class SistemaAssets : MonoBehaviour
         // Vegetación
         if (prefabPino  == null) prefabPino  = Resources.Load<GameObject>(PATH_PREFAB_PINO);
         if (prefabRoble == null) prefabRoble = Resources.Load<GameObject>(PATH_PREFAB_ROBLE);
+
+        // VFX
+        if (prefabExplosion == null) prefabExplosion = Resources.Load<GameObject>(PATH_EXPLOSION);
+        if (prefabVFXFuego  == null) prefabVFXFuego  = Resources.Load<GameObject>(PATH_VFX_FUEGO);
+    }
+
+    // ───────────────────────────────────────────────────────────────────────
+    //  PROPAGACIÓN DE ASSETS A SISTEMAS
+    // ───────────────────────────────────────────────────────────────────────
+    /// <summary>
+    /// Propaga los assets cargados a los sistemas que no pueden recibir
+    /// references directas desde el Inspector (campos estáticos, prefabs
+    /// instanciados en runtime, etc.).
+    /// Llamado desde Awake() justo después de CargarDesdeResources().
+    /// </summary>
+    private void PropagarAssets()
+    {
+        // SistemaExplosion usa un campo estático para el prefab de explosión.
+        if (prefabExplosion != null)
+            SistemaExplosion.PrefabExplosion = prefabExplosion;
     }
 
     // Intenta cargar el primer Mesh de un asset FBX/GLB desde Resources
@@ -189,6 +222,8 @@ public sealed class SistemaAssets : MonoBehaviour
         Cuenta("Prefab coche civil",  prefabCocheCivil  != null, ref cargados, ref fallbacks);
         Cuenta("Prefab pino",         prefabPino        != null, ref cargados, ref fallbacks);
         Cuenta("Prefab roble",        prefabRoble       != null, ref cargados, ref fallbacks);
+        Cuenta("Prefab explosión",    prefabExplosion   != null, ref cargados, ref fallbacks);
+        Cuenta("Prefab VFX fuego",    prefabVFXFuego    != null, ref cargados, ref fallbacks);
 
         if (fallbacks > 0)
         {

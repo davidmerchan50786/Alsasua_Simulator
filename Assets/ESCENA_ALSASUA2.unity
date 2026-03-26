@@ -1581,6 +1581,7 @@ MonoBehaviour:
     m_Bits: 0
   vida: 80
   vidaMax: 80
+  prefabModelo: {fileID: 100100000, guid: 7be733fca5977484eab72a8eca73b1b2, type: 3}
 --- !u!54 &714164751
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1696,6 +1697,7 @@ MonoBehaviour:
     m_Bits: 0
   vida: 80
   vidaMax: 80
+  prefabModelo: {fileID: 100100000, guid: 7be733fca5977484eab72a8eca73b1b2, type: 3}
 --- !u!54 &722732003
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -2481,6 +2483,7 @@ MonoBehaviour:
   intensidadFuego: 1
   vida: 200
   radioBloqueo: 2.5
+  prefabVFXFuego: {fileID: 100100000, guid: 2ee7574cb1211da4ba89d1838327b5c4, type: 3}
 --- !u!1 &1202269118
 GameObject:
   m_ObjectHideFlags: 0
@@ -3212,6 +3215,7 @@ MonoBehaviour:
   intensidadFuego: 1
   vida: 200
   radioBloqueo: 2.5
+  prefabVFXFuego: {fileID: 100100000, guid: 2ee7574cb1211da4ba89d1838327b5c4, type: 3}
 --- !u!1 &1713703649
 GameObject:
   m_ObjectHideFlags: 0
@@ -3784,6 +3788,7 @@ MonoBehaviour:
   intensidadFuego: 1
   vida: 200
   radioBloqueo: 2.5
+  prefabVFXFuego: {fileID: 100100000, guid: 2ee7574cb1211da4ba89d1838327b5c4, type: 3}
 --- !u!1 &2133321937
 GameObject:
   m_ObjectHideFlags: 0
@@ -3874,6 +3879,118 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2133321937}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &3500000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3500000002}
+  - component: {fileID: 3500000003}
+  m_Layer: 0
+  m_Name: AudioManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3500000002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3500000001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3500000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3500000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 46b0a00275313354d9eec589a13706b7, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: AlsasuaScripts::AudioManager
+  clipDisparo: {fileID: 8300000, guid: 6739c01659ad96d47987f4ddee226b36, type: 3}
+  clipImpactoSuelo: {fileID: 8300000, guid: 75adfe9a619833445a701305b983e548, type: 3}
+  clipImpactoSangre: {fileID: 8300000, guid: a37f44cbf8c2a7443a3c361efa2f233a, type: 3}
+  clipImpactoMetal: {fileID: 8300000, guid: 2e071f5b8b8467d45a5e6e24c23c6ad4, type: 3}
+  clipRecarga: {fileID: 0}
+  clipPasoNormal: {fileID: 0}
+  clipPasoCorrer: {fileID: 0}
+  clipMotorCoche: {fileID: 0}
+  clipExplosion: {fileID: 8300000, guid: 1fd31868d68903d4f9e2c4a3b7ef98f3, type: 3}
+  clipSilbato: {fileID: 0}
+  volEfectos: 0.8
+  volPasos: 0.5
+  volAmbiente: 0.35
+  volMotores: 0.25
+  poolSize: 16
+--- !u!1 &3500000010
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3500000011}
+  - component: {fileID: 3500000012}
+  m_Layer: 0
+  m_Name: SistemaAssets
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3500000011
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3500000010}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3500000012
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3500000010}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c6b49f459bd21c4aabc32497841f0c0, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: AlsasuaScripts::SistemaAssets
+  prefabPatrullaGC: {fileID: 100100000, guid: 7be733fca5977484eab72a8eca73b1b2, type: 3}
+  prefabCocheCivil: {fileID: 0}
+  prefabPino: {fileID: 0}
+  prefabRoble: {fileID: 0}
+  prefabExplosion: {fileID: 100100000, guid: b70fbea4bc8994749ba52e4f560f9f28, type: 3}
+  prefabVFXFuego: {fileID: 100100000, guid: 2ee7574cb1211da4ba89d1838327b5c4, type: 3}
+  audioMultitud: {fileID: 8300000, guid: eee16e2e6580b4b97b2ff6b3804297a1, type: 3}
+  audioSirena: {fileID: 0}
+  audioTren: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -3889,3 +4006,5 @@ SceneRoots:
   - {fileID: 2052870776}
   - {fileID: 440531679}
   - {fileID: 446168987}
+  - {fileID: 3500000002}
+  - {fileID: 3500000011}
