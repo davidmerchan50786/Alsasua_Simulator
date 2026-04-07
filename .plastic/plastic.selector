@@ -1,0 +1,4 @@
+repository "Cloud Repositories/Alsasua_Simulator@6872663242802@cloud"
+  path "/"
+    br "/main"
+    co "/main"
