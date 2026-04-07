@@ -571,8 +571,14 @@ if __name__ == "__main__":
     # FIX: validación fail-fast de la configuración geográfica.
     # Si alguien edita las constantes BBOX y comete un error (ej. sur > norte),
     # el script fallaría silenciosamente con 0 edificios en vez de dar un error claro.
-    assert BBOX_SUR  < BBOX_NORTE, f"BBOX inválido: SUR ({BBOX_SUR}) debe ser < NORTE ({BBOX_NORTE})"
-    assert BBOX_OESTE < BBOX_ESTE, f"BBOX inválido: OESTE ({BBOX_OESTE}) debe ser < ESTE ({BBOX_ESTE})"
+    if not BBOX_SUR < BBOX_NORTE:
+        raise SystemExit(
+            f"BBOX inválido: SUR ({BBOX_SUR}) debe ser < NORTE ({BBOX_NORTE})"
+        )
+    if not BBOX_OESTE < BBOX_ESTE:
+        raise SystemExit(
+            f"BBOX inválido: OESTE ({BBOX_OESTE}) debe ser < ESTE ({BBOX_ESTE})"
+        )
 
     DIR_FACHADAS.mkdir(parents=True, exist_ok=True)
     procesar_edificios()
