@@ -84,6 +84,21 @@ public static class CreadorAnimatorMixamo
         System.IO.Directory.CreateDirectory("Assets/Personajes");
         AssetDatabase.Refresh();
 
+        var existingController = AssetDatabase.LoadAssetAtPath<AnimatorController>(RUTA_OUTPUT);
+        if (existingController != null)
+        {
+            if (!AssetDatabase.DeleteAsset(RUTA_OUTPUT))
+            {
+                Debug.LogError("[Alsasua] No se pudo reemplazar el Animator Controller existente en: " + RUTA_OUTPUT);
+                if (!silencioso) EditorUtility.DisplayDialog(
+                    "Error al crear Animator Controller",
+                    "No se pudo reemplazar el Animator Controller existente en:\n\n" + RUTA_OUTPUT,
+                    "OK");
+                return;
+            }
+
+            AssetDatabase.Refresh();
+        }
         var controller = AnimatorController.CreateAnimatorControllerAtPath(RUTA_OUTPUT);
 
         // ── 2. Parámetros ────────────────────────────────────────────────────
