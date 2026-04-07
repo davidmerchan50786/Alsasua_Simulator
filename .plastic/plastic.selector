@@ -1,4 +1,4 @@
-repository "Cloud Repositories/Alsasua_Simulator@6872663242802@cloud"
+repository "Cloud Repositories/REPLACE_WITH_LOCAL_REPOSITORY"
   path "/"
     br "/main"
     co "/main"
