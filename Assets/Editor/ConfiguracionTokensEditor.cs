@@ -16,6 +16,8 @@ public static class ConfiguracionTokensEditor
 
     private static void CrearAssetSiNoExiste()
     {
+        EditorApplication.delayCall -= CrearAssetSiNoExiste;
+
         string carpetaResources = "Assets/Resources";
         string rutaAsset        = carpetaResources + "/ConfiguracionTokens.asset";
 
