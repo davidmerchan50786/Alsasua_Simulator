@@ -1,0 +1,289 @@
+// Assets/Scripts/VehiculoNPC.cs
+// Vehículo NPC que sigue waypoints, frena ante obstáculos y recibe daño
+
+using UnityEngine;
+using System.Collections.Generic;
+
+[RequireComponent(typeof(Rigidbody))]
+public class VehiculoNPC : MonoBehaviour
+{
+    // ═══════════════════════════════════════════════════════════════════════
+    //  MOVIMIENTO
+    // ═══════════════════════════════════════════════════════════════════════
+
+    [Header("═══ MOVIMIENTO ═══")]
+    [Tooltip("Velocidad máxima de desplazamiento del vehículo (m/s). 8 m/s ≈ 30 km/h, velocidad urbana.")]
+    [SerializeField] private float velocidadMax    = 8f;    // m/s ≈ 30 km/h ciudad
+    [Tooltip("Aceleración desde parado hasta velocidadMax (m/s²). Valores bajos = arranque gradual.")]
+    [SerializeField] private float aceleracion     = 4f;
+    [Tooltip("Velocidad angular máxima de giro del vehículo (grados/segundo).")]
+    [SerializeField] private float velocidadGiro   = 120f;  // grados/seg
+    [Tooltip("Distancia horizontal al waypoint para considerarlo alcanzado y avanzar al siguiente (m).")]
+    [SerializeField] private float distanciaWP     = 4f;    // distancia para cambiar waypoint
+    [Tooltip("Si está activo, al llegar al último waypoint el vehículo vuelve al primero (ruta en bucle).")]
+    [SerializeField] private bool  bucleWaypoints  = true;
+
+    [Header("═══ WAYPOINTS ═══")]
+    [Tooltip("Arrastra aquí los GameObjects que marcan la ruta del coche")]
+    [SerializeField] private List<Transform> waypoints = new List<Transform>();
+
+    [Header("═══ OBSTÁCULOS ═══")]
+    [Tooltip("Distancia de detección de obstáculos con el raycast frontal. El vehículo frenará si hay algo a este rango (m).")]
+    [SerializeField] private float distanciaFreno  = 6f;
+    [Tooltip("Ángulo total del cono de detección (°). Se usan 3 rayos: centro ±(ángulo/2). 30° = buena detección de giros.")]
+    [SerializeField] private float anguloDeteccion = 30f;
+    [Tooltip("Capas que pueden bloquear el avance del vehículo. Por defecto (~0) detecta todo.")]
+    [SerializeField] private LayerMask capasObstaculo;
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  SALUD
+    // ═══════════════════════════════════════════════════════════════════════
+
+    [Header("═══ SALUD ═══")]
+    [Tooltip("Puntos de vida actuales del vehículo. Al llegar a 0 explota y se destruye.")]
+    [SerializeField] private int vida    = 80;
+    [Tooltip("Puntos de vida máximos del vehículo (referencia para el oscurecimiento progresivo de la carrocería).")]
+    [SerializeField] private int vidaMax = 80;
+    private bool destruido = false;
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  COLOR DEL COCHE (aleatorio)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    private static Color[] coloresCoche =
+    {
+        new Color(0.8f, 0.1f, 0.1f),   // rojo
+        new Color(0.1f, 0.2f, 0.7f),   // azul
+        new Color(0.1f, 0.5f, 0.2f),   // verde
+        new Color(0.9f, 0.9f, 0.9f),   // blanco
+        new Color(0.15f, 0.15f, 0.15f),// negro
+        new Color(0.7f, 0.6f, 0.1f),   // amarillo oscuro
+        new Color(0.5f, 0.5f, 0.5f),   // gris
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  ESTADO INTERNO
+    // ═══════════════════════════════════════════════════════════════════════
+
+    private Rigidbody rb;
+    private int       wpActual    = 0;
+    private float     velocidadActual = 0f;
+    private bool      frenando    = false;
+    // BUG 17 FIX: cachear el renderer principal para no buscarlo en cada impacto/daño.
+    private Renderer             rendererPrincipal;
+    // FIX LEAK: MPB reutilizable para asignar y modificar colores sin crear instancias de Material.
+    private MaterialPropertyBlock _mpbCoche;
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  UNITY
+    // ═══════════════════════════════════════════════════════════════════════
+
+    private void Awake()
+    {
+        rb = GetComponent<Rigidbody>();
+        rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        rb.linearDamping        = 1.5f;
+
+        if (capasObstaculo == 0) capasObstaculo = ~0;
+
+        // BUG 17 FIX: cachear el renderer en Awake() para no buscarlo en cada impacto.
+        rendererPrincipal = GetComponentInChildren<Renderer>();
+
+        // Color aleatorio — FIX LEAK: MaterialPropertyBlock en lugar de .material.color.
+        // Acceder a renderer.material crea una instancia de Material por renderer que nunca
+        // se destruye automáticamente. SetPropertyBlock sobreescribe propiedades del shader
+        // por renderer sin crear ninguna instancia → cero leak, cero GC.
+        if (rendererPrincipal != null)
+        {
+            Color c = coloresCoche[Random.Range(0, coloresCoche.Length)];
+            _mpbCoche = new MaterialPropertyBlock();
+            _mpbCoche.SetColor("_BaseColor", c);   // URP/Lit
+            _mpbCoche.SetColor("_Color",     c);   // Standard (fallback)
+            rendererPrincipal.SetPropertyBlock(_mpbCoche);
+        }
+    }
+
+    private void FixedUpdate()
+    {
+        if (destruido || waypoints.Count == 0) return;
+
+        DetectarObstaculos();
+        MoverHaciaWaypoint();
+        CambiarWaypointSiLlegamos();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  MOVIMIENTO
+    // ═══════════════════════════════════════════════════════════════════════
+
+    private void MoverHaciaWaypoint()
+    {
+        if (wpActual >= waypoints.Count) return;
+
+        Transform destino = waypoints[wpActual];
+        if (destino == null) { wpActual++; return; }
+
+        Vector3 dir = (destino.position - transform.position);
+        dir.y = 0f;
+
+        // Girar hacia el destino
+        if (dir.magnitude > 0.1f)
+        {
+            Quaternion rotObjetivo = Quaternion.LookRotation(dir.normalized);
+            transform.rotation = Quaternion.RotateTowards(
+                transform.rotation, rotObjetivo,
+                velocidadGiro * Time.fixedDeltaTime);
+        }
+
+        // Acelerar / frenar
+        float velObjetivo = frenando ? 0f : velocidadMax;
+        velocidadActual = Mathf.MoveTowards(velocidadActual, velObjetivo,
+                                             aceleracion * Time.fixedDeltaTime);
+
+        rb.MovePosition(rb.position + transform.forward * velocidadActual * Time.fixedDeltaTime);
+    }
+
+    private void CambiarWaypointSiLlegamos()
+    {
+        if (wpActual >= waypoints.Count) return;
+
+        // BUG FIX: evitar NullReferenceException si el waypoint fue destruido o no fue asignado
+        if (waypoints[wpActual] == null) { wpActual++; return; }
+
+        float dist = Vector3.Distance(
+            new Vector3(transform.position.x, 0, transform.position.z),
+            new Vector3(waypoints[wpActual].position.x, 0, waypoints[wpActual].position.z));
+
+        if (dist < distanciaWP)
+        {
+            wpActual++;
+            if (wpActual >= waypoints.Count)
+            {
+                if (bucleWaypoints) wpActual = 0;
+                else { velocidadActual = 0f; enabled = false; }
+            }
+        }
+    }
+
+    private void DetectarObstaculos()
+    {
+        // BUG 19 FIX: anguloDeteccion estaba declarado como SerializeField pero NUNCA se usaba.
+        // Ahora se usa para un cono de 3 rayos (centro + flancos) que mejora la detección
+        // de obstáculos angulados respecto al vehículo.
+        Vector3 origen   = transform.position + Vector3.up * 0.5f;
+        Quaternion izq   = Quaternion.Euler(0f, -anguloDeteccion * 0.5f, 0f);
+        Quaternion der   = Quaternion.Euler(0f,  anguloDeteccion * 0.5f, 0f);
+
+        frenando = Physics.Raycast(origen, transform.forward,       distanciaFreno, capasObstaculo)
+                || Physics.Raycast(origen, izq * transform.forward, distanciaFreno, capasObstaculo)
+                || Physics.Raycast(origen, der * transform.forward, distanciaFreno, capasObstaculo);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  DAÑO
+    // ═══════════════════════════════════════════════════════════════════════
+
+    public void RecibirDano(int cantidad)
+    {
+        if (destruido) return;
+        vida -= cantidad;
+
+        // FIX LEAK: leer el color actual del MPB (no de .material) y oscurecer sin crear instancias.
+        // GetPropertyBlock rellena _mpbCoche con los valores actuales del renderer → GetColor
+        // devuelve el último color asignado → lo oscurecemos y lo volvemos a escribir.
+        if (rendererPrincipal != null && _mpbCoche != null)
+        {
+            rendererPrincipal.GetPropertyBlock(_mpbCoche);
+            Color colorActual = _mpbCoche.GetColor("_BaseColor");
+            Color colorOscuro = Color.Lerp(colorActual, Color.black,
+                                           0.3f * ((float)(vidaMax - vida) / vidaMax));
+            _mpbCoche.SetColor("_BaseColor", colorOscuro);
+            _mpbCoche.SetColor("_Color",     colorOscuro);
+            rendererPrincipal.SetPropertyBlock(_mpbCoche);
+        }
+
+        if (vida <= 0) Destruir();
+    }
+
+    private void Destruir()
+    {
+        destruido = true;
+        velocidadActual = 0f;
+
+        // Explosión del vehículo
+        SistemaExplosion.Explotar(transform.position + Vector3.up, 8f, 400f, 80);
+
+        // Oscurecer completamente — FIX: usar MaterialPropertyBlock para no crear instancias
+        // de material por cada sub-renderer del vehículo (carrocería + techo + 4 ruedas = 6).
+        // MaterialPropertyBlock es per-renderer, sin creación de Material ni GC.
+        var pb = new MaterialPropertyBlock();
+        pb.SetColor("_BaseColor", new Color(0.08f, 0.06f, 0.05f));
+        pb.SetColor("_Color",     new Color(0.08f, 0.06f, 0.05f));  // fallback para shader Standard
+        foreach (var r in GetComponentsInChildren<Renderer>())
+            r.SetPropertyBlock(pb);
+
+        // Desactivar física controlada
+        rb.constraints = RigidbodyConstraints.None;
+        Destroy(gameObject, 15f);
+        enabled = false;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  UTILIDAD ESTÁTICA: crear coche con forma básica por código
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Crea un VehiculoNPC en la posición indicada con waypoints de prueba.
+    /// Útil para instanciar desde SetupEscenaAlsasua.
+    /// </summary>
+    public static GameObject CrearCocheBasico(Vector3 posicion, List<Transform> ruta)
+    {
+        var go = new GameObject("CocheNPC");
+        go.transform.position = posicion;
+
+        // Carrocería
+        var cuerpo = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        cuerpo.transform.SetParent(go.transform);
+        cuerpo.transform.localPosition = new Vector3(0f, 0.45f, 0f);
+        cuerpo.transform.localScale    = new Vector3(1.8f, 0.8f, 4.2f);
+        Destroy(cuerpo.GetComponent<Collider>());
+
+        // Techo
+        var techo = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        techo.transform.SetParent(go.transform);
+        techo.transform.localPosition = new Vector3(0f, 1.05f, -0.2f);
+        techo.transform.localScale    = new Vector3(1.6f, 0.55f, 2.4f);
+        Destroy(techo.GetComponent<Collider>());
+
+        // Ruedas (4)
+        float[] posX = { -1.0f, 1.0f, -1.0f, 1.0f };
+        float[] posZ = { 1.3f, 1.3f, -1.3f, -1.3f };
+        for (int i = 0; i < 4; i++)
+        {
+            var rueda = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            rueda.transform.SetParent(go.transform);
+            rueda.transform.localPosition = new Vector3(posX[i], 0.22f, posZ[i]);
+            rueda.transform.localScale    = new Vector3(0.35f, 0.22f, 0.35f);
+            rueda.transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
+            // FIX LEAK: 4 accesos a .material en el bucle crean 4 instancias de Material
+            // que nunca se destruyen. Usar MaterialPropertyBlock por rueda → cero instancias.
+            var mpbRueda = new MaterialPropertyBlock();
+            mpbRueda.SetColor("_BaseColor", new Color(0.1f, 0.1f, 0.1f));
+            mpbRueda.SetColor("_Color",     new Color(0.1f, 0.1f, 0.1f));
+            rueda.GetComponent<Renderer>().SetPropertyBlock(mpbRueda);
+            Destroy(rueda.GetComponent<Collider>());
+        }
+
+        // Colisionador principal
+        var boxCol = go.AddComponent<BoxCollider>();
+        boxCol.center = new Vector3(0, 0.45f, 0);
+        boxCol.size   = new Vector3(1.8f, 1.4f, 4.2f);
+
+        // Rigidbody y script
+        var vehiculo = go.AddComponent<VehiculoNPC>();
+        vehiculo.waypoints = ruta;
+        vehiculo.vida      = vehiculo.vidaMax = 80;
+
+        return go;
+    }
+}

@@ -1,0 +1,4 @@
+repository "Cloud Repositories/REPLACE_WITH_LOCAL_REPOSITORY"
+  path "/"
+    br "/main"
+    co "/main"
