@@ -1,3 +1,6 @@
+# Claude local settings (machine-specific, must not be versioned)
+.claude/settings.local.json
+
 # This .gitignore file should be placed at the root of your Unity project directory
 #
 # Get latest from https://github.com/github/gitignore/blob/main/Unity.gitignore
