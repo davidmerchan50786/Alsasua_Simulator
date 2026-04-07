@@ -48,18 +48,25 @@ public static class InicializadorAlsasua
         }
 
         // ── 2. Crear AnimatorController con los 9 clips
-        if (!EditorPrefs.GetBool(PREF_CONTROLLER, false) &&
-            !System.IO.File.Exists(RUTA_CONTROLLER))
+        bool controllerExiste = System.IO.File.Exists(RUTA_CONTROLLER);
+        if (!EditorPrefs.GetBool(PREF_CONTROLLER, false))
         {
-            try
+            if (controllerExiste)
             {
-                CreadorAnimatorMixamo.CrearController(silencioso: true);
                 EditorPrefs.SetBool(PREF_CONTROLLER, true);
-                hizoController = true;
             }
-            catch (System.Exception e)
+            else
             {
-                Debug.LogWarning($"[Alsasua] Auto-creación controller falló (se reintentará): {e.Message}");
+                try
+                {
+                    CreadorAnimatorMixamo.CrearController(silencioso: true);
+                    EditorPrefs.SetBool(PREF_CONTROLLER, true);
+                    hizoController = true;
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogWarning($"[Alsasua] Auto-creación controller falló (se reintentará): {e.Message}");
+                }
             }
         }
 
