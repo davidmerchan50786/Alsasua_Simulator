@@ -38,6 +38,11 @@ public class SistemaDisparo : MonoBehaviour
     [SerializeField] private int   balasReserva      = 120;
     [SerializeField] private float tiempoRecarga     = 2.0f;
 
+    [Header("═══ REFERENCIA ═══")]
+    [Tooltip("Velocidad máxima de carrera (m/s) usada para normalizar la dispersión en movimiento.\n" +
+             "Debe coincidir con ControladorJugador.velocidadCorrer para que el factor de penalización sea correcto.")]
+    [SerializeField] private float velocidadCorrerRef = 8.5f;
+
     [Header("═══ CAPAS ═══")]
     [SerializeField] private LayerMask capasImpacto;   // qué capas reciben impacto
 
@@ -67,7 +72,8 @@ public class SistemaDisparo : MonoBehaviour
     public int      TamañoPoolDecals        => _poolDecals?.Length ?? 0;
     public Material MaterialDecalCompartido => _matDecalCompartido;
     public Renderer RendererDecal(int index)=> _poolDecals[index].rend;
-    
+    public float    VelocidadCorrerRef      => velocidadCorrerRef;
+
     public void _Test_AvanzarRecarga(float t) { timerRecarga -= t; if (timerRecarga <= 0) FinRecarga(); }
 
     // ── Object Pool ──────────────────────────────────────────────────────

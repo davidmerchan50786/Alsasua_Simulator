@@ -85,6 +85,9 @@ public sealed class AudioManager : MonoBehaviour
     private AudioSource[] _pool;
     private int           _poolCursor;   // índice rotatorio (round-robin)
 
+    /// <summary>Número de AudioSources en el pool (igual a poolSize serializado).</summary>
+    public int TamañoPool => _pool != null ? _pool.Length : 0;
+
     // Cache del mapa Clip→AudioClip para no usar switch en runtime
     private Dictionary<Clip, AudioClip> _clipMap;
 
@@ -95,7 +98,12 @@ public sealed class AudioManager : MonoBehaviour
     private void Awake()
     {
         // Singleton: destruir duplicados
-        if (I != null && I != this) { Destroy(gameObject); return; }
+        if (I != null && I != this)
+        {
+            if (Application.isPlaying) Destroy(gameObject);
+            else Object.DestroyImmediate(gameObject);
+            return;
+        }
         I = this;
         DontDestroyOnLoad(gameObject);
 

@@ -36,6 +36,11 @@ public class VehiculoNPC : MonoBehaviour
     [SerializeField] private int vidaMax = 80;
     private bool destruido = false;
 
+    // Propiedades de lectura para tests
+    public int  Vida      => vida;
+    public int  VidaMax   => vidaMax;
+    public bool Destruido => destruido;
+
     // ═══════════════════════════════════════════════════════════════════════
     //  COLOR DEL COCHE (aleatorio)
     // ═══════════════════════════════════════════════════════════════════════
@@ -236,14 +241,14 @@ public class VehiculoNPC : MonoBehaviour
         cuerpo.transform.SetParent(go.transform);
         cuerpo.transform.localPosition = new Vector3(0f, 0.45f, 0f);
         cuerpo.transform.localScale    = new Vector3(1.8f, 0.8f, 4.2f);
-        Destroy(cuerpo.GetComponent<Collider>());
+        { var col = cuerpo.GetComponent<Collider>(); if (col != null) { if (Application.isPlaying) Destroy(col); else Object.DestroyImmediate(col); } }
 
         // Techo
         var techo = GameObject.CreatePrimitive(PrimitiveType.Cube);
         techo.transform.SetParent(go.transform);
         techo.transform.localPosition = new Vector3(0f, 1.05f, -0.2f);
         techo.transform.localScale    = new Vector3(1.6f, 0.55f, 2.4f);
-        Destroy(techo.GetComponent<Collider>());
+        { var col = techo.GetComponent<Collider>(); if (col != null) { if (Application.isPlaying) Destroy(col); else Object.DestroyImmediate(col); } }
 
         // Ruedas (4)
         float[] posX = { -1.0f, 1.0f, -1.0f, 1.0f };
@@ -261,7 +266,7 @@ public class VehiculoNPC : MonoBehaviour
             mpbRueda.SetColor("_BaseColor", new Color(0.1f, 0.1f, 0.1f));
             mpbRueda.SetColor("_Color",     new Color(0.1f, 0.1f, 0.1f));
             rueda.GetComponent<Renderer>().SetPropertyBlock(mpbRueda);
-            Destroy(rueda.GetComponent<Collider>());
+            { var col = rueda.GetComponent<Collider>(); if (col != null) { if (Application.isPlaying) Destroy(col); else Object.DestroyImmediate(col); } }
         }
 
         // Colisionador principal

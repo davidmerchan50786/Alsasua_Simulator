@@ -88,9 +88,18 @@ public class SistemaAtmosfera : MonoBehaviour
     public float ElevacionSolar => elevacionSolar;
     public bool  EsDeDia       => elevacionSolar > 0f;
 
+    /// <summary>
+    /// Se dispara cuando el sol cruza el horizonte (amanecer o anochecer).
+    /// El parámetro bool es <c>true</c> si el nuevo estado es de día, <c>false</c> si es de noche.
+    /// </summary>
+    public event System.Action<bool> OnCambioDia;
+
     // ═══════════════════════════════════════════════════════════════════════
     //  ESTADO INTERNO
     // ═══════════════════════════════════════════════════════════════════════
+
+    // Estado previo de día/noche para detectar transiciones y disparar OnCambioDia.
+    private bool _eraDeDia = true;
 
     // Latitud de Alsasua en radianes
     private const float LAT_RAD = 42.9037f * Mathf.Deg2Rad;
@@ -166,6 +175,14 @@ public class SistemaAtmosfera : MonoBehaviour
         AplicarLuzSolar();
         AplicarAmbiente();
         AplicarNiebla();
+
+        // ── Detectar transición día/noche y disparar evento ────────────────
+        bool esDeDiaAhora = EsDeDia;
+        if (esDeDiaAhora != _eraDeDia)
+        {
+            _eraDeDia = esDeDiaAhora;
+            OnCambioDia?.Invoke(esDeDiaAhora);
+        }
     }
 
     /// <summary>
