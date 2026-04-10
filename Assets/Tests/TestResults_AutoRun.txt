@@ -1,0 +1,76 @@
+═══ ALSASUA SIMULATOR — TEST RUN ═══
+  ✓ T01_RatioVida_EsUnoAlInicio (63ms)
+  ✓ T01b_RatioVida_ReduceDespuesDeDano (22ms)
+  ✓ T02_FlashDano_PositivoTrasRecibirDano (18ms)
+  ✓ T03_TextoEstado_MuertoAlMorir (17ms)
+  ✓ T04_Curar_NoSuperaVidaMax (15ms)
+  ✓ T05_PropiedadesEstado_AccesiblesSinException (24ms)
+  ✓ T06_ProgressRecarga_CeroAlInicioYUnoAlTerminar (17ms)
+  ✗ T07_ObjectPool_Bursts_TamañoCorrecto (27ms)
+    FALLO: _poolBursts no debe ser null tras Awake
+  Expected: not null
+  But was:  null
+  ✗ T08_ObjectPool_Decals_TamañoCorrecto (13ms)
+    FALLO: _poolDecals no debe ser null tras Awake
+  Expected: not null
+  But was:  null
+  ○ T09_Decals_UsanMaterialCompartido (114ms)
+  ✓ T10_Dispersion_AgachadoMenorQueDesPie (26ms)
+  ✓ T11_Dispersion_AireMayorQueEnSuelo (130ms)
+  ✓ T12_Trafico_AceleracionSuaveDesdeParado (4ms)
+  ✗ T13_AudioManager_Singleton_SoloUnaInstancia (22ms)
+    FALLO: Solo debe existir una instancia de AudioManager (Singleton)
+  Expected: 1
+  But was:  2
+  ✗ T14_AudioManager_Pool_TamañoCorrecto (14ms)
+    FALLO: _pool no debe ser null
+  Expected: not null
+  But was:  null
+  ✗ T15_AudioManager_PlayConClipNull_SinException (14ms)
+    FALLO: Play con clip null (no asignado en Inspector) no debe lanzar excepción
+  Expected: No Exception to be thrown
+  But was:  <System.NullReferenceException: Object reference not set to an instance of an object
+  at AlsasuaSimulatorTests+<>c.<T15_AudioManager_PlayConClipNull_SinException>b__18_0 () [0x00000] in C:\Users\coperenea\Desktop\DAM\02_PROYECTOS_PRACTICAS\Alsasua_Simulator\Assets\Tests\AlsasuaSimulatorTests.cs:482 
+  at NUnit.Framework.Constraints.ThrowsConstraint+VoidInvocationDescriptor.Invoke () [0x00000] in <f577cd9686154d6ab10efd7e65e64366>:0 
+  at NUnit.Framework.Constraints.ThrowsConstraint+ExceptionInterceptor.Intercept (System.Object invocation) [0x00041] in <f577cd9686154d6ab10efd7e65e64366>:0 >
+  ✗ T16_EnemigoPatrulla_FlashDano_NoModificaSharedMaterial (25ms)
+    FALLO: Unhandled log message: '[Exception] UnityException: CreateImpl is not allowed to be called from a MonoBehaviour constructor (or instance field initializer), call it in Awake or Start instead. Called from MonoBehaviour 'EnemigoPatrulla' on game object 'TestEnemigo'.
+See "Script Serialization" page in the Unity Manual for further details.'. Use UnityEngine.TestTools.LogAssert.Expect
+  ✗ T17_HUDJugador_Canvas_CreadoEnAwake (30ms)
+    FALLO: HUDJugador debe crear un Canvas hijo en Awake()
+  Expected: not null
+  But was:  null
+  ✗ T18_AlsasuaLogger_MetodosPublicos_NoLanzanException (5ms)
+    FALLO: Unhandled log message: '[Error] [Test] mensaje error'. Use UnityEngine.TestTools.LogAssert.Expect
+  ✓ T19_AlsasuaLogger_NivelNone_SilenciaTodasLasLlamadas (2ms)
+  ✗ T20_SistemaAtmosfera_OnCambioDia_DisparaAlCruzarHorizonte (22ms)
+    FALLO: System.Reflection.TargetInvocationException : Exception has been thrown by the target of an invocation.
+  ----> System.NullReferenceException : Object reference not set to an instance of an object
+  ✗ T21_VehiculoNPC_RecibirDano_ReduceVida (56ms)
+    FALLO: Unhandled log message: '[Error] Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.'. Use UnityEngine.TestTools.LogAssert.Expect
+  ✗ T22_VehiculoNPC_Destruido_TrasVidaACero (52ms)
+    FALLO: Unhandled log message: '[Error] Shader error in 'Universal Render Pipeline/Lit': Compilation failed (other error) 'out of memory during compilation
+' at line 111 (on d3d11)
+
+Compiling Subshader: 0, Pass: ForwardLit, Fragment program with _ADDITIONAL_LIGHT_SHADOWS _CLUSTER_LIGHT_LOOP _LIGHT_LAYERS _MAIN_LIGHT_SHADOWS_CASCADE _REFLECTION_PROBE_ATLAS _REFLECTION_PROBE_BLENDING _REFLECTION_PROBE_BOX_PROJECTION _SCREEN_SPACE_OCCLUSION _SHADOWS_SOFT
+Platform defines: SHADER_API_DESKTOP UNITY_ENABLE_DETAIL_NORMALMAP UNITY_ENABLE_REFLECTION_BUFFERS UNITY_LIGHTMAP_FULL_HDR UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_PBS_USE_BRDF1 UNITY_PLATFORM_SUPPORTS_DEPTH_FETCH UNITY_SPECCUBE_BLENDING UNITY_SPECCUBE_BOX_PROJECTION UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS
+Disabled keywords: DEBUG_DISPLAY DIRLIGHTMAP_COMBINED DOTS_INSTANCING_ON DYNAMICLIGHTMAP_ON EVALUATE_SH_MIXED EVALUATE_SH_VERTEX FOG_EXP FOG_EXP2 FOG_LINEAR INSTANCING_ON LIGHTMAP_BICUBIC_SAMPLING LIGHTMAP_ON LIGHTMAP_SHADOW_MIXING LOD_FADE_CROSSFADE PROBE_VOLUMES_L1 PROBE_VOLUMES_L2 REFLECTION_PROBE_ROTATION SHADER_API_GLES30 SHADER_API_GLES31 SHADER_API_GLES32 SHADOWS_SHADOWMASK UNITY_ASTC_NORMALMAP_ENCODING UNITY_COLORSPACE_GAMMA UNITY_FRAMEBUFFER_FETCH_AVAILABLE UNITY_HARDWARE_TIER1 UNITY_HARDWARE_TIER2 UNITY_HARDWARE_TIER3 UNITY_LIGHTMAP_DLDR_ENCODING UNITY_LIGHTMAP_RGBM_ENCODING UNITY_METAL_SHADOWS_USE_POINT_FILTERING UNITY_NO_DXT5nm UNITY_NO_SCREENSPACE_SHADOWS UNITY_PBS_USE_BRDF2 UNITY_PBS_USE_BRDF3 UNITY_PRETRANSFORM_TO_DISPLAY_ORIENTATION UNITY_UNIFIED_SHADER_PRECISION_MODEL UNITY_VIRTUAL_TEXTURING USE_LEGACY_LIGHTMAPS _ADDITIONAL_LIGHTS _ADDITIONAL_LIGHTS_VERTEX _ALPHAMODULATE_ON _ALPHAPREMULTIPLY_ON _ALPHATEST_ON _DBUFFER_MRT1 _DBUFFER_MRT2 _DBUFFER_MRT3 _DETAIL_MULX2 _DETAIL_SCALED _EMISSION _ENVIRONMENTREFLECTIONS_OFF _LIGHT_COOKIES _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_SCREEN _METALLICSPECGLOSSMAP _NORMALMAP _OCCLUSIONMAP _PARALLAXMAP _RECEIVE_SHADOWS_OFF _SCREEN_SPACE_IRRADIANCE _SHADOWS_SOFT_HIGH _SHADOWS_SOFT_LOW _SHADOWS_SOFT_MEDIUM _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A _SPECULARHIGHLIGHTS_OFF _SPECULAR_SETUP _SURFACE_TYPE_TRANSPARENT _WRITE_RENDERING_LAYERS'. Use UnityEngine.TestTools.LogAssert.Expect
+  ✗ T23_VehiculoNPC_DanoNoModificaSharedMaterial (51ms)
+    FALLO: Unhandled log message: '[Error] Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.'. Use UnityEngine.TestTools.LogAssert.Expect
+  ✓ T24_SistemaBombas_BombasDisponibles_PositivoAlInicio (245ms)
+  ✓ T25_SistemaBombas_ColocarBomba_SinCamara_NoLanzaException (37ms)
+  ✓ T26_BarricadaFuego_RecibirDano_ReduceVida (32ms)
+  ✓ T27_BarricadaFuego_SegundoDano_IgnoradoCuandoDestruida (33ms)
+  ✗ T28_EnemigoPatrulla_EstadoInicial_EsPatrullando (19ms)
+    FALLO: Unhandled log message: '[Exception] UnityException: CreateImpl is not allowed to be called from a MonoBehaviour constructor (or instance field initializer), call it in Awake or Start instead. Called from MonoBehaviour 'EnemigoPatrulla' on game object 'TestEnemigo'.
+See "Script Serialization" page in the Unity Manual for further details.'. Use UnityEngine.TestTools.LogAssert.Expect
+  ✓ T29_SistemaDisparo_VelocidadCorrerRef_DefaultEsOchoPuntoCinco (44ms)
+  ✓ T30_BarricadaFuego_PrenderFuego_CreaParticleSystems (52ms)
+
+RESULTADO: ✗ 13 FALLARON
+Pasados : 17/31
+Fallados: 13/31
+Omitidos: 1/31
+Duración: 1,32s

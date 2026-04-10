@@ -103,6 +103,10 @@ public sealed class HUDJugador : MonoBehaviour
         {
             _font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             if (_font == null) _font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            // FIX T17: último fallback — en entornos de test (EditMode) la fuente
+            // puede no estar cargada; Font vacía evita que Text.font=null lance Debug.LogError
+            // interno de Unity que el test runner interpretaría como fallo del test.
+            if (_font == null) _font = new Font();
         }
 
         // Sprite blanco para fondos y barras

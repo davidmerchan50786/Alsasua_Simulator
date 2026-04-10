@@ -132,11 +132,16 @@ public class SistemaDisparo : MonoBehaviour
         if (capasImpacto == 0)
             capasImpacto = ~(1 << 2);
 
+        // BUG FIX T07/T08: inicializar el pool de bursts ANTES del MaterialPropertyBlock.
+        // Si new MaterialPropertyBlock() lanzase excepción en un contexto de test EditMode,
+        // el pool quedaba null y los tests T07/T08 fallaban. Ahora el pool de bursts (que no
+        // depende del MPB) se inicializa primero, garantizando que _poolBursts nunca sea null.
+        InicializarPoolBursts();
+
         _pbDecal = new MaterialPropertyBlock();
         _pbDecal.SetColor(_idBaseColor, _colorDecal);
         _pbDecal.SetColor("_Color",     _colorDecal);
 
-        InicializarPoolBursts();
         InicializarPoolDecals();
     }
 
