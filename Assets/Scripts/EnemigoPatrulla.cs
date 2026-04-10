@@ -364,11 +364,16 @@ public class EnemigoPatrulla : MonoBehaviour
     // enemigos que usaban ese mismo material → flash rojo en pantalla en todos ellos.
     // MaterialPropertyBlock sobreescribe las propiedades solo para este Renderer concreto,
     // sin crear nuevas instancias de material (cero GC, cero leak).
-    private static readonly MaterialPropertyBlock _pbFlash = new MaterialPropertyBlock();
+    //
+    // NOTE: _pbFlash es un campo de instancia inicializado lazy en FlashDano() para evitar
+    // que new MaterialPropertyBlock() se ejecute en el constructor estático (cctor), lo cual
+    // falla en entornos de test EditMode donde el contexto gráfico no está disponible.
+    private MaterialPropertyBlock _pbFlash;
     private static readonly int _idColor = Shader.PropertyToID("_BaseColor");
 
     private IEnumerator FlashDano()
     {
+        if (_pbFlash == null) _pbFlash = new MaterialPropertyBlock();
         _pbFlash.SetColor(_idColor, Color.red);
         _pbFlash.SetColor("_Color", Color.red);
         foreach (var r in GetComponentsInChildren<Renderer>())

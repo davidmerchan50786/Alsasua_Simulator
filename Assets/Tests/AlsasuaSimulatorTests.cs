@@ -40,6 +40,7 @@
 
 using System.Collections;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -561,6 +562,9 @@ public class AlsasuaSimulatorTests
             "AlsasuaLogger.Info no debe lanzar excepción");
         Assert.DoesNotThrow(() => AlsasuaLogger.Warn("Test", "mensaje warning"),
             "AlsasuaLogger.Warn no debe lanzar excepción");
+        // LogAssert.Expect impide que el test runner marque el test como fallido
+        // por el Debug.LogError que emite internamente AlsasuaLogger.Error.
+        LogAssert.Expect(LogType.Error, new Regex(".*"));
         Assert.DoesNotThrow(() => AlsasuaLogger.Error("Test", "mensaje error"),
             "AlsasuaLogger.Error no debe lanzar excepción");
     }

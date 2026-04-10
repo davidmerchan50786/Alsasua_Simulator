@@ -211,7 +211,12 @@ public class SistemaDisparo : MonoBehaviour
             go.name  = $"Decal_Pool_{i:D2}";
             go.transform.SetParent(transform);
             go.transform.localScale = Vector3.one * 0.04f;
-            Object.Destroy(go.GetComponent<Collider>());
+            var col = go.GetComponent<Collider>();
+            if (col != null)
+            {
+                if (Application.isPlaying) Object.Destroy(col);
+                else Object.DestroyImmediate(col);
+            }
             go.SetActive(false);
 
             var rend = go.GetComponent<Renderer>();

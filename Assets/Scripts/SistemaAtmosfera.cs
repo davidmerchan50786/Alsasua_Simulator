@@ -223,6 +223,7 @@ public class SistemaAtmosfera : MonoBehaviour
     private void AplicarLuzSolar()
     {
         if (luzSolar == null) return;
+        if (colorDelSol == null) colorDelSol = GradienteSolar();
 
         // Rotación: Unity Directional Light "brilla hacia abajo" por defecto
         // Elevation = -X (hacia arriba), Azimuth = Y (girar en horizontal)
@@ -255,6 +256,7 @@ public class SistemaAtmosfera : MonoBehaviour
 
     private void AplicarAmbiente()
     {
+        if (colorAmbiente == null) colorAmbiente = GradienteAmbiente();
         float t         = horaDelDia / 24f;
         Color colorBase = colorAmbiente.Evaluate(t) * intensidadAmbiente;
 

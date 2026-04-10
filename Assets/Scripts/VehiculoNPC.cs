@@ -232,6 +232,15 @@ public class VehiculoNPC : MonoBehaviour
     //  UTILIDAD ESTÁTICA: crear coche con forma básica por código
     // ═══════════════════════════════════════════════════════════════════════
 
+    // Destruye el Collider de un GO de forma compatible con Play Mode y Edit Mode (tests).
+    private static void DestroyCollider(GameObject target)
+    {
+        var col = target.GetComponent<Collider>();
+        if (col == null) return;
+        if (Application.isPlaying) Object.Destroy(col);
+        else Object.DestroyImmediate(col);
+    }
+
     /// <summary>
     /// Crea un VehiculoNPC en la posición indicada con waypoints de prueba.
     /// Útil para instanciar desde SetupEscenaAlsasua.
@@ -246,14 +255,14 @@ public class VehiculoNPC : MonoBehaviour
         cuerpo.transform.SetParent(go.transform);
         cuerpo.transform.localPosition = new Vector3(0f, 0.45f, 0f);
         cuerpo.transform.localScale    = new Vector3(1.8f, 0.8f, 4.2f);
-        Destroy(cuerpo.GetComponent<Collider>());
+        DestroyCollider(cuerpo);
 
         // Techo
         var techo = GameObject.CreatePrimitive(PrimitiveType.Cube);
         techo.transform.SetParent(go.transform);
         techo.transform.localPosition = new Vector3(0f, 1.05f, -0.2f);
         techo.transform.localScale    = new Vector3(1.6f, 0.55f, 2.4f);
-        Destroy(techo.GetComponent<Collider>());
+        DestroyCollider(techo);
 
         // Ruedas (4)
         float[] posX = { -1.0f, 1.0f, -1.0f, 1.0f };
@@ -271,7 +280,7 @@ public class VehiculoNPC : MonoBehaviour
             mpbRueda.SetColor("_BaseColor", new Color(0.1f, 0.1f, 0.1f));
             mpbRueda.SetColor("_Color",     new Color(0.1f, 0.1f, 0.1f));
             rueda.GetComponent<Renderer>().SetPropertyBlock(mpbRueda);
-            Destroy(rueda.GetComponent<Collider>());
+            DestroyCollider(rueda);
         }
 
         // Colisionador principal
