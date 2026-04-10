@@ -206,7 +206,6 @@ public static class ConfiguradorPersonajeKenney
         {
             clips[i].loopTime       = loop;
             clips[i].loopPose       = loop;
-            clips[i].lockRootRotY   = inPlace;  // sin rotación del root en Y
             clips[i].lockRootHeightY = inPlace; // sin traslación vertical del root
             clips[i].lockRootPositionXZ = inPlace; // SIN desplazamiento horizontal del root
             // In Place: el personaje anima en el sitio; CharacterController lo mueve
