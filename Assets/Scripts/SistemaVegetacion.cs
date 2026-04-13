@@ -130,6 +130,178 @@ public sealed class SistemaVegetacion : MonoBehaviour
     }
 
     // ───────────────────────────────────────────────────────────────────────
+    //  PREFABS EXTRAS (arbustos y árboles de nuevos paquetes - DOWNLOADS)
+    // ───────────────────────────────────────────────────────────────────────
+    // Inyectados por SistemaAssets.PropagarAssets() antes de Start().
+    // Ahora soportamos múltiples variantes de cada tipo para mayor variedad visual.
+
+    private GameObject _prefabArbusto;
+    private GameObject _prefabArbolExtra;
+
+    // Arrays para plantas de Downloads (plant-pack, Stylish plants, etc.)
+    private GameObject[] _prefabsPlantas = new GameObject[0];
+    private GameObject[] _prefabsBushes = new GameObject[0];
+    private GameObject[] _prefabsArboles = new GameObject[0];
+
+    // Pool de instancias de arbustos y plantas (instanciados como GOs, no DrawMeshInstanced,
+    // porque suelen tener varios sub-meshes y LODs).
+    private readonly List<GameObject> _arbustosInstanciados = new List<GameObject>();
+
+    /// <summary>
+    /// Llamado por SistemaAssets para inyectar los prefabs de vegetación nueva
+    /// (Yughues Free Bushes, Low Poly Nature Forest, Mobile Tree Package).
+    /// Si se llama ANTES de Awake(), los arbustos se spawnan en GenerarArboles().
+    /// Si se llama DESPUÉS, los spawnea inmediatamente.
+    /// </summary>
+    public void AsignarPrefabsExtra(GameObject arbusto, GameObject arbolExtra)
+    {
+        _prefabArbusto    = arbusto;
+        _prefabArbolExtra = arbolExtra;
+
+        // Si ya pasó Awake(), spawnear ahora.
+        if (_arboles != null && (arbusto != null || arbolExtra != null))
+            SpawnearArbustosExtra();
+    }
+
+    /// <summary>
+    /// Asigna múltiples prefabs de plantas de los nuevos paquetes Downloads.
+    /// Llamado por SistemaAssets después de importar plant-pack, Stylish plants, etc.
+    /// </summary>
+    public void AsignarPrefabsDescargas(GameObject[] plantas, GameObject[] bushes, GameObject[] arboles)
+    {
+        _prefabsPlantas = plantas ?? new GameObject[0];
+        _prefabsBushes  = bushes ?? new GameObject[0];
+        _prefabsArboles = arboles ?? new GameObject[0];
+
+        // Si ya pasó Awake(), spawnear plantas ahora
+        if (_arboles != null && (_prefabsPlantas.Length > 0 || _prefabsBushes.Length > 0 || _prefabsArboles.Length > 0))
+            SpawnearPlantasDescargas();
+    }
+
+    private void SpawnearArbustosExtra()
+    {
+        if (_prefabArbusto == null && _prefabArbolExtra == null) return;
+
+        // Limpiar instancias previas
+        foreach (var go in _arbustosInstanciados)
+            if (go != null) Destroy(go);
+        _arbustosInstanciados.Clear();
+
+        // Padre para mantener la jerarquía limpia
+        var padre = new GameObject("ArbustosExtra");
+        padre.transform.SetParent(transform);
+
+        int count = 0;
+        // Sembrar arbustos en los bordes de las zonas forestales
+        for (int z = 0; z < centrosZona.Length; z++)
+        {
+            float radio = (z < radiosZona.Length ? radiosZona[z] : 200f) * 0.6f;
+            int numArbustos = Mathf.Min(80, densidadArbolesZona / 4);
+
+            for (int i = 0; i < numArbustos; i++)
+            {
+                Vector2 offset = Random.insideUnitCircle * radio;
+                Vector3 pos    = centrosZona[z] + new Vector3(offset.x, 0f, offset.y);
+
+                float ruido = Mathf.PerlinNoise(pos.x * 0.02f + 50f, pos.z * 0.02f + 50f);
+                if (ruido < 0.4f) continue;
+
+                float alturaY = MuestrearTerreno(pos);
+                pos.y = alturaY;
+
+                // Alternar entre arbusto y árbol extra
+                GameObject prefab = (i % 3 == 0 && _prefabArbolExtra != null)
+                    ? _prefabArbolExtra
+                    : _prefabArbusto;
+                if (prefab == null) continue;
+
+                var go = Instantiate(prefab, pos,
+                    Quaternion.Euler(0f, Random.Range(0f, 360f), 0f));
+                go.transform.SetParent(padre.transform);
+                go.transform.localScale = Vector3.one * Random.Range(0.7f, 1.4f);
+                _arbustosInstanciados.Add(go);
+                count++;
+            }
+        }
+
+        if (count > 0)
+            AlsasuaLogger.Info("SistemaVegetacion",
+                $"✓ {count} arbustos/árboles extra spawneados " +
+                $"({(_prefabArbusto != null ? _prefabArbusto.name : "—")}, " +
+                $"{(_prefabArbolExtra != null ? _prefabArbolExtra.name : "—")}).");
+    }
+
+    /// <summary>
+    /// Spawnea plantas variadas de los paquetes Downloads en toda la escena.
+    /// Integra plant-pack, Stylish plants, bushes, árboles adicionales con alto grado
+    /// de variedad visual.
+    /// </summary>
+    private void SpawnearPlantasDescargas()
+    {
+        if (_prefabsPlantas.Length == 0 && _prefabsBushes.Length == 0 && _prefabsArboles.Length == 0)
+            return;
+
+        var padre = new GameObject("PlantasDescargas");
+        padre.transform.SetParent(transform);
+
+        int totalSpawned = 0;
+
+        // Distribuir plantas en las 4 zonas
+        for (int z = 0; z < centrosZona.Length; z++)
+        {
+            float radioZona = (z < radiosZona.Length ? radiosZona[z] : 200f);
+
+            // Cantidad de plantas por zona: más en zonas boscosas
+            int cantidadPlantas = Mathf.RoundToInt(densidadArbolesZona * 0.6f);
+
+            for (int i = 0; i < cantidadPlantas; i++)
+            {
+                Vector2 offset = Random.insideUnitCircle * radioZona * 0.8f;
+                Vector3 pos = centrosZona[z] + new Vector3(offset.x, 0f, offset.y);
+
+                // Usar Perlin noise para distribución natural
+                float ruido = Mathf.PerlinNoise(pos.x * 0.01f + z * 10f, pos.z * 0.01f + z * 7f);
+
+                // Probabilidades según ruido
+                if (ruido < 0.35f) continue;        // evitar claros
+                if (ruido > 0.75f) continue;        // evitar densidades extremas
+
+                float alturaY = MuestrearTerreno(pos);
+                pos.y = alturaY;
+
+                // Seleccionar tipo de planta aleatorio
+                GameObject prefab = null;
+                float tipo = Random.value;
+
+                if (tipo < 0.3f && _prefabsPlantas.Length > 0)
+                    prefab = _prefabsPlantas[Random.Range(0, _prefabsPlantas.Length)];
+                else if (tipo < 0.6f && _prefabsBushes.Length > 0)
+                    prefab = _prefabsBushes[Random.Range(0, _prefabsBushes.Length)];
+                else if (_prefabsArboles.Length > 0)
+                    prefab = _prefabsArboles[Random.Range(0, _prefabsArboles.Length)];
+
+                if (prefab == null) continue;
+
+                var go = Instantiate(prefab, pos,
+                    Quaternion.Euler(0f, Random.Range(0f, 360f), 0f));
+                go.transform.SetParent(padre.transform);
+
+                // Variación de escala para naturalidad
+                float escala = Random.Range(0.65f, 1.5f);
+                go.transform.localScale = Vector3.one * escala;
+
+                _arbustosInstanciados.Add(go);
+                totalSpawned++;
+            }
+        }
+
+        if (totalSpawned > 0)
+            AlsasuaLogger.Info("SistemaVegetacion",
+                $"✓ {totalSpawned} plantas de Downloads spawneadas " +
+                $"(plantas: {_prefabsPlantas.Length}, bushes: {_prefabsBushes.Length}, árboles: {_prefabsArboles.Length}).");
+    }
+
+    // ───────────────────────────────────────────────────────────────────────
     //  GENERACIÓN DE ÁRBOLES
     // ───────────────────────────────────────────────────────────────────────
     private void GenerarArboles()
