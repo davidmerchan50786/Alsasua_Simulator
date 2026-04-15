@@ -214,7 +214,7 @@ Shader "Alsasua/FachadasEdificios"
             Tags { "LightMode" = "DepthOnly" }
 
             ZWrite On
-            ColorMask R
+            ColorMask 0
             Cull Back
 
             HLSLPROGRAM
