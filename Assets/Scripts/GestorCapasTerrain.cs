@@ -117,31 +117,47 @@ public class GestorCapasTerrain : MonoBehaviour
                 break;
 
             case ModoTerrain.Cesium:
+            {
                 SetTerrainIGN(false);
-                // La lógica Google vs CWT es responsabilidad de ConfiguradorAlsasua/GestionTilesets.
-                // Aquí solo activamos lo que existe; ellos ya habrán resuelto el conflicto.
-                SetCesiumTerreno(true);
-                SetGoogle(true);
-                SetOSM(tilesetGoogle == null || !tilesetGoogle.gameObject.activeSelf);
+
+                bool googlePhotorealisticActivo = IsGooglePhotorealisticTileset(tilesetGoogle);
+                SetGoogle(googlePhotorealisticActivo);
+                SetCesiumTerreno(!googlePhotorealisticActivo);
+                SetOSM(!googlePhotorealisticActivo);
+
                 Debug.Log("[GestorCapasTerrain] Modo: Cesium (streaming online)");
                 break;
+            }
 
             case ModoTerrain.Ambos:
+            {
                 SetTerrainIGN(true);
-                // CWT activo como fondo lejano; Google puede estar activo si tiene cobertura.
-                // Para evitar z-fighting en la zona central, el TerrainIGN debe tener
-                // renderQueue más alto o usar capas de renderizado separadas.
-                SetCesiumTerreno(true);
-                SetGoogle(true);
-                SetOSM(tilesetGoogle == null || !tilesetGoogle.gameObject.activeSelf);
+
+                bool googlePhotorealisticActivo = IsGooglePhotorealisticTileset(tilesetGoogle);
+                SetGoogle(googlePhotorealisticActivo);
+                SetCesiumTerreno(!googlePhotorealisticActivo);
+                SetOSM(!googlePhotorealisticActivo);
+
                 Debug.Log("[GestorCapasTerrain] Modo: Ambos (TerrainIGN central + Cesium fondo)");
                 break;
+            }
         }
     }
 
     // ─────────────────────────────────────────────────────────────────────────
     //  HELPERS DE ACTIVACIÓN
     // ─────────────────────────────────────────────────────────────────────────
+    private bool IsGooglePhotorealisticTileset(Cesium3DTileset tileset)
+    {
+        if (tileset == null)
+            return false;
+
+        if (tileset.ionAssetID == 2275207)
+            return true;
+
+        return !string.IsNullOrEmpty(tileset.url) &&
+               tileset.url.IndexOf("googleapis", System.StringComparison.OrdinalIgnoreCase) >= 0;
+    }
     private void SetTerrainIGN(bool activo)
     {
         if (terrainIGN != null)
