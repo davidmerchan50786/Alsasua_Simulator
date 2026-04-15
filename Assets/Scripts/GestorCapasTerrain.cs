@@ -122,6 +122,11 @@ public class GestorCapasTerrain : MonoBehaviour
 
                 bool googlePhotorealisticActivo = IsGooglePhotorealisticTileset(tilesetGoogle);
                 SetGoogle(googlePhotorealisticActivo);
+            {
+                SetTerrainIGN(false);
+
+                bool googlePhotorealisticActivo = IsGooglePhotorealisticTileset(tilesetGoogle);
+                SetGoogle(googlePhotorealisticActivo);
                 SetCesiumTerreno(!googlePhotorealisticActivo);
                 SetOSM(!googlePhotorealisticActivo);
 
@@ -147,6 +152,17 @@ public class GestorCapasTerrain : MonoBehaviour
     // ─────────────────────────────────────────────────────────────────────────
     //  HELPERS DE ACTIVACIÓN
     // ─────────────────────────────────────────────────────────────────────────
+    private bool IsGooglePhotorealisticTileset(Cesium3DTileset tileset)
+    {
+        if (tileset == null)
+            return false;
+
+        if (tileset.ionAssetID == 2275207)
+            return true;
+
+        return !string.IsNullOrEmpty(tileset.url) &&
+               tileset.url.IndexOf("googleapis", System.StringComparison.OrdinalIgnoreCase) >= 0;
+    }
     private bool IsGooglePhotorealisticTileset(Cesium3DTileset tileset)
     {
         if (tileset == null)
