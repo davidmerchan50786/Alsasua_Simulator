@@ -40,8 +40,8 @@ public class ImportadorTerrainIGN : EditorWindow
     // Bbox de ~4×4 km centrado en Alsasua — ajustar según el área real descargada
     private float anchoTerrain = 4600f;   // metros E-O
     private float largoTerrain = 5100f;   // metros N-S
-    private float alturaMin    = 510f;    // m WGS84 elipsoidal (fondo del valle de Sakana)
-    private float alturaMax    = 1095f;   // m WGS84 elipsoidal (Monte Aratz ~ 1027 m + margen)
+    private float alturaMin    = 510f;    // m ortométricos (MSL) (fondo del valle de Sakana)
+    private float alturaMax    = 1095f;   // m ortométricos (MSL) (Monte Aratz ~ 1027 m + margen)
     private float AlturaRango => alturaMax - alturaMin;
 
     // ── Posición geográfica: esquina SO (SW) del heightmap ────────────────────
