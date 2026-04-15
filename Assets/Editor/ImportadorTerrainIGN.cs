@@ -454,7 +454,7 @@ public class ImportadorTerrainIGN : EditorWindow
             if (posicionarConCesium)
             {
                 // Parentar bajo CesiumGeoreference si existe
-                var geo = FindObjectOfType<CesiumGeoreference>();
+                var geo = Object.FindFirstObjectByType<CesiumGeoreference>();
                 if (geo != null)
                     terrainGO.transform.SetParent(geo.transform, worldPositionStays: false);
 
