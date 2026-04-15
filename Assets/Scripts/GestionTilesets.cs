@@ -3,13 +3,13 @@ using CesiumForUnity;
 using System.Collections;
 
 /// <summary>
-/// Gestor de tilesets fotorrealistas para Pamplona.
+/// Gestor de tilesets fotorrealistas para Alsasua.
 /// Controla en tiempo real la calidad, visibilidad y LOD de los tilesets
 /// para mantener el balance entre rendimiento y realismo visual.
 ///
-/// FACHADAS REALES: Google Photorealistic 3D Tiles cubre Pamplona con
-/// fotogrametría aérea completa — edificios, calles, vegetación y terreno.
-/// OsmEdificioLoader NO es necesario; Google 3D es la única fuente de edificios.
+/// FACHADAS REALES: Google Photorealistic 3D Tiles cubre Alsasua con
+/// fotogrametría aérea — edificios, calles, vegetación y terreno.
+/// OsmEdificioLoader actúa de fallback donde los tiles no tengan detalle.
 ///
 /// Este script ajusta automáticamente el nivel de detalle según
 /// la distancia del JUGADOR (no la cámara dron) para maximizar
@@ -38,14 +38,14 @@ public class GestionTilesets : MonoBehaviour
     [SerializeField] private bool calidadDinamica = true;
 
     [Tooltip("SSE cuando el observador está cerca del suelo (< 100m).\n" +
-             "Pamplona: Google 3D Tiles tiene cobertura completa — SSE 2 da máxima resolución de fachadas.")]
+             "2 = máxima resolución de fachadas. 4 = equilibrio.")]
     [Range(2f, 16f)]
-    [SerializeField] private float sseCercano = 2f;   // Pamplona: Google 3D disponible → máxima calidad
+    [SerializeField] private float sseCercano = 2f;
 
     [Tooltip("SSE cuando el observador está lejos (> 500m).\n" +
-             "Pamplona es ciudad grande — mantener 12 (vs 16 de Alsasua) para ver más tiles a distancia.")]
+             "16 = buena relación rendimiento/calidad para el valle de Burunda.")]
     [Range(8f, 64f)]
-    [SerializeField] private float sseLejano = 12f;   // Pamplona: rango urbano mayor, más tiles visibles
+    [SerializeField] private float sseLejano = 16f;
 
     [Header("═══ UMBRALES DE ALTURA (metros) ═══")]
     [SerializeField] private float alturaVistaCercana = 100f;
@@ -115,22 +115,20 @@ public class GestionTilesets : MonoBehaviour
         }
 
         // Configurar Google Photorealistic
-        // Pamplona: cobertura completa con fotogrametría aérea → precargar vecinos para scroll suave
         if (tilesetGooglePhotorealistic != null)
         {
             tilesetGooglePhotorealistic.maximumScreenSpaceError = sseCercano;
             tilesetGooglePhotorealistic.showCreditsOnScreen     = CREDITOS_GOOGLE_OBLIGATORIOS;
             tilesetGooglePhotorealistic.preloadAncestors        = true;
             tilesetGooglePhotorealistic.preloadSiblings         = true;
-            AlsasuaLogger.Info("GestionTilesets", $"Google Photorealistic 3D (Pamplona) configurado — SSE inicial: {sseCercano}. " +
-                               "Fotogrametría completa: edificios, calles y vegetación.");
+            AlsasuaLogger.Info("GestionTilesets", $"Google Photorealistic 3D (Alsasua) configurado — SSE inicial: {sseCercano}.");
         }
         else
         {
             AlsasuaLogger.Error("GestionTilesets",
                 "╔══════════════════════════════════════════════════════════════╗\n" +
                 "║  ❌ GOOGLE PHOTOREALISTIC 3D TILES NO ENCONTRADO             ║\n" +
-                "║  Pamplona tiene cobertura Google 3D — configura la API Key:  ║\n" +
+                "║  Configura la API Key de Google Maps:                        ║\n" +
                 "║  Inspector → ConfiguradorAlsasua → API Key Google           ║\n" +
                 "╚══════════════════════════════════════════════════════════════╝");
         }

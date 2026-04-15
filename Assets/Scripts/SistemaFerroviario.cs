@@ -1,10 +1,10 @@
 // Assets/Scripts/SistemaFerroviario.cs
-// Simulación de tráfico ferroviario en la línea Pamplona–San Sebastián (Alsasua).
+// Simulación de tráfico ferroviario en la línea Madrid–Irún a su paso por Alsasua.
 //
 // ── CONTEXTO REAL ─────────────────────────────────────────────────────────────
-//  La línea C-5 de Renfe (y los Alvia/Intercity) pasan por Alsasua:
-//  Pamplona → Alsasua → Vitoria → Miranda → Burgos → Madrid
-//  La estación de Alsasua está en aprox. Lat 42.9037 Lon -2.1668.
+//  Los Alvia/Intercity de Renfe pasan por Alsasua en la línea Madrid–Irún:
+//  Madrid → Burgos → Miranda → Vitoria → Alsasua → Donostia → Irún
+//  La estación de Alsasua está en aprox. Lat 42.9037, Lon -2.1668.
 //
 // ── ARQUITECTURA ──────────────────────────────────────────────────────────────
 //  • TrenData : struct  → sin MonoBehaviour por tren, array contiguo.
@@ -22,7 +22,7 @@
 // ── SETUP EN EDITOR ───────────────────────────────────────────────────────────
 //  1. Crear "SistemaFerroviario" GameObject y añadir este componente.
 //  2. Crear waypoints siguiendo la vía real visible en los tiles de Cesium.
-//     Sugerencia: colocarlos cada ~50m sobre la vía Pamplona-SS en Alsasua.
+//     Sugerencia: colocarlos cada ~50m sobre la vía en Alsasua (eje E-O).
 //  3. Configurar velocidad y número de trenes.
 
 using UnityEngine;
@@ -105,9 +105,15 @@ public sealed class SistemaFerroviario : MonoBehaviour
     private MaterialPropertyBlock _propBlock;
     private static readonly int _idBaseColor = Shader.PropertyToID("_BaseColor");
 
-    // ── Profiler markers ────────────────────────────────────────────────
-    private static readonly ProfilerMarker _markerUpdate =
-        new ProfilerMarker("SistemaFerroviario.Update");
+    // ── Profiler marker ─────────────────────────────────────────────────
+    // FIX: static readonly field initializer lanza TypeInitializationException
+    // en Unity EditMode tests → mover a static constructor con try/catch.
+    private static ProfilerMarker _markerUpdate;
+    static SistemaFerroviario()
+    {
+        try   { _markerUpdate = new ProfilerMarker("SistemaFerroviario.Update"); }
+        catch (System.Exception) { _markerUpdate = default; }
+    }
 
     // ══════════════════════════════════════════════════════════════════════
     //  UNITY LIFECYCLE
@@ -115,10 +121,17 @@ public sealed class SistemaFerroviario : MonoBehaviour
 
     private void Awake()
     {
+        // Si no hay waypoints asignados en Inspector, auto-crearlos desde GeoDataAlsasua.
         if (waypointsVia == null || waypointsVia.Length < 2)
         {
-            AlsasuaLogger.Warn("SistemaFerroviario", "Se necesitan al menos 2 waypoints de vía. " +
-                              "Asígnalos en el Inspector siguiendo el rail real de Cesium.");
+            AlsasuaLogger.Info("SistemaFerroviario",
+                "Sin waypoints en Inspector → auto-creando vía desde GeoDataAlsasua.ViaFerreaNorte.");
+            waypointsVia = CrearWaypointsDesdeGeoData();
+        }
+
+        if (waypointsVia == null || waypointsVia.Length < 2)
+        {
+            AlsasuaLogger.Warn("SistemaFerroviario", "No se pudieron crear waypoints de vía. Sistema desactivado.");
             enabled = false;
             return;
         }
@@ -172,6 +185,38 @@ public sealed class SistemaFerroviario : MonoBehaviour
     // ══════════════════════════════════════════════════════════════════════
     //  INICIALIZACIÓN
     // ══════════════════════════════════════════════════════════════════════
+
+    // ══════════════════════════════════════════════════════════════════════
+    //  AUTO-CREACIÓN DE WAYPOINTS DESDE GEODATA
+    // ══════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Crea los waypoints de la vía del tren automáticamente a partir de
+    /// GeoDataAlsasua.ViaFerreaNorte cuando no hay waypoints asignados en Inspector.
+    /// Genera GameObjects hijos como contenedores de waypoints.
+    /// </summary>
+    private Transform[] CrearWaypointsDesdeGeoData()
+    {
+        var puntos = GeoDataAlsasua.ViaFerreaNorte;
+        if (puntos == null || puntos.Length < 2) return null;
+
+        var padre = new GameObject("ViaFerrea_GeoData");
+        padre.transform.SetParent(transform);
+
+        var wps = new Transform[puntos.Length];
+        for (int i = 0; i < puntos.Length; i++)
+        {
+            var wp = new GameObject($"ViaWP_{i:D2}");
+            wp.transform.SetParent(padre.transform);
+            wp.transform.position = puntos[i];
+            wps[i] = wp.transform;
+        }
+
+        AlsasuaLogger.Info("SistemaFerroviario",
+            $"✓ {wps.Length} waypoints de vía creados desde GeoDataAlsasua " +
+            "(Madrid–Irún pasando por estación Alsasua).");
+        return wps;
+    }
 
     /// <summary>
     /// Calcula la longitud total de la vía y guarda la distancia acumulada

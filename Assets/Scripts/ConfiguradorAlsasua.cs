@@ -4,7 +4,7 @@ using CesiumForUnity;
 using Unity.Mathematics;
 
 /// <summary>
-/// Configurador principal del escenario de Pamplona.
+/// Configurador principal del escenario de Alsasua / Altsasu.
 /// Lee los tokens desde Assets/Resources/ConfiguracionTokens.asset
 /// y carga los tilesets fotorrealistas automáticamente al hacer Play.
 ///
@@ -20,12 +20,15 @@ using Unity.Mathematics;
 public class ConfiguradorAlsasua : MonoBehaviour
 {
     // ============================================================
-    //  COORDENADAS DE PAMPLONA (Nafarroa / Navarra, España)
-    //  Centro: Plaza del Castillo
+    //  COORDENADAS REALES DE ALSASUA / ALTSASU (Valle de Burunda, Navarra)
+    //  Centro: Herriko Plaza / Plaza de los Fueros
+    //
+    //  NOTA: las coordenadas anteriores (42.8169, -1.6432) eran de PAMPLONA.
+    //  Alsasua está ~40 km al NO de Pamplona, en el corredor del Bidasoa-Ebro.
     // ============================================================
-    private const double ALSASUA_LATITUD   =  42.8169;  // 42°49'01" N
-    private const double ALSASUA_LONGITUD  =  -1.6432;  // 1°38'35" W
-    private const double ALSASUA_ALTURA    = 450.0;     // ~450 m sobre el mar
+    private const double ALSASUA_LATITUD   =  42.9016;  // 42°54'05" N  — Herriko Plaza
+    private const double ALSASUA_LONGITUD  =  -2.1668;  // 2°10'01" W   — Valle de Burunda
+    private const double ALSASUA_ALTURA    = 536.0;     // ~536 m sobre el mar (valle)
 
     // ============================================================
     //  INSPECTOR
@@ -48,13 +51,13 @@ public class ConfiguradorAlsasua : MonoBehaviour
     [SerializeField] private bool usarCesiumWorldTerrain = true;
 
     [Tooltip("Fallback: edificios OSM (Cesium Ion) si no hay Google API Key.\n" +
-             "Pamplona: mantener false — Google 3D Tiles cubre la ciudad completa.")]
+             "Alsasua: mantener false si Google 3D Tiles tiene cobertura en la zona.")]
     [SerializeField] private bool usarOSMEdificiosFallback = false;
 
     [Header("═══ CALIDAD ═══")]
     [Range(2, 32)]
     [Tooltip("Error de pantalla para tilesets — menor = más detalle (más GPU).\n" +
-             "Pamplona con Google 3D Tiles: 2 = máximo detalle fotogramétrico. 4 = equilibrio.")]
+             "2 = máximo detalle fotogramétrico. 4 = equilibrio rendimiento/calidad.")]
     [SerializeField] private float maximumScreenSpaceError = 2f;
 
     // Referencias privadas
@@ -537,7 +540,7 @@ public class ConfiguradorAlsasua : MonoBehaviour
                 "╔══════════════════════════════════════════════════════════════╗\n" +
                 "║  ❌ SIN TILES — ESCENARIO COMPLETAMENTE NEGRO                ║\n" +
                 "║                                                              ║\n" +
-                "║  PAMPLONA usa Google Photorealistic 3D Tiles (obligatorio).  ║\n" +
+                "║  ALSASUA usa Google Photorealistic 3D Tiles (obligatorio).   ║\n" +
                 "║  SOLUCIÓN (3 pasos):                                         ║\n" +
                 "║  1. Obtén API Key en console.cloud.google.com                ║\n" +
                 "║     (activa Map Tiles API)                                   ║\n" +
@@ -589,7 +592,7 @@ public class ConfiguradorAlsasua : MonoBehaviour
 
     /// <summary>
     /// Carga Google Photorealistic 3D Tiles.
-    /// Pamplona tiene cobertura completa: edificios, calles, vegetación y terreno fotogramétrico.
+    /// Alsasua tiene cobertura completa: edificios, calles, vegetación y terreno fotogramétrico.
     /// No es necesario OsmEdificioLoader — Google 3D reemplaza completamente los edificios OSM.
     /// Requiere API Key de Google Maps Platform con "Map Tiles API" activado.
     /// </summary>
@@ -603,10 +606,10 @@ public class ConfiguradorAlsasua : MonoBehaviour
         tileset.maximumScreenSpaceError = maximumScreenSpaceError;
         tileset.preloadAncestors        = true;
         tileset.preloadSiblings         = true;
-        tileset.createPhysicsMeshes     = true;   // Colisión con edificios y suelo de Pamplona
+        tileset.createPhysicsMeshes     = true;   // Colisión con edificios y suelo de Alsasua
         tileset.showCreditsOnScreen     = true;   // Obligatorio por licencia de Google
 
-        AlsasuaLogger.Info("Alsasua", "✓ Google Photorealistic 3D Tiles cargados (Pamplona) — fotogrametría completa: edificios, calles y vegetación.");
+        AlsasuaLogger.Info("Alsasua", "✓ Google Photorealistic 3D Tiles cargados (Alsasua) — fotogrametría completa: edificios, calles, montes y vegetación.");
     }
 
     /// <summary>

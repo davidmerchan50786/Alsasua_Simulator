@@ -1,18 +1,20 @@
 // Assets/Scripts/OsmEdificioLoader.cs
 // ═══════════════════════════════════════════════════════════════════════
-// ⚠  RAMA PAMPLONA — COMPONENTE DESHABILITADO POR DEFECTO
+//  CARGADOR DE EDIFICIOS OSM — ALSASUA / ALTSASU
 //
-//    Pamplona dispone de Google Photorealistic 3D Tiles que ya incluye
-//    edificios fotorreales con fotogrametría aérea completa.
-//    Este componente (OSM + Street View manual) queda como fallback
-//    opcional para zonas sin cobertura Google 3D.
+//  Lee alsasua_edificios.json (generado por GeneradorOSMAlsasua.py)
+//  y crea mallas extruidas con el footprint real de cada edificio OSM.
 //
-//    Para activarlo: añade este componente a un GO en escena y apunta
-//    rutaJsonRelativa a un archivo pamplona_edificios.json generado
-//    con GeneradorFachadas.py.
+//  PARA GENERAR EL JSON COMPLETO (~800 edificios OSM reales):
+//    python GeneradorOSMAlsasua.py
+//    python GeneradorOSMAlsasua.py --radio 700 --output Assets/OSMData
+//
+//  Ya hay un dataset base (92 edificios principales) en Assets/OSMData.
+//  Google Photorealistic 3D Tiles proporciona el visual fotorrealista;
+//  este loader añade edificios extra donde los tiles no carguen.
 // ═══════════════════════════════════════════════════════════════════════
 //
-// Lee pamplona_edificios.json generado por GeneradorFachadas.py
+// Lee alsasua_edificios.json generado por GeneradorOSMAlsasua.py
 // y crea mallas extruidas con texturas de Street View por fachada.
 //
 // JERARQUÍA EN ESCENA:
@@ -60,9 +62,10 @@ public class OsmEdificioLoader : MonoBehaviour
 
     [Header("═══ ARCHIVO JSON ═══")]
     [Tooltip("Ruta relativa a la carpeta de datos OSM.\n" +
-             "• Editor: relativa a Assets/  (p.ej. OSMData/pamplona_edificios.json)\n" +
-             "• Build:  relativa a StreamingAssets/ (igual ruta, misma carpeta copiada)")]
-    [SerializeField] private string rutaJsonRelativa = "OSMData/pamplona_edificios.json";
+             "• Editor: relativa a Assets/  (p.ej. OSMData/alsasua_edificios.json)\n" +
+             "• Build:  relativa a StreamingAssets/ (misma ruta, copiar carpeta)\n" +
+             "• Genera el JSON con: python GeneradorOSMAlsasua.py")]
+    [SerializeField] private string rutaJsonRelativa = "OSMData/alsasua_edificios.json";
 
     [Header("═══ CARGA ═══")]
     [Range(1, 50)]
@@ -88,9 +91,9 @@ public class OsmEdificioLoader : MonoBehaviour
     [SerializeField] private float paredMinMetros = 0.5f;
 
     [Header("═══ ALTITUD DEL TERRENO ═══")]
-    [Tooltip("Altura elipsoidal WGS84 aproximada del suelo de Pamplona (metros). " +
-             "ConfiguradorAlsasua usa 450 m.")]
-    [SerializeField] private double altitudTerreno = 450.0;
+    [Tooltip("Altura elipsoidal WGS84 aproximada del suelo de Alsasua (metros). " +
+             "ConfiguradorAlsasua usa 536 m (altitud real del valle de Burunda).")]
+    [SerializeField] private double altitudTerreno = 536.0;
 
     [Header("═══ MATERIALES ═══")]
     [Tooltip("Material de fachada sin imagen (si null, se crea uno URP en runtime). " +
