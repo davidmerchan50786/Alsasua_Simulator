@@ -26,7 +26,9 @@ public class TexturizadorEdificiosReales : MonoBehaviour
     [Range(4f, 32f)]
     [SerializeField] private float screenSpaceError = 8f;
 
-    private Cesium3DTileset tilesetImagenSatelite;
+    // CesiumIonRasterOverlay se aplica SOBRE el tileset de terreno existente.
+    // No es un Cesium3DTileset independiente — ese error causa el "terreno blanco".
+    private CesiumIonRasterOverlay overlayImagenSatelite;
     private Cesium3DTileset tilesetEdificiosOSM;
 
     public enum TipoImagenSatelite
@@ -58,63 +60,70 @@ public class TexturizadorEdificiosReales : MonoBehaviour
 
     /// <summary>
     /// Carga la capa de imagen de satélite según el tipo seleccionado.
+    ///
+    /// IMPORTANTE — "terreno blanco":
+    /// Bing Maps y otras imágenes de satélite son RASTER OVERLAYS, no Cesium3DTileset.
+    /// Deben aplicarse como CesiumIonRasterOverlay sobre el tileset de terreno existente.
+    /// Crearlos como Cesium3DTileset independiente provoca un plano blanco sin textura
+    /// porque el tileset de imagen 2D no sabe cómo draparse sobre el terreno 3D.
     /// </summary>
     private void CargarImagenSatelite()
     {
         Debug.Log($"[Texturizador] Cargando imagen satélite: {tipoImagenSatelite}");
 
-        // BUG 32 FIX: los Cesium3DTileset deben estar bajo CesiumGeoreference en la jerarquía.
-        // Parentarlos fuera causaba que las coordenadas GeoTransform fallaran y el tileset
-        // apareciera en (0,0,0) en lugar de posicionarse sobre Alsasua.
-        var georef = Object.FindFirstObjectByType<CesiumGeoreference>();
-        Transform parentTileset = georef != null ? georef.transform : transform;
-        if (georef == null)
-            Debug.LogWarning("[Texturizador] CesiumGeoreference no encontrado — el tileset satélite puede aparecer desplazado. " +
-                             "Ejecuta Alsasua → ⚙ Configurar Escena Completa para crear la jerarquía.");
+        // Buscar el tileset de terreno (Cesium World Terrain, ionAssetID=1)
+        // El overlay debe aplicarse sobre él para que el terreno tenga textura.
+        Cesium3DTileset tilesetTerreno = null;
+        foreach (var t in Object.FindObjectsByType<Cesium3DTileset>(FindObjectsSortMode.None))
+        {
+            if (t.ionAssetID == 1) { tilesetTerreno = t; break; }
+        }
 
-        GameObject tilesetObj = new GameObject("Satellite_ImageTileset");
-        tilesetObj.transform.parent = parentTileset;
-
-        Cesium3DTileset tileset = tilesetObj.AddComponent<Cesium3DTileset>();
-        tileset.maximumScreenSpaceError = screenSpaceError;
-        tileset.createPhysicsMeshes     = false;  // Evita warning PhysX de triángulos grandes
+        if (tilesetTerreno == null)
+        {
+            Debug.LogWarning("[Texturizador] Cesium World Terrain (ionAssetID=1) no encontrado. " +
+                             "Añade el terreno primero desde el panel de Cesium o ejecuta 'Configurar Escena Completa'.");
+            return;
+        }
 
         switch (tipoImagenSatelite)
         {
             case TipoImagenSatelite.CesiumIonBingMaps:
-                // Bing Maps Aerial — asset ID 2 en Cesium Ion (incluido gratis)
-                tileset.ionAssetID = 2;
+                // Bing Maps Aerial (assetID=2) — se drapa sobre el terreno como raster overlay.
+                // NO usar Cesium3DTileset para esto — causa terreno blanco.
+                if (tilesetTerreno.GetComponent<CesiumIonRasterOverlay>() != null)
+                {
+                    Debug.Log("[Texturizador] Bing Maps overlay ya presente en el tileset de terreno.");
+                    overlayImagenSatelite = tilesetTerreno.GetComponent<CesiumIonRasterOverlay>();
+                    return;
+                }
+                overlayImagenSatelite = tilesetTerreno.gameObject.AddComponent<CesiumIonRasterOverlay>();
+                overlayImagenSatelite.ionAssetID = 2;
                 if (!string.IsNullOrEmpty(tokenCesiumIon))
-                    tileset.ionAccessToken = tokenCesiumIon;
+                    overlayImagenSatelite.ionAccessToken = tokenCesiumIon;
                 else
                     Debug.LogWarning("[Texturizador] Token de Cesium Ion vacío. Bing Maps puede no cargar.");
+                Debug.Log("[Texturizador] ✓ Bing Maps Aerial añadido como RasterOverlay al terreno.");
                 break;
 
             case TipoImagenSatelite.MapboxSatellite:
                 if (string.IsNullOrEmpty(tokenMapbox))
                 {
                     Debug.LogError("[Texturizador] Token de Mapbox no configurado. Imagen satélite no cargada.");
-                    Destroy(tilesetObj);
                     return;
                 }
-                // Mapbox Satellite: endpoint de tiles raster XYZ (no es un 3D Tileset — solo para referencia)
-                Debug.LogWarning("[Texturizador] Mapbox Satellite usa tiles XYZ, no 3D Tileset. " +
-                                 "Para integración completa usa CesiumRasterOverlay con URL personalizada.");
-                Destroy(tilesetObj);
+                // Mapbox Satellite: tiles XYZ raster — usar CesiumWebMapTileServiceRasterOverlay
+                Debug.LogWarning("[Texturizador] Mapbox Satellite requiere CesiumWebMapTileServiceRasterOverlay. " +
+                                 "Añade ese componente manualmente al tileset de terreno con la URL de Mapbox.");
                 return;
 
             case TipoImagenSatelite.SentinelEsriLandsat:
                 // ESRI World Imagery — baja resolución, sin autenticación
-                // Usar como raster overlay sobre el terreno, no como 3DTileset
-                Debug.LogWarning("[Texturizador] ESRI World Imagery debe usarse como CesiumRasterOverlay, " +
-                                 "no como 3DTileset. Añade un componente 'Cesium Web Map Tile Service Raster Overlay' " +
-                                 "al tileset de terreno con la URL de ESRI.");
-                Destroy(tilesetObj);
+                Debug.LogWarning("[Texturizador] ESRI World Imagery debe configurarse como " +
+                                 "'Cesium Web Map Tile Service Raster Overlay' sobre el tileset de terreno. " +
+                                 "Añade ese componente manualmente con la URL pública de ESRI.");
                 return;
         }
-
-        tilesetImagenSatelite = tileset;
-        Debug.Log("[Texturizador] Imagen satélite cargada correctamente.");
     }
 
     /// <summary>
@@ -162,8 +171,11 @@ public class TexturizadorEdificiosReales : MonoBehaviour
     [ContextMenu("Recargar Tilesets")]
     public void RecargarTexturas()
     {
-        if (tilesetImagenSatelite != null) Destroy(tilesetImagenSatelite.gameObject);
+        // El overlay de imagen satélite es un componente, no un GameObject aparte
+        if (overlayImagenSatelite != null) Destroy(overlayImagenSatelite);
         if (tilesetEdificiosOSM  != null) Destroy(tilesetEdificiosOSM.gameObject);
+
+        overlayImagenSatelite = null;
 
         if (cargarSateliteAlResolucion) CargarImagenSatelite();
         if (cargarEdificiosOSM)         CargarTilesetEdificiosOSM();
