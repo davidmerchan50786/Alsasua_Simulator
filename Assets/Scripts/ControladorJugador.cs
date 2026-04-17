@@ -241,14 +241,14 @@ public class ControladorJugador : MonoBehaviour
         ConfigurarCamara();
         CrearCuerpoJugador();
 
-        // El jugador parte a Y=10 sobre el origen del GeoReference (Plaza del Castillo).
+        // El jugador parte a Y=10 sobre el origen del GeoReference (Herriko Plaza, Alsasua).
         // El CharacterController + gravedad lo bajan hasta el SueloBase (Y=0) o hasta
         // los physics meshes de Cesium conforme se generan (~2-3 s).
         // No se necesita snap por raycast: ese enfoque era frágil cuando los tiles
         // aún no habían generado sus colliders, o cuando el primer hit era un tejado.
         velVert = Vector3.zero;
         AlsasuaLogger.Info("Jugador",
-            "Inicio en Plaza del Castillo Y=10 — gravedad bajará al jugador al nivel de calle.");
+            "Inicio en Herriko Plaza (Alsasua) Y=10 — gravedad bajará al jugador al nivel de calle.");
     }
 
     private void Update()

@@ -74,7 +74,6 @@ public sealed class SistemaBarricadas : MonoBehaviour
     //  ESTADO INTERNO
     // ───────────────────────────────────────────────────────────────────────
     private readonly List<BarricadaFuego> _barricadas = new List<BarricadaFuego>();
-    private bool _prefabsAsignados = false;
 
     // ───────────────────────────────────────────────────────────────────────
     //  UNITY
@@ -99,7 +98,7 @@ public sealed class SistemaBarricadas : MonoBehaviour
         prefabHormigon = hormigon;
         prefabMetal    = metal;
         prefabVFXFuego = vfxFuego;
-        _prefabsAsignados = true;
+
 
         AlsasuaLogger.Info("SistemaBarricadas",
             $"Prefabs asignados → hormigón: {NombreO(hormigon)}, " +

@@ -3,7 +3,7 @@
 //
 // ESTÉTICA: panel monoespacio verde oscuro idéntico al "Spy Dashboard" web
 // FUNCIONES:
-//   · LOCALIZADOR_GPE : botones FlyTo a Pamplona/Vitoria/Donosti/Bilbao/Altsasu
+//   · LOCALIZADOR_GPE : botones FlyTo a Altsasu/Vitoria/Donosti/Bilbao/Pamplona
 //   · ÓPTICAS_AVANZADAS: NVG (visión nocturna verde) y FLIR Térmica (azul→naranja)
 //   · Atajos de teclado: 1–5 ubicaciones | F1 Normal | F2 NVG | F3 FLIR
 //
@@ -62,11 +62,12 @@ public class DashboardGeo : MonoBehaviour
     private static readonly Objetivo[] Objetivos =
     {
         //                                                alt   altPie   hdg  pitch
-        new Objetivo { nombre="PAMPLONA", lon=-1.6432, lat=42.8125, alt= 280, altPie= 565, heading=  0, pitch=-25 },
+        // ALTSASU es el destino principal (tecla 1) — coordenadas exactas de GeoDataAlsasua
+        new Objetivo { nombre="ALTSASU",  lon=GeoDataAlsasua.LON_CENTRO, lat=GeoDataAlsasua.LAT_CENTRO, alt=200, altPie=700, heading=  0, pitch=-15 },
         new Objetivo { nombre="VITORIA",  lon=-2.6727, lat=42.8465, alt= 280, altPie= 675, heading= 45, pitch=-20 },
         new Objetivo { nombre="DONOSTI",  lon=-1.9812, lat=43.3209, alt= 300, altPie= 160, heading=180, pitch=-15 },
         new Objetivo { nombre="BILBAO",   lon=-2.9350, lat=43.2630, alt= 280, altPie= 170, heading= 90, pitch=-20 },
-        new Objetivo { nombre="ALTSASU",  lon=-2.1685, lat=42.8953, alt= 180, altPie= 680, heading=  0, pitch=-12 },
+        new Objetivo { nombre="PAMPLONA", lon=-1.6432, lat=42.8125, alt= 280, altPie= 565, heading=  0, pitch=-25 },
     };
 
     // ═══════════════════════════════════════════════════════════════════════

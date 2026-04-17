@@ -308,7 +308,7 @@ public sealed class SistemaAssets : MonoBehaviour
 
         // SistemaBarricadas: propagar prefabs de barricadas y VFX fuego.
         // Usamos el mejor disponible: Abandoned World → BarrierPack → null (fallback procedural).
-        var barricadas = FindObjectOfType<SistemaBarricadas>();
+        var barricadas = Object.FindFirstObjectByType<SistemaBarricadas>();
         if (barricadas != null)
         {
             barricadas.AsignarPrefabs(
@@ -318,12 +318,12 @@ public sealed class SistemaAssets : MonoBehaviour
         }
 
         // SistemaFarolas: propagar prefab de farola.
-        var farolas = FindObjectOfType<SistemaFarolas>();
+        var farolas = Object.FindFirstObjectByType<SistemaFarolas>();
         if (farolas != null && prefabFarola != null)
             farolas.AsignarPrefab(prefabFarola);
 
         // SistemaEdificios: propagar prefabs de casas y vallas.
-        var edificios = FindObjectOfType<SistemaEdificios>();
+        var edificios = Object.FindFirstObjectByType<SistemaEdificios>();
         if (edificios != null)
         {
             edificios.AsignarPrefabs(prefabCasaPueblo, prefabCasaUrbana, prefabValla);
@@ -338,7 +338,7 @@ public sealed class SistemaAssets : MonoBehaviour
         }
 
         // SistemaVegetacion: propagar arbustos y árbol extra si están disponibles.
-        var vegetacion = FindObjectOfType<SistemaVegetacion>();
+        var vegetacion = Object.FindFirstObjectByType<SistemaVegetacion>();
         if (vegetacion != null)
         {
             vegetacion.AsignarPrefabsExtra(prefabArbusto, prefabArbolExtra);
@@ -351,6 +351,44 @@ public sealed class SistemaAssets : MonoBehaviour
             if (plantasDescargas.Length > 0 || bushesDescargas.Length > 0 || arbolesDescargas.Length > 0)
                 vegetacion.AsignarPrefabsDescargas(plantasDescargas, bushesDescargas, arbolesDescargas);
         }
+
+        // SistemaFauna: propagar prefabs de animales reales desde Downloads/Animals.
+        // Los subdirectorios coinciden 1:1 con los tipos de SistemaFauna:
+        //   Horse → Caballo, Wolf → Lobo, Rabbit → Conejo,
+        //   Chicken → Pollo, Rooster → Gallo, Sheep → Oveja
+        var fauna = Object.FindFirstObjectByType<SistemaFauna>();
+        if (fauna != null)
+        {
+            var caballo = PrimerPrefabDescargas("Assets/Downloads/Animals/Horse");
+            var lobo    = PrimerPrefabDescargas("Assets/Downloads/Animals/Wolf");
+            var conejo  = PrimerPrefabDescargas("Assets/Downloads/Animals/Rabbit");
+            var pollo   = PrimerPrefabDescargas("Assets/Downloads/Animals/Chicken");
+            var gallo   = PrimerPrefabDescargas("Assets/Downloads/Animals/Rooster");
+            var oveja   = PrimerPrefabDescargas("Assets/Downloads/Animals/Sheep");
+
+            int cargados = (caballo != null ? 1 : 0) + (lobo != null ? 1 : 0) +
+                           (conejo  != null ? 1 : 0) + (pollo != null ? 1 : 0) +
+                           (gallo   != null ? 1 : 0) + (oveja != null ? 1 : 0);
+            if (cargados > 0)
+            {
+                fauna.AsignarPrefabs(caballo, lobo, conejo, pollo, gallo, oveja);
+                AlsasuaLogger.Info("SistemaAssets", $"SistemaFauna: {cargados}/6 animales reales asignados desde Downloads.");
+            }
+            else
+            {
+                AlsasuaLogger.Warn("SistemaAssets", "SistemaFauna: sin prefabs en Downloads/Animals → usando fallback procedural (cápsulas).");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Devuelve el primer prefab encontrado en una carpeta de Assets/Downloads.
+    /// Útil cuando solo se necesita una variante de un tipo de asset.
+    /// </summary>
+    private static GameObject PrimerPrefabDescargas(string carpeta)
+    {
+        var todos = CargarPrefabsDescargas(carpeta);
+        return todos.Length > 0 ? todos[0] : null;
     }
 
     // Intenta cargar el primer Mesh de un asset FBX/GLB desde Resources

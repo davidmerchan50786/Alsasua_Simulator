@@ -63,8 +63,14 @@ public class EnemigoPatrulla : MonoBehaviour
     //  ESTADO INTERNO
     // ═══════════════════════════════════════════════════════════════════════
 
-    // FIX OBSERVABILIDAD: ProfilerMarker de coste cero cuando el Profiler no está conectado.
-    private static readonly ProfilerMarker _markerUpdate = new ProfilerMarker("EnemigoPatrulla.Update");
+    // FIX T16 / OBSERVABILIDAD: ProfilerMarker inicializado en constructor estático con
+    // try/catch para evitar TypeInitializationException en EditMode tests.
+    private static ProfilerMarker _markerUpdate;
+    static EnemigoPatrulla()
+    {
+        try   { _markerUpdate = new ProfilerMarker("EnemigoPatrulla.Update"); }
+        catch (System.Exception) { _markerUpdate = default; }
+    }
 
     // FIX CRASH: MaterialPropertyBlock NO puede inicializarse como campo estático (static readonly).
     // Unity lo prohíbe expresamente: CreateImpl no está permitido en constructores de MonoBehaviour.
@@ -88,13 +94,8 @@ public class EnemigoPatrulla : MonoBehaviour
 
     private void Awake()
     {
-        // FIX CRASH: inicializar MaterialPropertyBlock en Awake(), no como campo estático.
-        // Unity no permite crear objetos UnityEngine en constructores / inicializadores de campo.
-        _pbFlash = new MaterialPropertyBlock();
-        _idColor = Shader.PropertyToID("_BaseColor");
-
-        // FIX TEST T16: CrearCuerpoBasico movido de Start() a Awake() para que los tests
-        // edit-mode (que no ejecutan Start()) encuentren los Renderers correctamente.
+        // FIX TEST T16: crear cuerpo PRIMERO para que los tests de edit mode encuentren
+        // Renderers aunque el MaterialPropertyBlock u otros pasos posteriores fallen.
         if (transform.childCount == 0)
         {
             if (prefabModelo != null)
@@ -102,6 +103,11 @@ public class EnemigoPatrulla : MonoBehaviour
             else
                 CrearCuerpoBasico();
         }
+
+        // FIX CRASH: inicializar MaterialPropertyBlock en Awake(), no como campo estático.
+        // Unity no permite crear objetos UnityEngine en constructores / inicializadores de campo.
+        _pbFlash = new MaterialPropertyBlock();
+        _idColor = Shader.PropertyToID("_BaseColor");
     }
 
     // Instancia el prefab 3D del enemigo (Kenney GuardiaCivil, Jarrai, etc.)

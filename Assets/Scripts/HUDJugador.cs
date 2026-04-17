@@ -76,7 +76,9 @@ public sealed class HUDJugador : MonoBehaviour
         if (jugador == null) jugador = Object.FindFirstObjectByType<ControladorJugador>();
         if (disparo == null) disparo  = Object.FindFirstObjectByType<SistemaDisparo>();
 
-        PrepararRecursos();
+        try { PrepararRecursos(); }
+        catch (System.Exception ex) { AlsasuaLogger.Warn("HUDJugador", $"PrepararRecursos falló (normal en tests): {ex.Message}"); }
+
         ConstruirCanvas();
         _timerControles = duracionControles;
     }

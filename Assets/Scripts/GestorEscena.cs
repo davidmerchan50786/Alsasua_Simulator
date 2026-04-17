@@ -35,6 +35,7 @@ public sealed class GestorEscena : MonoBehaviour
     [SerializeField] private SistemaFarolas         sistemaFarolas;
     [SerializeField] private SistemaEdificios       sistemaEdificios;
     [SerializeField] private SistemaTerrenoAlsasua  sistemaTerrenoAlsasua;
+    [SerializeField] private SistemaFauna           sistemaFauna;
 
     [Header("═══ ACTIVOS ═══")]
     [Tooltip("Activa la simulación de la manifestación (500-1000 personas en movimiento).")]
@@ -59,6 +60,9 @@ public sealed class GestorEscena : MonoBehaviour
     [Tooltip("Activa el terreno procedural del Valle de Burunda con los montes de alrededor. " +
              "Proporciona physics collision y heightmap antes de que carguen los Cesium tiles.")]
     [SerializeField] private bool activarTerreno     = true;
+    [Tooltip("Activa la fauna del valle: caballos, ovejas, conejos, lobos, gallinas y gallos. " +
+             "Assets desde Downloads/Animals si están importados, fallback procedural si no.")]
+    [SerializeField] private bool activarFauna       = true;
 
     [Header("═══ CONFIGURACIÓN ALSASUA ═══")]
     [Tooltip("Punto de origen del mapa Unity (debe coincidir con CesiumGeoreference)")]
@@ -94,6 +98,7 @@ public sealed class GestorEscena : MonoBehaviour
         if (activarFarolas     && sistemaFarolas     == null) sistemaFarolas     = CrearSistema<SistemaFarolas>("SistemaFarolas");
         if (activarEdificios   && sistemaEdificios       == null) sistemaEdificios       = CrearSistema<SistemaEdificios>("SistemaEdificios");
         if (activarTerreno     && sistemaTerrenoAlsasua == null) sistemaTerrenoAlsasua  = CrearSistema<SistemaTerrenoAlsasua>("SistemaTerrenoAlsasua");
+        if (activarFauna       && sistemaFauna          == null) sistemaFauna           = CrearSistema<SistemaFauna>("SistemaFauna");
 
         // FIX RACE CONDITION: las rutas deben inyectarse en SistemaPersonajes ANTES de que
         // su Awake() llame a SpawnTodos(). Con el orden de ejecución (-10 vs 0) esto se cumple
@@ -111,6 +116,7 @@ public sealed class GestorEscena : MonoBehaviour
         if (!activarFarolas    && sistemaFarolas     != null) sistemaFarolas.gameObject.SetActive(false);
         if (!activarEdificios  && sistemaEdificios       != null) sistemaEdificios.gameObject.SetActive(false);
         if (!activarTerreno    && sistemaTerrenoAlsasua != null) sistemaTerrenoAlsasua.gameObject.SetActive(false);
+        if (!activarFauna      && sistemaFauna          != null) sistemaFauna.gameObject.SetActive(false);
     }
 
     private void Start()
@@ -186,6 +192,7 @@ public sealed class GestorEscena : MonoBehaviour
            $"║  Farolas           : {(activarFarolas     ? "✓ ACTIVO" : "— desactivado"),-30} ║\n" +
            $"║  Edificios         : {(activarEdificios   ? "✓ ACTIVO" : "— desactivado"),-30} ║\n" +
            $"║  Terreno Valle     : {(activarTerreno    ? "✓ ACTIVO" : "— desactivado"),-30} ║\n" +
+           $"║  Fauna Valle       : {(activarFauna      ? "✓ ACTIVO" : "— desactivado"),-30} ║\n" +
             "╚══════════════════════════════════════════════════════════╝");
     }
 
@@ -257,6 +264,9 @@ public sealed class GestorEscena : MonoBehaviour
 
     /// <summary>Referencia al sistema de edificios activo.</summary>
     public SistemaEdificios  Edificios    => sistemaEdificios;
+
+    /// <summary>Referencia al sistema de fauna activo.</summary>
+    public SistemaFauna      Fauna        => sistemaFauna;
 
     /// <summary>
     /// Activa el fuego en todas las barricadas (escalada de la manifestación).

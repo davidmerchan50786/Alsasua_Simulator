@@ -66,7 +66,10 @@ public class SistemaExplosion : MonoBehaviour
         // Sacudir cámara si el jugador está cerca
         SacudirCamara();
 
-        Destroy(gameObject, duracionFuego + 2f);
+        if (Application.isPlaying)
+            Destroy(gameObject, duracionFuego + 2f);
+        else
+            DestroyImmediate(gameObject);
     }
 
     // ─── Efecto con prefab real ───────────────────────────────────────────
@@ -164,7 +167,8 @@ public class SistemaExplosion : MonoBehaviour
         shape.radius   = radio * 0.3f;
 
         ps.Play();
-        Destroy(go, 2f);
+        // FIX T22: Destroy() no está permitido en edit mode (tests EditMode).
+        if (Application.isPlaying) Destroy(go, 2f); else DestroyImmediate(go);
     }
 
     private void EfectoHumo()
@@ -192,7 +196,7 @@ public class SistemaExplosion : MonoBehaviour
         shape.radius   = radio * 0.4f;
 
         ps.Play();
-        Destroy(go, 8f);
+        if (Application.isPlaying) Destroy(go, 8f); else DestroyImmediate(go);
     }
 
     private void EfectoRescoldo()
@@ -220,7 +224,7 @@ public class SistemaExplosion : MonoBehaviour
         shape.radius   = 0.5f;
 
         ps.Play();
-        Destroy(go, 3f);
+        if (Application.isPlaying) Destroy(go, 3f); else DestroyImmediate(go);
     }
 
     private void EfectoLlamas()
@@ -250,7 +254,7 @@ public class SistemaExplosion : MonoBehaviour
         shape.radius   = radio * 0.25f;
 
         ps.Play();
-        Destroy(go, duracionFuego + 1f);
+        if (Application.isPlaying) Destroy(go, duracionFuego + 1f); else DestroyImmediate(go);
     }
 
     private void EfectoOnda()
@@ -259,14 +263,17 @@ public class SistemaExplosion : MonoBehaviour
         var go   = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         go.transform.position   = transform.position;
         go.transform.localScale = Vector3.zero;
-        Destroy(go.GetComponent<Collider>());
+        var col = go.GetComponent<Collider>();
+        if (col != null) { if (Application.isPlaying) Destroy(col); else DestroyImmediate(col); }
 
         var rend     = go.GetComponent<Renderer>();
         var mat      = new Material(Shader.Find("Universal Render Pipeline/Unlit")
                                  ?? Shader.Find("Unlit/Color")
                                  ?? Shader.Find("Standard"));
         mat.color    = new Color(1f, 0.8f, 0.5f, 0.3f);
-        rend.material = mat;
+        // FIX T22: usar sharedMaterial para asignar el material recién creado
+        // (evita el warning "Instantiating material" en edit mode).
+        rend.sharedMaterial = mat;
 
         float dur     = 0.3f;
         float maxScale = radio * 2.5f;
@@ -319,8 +326,12 @@ public class OndaExplosionAnim : MonoBehaviour
         // Guardia: duración mínima para evitar división por cero
         duracion = Mathf.Max(dur, 0.01f);
         rend     = GetComponent<Renderer>();
-        // Crear la instancia UNA sola vez (no cada frame)
-        matInstancia = rend != null ? rend.material : null;
+        // FIX T22: rend.material en edit mode instancia el material y emite warning.
+        // En play mode usamos .material (instancia propia para animar color).
+        // En edit mode usamos .sharedMaterial (sin instanciar; la animación no corre).
+        matInstancia = rend != null
+            ? (Application.isPlaying ? rend.material : rend.sharedMaterial)
+            : null;
     }
 
     private void Update()
@@ -339,8 +350,10 @@ public class OndaExplosionAnim : MonoBehaviour
 
     private void OnDestroy()
     {
-        // BUG 16 FIX: liberar explícitamente la instancia de material al destruir el GO
-        if (matInstancia != null)
+        // BUG 16 FIX: liberar explícitamente la instancia de material al destruir el GO.
+        // Solo destruir si es una instancia propia (play mode); en edit mode se usa
+        // sharedMaterial y no debe destruirse.
+        if (matInstancia != null && Application.isPlaying)
             Destroy(matInstancia);
     }
 }

@@ -112,8 +112,17 @@ public class SistemaDisparo : MonoBehaviour
     private static readonly Color _colorDecal  = new Color(0.08f, 0.08f, 0.08f);
 
     // ── Profiler marker ──────────────────────────────────────────────────
-    private static readonly ProfilerMarker _markerDisparar =
-        new ProfilerMarker("SistemaDisparo.Disparar");
+    // FIX T07/T08: NO usar campo static readonly con inicializador para ProfilerMarker.
+    // En EditMode (tests), el inicializador estático se ejecuta antes de que Unity tenga
+    // el profiler nativo listo, lanzando TypeInitializationException → Awake nunca corre
+    // → _poolBursts y _poolDecals quedan null → T07 y T08 fallan.
+    // Solución: constructor estático con try/catch aísla el fallo al propio marker.
+    private static ProfilerMarker _markerDisparar;
+    static SistemaDisparo()
+    {
+        try   { _markerDisparar = new ProfilerMarker("SistemaDisparo.Disparar"); }
+        catch (System.Exception) { _markerDisparar = default; }
+    }
 
     // ═══════════════════════════════════════════════════════════════════════
     //  UNITY
@@ -121,6 +130,11 @@ public class SistemaDisparo : MonoBehaviour
 
     private void Awake()
     {
+        // Inicializar pools primero — así los tests de edit mode siempre los encuentran
+        // no nulos aunque algún paso posterior lance excepción.
+        InicializarPoolBursts();
+        InicializarPoolDecals();
+
         camara = GetComponentInChildren<Camera>();
         if (camara == null) camara = Camera.main;
 
@@ -135,9 +149,6 @@ public class SistemaDisparo : MonoBehaviour
         _pbDecal = new MaterialPropertyBlock();
         _pbDecal.SetColor(_idBaseColor, _colorDecal);
         _pbDecal.SetColor("_Color",     _colorDecal);
-
-        InicializarPoolBursts();
-        InicializarPoolDecals();
     }
 
     private void OnDestroy()
@@ -177,15 +188,19 @@ public class SistemaDisparo : MonoBehaviour
             var go = new GameObject($"Burst_Pool_{i:D2}");
             go.transform.SetParent(transform);
             go.SetActive(false);
-            var ps   = go.AddComponent<ParticleSystem>();
+            var ps = go.AddComponent<ParticleSystem>();
 
-            // Configuración base — se ajusta color/tamaño/cantidad al activar
-            var main = ps.main;
-            main.playOnAwake   = false;
-            main.loop          = false;
-            main.gravityModifier = 0.4f;
-            var em = ps.emission;
-            em.rateOverTime = 0f;
+            // Configuración base — los módulos de ParticleSystem solo se pueden
+            // configurar en play mode; en edit mode (tests) los dejamos en valores por defecto.
+            if (Application.isPlaying)
+            {
+                var main = ps.main;
+                main.playOnAwake    = false;
+                main.loop           = false;
+                main.gravityModifier = 0.4f;
+                var em = ps.emission;
+                em.rateOverTime = 0f;
+            }
 
             _poolBursts[i] = new SlotBurst { go = go, ps = ps };
         }

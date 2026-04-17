@@ -23,16 +23,19 @@ public sealed class SistemaVegetacion : MonoBehaviour
     //  INSPECTOR
     // ───────────────────────────────────────────────────────────────────────
     [Header("═══ ZONAS DE BOSQUE ═══")]
-    [Tooltip("Centro de cada zona forestal")]
+    [Tooltip("Centro de cada zona forestal (metros Unity desde Herriko Plaza). " +
+             "Por defecto usan los 6 bosques reales de GeoDataAlsasua.ZonasBosque.")]
     [SerializeField] private Vector3[] centrosZona = new Vector3[]
     {
-        new Vector3(   0f, 0f,  500f),  // norte
-        new Vector3(   0f, 0f, -500f),  // sur
-        new Vector3( 500f, 0f,    0f),  // este
-        new Vector3(-500f, 0f,    0f),  // oeste
+        new Vector3(   0f, 0f,  800f),  // Pinar Norte (corredor Bidasoa)
+        new Vector3( 200f, 0f, -650f),  // Bosque Sur N-1 (ladera Ondarria)
+        new Vector3(-650f, 0f,  200f),  // Robledal Monte Artia (ladera O)
+        new Vector3( 750f, 0f,  350f),  // Pinar Askiz / Peña Blanca (NE)
+        new Vector3( 900f, 0f,  900f),  // Hayedo Aralar (piedemonte NE)
+        new Vector3(-700f, 0f, -100f),  // Ribera Oyantzun (SO, Ibarrea)
     };
-    [Tooltip("Radio de cada zona (m)")]
-    [SerializeField] private float[] radiosZona = new float[] { 250f, 200f, 220f, 180f };
+    [Tooltip("Radio de cada zona (m). Debe tener el mismo número de elementos que centrosZona.")]
+    [SerializeField] private float[] radiosZona = new float[] { 380f, 300f, 420f, 350f, 450f, 200f };
 
     [Header("═══ PARÁMETROS ═══")]
     [Tooltip("Número máximo de árboles generados por zona forestal.")]
@@ -96,8 +99,16 @@ public sealed class SistemaVegetacion : MonoBehaviour
     // (sin _idBaseColor/_idBaseMap — vegetación no usa per-instance color override)
 
     // ── Profiler marker ──────────────────────────────────────────────────
-    private static readonly ProfilerMarker _markerRender =
-        new ProfilerMarker("SistemaVegetacion.RenderizarArboles");
+    // FIX: static readonly field initializer lanza TypeInitializationException
+    // en Unity EditMode tests cuando ProfilerMarker no está disponible.
+    // Se mueve a un static constructor con try/catch para evitar que la excepción
+    // "envenene" la clase y haga que Awake() nunca se ejecute.
+    private static ProfilerMarker _markerRender;
+    static SistemaVegetacion()
+    {
+        try   { _markerRender = new ProfilerMarker("SistemaVegetacion.RenderizarArboles"); }
+        catch (System.Exception) { _markerRender = default; }
+    }
 
     // ───────────────────────────────────────────────────────────────────────
     //  UNITY
@@ -309,9 +320,22 @@ public sealed class SistemaVegetacion : MonoBehaviour
         int totalMax = centrosZona.Length * densidadArbolesZona;
         var lista    = new List<ArbolData>(totalMax);
 
+        // Verificar si los centros coinciden (en count) con GeoDataAlsasua.ZonasBosque.
+        // Si coinciden, se usan las fracciones de pinos reales por zona (más exacto);
+        // si no, se usa el valor global fraccionPinos del inspector.
+        bool usarFraccionesReales =
+            centrosZona.Length == GeoDataAlsasua.ZonasBosque.Length;
+
         for (int z = 0; z < centrosZona.Length; z++)
         {
-            float radio = z < radiosZona.Length ? radiosZona[z] : 200f;
+            float radio    = z < radiosZona.Length ? radiosZona[z] : 200f;
+            float pinosFrac = usarFraccionesReales
+                ? GeoDataAlsasua.ZonasBosque[z].FraccionPinos
+                : fraccionPinos;
+            string nombreZona = usarFraccionesReales
+                ? GeoDataAlsasua.ZonasBosque[z].Nombre
+                : $"Zona_{z}";
+
             for (int i = 0; i < densidadArbolesZona; i++)
             {
                 // Distribución en disco con ruido Perlin para clarear
@@ -326,7 +350,8 @@ public sealed class SistemaVegetacion : MonoBehaviour
                 // Altura real del terreno vía raycast
                 float alturaY = MuestrearTerreno(pos);
 
-                bool esPino   = Random.value < fraccionPinos;
+                // Fracción de pinos per-zona (real) o global (inspector)
+                bool esPino   = Random.value < pinosFrac;
                 float escMin  = esPino ? escalaMinPino  : escalaMinRoble;
                 float escMax  = esPino ? escalaMaxPino  : escalaMaxRoble;
                 float escala  = Mathf.Lerp(escMin, escMax, ruido);   // más ruido → más alto
@@ -340,10 +365,15 @@ public sealed class SistemaVegetacion : MonoBehaviour
                     faseViento = Random.Range(0f, Mathf.PI * 2f),
                 });
             }
+
+            AlsasuaLogger.Info("SistemaVegetacion",
+                $"  [{z}] {nombreZona}: pinos={pinosFrac:P0}, radio={radio}m");
         }
 
         _arboles = lista.ToArray();
-        AlsasuaLogger.Info("SistemaVegetacion", $"Generados {_arboles.Length} árboles.");
+        AlsasuaLogger.Info("SistemaVegetacion",
+            $"✓ Generados {_arboles.Length} árboles en {centrosZona.Length} zonas " +
+            $"({(usarFraccionesReales ? "fracciones reales GeoData" : "fracción global inspector")}).");
     }
 
     private float MuestrearTerreno(Vector3 pos)

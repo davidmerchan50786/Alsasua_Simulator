@@ -39,16 +39,25 @@ public sealed class AudioManager : MonoBehaviour
 
     public enum Clip
     {
-        Disparo,        // flash del arma
-        ImpactoSuelo,   // bala en pared/suelo
-        ImpactoSangre,  // bala en enemigo
-        ImpactoMetal,   // bala en vehículo
-        Recarga,        // clic de recarga
-        PasoNormal,     // paso andando
-        PasoCorrer,     // paso corriendo
-        MotorCoche,     // ruido motor (loop)
-        Explosion,      // explosión bomba
-        Silbato,        // policía alerta
+        Disparo,            // flash del arma
+        ImpactoSuelo,       // bala en pared/suelo
+        ImpactoSangre,      // bala en enemigo
+        ImpactoMetal,       // bala en vehículo
+        Recarga,            // clic de recarga
+        PasoNormal,         // paso andando
+        PasoCorrer,         // paso corriendo
+        MotorCoche,         // ruido motor (loop)
+        Explosion,          // explosión bomba
+        Silbato,            // policía alerta
+        // ── Nuevos clips (Gregor Quendel + Epic Game Hits SFX) ──
+        MultitudAmbiente,   // Crowd - Cheering - Ambience.wav (loop)
+        MultitudRitmico,    // Crowd - Cheering - Rhythmic cheering.wav (loop)
+        TraficoAmbiente,    // City Ambience - Traffic - Street.wav (loop)
+        ExplosionSFX,       // Explosion 1.wav (Free Pack / Epic Game Hits)
+        // ── Clips del paquete importado (#Sounds + #Tools) ──
+        RecargaM4,          // #Sounds/m4_reload.mp3  — sonido de recarga M4 realista
+        DisparoSilenciado,  // #Sounds/SIlent Shoty.wav — disparo silenciado
+        HitMarker,          // #Tools/Hit Marker.mp3  — marca de impacto (UI 2D)
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -67,6 +76,28 @@ public sealed class AudioManager : MonoBehaviour
     [SerializeField] private AudioClip clipMotorCoche;
     [SerializeField] private AudioClip clipExplosion;
     [SerializeField] private AudioClip clipSilbato;
+
+    [Header("═══ CLIPS AMBIENTE (Gregor Quendel + Epic Game Hits SFX) ═══")]
+    [Tooltip("Ambiente multitud (loop). " +
+             "Asignar: 'Crowd - Cheering - Ambience.wav' de Gregor Quendel.")]
+    [SerializeField] private AudioClip clipMultitudAmbiente;
+    [Tooltip("Multitud rítmica (loop). " +
+             "Asignar: 'Crowd - Cheering - Rhythmic cheering.wav' de Gregor Quendel.")]
+    [SerializeField] private AudioClip clipMultitudRitmico;
+    [Tooltip("Tráfico ciudad (loop). " +
+             "Asignar: 'City Ambience - Traffic - Street - Cars and tram.wav' de Gregor Quendel.")]
+    [SerializeField] private AudioClip clipTraficoAmbiente;
+    [Tooltip("Explosión SFX. " +
+             "Asignar: 'Explosion 1.wav' del Free Pack o Epic Game Hits SFX.")]
+    [SerializeField] private AudioClip clipExplosionSFX;
+
+    [Header("═══ CLIPS PAQUETE IMPORTADO (#Sounds + #Tools) ═══")]
+    [Tooltip("Recarga M4 realista. Asignar: Assets/#Sounds/m4_reload.mp3")]
+    [SerializeField] private AudioClip clipRecargaM4;
+    [Tooltip("Disparo silenciado. Asignar: Assets/#Sounds/SIlent Shoty.wav")]
+    [SerializeField] private AudioClip clipDisparoSilenciado;
+    [Tooltip("Hit marker (UI 2D). Asignar: Assets/#Tools/Hit Marker.mp3")]
+    [SerializeField] private AudioClip clipHitMarker;
 
     [Header("═══ VOLÚMENES ═══")]
     [Range(0f, 1f)] [SerializeField] private float volEfectos  = 0.80f;
@@ -94,15 +125,19 @@ public sealed class AudioManager : MonoBehaviour
 
     private void Awake()
     {
-        // Singleton: destruir duplicados
+        // Singleton: destruir duplicados.
+        // FIX T13: en edit mode usar DestroyImmediate(this) en vez de DestroyImmediate(gameObject).
+        // Destruir el gameObject completo durante su propio Awake puede dejar el objeto
+        // "vivo" hasta el próximo frame, haciendo que FindObjectsByType lo cuente dos veces.
+        // Destruir solo el componente es inmediato y la búsqueda devuelve 1 resultado.
         if (I != null && I != this)
         {
             if (Application.isPlaying) Destroy(gameObject);
-            else DestroyImmediate(gameObject);
+            else DestroyImmediate(this);
             return;
         }
         I = this;
-        DontDestroyOnLoad(gameObject);
+        if (Application.isPlaying) DontDestroyOnLoad(gameObject);
 
         CrearPool();
         ConstruirMapaClips();
@@ -131,18 +166,27 @@ public sealed class AudioManager : MonoBehaviour
 
     private void ConstruirMapaClips()
     {
-        _clipMap = new Dictionary<Clip, AudioClip>(16)
+        _clipMap = new Dictionary<Clip, AudioClip>(20)
         {
-            { Clip.Disparo,       clipDisparo       },
-            { Clip.ImpactoSuelo,  clipImpactoSuelo  },
-            { Clip.ImpactoSangre, clipImpactoSangre },
-            { Clip.ImpactoMetal,  clipImpactoMetal  },
-            { Clip.Recarga,       clipRecarga       },
-            { Clip.PasoNormal,    clipPasoNormal    },
-            { Clip.PasoCorrer,    clipPasoCorrer    },
-            { Clip.MotorCoche,    clipMotorCoche    },
-            { Clip.Explosion,     clipExplosion     },
-            { Clip.Silbato,       clipSilbato       },
+            { Clip.Disparo,           clipDisparo           },
+            { Clip.ImpactoSuelo,      clipImpactoSuelo      },
+            { Clip.ImpactoSangre,     clipImpactoSangre     },
+            { Clip.ImpactoMetal,      clipImpactoMetal      },
+            { Clip.Recarga,           clipRecarga           },
+            { Clip.PasoNormal,        clipPasoNormal        },
+            { Clip.PasoCorrer,        clipPasoCorrer        },
+            { Clip.MotorCoche,        clipMotorCoche        },
+            { Clip.Explosion,         clipExplosion         },
+            { Clip.Silbato,           clipSilbato           },
+            // Nuevos: Gregor Quendel + Epic Game Hits SFX
+            { Clip.MultitudAmbiente,  clipMultitudAmbiente  },
+            { Clip.MultitudRitmico,   clipMultitudRitmico   },
+            { Clip.TraficoAmbiente,   clipTraficoAmbiente   },
+            { Clip.ExplosionSFX,      clipExplosionSFX      },
+            // Paquete importado (#Sounds / #Tools)
+            { Clip.RecargaM4,         clipRecargaM4         },
+            { Clip.DisparoSilenciado, clipDisparoSilenciado },
+            { Clip.HitMarker,         clipHitMarker         },
         };
     }
 
@@ -222,8 +266,11 @@ public sealed class AudioManager : MonoBehaviour
             case Clip.PasoCorrer:
                 return volPasos;
             case Clip.MotorCoche:
+            case Clip.TraficoAmbiente:  // ambiente tráfico ciudad
                 return volMotores;
             case Clip.Silbato:
+            case Clip.MultitudAmbiente: // voz de la multitud → volumen ambiente
+            case Clip.MultitudRitmico:
                 return volAmbiente;
             default:
                 return volEfectos;

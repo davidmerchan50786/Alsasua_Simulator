@@ -19,24 +19,26 @@ using CesiumForUnity;
 
 public static class SetupEscenaAlsasua
 {
-    const double LAT        = 42.8169;
-    const double LON        = -1.6432;
-    const double ALT_GEO   = 450.0;   // altura geográfica de Pamplona — Plaza del Castillo (m s.n.m.)
+    // Coordenadas reales de Alsasua — Herriko Plaza / Plaza de los Fueros
+    // (delegadas a GeoDataAlsasua como fuente única de verdad)
+    const double LAT        = GeoDataAlsasua.LAT_CENTRO;  // 42.9016° N
+    const double LON        = GeoDataAlsasua.LON_CENTRO;  // -2.1668° W
+    const double ALT_GEO   = GeoDataAlsasua.ALT_CENTRO;  // 536 m s.n.m.
     const float  CAM_ALTURA = 1500f;   // altura inicial de la cámara dron sobre el origen
 
-    // Posiciones locales (metros desde el origen = centro de Pamplona)
-    // Y=0  → nivel de calle (altura geográfica 450 m)
+    // Posiciones locales (metros desde el origen = Herriko Plaza, Alsasua)
+    // Y=0  → nivel de calle (altura geográfica 536 m s.n.m.)
     // Y=1  → 1 metro sobre el suelo (pies del personaje)
 
     // ═══════════════════════════════════════════════════════════════════════
     //  MENÚ: CONFIGURAR ESCENA COMPLETA (infraestructura + gameplay)
     // ═══════════════════════════════════════════════════════════════════════
 
-    [MenuItem("Pamplona/⚙ Configurar Escena Completa", priority = 0)]
+    [MenuItem("Alsasua/⚙ Configurar Escena Completa", priority = 0)]
     public static void ConfigurarEscena()
     {
         Debug.Log("══════════════════════════════════════════════════");
-        Debug.Log("[Setup Pamplona] Iniciando configuración de escena");
+        Debug.Log("[Setup Alsasua] Iniciando configuración de escena");
         Debug.Log("══════════════════════════════════════════════════");
 
         var geo = AsegurarGeoreference();
@@ -54,13 +56,16 @@ public static class SetupEscenaAlsasua
         AsegurarVehiculos();
         AsegurarBarricadas();
 
-        EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
-        AssetDatabase.SaveAssets();
+        if (!Application.isPlaying)
+        {
+            EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+            AssetDatabase.SaveAssets();
+        }
 
         Debug.Log("══════════════════════════════════════════════════");
-        Debug.Log("[Setup Pamplona] ✓ Completo — guarda la escena con Ctrl+S y dale Play");
-        Debug.Log("[Setup Pamplona]   Para jugar en modo FPS: desactiva 'Main Camera'");
-        Debug.Log("[Setup Pamplona]   y activa 'CamaraFPS' (hija de Jugador) en el Inspector");
+        Debug.Log("[Setup Alsasua] ✓ Completo — guarda la escena con Ctrl+S y dale Play");
+        Debug.Log("[Setup Alsasua]   Para jugar en modo FPS: desactiva 'Main Camera'");
+        Debug.Log("[Setup Alsasua]   y activa 'CamaraFPS' (hija de Jugador) en el Inspector");
         Debug.Log("══════════════════════════════════════════════════");
     }
 
@@ -68,23 +73,23 @@ public static class SetupEscenaAlsasua
     //  MENÚ: CONFIGURAR SÓLO GAMEPLAY (jugador, enemigos, vehículos, barricadas)
     // ═══════════════════════════════════════════════════════════════════════
 
-    [MenuItem("Pamplona/🎮 Configurar Gameplay", priority = 1)]
+    [MenuItem("Alsasua/🎮 Configurar Gameplay", priority = 1)]
     public static void ConfigurarGameplay()
     {
-        Debug.Log("[Setup Pamplona] ── Configurando sistemas de gameplay ──");
+        Debug.Log("[Setup Alsasua] ── Configurando sistemas de gameplay ──");
         AsegurarJugador();
         AsegurarEnemigos();
         AsegurarVehiculos();
         AsegurarBarricadas();
         EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
-        Debug.Log("[Setup Pamplona] ✓ Gameplay configurado. Guarda la escena.");
+        Debug.Log("[Setup Alsasua] ✓ Gameplay configurado. Guarda la escena.");
     }
 
     // ═══════════════════════════════════════════════════════════════════════
     //  MENÚ: DIAGNOSTICAR ESCENA
     // ═══════════════════════════════════════════════════════════════════════
 
-    [MenuItem("Pamplona/🔍 Diagnosticar Escena", priority = 10)]
+    [MenuItem("Alsasua/🔍 Diagnosticar Escena", priority = 10)]
     public static void DiagnosticarEscena()
     {
         Debug.Log("── [Diagnóstico Alsasua] ──────────────────────────");
@@ -467,8 +472,8 @@ public static class SetupEscenaAlsasua
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    //  8. GestorTexturas — OMITIDO en rama Pamplona
-    //  Pamplona dispone de Google Photorealistic 3D Tiles que ya incluye
+    //  8. GestorTexturas — OMITIDO en rama Alsasua
+    //  Alsasua dispone de Google Photorealistic 3D Tiles que ya incluye
     //  edificios fotorrealistas con textura real (fotogrametría aérea).
     //  TexturizadorEdificiosReales era un workaround para Alsasua (ciudad
     //  pequeña sin cobertura Google 3D) — aquí duplicaría geometría y capas
@@ -481,11 +486,11 @@ public static class SetupEscenaAlsasua
         if (tex != null)
         {
             Undo.DestroyObjectImmediate(tex.gameObject);
-            Debug.Log("[Setup Pamplona] ✓ GestorTexturas eliminado — Google Photorealistic 3D Tiles cubre edificios y texturas.");
+            Debug.Log("[Setup Alsasua] ✓ GestorTexturas eliminado — Google Photorealistic 3D Tiles cubre edificios y texturas.");
         }
         else
         {
-            Debug.Log("[Setup Pamplona]   GestorTexturas omitido — Google Photorealistic 3D Tiles es la fuente de edificios.");
+            Debug.Log("[Setup Alsasua]   GestorTexturas omitido — Google Photorealistic 3D Tiles es la fuente de edificios.");
         }
     }
 

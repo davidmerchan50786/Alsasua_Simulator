@@ -40,7 +40,14 @@ public sealed class SistemaEdificios : MonoBehaviour
     private GameObject[] _prefabsCasasAdicionales = new GameObject[0];
     private GameObject[] _prefabsEdificiosEspeciales = new GameObject[0];
 
-    [Header("═══ MANZANAS / BLOQUES ═══")]
+    [Header("═══ LAYOUT REAL (GeoDataCalles) ═══")]
+    [Tooltip("Si es true, usa el layout real de manzanas y edificios de GeoDataCalles.ManzanasAlsasua. " +
+             "Si es false, cae al modo cuadrícula genérico de abajo.")]
+    [SerializeField] private bool usarLayoutReal = true;
+    [Tooltip("Spawner edificios singulares: iglesia, ayuntamiento, GC, estación, etc.")]
+    [SerializeField] private bool spawnearSingulares = true;
+
+    [Header("═══ MANZANAS / BLOQUES (solo si usarLayoutReal = false) ═══")]
     [Tooltip("Número de manzanas en cada eje (X y Z). Total = filas × columnas.")]
     [Range(2, 8)]
     [SerializeField] private int filas    = 4;
@@ -90,7 +97,15 @@ public sealed class SistemaEdificios : MonoBehaviour
     // ───────────────────────────────────────────────────────────────────────
     private void Start()
     {
-        SpawnearEdificios();
+        if (usarLayoutReal)
+        {
+            SpawnearEdificiosLayoutReal();
+            if (spawnearSingulares) SpawnearEdificiosSingulares();
+        }
+        else
+        {
+            SpawnearEdificios();   // modo cuadrícula genérica (legacy)
+        }
         if (colocarVallas) SpawnearVallas();
     }
 
@@ -137,7 +152,279 @@ public sealed class SistemaEdificios : MonoBehaviour
     }
 
     // ───────────────────────────────────────────────────────────────────────
-    //  SPAWN DE EDIFICIOS
+    //  LAYOUT REAL — manzanas de GeoDataCalles
+    // ───────────────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Coloca edificios en el perímetro de cada manzana real de GeoDataCalles.ManzanasAlsasua.
+    /// Los edificios se alinean a la fachada exterior (cara de la calle), reproduciendo
+    /// la tipología de construcción cerrada propia de los cascos vascos.
+    /// </summary>
+    private void SpawnearEdificiosLayoutReal()
+    {
+        var padre = new GameObject("Edificios_Alsasua_Real");
+        padre.transform.SetParent(transform);
+
+        foreach (var m in GeoDataCalles.ManzanasAlsasua)
+        {
+            // Saltar si la manzana está en zona de exclusión (manifestación)
+            if (Vector3.Distance(m.Centro, centroManifestacion) < radioExclusion)
+                continue;
+
+            SpawnearManzanaReal(m, padre.transform);
+        }
+
+        AlsasuaLogger.Info("SistemaEdificios",
+            $"✓ {_totalEdificios} edificios colocados en {GeoDataCalles.ManzanasAlsasua.Length} " +
+            "manzanas reales de Alsasua (GeoDataCalles).");
+    }
+
+    /// <summary>
+    /// Coloca edificios en el perímetro de una manzana real.
+    /// Estrategia: dividir cada lado del rectángulo en parcelas de fachada ~8-12m
+    /// y spawnear un edificio por parcela mirando hacia la calle.
+    /// </summary>
+    private void SpawnearManzanaReal(GeoDataCalles.ManzanaData m, Transform padre)
+    {
+        float margenCalle = 0.5f;   // retranqueo mínimo desde el borde (m)
+        float fachadaMin  = 7f;     // anchura mínima de parcela (m)
+        float fachadaMax  = 14f;    // anchura máxima de parcela (m)
+
+        // Altura: plantar ~ numPlantas * 3.2 metros
+        float alturaEdificio = m.NumPlantas * 3.2f;
+
+        Quaternion rotManzana = Quaternion.Euler(0f, m.RotacionY, 0f);
+
+        // Los 4 lados del rectángulo (en espacio local de la manzana, sin rotar):
+        //   Norte (+Z), Sur (-Z): fachada en X, profundidad en Z
+        //   Este  (+X), Oeste(-X): fachada en Z, profundidad en X
+
+        var lados = new (Vector3 inicio, Vector3 fin, float rotFachada, float profundidad)[]
+        {
+            // lado Norte: de SW a SE
+            ( new Vector3(-m.TamanoX*0.5f + margenCalle, 0f,  m.TamanoZ*0.5f - margenCalle),
+              new Vector3( m.TamanoX*0.5f - margenCalle, 0f,  m.TamanoZ*0.5f - margenCalle),
+              0f, m.TamanoZ * 0.25f ),
+            // lado Sur: de SE a SW
+            ( new Vector3( m.TamanoX*0.5f - margenCalle, 0f, -m.TamanoZ*0.5f + margenCalle),
+              new Vector3(-m.TamanoX*0.5f + margenCalle, 0f, -m.TamanoZ*0.5f + margenCalle),
+              180f, m.TamanoZ * 0.25f ),
+            // lado Este: de NE a SE
+            ( new Vector3( m.TamanoX*0.5f - margenCalle, 0f,  m.TamanoZ*0.5f - margenCalle),
+              new Vector3( m.TamanoX*0.5f - margenCalle, 0f, -m.TamanoZ*0.5f + margenCalle),
+              90f, m.TamanoX * 0.25f ),
+            // lado Oeste: de SW a NW
+            ( new Vector3(-m.TamanoX*0.5f + margenCalle, 0f, -m.TamanoZ*0.5f + margenCalle),
+              new Vector3(-m.TamanoX*0.5f + margenCalle, 0f,  m.TamanoZ*0.5f - margenCalle),
+              270f, m.TamanoX * 0.25f ),
+        };
+
+        foreach (var (inicio, fin, rotFachada, profEdf) in lados)
+        {
+            float longitud   = Vector3.Distance(inicio, fin);
+            float fachadaObj = Random.Range(fachadaMin, fachadaMax);
+            int   numParc    = Mathf.Max(1, Mathf.RoundToInt(longitud / fachadaObj));
+            float fachadaReal = longitud / numParc;
+
+            for (int p = 0; p < numParc; p++)
+            {
+                float t = (p + 0.5f) / numParc;
+                Vector3 posLocal = Vector3.Lerp(inicio, fin, t);
+
+                // Pasar a espacio de mundo
+                Vector3 posWorld = m.Centro + rotManzana * posLocal;
+
+                // Alineación de la fachada: la cara mira hacia fuera del bloque
+                float rotWorld = m.RotacionY + rotFachada;
+
+                // Pequeña variación de posición para no quedar en cuadrícula perfecta
+                posWorld.x += Random.Range(-0.5f, 0.5f);
+                posWorld.z += Random.Range(-0.5f, 0.5f);
+
+                bool esCascoViejo = (m.Tipo == GeoDataCalles.TipoEdificio.CascoAntiguo);
+                bool esIndustrial = (m.Tipo == GeoDataCalles.TipoEdificio.Industrial);
+
+                if (esIndustrial)
+                    CrearNaveIndustrial(posWorld, rotWorld, fachadaReal, profEdf, alturaEdificio * 0.6f, padre);
+                else
+                    SpawnearEdificioFachada(posWorld, rotWorld, fachadaReal, profEdf,
+                                            alturaEdificio, esCascoViejo, padre);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Spawnea un edificio de fachada (alineado a calle) en la posición dada.
+    /// Usa prefabs si están disponibles, si no crea geometría procedural.
+    /// </summary>
+    private void SpawnearEdificioFachada(Vector3 posicion, float rotacionY,
+        float anchoFachada, float profundidad, float altura,
+        bool cascoViejo, Transform padre)
+    {
+        // Selección de prefab según tipología
+        GameObject prefab = SeleccionarPrefab(cascoViejo);
+
+        if (prefab != null)
+        {
+            var go = Instantiate(prefab, posicion, Quaternion.Euler(0f, rotacionY, 0f));
+            go.name = $"Edf_{_totalEdificios:D3}";
+            go.transform.SetParent(padre);
+            NormalizarEscalaEdificio(go, anchoFachada);
+        }
+        else
+        {
+            // Fallback procedural con dimensiones reales
+            CrearEdificioProcedural(posicion, rotacionY, anchoFachada, profundidad, altura, cascoViejo, padre);
+        }
+        _totalEdificios++;
+    }
+
+    private GameObject SeleccionarPrefab(bool cascoViejo)
+    {
+        // 30% probabilidad de usar assets de Downloads
+        if (Random.value < 0.30f)
+        {
+            if (cascoViejo && _prefabsRuinas.Length > 0)
+                return _prefabsRuinas[Random.Range(0, _prefabsRuinas.Length)];
+            if (_prefabsCasasAdicionales.Length > 0)
+                return _prefabsCasasAdicionales[Random.Range(0, _prefabsCasasAdicionales.Length)];
+        }
+        if (cascoViejo)
+            return prefabCasaPueblo ?? prefabCasaUrbana;
+        return (Random.value < fraccionPueblo)
+            ? (prefabCasaPueblo ?? prefabCasaUrbana)
+            : (prefabCasaUrbana ?? prefabCasaPueblo);
+    }
+
+    private void CrearEdificioProcedural(Vector3 posicion, float rotacionY,
+        float ancho, float prof, float alto, bool cascoViejo, Transform padre)
+    {
+        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        go.name = cascoViejo ? $"CascoViejo_{_totalEdificios:D3}" : $"Residencial_{_totalEdificios:D3}";
+        go.transform.SetParent(padre);
+        go.transform.position   = posicion + Vector3.up * alto * 0.5f;
+        go.transform.rotation   = Quaternion.Euler(0f, rotacionY, 0f);
+        go.transform.localScale = new Vector3(ancho, alto, prof);
+
+        // Paleta cromática según tipología
+        Color color;
+        if (cascoViejo)
+            color = new Color(
+                Random.Range(0.68f, 0.82f),
+                Random.Range(0.60f, 0.72f),
+                Random.Range(0.46f, 0.58f));   // piedra beige/ocre
+        else
+            color = new Color(
+                Random.Range(0.72f, 0.88f),
+                Random.Range(0.70f, 0.85f),
+                Random.Range(0.65f, 0.80f));   // enfoscado blanco/crema
+
+        AsignarMaterial(go.GetComponent<Renderer>(), color);
+        Object.Destroy(go.GetComponent<Collider>());
+    }
+
+    private void CrearNaveIndustrial(Vector3 posicion, float rotacionY,
+        float ancho, float prof, float alto, Transform padre)
+    {
+        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        go.name = $"Nave_{_totalEdificios:D3}";
+        go.transform.SetParent(padre);
+        go.transform.position   = posicion + Vector3.up * alto * 0.5f;
+        go.transform.rotation   = Quaternion.Euler(0f, rotacionY, 0f);
+        go.transform.localScale = new Vector3(ancho, alto, prof);
+
+        // Naves: gris metalizado
+        Color color = new Color(
+            Random.Range(0.58f, 0.70f),
+            Random.Range(0.60f, 0.72f),
+            Random.Range(0.62f, 0.74f));
+        AsignarMaterial(go.GetComponent<Renderer>(), color);
+        Object.Destroy(go.GetComponent<Collider>());
+    }
+
+    /// <summary>
+    /// Spawna los edificios singulares definidos en GeoDataCalles.EdificiosSingulares:
+    /// ayuntamiento, iglesia, cuartel GC, comisaría PF, estación de tren, etc.
+    /// </summary>
+    private void SpawnearEdificiosSingulares()
+    {
+        var padre = new GameObject("Edificios_Singulares");
+        padre.transform.SetParent(transform);
+
+        foreach (var e in GeoDataCalles.EdificiosSingulares)
+        {
+            // Intentar usar un prefab especial si está disponible
+            GameObject prefab = _prefabsEdificiosEspeciales.Length > 0
+                ? _prefabsEdificiosEspeciales[Random.Range(0, _prefabsEdificiosEspeciales.Length)]
+                : null;
+
+            if (prefab != null)
+            {
+                var go = Instantiate(prefab, e.Centro, Quaternion.identity);
+                go.name = e.Nombre;
+                go.transform.SetParent(padre);
+                NormalizarEscalaEdificio(go, e.TamanoX);
+            }
+            else
+            {
+                // Fallback procedural con geometría real del edificio
+                CrearEdificioSingularProcedural(e, padre.transform);
+            }
+            _totalEdificios++;
+        }
+
+        AlsasuaLogger.Info("SistemaEdificios",
+            $"✓ {GeoDataCalles.EdificiosSingulares.Length} edificios singulares colocados " +
+            "(iglesia, ayuntamiento, GC, PF, estación, polideportivo...).");
+    }
+
+    private void CrearEdificioSingularProcedural(GeoDataCalles.EdificioSingular e, Transform padre)
+    {
+        // Cuerpo principal
+        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        go.name = e.Nombre;
+        go.transform.SetParent(padre);
+        go.transform.position   = e.Centro + Vector3.up * e.Altura * 0.5f;
+        go.transform.localScale = new Vector3(e.TamanoX, e.Altura, e.TamanoZ);
+
+        Color color;
+        switch (e.Tipo)
+        {
+            case GeoDataCalles.TipoEdificio.Institucional:
+                color = new Color(0.80f, 0.78f, 0.68f);  // piedra arenisca gris
+                break;
+            case GeoDataCalles.TipoEdificio.Deportivo:
+                color = new Color(0.60f, 0.75f, 0.82f);  // azul deportivo
+                break;
+            case GeoDataCalles.TipoEdificio.Industrial:
+                color = new Color(0.62f, 0.64f, 0.66f);  // gris metálico
+                break;
+            default:
+                color = new Color(0.75f, 0.70f, 0.62f);
+                break;
+        }
+        AsignarMaterial(go.GetComponent<Renderer>(), color);
+        Object.Destroy(go.GetComponent<Collider>());
+
+        // Torre/campanario para la iglesia
+        if (e.Nombre.Contains("Iglesia") || e.Nombre.Contains("iglesia"))
+        {
+            float campanarioRelH = 1f + 4f / e.Altura;  // más alto que el cuerpo principal
+            var torre = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            torre.name = "Campanario";
+            torre.transform.SetParent(go.transform);
+            torre.transform.localPosition = new Vector3(-0.4f, campanarioRelH * 0.5f, 0f);
+            torre.transform.localScale    = new Vector3(
+                0.22f,
+                campanarioRelH,
+                0.22f * e.TamanoX / Mathf.Max(0.1f, e.TamanoZ));
+            AsignarMaterial(torre.GetComponent<Renderer>(), new Color(0.78f, 0.75f, 0.65f));
+            Object.Destroy(torre.GetComponent<Collider>());
+        }
+    }
+
+    // ───────────────────────────────────────────────────────────────────────
+    //  SPAWN DE EDIFICIOS (modo cuadrícula genérica — legacy)
     // ───────────────────────────────────────────────────────────────────────
     private void SpawnearEdificios()
     {
@@ -294,7 +581,7 @@ public sealed class SistemaEdificios : MonoBehaviour
             {
                 var go = Instantiate(prefabValla, posicion, Quaternion.Euler(0f, rotY, 0f));
                 go.name = $"Valla_{i}";
-                go.transform.SetParent(padre);
+                go.transform.SetParent(padre.transform);
             }
             else
             {
@@ -362,11 +649,54 @@ public sealed class SistemaEdificios : MonoBehaviour
 #if UNITY_EDITOR
     private void OnDrawGizmos()
     {
-        // Cuadrícula de manzanas
-        Gizmos.color = new Color(0.6f, 0.8f, 1f, 0.25f);
-        float w = columnas * tamanoManzana;
-        float h = filas    * tamanoManzana;
-        Gizmos.DrawWireCube(Vector3.zero, new Vector3(w, 2f, h));
+        if (usarLayoutReal)
+        {
+            // Manzanas reales de GeoDataCalles
+            foreach (var m in GeoDataCalles.ManzanasAlsasua)
+            {
+                // Color según tipología
+                switch (m.Tipo)
+                {
+                    case GeoDataCalles.TipoEdificio.CascoAntiguo:   Gizmos.color = new Color(0.85f, 0.70f, 0.30f, 0.45f); break;
+                    case GeoDataCalles.TipoEdificio.Residencial:    Gizmos.color = new Color(0.40f, 0.70f, 0.90f, 0.40f); break;
+                    case GeoDataCalles.TipoEdificio.Comercial:      Gizmos.color = new Color(0.90f, 0.40f, 0.60f, 0.40f); break;
+                    case GeoDataCalles.TipoEdificio.Industrial:     Gizmos.color = new Color(0.60f, 0.60f, 0.65f, 0.40f); break;
+                    case GeoDataCalles.TipoEdificio.Institucional:  Gizmos.color = new Color(1.00f, 0.90f, 0.20f, 0.50f); break;
+                    default:                                        Gizmos.color = new Color(0.50f, 0.80f, 0.50f, 0.40f); break;
+                }
+                // Dibujar rectángulo de la manzana
+                var rot = Quaternion.Euler(0f, m.RotacionY, 0f);
+                var corners = new Vector3[]
+                {
+                    m.Centro + rot * new Vector3(-m.TamanoX*0.5f, 0f, -m.TamanoZ*0.5f),
+                    m.Centro + rot * new Vector3( m.TamanoX*0.5f, 0f, -m.TamanoZ*0.5f),
+                    m.Centro + rot * new Vector3( m.TamanoX*0.5f, 0f,  m.TamanoZ*0.5f),
+                    m.Centro + rot * new Vector3(-m.TamanoX*0.5f, 0f,  m.TamanoZ*0.5f),
+                };
+                for (int i = 0; i < 4; i++)
+                    Gizmos.DrawLine(corners[i], corners[(i+1)%4]);
+                // Altura indicativa
+                Gizmos.DrawWireCube(m.Centro + Vector3.up * m.NumPlantas * 1.6f,
+                    new Vector3(m.TamanoX, m.NumPlantas * 3.2f, m.TamanoZ));
+            }
+
+            // Edificios singulares en amarillo
+            Gizmos.color = new Color(1f, 0.9f, 0f, 0.6f);
+            foreach (var e in GeoDataCalles.EdificiosSingulares)
+            {
+                Gizmos.DrawWireCube(e.Centro + Vector3.up * e.Altura * 0.5f,
+                    new Vector3(e.TamanoX, e.Altura, e.TamanoZ));
+                Gizmos.DrawSphere(e.Centro, 2f);
+            }
+        }
+        else
+        {
+            // Cuadrícula genérica (legacy)
+            Gizmos.color = new Color(0.6f, 0.8f, 1f, 0.25f);
+            float w = columnas * tamanoManzana;
+            float h = filas    * tamanoManzana;
+            Gizmos.DrawWireCube(Vector3.zero, new Vector3(w, 2f, h));
+        }
 
         // Zona de exclusión (manifestación)
         Gizmos.color = new Color(1f, 0.5f, 0f, 0.35f);
@@ -375,6 +705,14 @@ public sealed class SistemaEdificios : MonoBehaviour
         // Zona acordonada (policial)
         Gizmos.color = new Color(0.2f, 0.4f, 1f, 0.45f);
         DrawCircleGizmo(centroAcordonamiento, radioAcordonamiento, 24);
+
+        // Calles principales (en el Editor, verde suave)
+        Gizmos.color = new Color(0.3f, 0.9f, 0.4f, 0.50f);
+        foreach (var c in GeoDataCalles.CallesPrincipales)
+        {
+            for (int i = 0; i < c.Puntos.Length - 1; i++)
+                Gizmos.DrawLine(c.Puntos[i], c.Puntos[i+1]);
+        }
     }
 
     private static void DrawCircleGizmo(Vector3 c, float r, int seg)

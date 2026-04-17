@@ -158,9 +158,17 @@ public sealed class SistemaTrafico : MonoBehaviour
 
     private void Awake()
     {
+        // Si no hay carriles asignados en el Inspector, auto-crearlos desde GeoDataAlsasua.
         if (carriles == null || carriles.Length == 0)
         {
-            AlsasuaLogger.Warn("SistemaTrafico", "Sin carriles definidos. Asigna waypoints en el Inspector.");
+            AlsasuaLogger.Info("SistemaTrafico",
+                "Sin carriles en Inspector → auto-creando desde GeoDataAlsasua (N1, NA120, casco).");
+            carriles = CrearCarrilesDesdeGeoData();
+        }
+
+        if (carriles == null || carriles.Length == 0)
+        {
+            AlsasuaLogger.Warn("SistemaTrafico", "No se pudieron crear carriles. Sistema desactivado.");
             enabled = false;
             return;
         }
@@ -338,6 +346,57 @@ public sealed class SistemaTrafico : MonoBehaviour
 
             _poolGO[i] = go;
         }
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    //  AUTO-CREACIÓN DE CARRILES DESDE GEODATA
+    // ══════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Crea carriles de tráfico automáticamente a partir de GeoDataAlsasua
+    /// cuando no se han asignado waypoints en el Inspector.
+    /// Genera GameObjects hijos como contenedores de waypoints.
+    /// </summary>
+    private Carril[] CrearCarrilesDesdeGeoData()
+    {
+        // Rutas + config (velocidad km/h, es autovía)
+        var rutas = new (string nombre, Vector3[] puntos, float velKmh, bool autovia)[]
+        {
+            ("N1_Norte",     GeoDataAlsasua.N1_Norte,            90f,  true),
+            ("N1_Sur",       GeoDataAlsasua.N1_Sur,              90f,  true),
+            ("NA120_Este",   GeoDataAlsasua.NA120_Este,          60f,  false),
+            ("NA120_Oeste",  GeoDataAlsasua.NA120_Oeste,         60f,  false),
+            ("CascoUrbano",  GeoDataAlsasua.CalleInteriorCasco,  30f,  false),
+        };
+
+        var resultado = new Carril[rutas.Length];
+        for (int r = 0; r < rutas.Length; r++)
+        {
+            var (nombre, puntos, vel, autovia) = rutas[r];
+            var padre = new GameObject($"Carril_{nombre}");
+            padre.transform.SetParent(transform);
+
+            var wps = new Transform[puntos.Length];
+            for (int i = 0; i < puntos.Length; i++)
+            {
+                var wp = new GameObject($"WP_{i:D2}");
+                wp.transform.SetParent(padre.transform);
+                wp.transform.position = puntos[i];
+                wps[i] = wp.transform;
+            }
+
+            resultado[r] = new Carril
+            {
+                waypoints       = wps,
+                velocidadMaxKmh = vel,
+                esAutovia       = autovia,
+            };
+        }
+
+        AlsasuaLogger.Info("SistemaTrafico",
+            $"✓ {resultado.Length} carriles creados desde GeoDataAlsasua " +
+            "(N1×2, NA120×2, casco).");
+        return resultado;
     }
 
     private void CachearJugador()

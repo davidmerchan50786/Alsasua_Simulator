@@ -166,14 +166,14 @@ public class VehiculoNPC : MonoBehaviour
         cuerpo.transform.SetParent(transform);
         cuerpo.transform.localPosition = new Vector3(0f, 0.45f, 0f);
         cuerpo.transform.localScale    = new Vector3(1.8f, 0.8f, 4.2f);
-        { var c = cuerpo.GetComponent<Collider>(); if (c) Object.Destroy(c); }
+        { var c = cuerpo.GetComponent<Collider>(); if (c != null) { if (Application.isPlaying) Object.Destroy(c); else Object.DestroyImmediate(c); } }
 
         // Techo
         var techo = GameObject.CreatePrimitive(PrimitiveType.Cube);
         techo.transform.SetParent(transform);
         techo.transform.localPosition = new Vector3(0f, 1.05f, -0.2f);
         techo.transform.localScale    = new Vector3(1.6f, 0.55f, 2.4f);
-        { var c = techo.GetComponent<Collider>(); if (c) Object.Destroy(c); }
+        { var c = techo.GetComponent<Collider>(); if (c != null) { if (Application.isPlaying) Object.Destroy(c); else Object.DestroyImmediate(c); } }
 
         // Ruedas (4)
         float[] posX = { -1.0f, 1.0f, -1.0f, 1.0f };
@@ -189,7 +189,7 @@ public class VehiculoNPC : MonoBehaviour
             mpbR.SetColor("_BaseColor", new Color(0.1f, 0.1f, 0.1f));
             mpbR.SetColor("_Color",     new Color(0.1f, 0.1f, 0.1f));
             rueda.GetComponent<Renderer>().SetPropertyBlock(mpbR);
-            { var c = rueda.GetComponent<Collider>(); if (c) Object.Destroy(c); }
+            { var c = rueda.GetComponent<Collider>(); if (c != null) { if (Application.isPlaying) Object.Destroy(c); else Object.DestroyImmediate(c); } }
         }
 
         // Asegurar BoxCollider en el GO raíz
