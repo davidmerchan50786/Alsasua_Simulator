@@ -1,0 +1,28 @@
+﻿#pragma once
+#include "CoreMinimal.h"
+#include "Systems/MisionManager.h"
+#include "DeepStateMissionData.generated.h"
+
+USTRUCT(BlueprintType)
+struct FMisionCloacas : public FMisionData {
+    GENERATED_BODY()
+
+    UPROPERTY(BlueprintReadWrite)
+    FName TargetOperationID;
+
+    UPROPERTY(BlueprintReadWrite)
+    bool bRequiresStealth = true;
+
+    UPROPERTY(BlueprintReadWrite)
+    FText SuccessRadioHeadline_ES;
+
+    UPROPERTY(BlueprintReadWrite)
+    FText SuccessRadioHeadline_EU;
+};
+
+UCLASS()
+class ALSASUAMANIFA_API UDeepStateMissionLogic : public UObject {
+    GENERATED_BODY()
+public:
+    static void ExecuteExposeLeak(UWorld* World, const FMisionCloacas& Mission);
+};

@@ -1,0 +1,21 @@
+{
+ "archivo": "alsasua_landscape_4033.r16",
+ "resolucion": 4033,
+ "lado_m": 7200.0,
+ "metrosPorPixel": 1.785714,
+ "import_landscape": {
+  "ScaleX_cm": 178.5714,
+  "ScaleY_cm": 178.5714,
+  "ScaleZ": 200.0,
+  "LocationZ_cm": 49567.0,
+  "nota_XY": "centrar el Landscape para que su centro caiga en Herriko Plaza (UGeoDataAlsasua::HerrikoPlaza X/Y)"
+ },
+ "componentes": "63 quads/seccion x 1 seccion x 64x64 componentes = 4032 quads (4033 verts)",
+ "verif": {
+  "hMinReal": 497.391,
+  "hMaxReal": 1155.328,
+  "spanZ_m": 657.938,
+  "worldZ_min_cm": -1393.9,
+  "worldZ_max_cm": 64399.8
+ }
+}

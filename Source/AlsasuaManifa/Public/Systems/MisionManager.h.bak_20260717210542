@@ -1,0 +1,12 @@
+﻿#pragma once
+#include \"CoreMinimal.h\"
+#include \"Subsystems/GameInstanceSubsystem.h\"
+#include \"MisionManager.generated.h\"
+
+UCLASS()
+class ALSASUAMANIFA_API UMisionManager : public UGameInstanceSubsystem
+{
+    GENERATED_BODY()
+public:
+    UMisionManager() {}
+};
