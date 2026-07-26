@@ -41,21 +41,21 @@ int32 UAlsasuaContainerSystem::ColocarContenedores()
         FString Barrio = Barrios[FMath::RandRange(0, Barrios.Num() - 1)];
         FVector Centro;
         if (Barrio == TEXT("Herriko"))
-            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1891.5f, 8568.5f, 0));
+            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1891.5f, 0.0f, 8568.5f));
         else if (Barrio == TEXT("Zelai"))
-            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1893.0f, 8573.5f, 0));
+            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1893.0f, 0.0f, 8573.5f));
         else if (Barrio == TEXT("Intxostia"))
-            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1890.0f, 8577.0f, 0));
+            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1890.0f, 0.0f, 8577.0f));
         else if (Barrio == TEXT("SanPedro"))
-            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1895.2f, 8565.5f, 0));
+            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1895.2f, 0.0f, 8565.5f));
         else if (Barrio == TEXT("Errota"))
-            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1897.0f, 8570.5f, 0));
+            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1897.0f, 0.0f, 8570.5f));
         else if (Barrio == TEXT("Harrobieta"))
-            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1889.5f, 8569.0f, 0));
+            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1889.5f, 0.0f, 8569.0f));
         else if (Barrio == TEXT("Ferroviario"))
-            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1892.5f, 8571.5f, 0));
+            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1892.5f, 0.0f, 8571.5f));
         else
-            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1894.0f, 8575.0f, 0));
+            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1894.0f, 0.0f, 8575.0f));
 
         FVector Pos = Centro + FVector(
             FMath::RandRange(-1000.0f, 1000.0f),

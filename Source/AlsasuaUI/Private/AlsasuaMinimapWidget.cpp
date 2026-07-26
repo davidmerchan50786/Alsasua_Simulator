@@ -172,7 +172,7 @@ int32 UAlsasuaMinimapWidget::NativePaint(const FPaintArgs& Args, const FGeometry
 						Pt->TryGetNumberField(TEXT("x"), Rx);
 						Pt->TryGetNumberField(TEXT("z"), Rz);
 
-						const FVector UnrealPt = UAlsasuaGeoData::UnityaUnreal(FVector(Rx * 100.0, Rz * 100.0, 0.0));
+						const FVector UnrealPt = UAlsasuaGeoData::UnityaUnreal(FVector(Rx, 0.0, Rz));
 						const FVector2D MapPos = WorldToMinimap(UnrealPt, Center, Zoom);
 
 						if (FMath::Abs(MapPos.X - Center.X) <= HalfMap + 10.f &&
@@ -223,7 +223,7 @@ int32 UAlsasuaMinimapWidget::NativePaint(const FPaintArgs& Args, const FGeometry
 						(*Pts)[i + 1]->TryGetNumber(Ry);
 						(*Pts)[i + 2]->TryGetNumber(Rz);
 
-						const FVector UnrealPt = UAlsasuaGeoData::UnityaUnreal(FVector(Rx * 100.0, Rz * 100.0, 0.0));
+						const FVector UnrealPt = UAlsasuaGeoData::UnityaUnreal(FVector(Rx, 0.0, Rz));
 						const FVector2D MapPos = WorldToMinimap(UnrealPt, Center, Zoom);
 
 						if (FMath::Abs(MapPos.X - Center.X) <= HalfMap + 10.f &&

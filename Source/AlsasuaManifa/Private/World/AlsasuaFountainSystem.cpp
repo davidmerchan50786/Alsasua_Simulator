@@ -26,14 +26,14 @@ int32 UAlsasuaFountainSystem::ColocarFuentes()
     };
 
     const TArray<FVector> PosicionesBase = {
-        UAlsasuaGeoData::UnityaUnreal(FVector(1891.5f, 8568.5f, 0)),
-        UAlsasuaGeoData::UnityaUnreal(FVector(1890.8f, 8570.2f, 0)),
-        UAlsasuaGeoData::UnityaUnreal(FVector(1893.0f, 8573.5f, 0)),
-        UAlsasuaGeoData::UnityaUnreal(FVector(1895.2f, 8565.5f, 0)),
-        UAlsasuaGeoData::UnityaUnreal(FVector(1889.5f, 8569.0f, 0)),
-        UAlsasuaGeoData::UnityaUnreal(FVector(1892.5f, 8571.5f, 0)),
-        UAlsasuaGeoData::UnityaUnreal(FVector(1897.0f, 8570.5f, 0)),
-        UAlsasuaGeoData::UnityaUnreal(FVector(1893.5f, 8574.5f, 0)),
+        UAlsasuaGeoData::UnityaUnreal(FVector(1891.5f, 0.0f, 8568.5f)),
+        UAlsasuaGeoData::UnityaUnreal(FVector(1890.8f, 0.0f, 8570.2f)),
+        UAlsasuaGeoData::UnityaUnreal(FVector(1893.0f, 0.0f, 8573.5f)),
+        UAlsasuaGeoData::UnityaUnreal(FVector(1895.2f, 0.0f, 8565.5f)),
+        UAlsasuaGeoData::UnityaUnreal(FVector(1889.5f, 0.0f, 8569.0f)),
+        UAlsasuaGeoData::UnityaUnreal(FVector(1892.5f, 0.0f, 8571.5f)),
+        UAlsasuaGeoData::UnityaUnreal(FVector(1897.0f, 0.0f, 8570.5f)),
+        UAlsasuaGeoData::UnityaUnreal(FVector(1893.5f, 0.0f, 8574.5f)),
     };
 
     Fuentes.Empty();

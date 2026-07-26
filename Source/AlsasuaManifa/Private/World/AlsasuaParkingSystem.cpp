@@ -17,19 +17,19 @@ void UAlsasuaParkingSystem::Initialize(FSubsystemCollectionBase& Collection)
 FVector UAlsasuaParkingSystem::ObtenerPuntoEnCalle(const FString& Barrio)
 {
     const TMap<FString, FVector> Centros = {
-        {TEXT("Herriko"), UAlsasuaGeoData::UnityaUnreal(FVector(1891.5f, 8568.5f, 0))},
-        {TEXT("Zelai"), UAlsasuaGeoData::UnityaUnreal(FVector(1893.0f, 8573.5f, 0))},
-        {TEXT("Intxostia"), UAlsasuaGeoData::UnityaUnreal(FVector(1890.0f, 8577.0f, 0))},
-        {TEXT("SanPedro"), UAlsasuaGeoData::UnityaUnreal(FVector(1895.2f, 8565.5f, 0))},
-        {TEXT("Errota"), UAlsasuaGeoData::UnityaUnreal(FVector(1897.0f, 8570.5f, 0))},
-        {TEXT("Harrobieta"), UAlsasuaGeoData::UnityaUnreal(FVector(1889.5f, 8569.0f, 0))},
-        {TEXT("Ferroviario"), UAlsasuaGeoData::UnityaUnreal(FVector(1892.5f, 8571.5f, 0))},
+        {TEXT("Herriko"), UAlsasuaGeoData::UnityaUnreal(FVector(1891.5f, 0.0f, 8568.5f))},
+        {TEXT("Zelai"), UAlsasuaGeoData::UnityaUnreal(FVector(1893.0f, 0.0f, 8573.5f))},
+        {TEXT("Intxostia"), UAlsasuaGeoData::UnityaUnreal(FVector(1890.0f, 0.0f, 8577.0f))},
+        {TEXT("SanPedro"), UAlsasuaGeoData::UnityaUnreal(FVector(1895.2f, 0.0f, 8565.5f))},
+        {TEXT("Errota"), UAlsasuaGeoData::UnityaUnreal(FVector(1897.0f, 0.0f, 8570.5f))},
+        {TEXT("Harrobieta"), UAlsasuaGeoData::UnityaUnreal(FVector(1889.5f, 0.0f, 8569.0f))},
+        {TEXT("Ferroviario"), UAlsasuaGeoData::UnityaUnreal(FVector(1892.5f, 0.0f, 8571.5f))},
     };
 
     if (const FVector* Centro = Centros.Find(Barrio))
         return *Centro + FVector(FMath::RandRange(-800, 800), FMath::RandRange(-800, 800), 0);
 
-    return UAlsasuaGeoData::UnityaUnreal(FVector(1891.5f, 8572.0f, 0));
+    return UAlsasuaGeoData::UnityaUnreal(FVector(1891.5f, 0.0f, 8572.0f));
 }
 
 int32 UAlsasuaParkingSystem::GenerarPlazasAparcamiento()

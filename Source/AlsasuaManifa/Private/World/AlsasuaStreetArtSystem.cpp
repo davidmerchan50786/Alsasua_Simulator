@@ -77,7 +77,7 @@ int32 UAlsasuaStreetArtSystem::ColocarArteCallejero()
             break;
         default:
             Barrio = TEXT("Herriko");
-            Pos = UAlsasuaGeoData::UnityaUnreal(FVector(1891.5f, 8568.5f, 0));
+            Pos = UAlsasuaGeoData::UnityaUnreal(FVector(1891.5f, 0.0f, 8568.5f));
             break;
         }
 

@@ -65,7 +65,7 @@ void UAlsasuaTerrainLayersSystem::GenerarSueloCiudad()
     if (!World) return;
 
     float Scale = 1000.0f;
-    FVector CiudadCenter = UAlsasuaGeoData::UnityaUnreal(FVector(1900.0f, 8570.0f, 0.0f));
+    FVector CiudadCenter = UAlsasuaGeoData::UnityaUnreal(FVector(1900.0f, 0.0f, 8570.0f));
 
     AStaticMeshActor* Suelo = World->SpawnActor<AStaticMeshActor>(
         AStaticMeshActor::StaticClass(), CiudadCenter, FRotator::ZeroRotator);

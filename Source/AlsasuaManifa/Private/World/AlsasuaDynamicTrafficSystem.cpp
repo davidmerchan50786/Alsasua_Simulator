@@ -246,5 +246,5 @@ FVector UAlsasuaDynamicTrafficSystem::ObtenerPuntoInicio() const
             return Calle[0];
     }
 
-    return UAlsasuaGeoData::UnityaUnreal(FVector(1891.5f, 8572.0f, 0));
+    return UAlsasuaGeoData::UnityaUnreal(FVector(1891.5f, 0.0f, 8572.0f));
 }
