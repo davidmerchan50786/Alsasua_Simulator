@@ -1,0 +1,223 @@
+#include "World/AlsasuaTreePlacer.h"
+#include "Engine/World.h"
+#include "Engine/Engine.h"
+#include "Engine/StaticMeshActor.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
+#include "GeoDataAlsasua.h"
+
+void UAlsasuaTreePlacer::Initialize(FSubsystemCollectionBase& Collection)
+{
+    Super::Initialize(Collection);
+    InicializarEspecies();
+}
+
+void UAlsasuaTreePlacer::Deinitialize()
+{
+    Arboles.Empty();
+    Especies.Empty();
+    bCargado = false;
+    Super::Deinitialize();
+}
+
+void UAlsasuaTreePlacer::InicializarEspecies()
+{
+    Especies.Empty(10);
+
+    FTreeSpecies Aliso;
+    Aliso.NombreCientifico = TEXT("Alnus glutinosa");
+    Aliso.NombreEu = TEXT("Haltza");
+    Aliso.NombreEs = TEXT("Aliso negro");
+    Aliso.AlturaMedia = 15.0f;
+    Aliso.RadioCopa = 6.0f;
+    Aliso.ColorFollaje = TEXT("Verde oscuro");
+    Aliso.AssetPath = TEXT("/Game/AssetsImportados/Arboles/Aliso_Negro/Tree_Black_Alder_01_A");
+    Especies.Add(Aliso);
+
+    FTreeSpecies Haya;
+    Haya.NombreCientifico = TEXT("Fagus sylvatica");
+    Haya.NombreEu = TEXT("Hadia");
+    Haya.NombreEs = TEXT("Haya europea");
+    Haya.AlturaMedia = 25.0f;
+    Haya.RadioCopa = 10.0f;
+    Haya.ColorFollaje = TEXT("Verde brillante");
+    Haya.AssetPath = TEXT("/Game/AssetsImportados/Arboles/Haya_Europea/Tree_European_Beech_01_A");
+    Especies.Add(Haya);
+
+    FTreeSpecies Abedul;
+    Abedul.NombreCientifico = TEXT("Betula pendula");
+    Abedul.NombreEu = TEXT("Urki");
+    Abedul.NombreEs = TEXT("Abedul");
+    Abedul.AlturaMedia = 18.0f;
+    Abedul.RadioCopa = 5.0f;
+    Abedul.ColorFollaje = TEXT("Verde claro");
+    Abedul.AssetPath = TEXT("/Game/AssetsImportados/Arboles/Abedul/Tree_Silver_Birch_01_A");
+    Especies.Add(Abedul);
+
+    FTreeSpecies Sauce;
+    Sauce.NombreCientifico = TEXT("Salix alba");
+    Sauce.NombreEu = TEXT("Sahats");
+    Sauce.NombreEs = TEXT("Sauce");
+    Sauce.AlturaMedia = 12.0f;
+    Sauce.RadioCopa = 7.0f;
+    Sauce.ColorFollaje = TEXT("Verde claro");
+    Sauce.AssetPath = TEXT("/Game/AssetsImportados/Arboles/Sauce/Tree_Goat_Willow_01_A");
+    Especies.Add(Sauce);
+
+    FTreeSpecies PinoCarrasco;
+    PinoCarrasco.NombreCientifico = TEXT("Pinus halepensis");
+    PinoCarrasco.NombreEu = TEXT("Pinu horizin");
+    PinoCarrasco.NombreEs = TEXT("Pino carrasco");
+    PinoCarrasco.AlturaMedia = 12.0f;
+    PinoCarrasco.RadioCopa = 4.0f;
+    PinoCarrasco.ColorFollaje = TEXT("Verde oscuro perenne");
+    PinoCarrasco.AssetPath = TEXT("/Game/AssetsImportados/Arboles/Pino_Carrasco/Tree_Aleppo_Pine_01_A");
+    Especies.Add(PinoCarrasco);
+
+    FTreeSpecies PinoBaltico;
+    PinoBaltico.NombreCientifico = TEXT("Pinus sylvestris");
+    PinoBaltico.NombreEu = TEXT("Pinu larrein");
+    PinoBaltico.NombreEs = TEXT("Pino baltico");
+    PinoBaltico.AlturaMedia = 20.0f;
+    PinoBaltico.RadioCopa = 5.0f;
+    PinoBaltico.ColorFollaje = TEXT("Verde azulado perenne");
+    PinoBaltico.AssetPath = TEXT("/Game/AssetsImportados/Arboles/Pino_Baltico/Tree_Baltic_Pine_01_A");
+    Especies.Add(PinoBaltico);
+
+    FTreeSpecies Roble;
+    Roble.NombreCientifico = TEXT("Quercus robur");
+    Roble.NombreEu = TEXT("Haritz");
+    Roble.NombreEs = TEXT("Roble");
+    Roble.AlturaMedia = 22.0f;
+    Roble.RadioCopa = 8.0f;
+    Roble.ColorFollaje = TEXT("Verde oscuro");
+    Roble.AssetPath = TEXT("/Game/AssetsImportados/Arboles/Roble/models/oak");
+    Especies.Add(Roble);
+
+    FTreeSpecies Alamo;
+    Alamo.NombreCientifico = TEXT("Populus tremula");
+    Alamo.NombreEu = TEXT("Laranondo");
+    Alamo.NombreEs = TEXT("Alamo temblon");
+    Alamo.AlturaMedia = 20.0f;
+    Alamo.RadioCopa = 6.0f;
+    Alamo.ColorFollaje = TEXT("Verde claro");
+    Alamo.AssetPath = TEXT("/Game/AssetsImportados/Arboles/Alamo_Temblon/Tree_European_Aspen_01_A");
+    Especies.Add(Alamo);
+
+    FTreeSpecies Nispero;
+    Nispero.NombreCientifico = TEXT("Eriobotrya japonica");
+    Nispero.NombreEu = TEXT("Nespera");
+    Nispero.NombreEs = TEXT("Nispero");
+    Nispero.AlturaMedia = 6.0f;
+    Nispero.RadioCopa = 3.0f;
+    Nispero.ColorFollaje = TEXT("Verde oscuro");
+    Nispero.AssetPath = TEXT("/Game/AssetsImportados/Arboles/Nispero/Tree_Japanese_Medlar_01_A");
+    Especies.Add(Nispero);
+}
+
+FString UAlsasuaTreePlacer::AsignarEspecie(float AlturaLIDAR) const
+{
+    if (AlturaLIDAR < 5.0f) return TEXT("Nispero");
+    if (AlturaLIDAR < 8.0f) return TEXT("Sauce");
+    if (AlturaLIDAR < 12.0f) return TEXT("Aliso");
+    if (AlturaLIDAR < 16.0f) return TEXT("PinoCarrasco");
+    if (AlturaLIDAR < 20.0f) return TEXT("Abedul");
+    if (AlturaLIDAR < 25.0f) return TEXT("Alamo");
+    if (AlturaLIDAR < 30.0f) return TEXT("Roble");
+    return TEXT("Haya");
+}
+
+bool UAlsasuaTreePlacer::CargarArboles()
+{
+    const FString JsonPath = FPaths::ProjectContentDir() + TEXT("Datos/trees_unity.json");
+    TArray<FString> Lineas;
+    if (!FFileHelper::LoadFileToStringArray(Lineas, *JsonPath))
+    {
+        UE_LOG(LogTemp, Error, TEXT("TreePlacer: No se pudo cargar trees_unity.json"));
+        return false;
+    }
+
+    FString JsonStr;
+    for (const FString& L : Lineas) JsonStr += L;
+
+    TSharedPtr<FJsonObject> Root;
+    TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(JsonStr);
+    if (!FJsonSerializer::Deserialize(Reader, Root) || !Root.IsValid()) return false;
+
+    const TArray<TSharedPtr<FJsonValue>>* Arr;
+    if (!Root->TryGetArrayField(TEXT("trees"), Arr))
+    {
+        if (!Root->TryGetArrayField(TEXT(""), Arr)) return false;
+    }
+
+    Arboles.Empty(Arr->Num());
+    for (const auto& Val : *Arr)
+    {
+        const TSharedPtr<FJsonObject>& Obj = Val->AsObject();
+        if (!Obj) continue;
+
+        FTreePlacement Tree;
+        const float X = Obj->GetNumberField(TEXT("x"));
+        const float Z = Obj->GetNumberField(TEXT("z"));
+        const float Altura = Obj->HasField(TEXT("height")) ? Obj->GetNumberField(TEXT("height")) : 10.0f;
+
+        Tree.PosicionUnreal = UAlsasuaGeoData::UnityaUnreal(FVector(X, Z, 0));
+        Tree.Especie = AsignarEspecie(Altura);
+        Tree.Escala = FMath::Clamp(Altura / 15.0f, 0.5f, 2.0f);
+        Tree.Rotacion = FMath::FRandRange(0.0f, 360.0f);
+
+        Arboles.Add(Tree);
+    }
+
+    bCargado = true;
+    UE_LOG(LogTemp, Log, TEXT("TreePlacer: %d arboles cargados con especies reales"), Arboles.Num());
+    return true;
+}
+
+int32 UAlsasuaTreePlacer::ColocarArbolesReales()
+{
+    if (!bCargado && !CargarArboles()) return 0;
+
+    UWorld* World = GetWorld();
+    if (!World) return 0;
+
+    TMap<FString, UStaticMesh*> SpecieMeshes;
+    for (const FTreeSpecies& Sp : Especies)
+    {
+        UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, *Sp.AssetPath);
+        SpecieMeshes.Add(Sp.NombreCientifico, Mesh);
+    }
+
+    int32 Placed = 0;
+    int32 WithMesh = 0;
+    for (const FTreePlacement& Tree : Arboles)
+    {
+        AStaticMeshActor* TreeActor = World->SpawnActor<AStaticMeshActor>(
+            AStaticMeshActor::StaticClass(),
+            Tree.PosicionUnreal,
+            FRotator(0, Tree.Rotacion, 0));
+        if (TreeActor)
+        {
+            TreeActor->SetMobility(EComponentMobility::Movable);
+            TreeActor->SetActorScale3D(FVector(Tree.Escala));
+
+            UStaticMesh** FoundMesh = SpecieMeshes.Find(Tree.Especie);
+            if (FoundMesh && *FoundMesh)
+            {
+                TreeActor->GetStaticMeshComponent()->SetStaticMesh(*FoundMesh);
+                WithMesh++;
+            }
+
+#if WITH_EDITOR
+            TreeActor->SetActorLabel(*FString::Printf(TEXT("Arbol_%s_%d"),
+                *Tree.Especie, Placed));
+#endif
+            Placed++;
+        }
+    }
+
+    UE_LOG(LogTemp, Log, TEXT("TreePlacer: %d arboles reales, %d con malla real"), Placed, WithMesh);
+    return Placed;
+}

@@ -24,8 +24,8 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	// FTickableGameObject
-	virtual bool IsAllowedToTick() const { return true; }
-	virtual TStatId GetStatId() const { return TStatId(); }
+	virtual bool IsAllowedToTick() const override { return true; }
+	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(AlsasuaBudgetManager, STATGROUP_AlsasuaCrowd); }
 
 	/** Consulta si queda presupuesto de tiempo para ejecutar una tarea en este frame */
 	UFUNCTION(BlueprintCallable, Category = "AAA|Budget")

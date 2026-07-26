@@ -1,0 +1,602 @@
+[
+  {
+    "id": 1,
+    "name": "Edificio_Herriko_Tradicional",
+    "category": "buildings",
+    "prompt": "Traditional Basque Country stone townhouse, 3 stories, red clay tile roof, wooden balcony with iron railing, white plaster walls with exposed stone corners, aged weathered texture, Navarra Spain architecture, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 2,
+    "name": "Edificio_Moderno_Intxostia",
+    "category": "buildings",
+    "prompt": "Modern Spanish apartment building, 4 stories, flat roof, concrete and brick facade, large windows with aluminum frames, balconies with glass railing, residential block in Basque Country town, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 3,
+    "name": "Casa_Chorro_Errota",
+    "category": "buildings",
+    "prompt": "Small traditional Basque farmhouse, 2 stories, stone walls, wooden beam structure, terracotta tile roof, rural Navarra architecture, weathered wood door, flower boxes on windows, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 4,
+    "name": "Nave_Industrial_Ferroviario",
+    "category": "buildings",
+    "prompt": "Industrial warehouse building, corrugated metal siding, large sliding doors, concrete floor, flat roof with skylights, Spanish industrial estate architecture, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 5,
+    "name": "Iglesia_Jasokundeko",
+    "category": "buildings",
+    "prompt": "Basque Country church, Romanesque-Gothic style, stone walls, bell tower with arched openings, rose window, red tile roof, medieval Navarra architecture, weathered stone texture, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 6,
+    "name": "Ayuntamiento_Altsasu",
+    "category": "buildings",
+    "prompt": "Small Spanish town hall, 18th century Baroque style, stone facade with arched portico, three arches on ground floor, coat of arms above entrance, red tile roof, formal civic architecture, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 7,
+    "name": "Estacion_Tren_Altsasu",
+    "category": "buildings",
+    "prompt": "Spanish regional train station, stone and brick building, arched entrance, clock on facade, platform canopy, Renfe style architecture, small town railway station Navarra, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 8,
+    "name": "Fronton_Pelota",
+    "category": "buildings",
+    "prompt": "Basque pelota fronton court, tall concrete wall with painted lines, open-air court, wooden gallery seating, traditional Basque sports architecture, stone and concrete construction, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 9,
+    "name": "Farola_Clasica",
+    "category": "street_furniture",
+    "prompt": "Traditional Spanish cast iron street lamp, ornate Victorian style, black metal, single glass lantern on curved arm, decorative base with floral details, classic European street lighting, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 10,
+    "name": "Farola_Moderna",
+    "category": "street_furniture",
+    "prompt": "Modern minimalist street lamp, slim black metal pole, LED light fixture, simple geometric design, contemporary urban lighting, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 11,
+    "name": "Banco_Parque",
+    "category": "street_furniture",
+    "prompt": "Traditional park bench, wooden slats on cast iron frame, dark green painted metal, classic European public seating, weathered wood texture, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 12,
+    "name": "Fuente_Agua",
+    "category": "street_furniture",
+    "prompt": "Spanish stone water fountain, circular basin on pedestal, carved stone with moss, water spout from wall, traditional Navarra village fountain, weathered limestone texture, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 13,
+    "name": "Papelera_Urbana",
+    "category": "street_furniture",
+    "prompt": "Urban waste bin, dark green metal cylinder, domed top with opening, public trash can, European street furniture, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 14,
+    "name": "Buzon_Correos",
+    "category": "street_furniture",
+    "prompt": "Spanish red mailbox, cylindrical metal post box, Correos brand style, red painted metal with yellow details, traditional Spanish postal service, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 15,
+    "name": "Parada_Autobus",
+    "category": "street_furniture",
+    "prompt": "Bus stop shelter, glass and metal frame, advertising panel, bench seating, modern urban transit stop, European bus shelter design, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 16,
+    "name": "Fuente_Bebida",
+    "category": "street_furniture",
+    "prompt": "Public drinking fountain, stainless steel pedestal, push-button water dispenser, modern urban water fountain, park drinking fountain, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 17,
+    "name": "Semaforo_Urbano",
+    "category": "traffic",
+    "prompt": "Traffic light, black metal pole, three LED lights red yellow green, pedestrian signal, standard European traffic signal, urban intersection, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 18,
+    "name": "Senal_Calle",
+    "category": "traffic",
+    "prompt": "Blue rectangular street sign, white text, mounted on metal pole, European bilingual street sign, Navarra Spain style, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 19,
+    "name": "Stop_Senal",
+    "category": "traffic",
+    "prompt": "Octagonal red STOP sign on metal pole, standard traffic stop sign, reflective surface, European road sign, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 20,
+    "name": "Barandilla_Puente",
+    "category": "traffic",
+    "prompt": "Metal bridge guardrail, galvanized steel railing, vertical bars with horizontal top rail, safety barrier for bridge, industrial metal construction, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 21,
+    "name": "Contenedor_Reciclaje",
+    "category": "traffic",
+    "prompt": "Colorful recycling waste container, three-compartment bin, blue yellow green sections, large wheeled dumpster, municipal recycling station, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 22,
+    "name": "Coche_Sedan",
+    "category": "vehicles",
+    "prompt": "Generic European sedan car, compact size, modern design, four doors, silver color, parked car, low detail distant vehicle, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 23,
+    "name": "Furgoneta_Secundaria",
+    "category": "vehicles",
+    "prompt": "White delivery van, compact commercial vehicle, box shape, European style utility van, parked vehicle, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 24,
+    "name": "Autobus_Urbano",
+    "category": "vehicles",
+    "prompt": "Spanish city bus, blue and white livery, articulated single-deck, modern urban transit bus, regional Navarra bus, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 25,
+    "name": "Coche_Policia",
+    "category": "vehicles",
+    "prompt": "Spanish police car, white with blue stripe, Ertzaintza Basque police vehicle, emergency lights on roof, patrol car, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 26,
+    "name": "Arbol_Haya",
+    "category": "vegetation",
+    "prompt": "European beech tree, tall deciduous, smooth gray bark, green summer foliage, broad canopy, mature specimen, Basque Country forest tree, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 27,
+    "name": "Arbol_Roble",
+    "category": "vegetation",
+    "prompt": "English oak tree, massive deciduous, rough dark bark, spreading canopy, lobed green leaves, ancient old-growth, Basque Country woodland, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 28,
+    "name": "Arbol_Abedul",
+    "category": "vegetation",
+    "prompt": "Silver birch tree, slender deciduous, white peeling bark, delicate green leaves, graceful form, common in Navarra, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 29,
+    "name": "Seto_Verde",
+    "category": "vegetation",
+    "prompt": "Green hedge, dense trimmed bushes, dark green leaves, rectangular shaped, garden boundary hedge, well-maintained, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 30,
+    "name": "Hierba_Larga",
+    "category": "vegetation",
+    "prompt": "Tall wild grass, green meadow grass, swaying blades, natural ground cover, Basque Country field vegetation, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 31,
+    "name": "Roca_Grande",
+    "category": "nature",
+    "prompt": "Large natural boulder, gray limestone, rough surface with moss patches, Basque Country mountain rock, weathered stone, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 32,
+    "name": "Piedra_Muro",
+    "category": "nature",
+    "prompt": "Stacked stone wall segment, dry stone construction, irregular shapes, traditional Basque Country stone wall, moss covered, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 33,
+    "name": "Tronco_Caido",
+    "category": "nature",
+    "prompt": "Fallen tree log, decaying bark, moss growing on surface, woodland floor debris, old growth forest fallen trunk, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 34,
+    "name": "Taberna_Tradicional",
+    "category": "shops",
+    "prompt": "Traditional Basque tavern facade, wooden door with glass panels, red and white striped awning, rustic stone surround, warm interior glow through windows, old-world charm, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 35,
+    "name": "Okindegia_Front",
+    "category": "shops",
+    "prompt": "Basque bakery storefront, large display window, wooden door, bread and pastry display, warm golden lighting inside, traditional village bakery, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 36,
+    "name": "Harategia_Front",
+    "category": "shops",
+    "prompt": "Butcher shop facade, white tile walls visible through window, glass display case, red and white checkered awning, traditional Spanish butcher, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 37,
+    "name": "Ventana_Basca",
+    "category": "interiors",
+    "prompt": "Traditional Basque window frame, white wooden shutters, small flower box with red geraniums, glass panes reflecting light, weathered paint, Mediterranean style window, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 38,
+    "name": "Balcon_Hierro",
+    "category": "interiors",
+    "prompt": "Wrought iron balcony, ornate railing with scrollwork, attached to stone building wall, small potted plants on floor, traditional Spanish ironwork, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 39,
+    "name": "Persiana_Española",
+    "category": "interiors",
+    "prompt": "Spanish rolling shutter, green painted aluminum slats, half-open position, mounted on building facade, traditional Spanish window covering, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 40,
+    "name": "Antena_TV",
+    "category": "rooftop",
+    "prompt": "Television antenna, metal Yagi antenna on rooftop mount, old-style TV aerial, attached to chimney, residential building antenna, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 41,
+    "name": "Chimenea_Piedra",
+    "category": "rooftop",
+    "prompt": "Stone chimney stack, traditional Basque roof chimney, rough stone construction, clay flue liner on top, terracotta chimney pot, weathered mortar, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 42,
+    "name": "Deposito_Agua",
+    "category": "rooftop",
+    "prompt": "Black plastic water storage tank, cylindrical rooftop water deposit, Iberian style water tank, mounted on concrete base, residential water supply, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 43,
+    "name": "Placa_Solar",
+    "category": "rooftop",
+    "prompt": "Solar panel array, photovoltaic panels on tilted metal frame, residential rooftop solar installation, blue-black silicon cells, aluminum frame, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 44,
+    "name": "Mesa_Taberna",
+    "category": "interior_furniture",
+    "prompt": "Rustic Basque tavern wooden table, thick oak tabletop, sturdy turned legs, beer stains, warm wood finish, traditional Spanish bar furniture, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 45,
+    "name": "Silla_Taberna",
+    "category": "interior_furniture",
+    "prompt": "Traditional Basque tavern chair, dark wood frame, woven rush seat, slightly worn, rustic Spanish bar chair, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 46,
+    "name": "Barra_Taberna",
+    "category": "interior_furniture",
+    "prompt": "Basque tavern bar counter, dark polished wood, brass foot rail, bottle shelves behind, traditional Spanish bar, copper taps, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 47,
+    "name": "Estanteria_Libros",
+    "category": "interior_furniture",
+    "prompt": "Wooden bookshelf, old library shelving, filled with books, dark oak wood, traditional Spanish public library furniture, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 48,
+    "name": "Cama_Simple",
+    "category": "interior_furniture",
+    "prompt": "Simple single bed, iron frame, white cotton sheets, thin mattress, basic Spanish village bedroom furniture, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 49,
+    "name": "Escritorio_Oficina",
+    "category": "interior_furniture",
+    "prompt": "Office desk, simple wooden desk with drawers, paper stacks, pen holder, Spanish municipal office furniture, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 50,
+    "name": "Estante_Supermercado",
+    "category": "shop_interiors",
+    "prompt": "Supermarket shelving unit, metal frame with adjustable shelves, product display rack, fluorescent lit, Spanish grocery store interior, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 51,
+    "name": "Caja_Cobro",
+    "category": "shop_interiors",
+    "prompt": "Checkout counter, supermarket cash register, conveyor belt, plastic bags dispenser, Spanish retail checkout, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 52,
+    "name": "Nevera_Cerveza",
+    "category": "shop_interiors",
+    "prompt": "Glass door beverage refrigerator, commercial beer fridge, illuminated interior, bottles visible, Spanish bar cooler, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 53,
+    "name": "Horno_Panaderia",
+    "category": "shop_interiors",
+    "prompt": "Commercial bakery oven, large stainless steel bread oven, industrial baking equipment, Spanish panaderia interior, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 54,
+    "name": "Mostrador_Carniceria",
+    "category": "shop_interiors",
+    "prompt": "Butcher shop display counter, glass refrigerated display case, meat hooks above, white tile backsplash, Spanish carniceria, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 55,
+    "name": "Lavadero_Callejero",
+    "category": "village_props",
+    "prompt": "Traditional Basque public washhouse, stone basin with water taps, covered laundry area, arched stone structure, rural Navarra architecture, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 56,
+    "name": "Fuente_Vieja",
+    "category": "village_props",
+    "prompt": "Old stone drinking fountain, carved stone basin, iron spout, moss-covered stone base, traditional Spanish village fountain, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 57,
+    "name": "Cruce_Camino",
+    "category": "village_props",
+    "prompt": "Stone cross at crossroads, traditional Basque roadside cross, carved stone pillar with crucifix, mossy base, rural Navarra, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 58,
+    "name": "Hito_Fronterizo",
+    "category": "village_props",
+    "prompt": "Stone boundary marker, carved milestone, traditional Basque border stone, moss-covered, engraved text, rural pathway marker, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 59,
+    "name": "Bancal_Terraza",
+    "category": "village_props",
+    "prompt": "Terraced garden wall, dry stone retaining wall, small agricultural terrace, traditional Basque hillside farming, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  },
+  {
+    "id": 60,
+    "name": "Portal_Madera",
+    "category": "village_props",
+    "prompt": "Traditional Basque wooden door portal, carved wooden lintel, stone doorframe, aged oak wood door, traditional Navarra entrance, game-ready low-poly, PBR materials",
+    "style": "realistic",
+    "model_type": "standard",
+    "topology": "quad",
+    "target_polycount": 10000
+  }
+]

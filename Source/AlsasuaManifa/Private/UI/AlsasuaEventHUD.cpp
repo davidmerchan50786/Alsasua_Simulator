@@ -21,11 +21,14 @@ void AAlsasuaEventHUD::GetSocialStatus(float& OutFollowers, float& OutViralImpac
     OutViralImpact = 0.f;
     OutPopularSupport = 0.f;
 
-    if (USocialMediaSubsystem* SocialSS = GetWorld()->GetSubsystem<USocialMediaSubsystem>()) {
+    UWorld* W = GetWorld();
+    if (!W) return;
+
+    if (USocialMediaSubsystem* SocialSS = W->GetSubsystem<USocialMediaSubsystem>()) {
         OutFollowers = SocialSS->GlobalFollowers;
     }
 
-    if (APawn* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0)) {
+    if (APawn* Player = UGameplayStatics::GetPlayerPawn(W, 0)) {
         if (AAlsasuaCharacter* Char = Cast<AAlsasuaCharacter>(Player)) {
             if (const UAlsasuaAttributeSet* Attr = Char->GetAttributeSet()) {
                 OutPopularSupport = Attr->GetPopularSupport();

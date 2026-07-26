@@ -12,5 +12,5 @@ FVector UAlsasuaGeoData::UnrealaUnity(const FVector& UnrealPos)
 
 FVector UAlsasuaGeoData::HerrikoPlaza()
 {
-    return FVector(0.0, 0.0, 53194.0);
+    return FVector(0.0, 0.0, CotaPlazaCm);
 }

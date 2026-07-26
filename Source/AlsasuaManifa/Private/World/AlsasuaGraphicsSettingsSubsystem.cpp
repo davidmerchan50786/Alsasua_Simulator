@@ -41,10 +41,22 @@ void UAlsasuaGraphicsSettingsSubsystem::ConsoleSetProfile(const TArray<FString>&
 
 void UAlsasuaGraphicsSettingsSubsystem::SetLumenQuality(int32 Level)
 {
-    IConsoleManager::Get().FindConsoleVariable(TEXT("r.Lumen.SceneDetail"))->Set(Level * 0.33f + 0.1f);
+    if (IConsoleVariable* CVar = IConsoleManager::Get().FindConsoleVariable(TEXT("r.Lumen.SceneDetail")))
+    {
+        CVar->Set(Level * 0.33f + 0.1f);
+    }
 }
 
 void UAlsasuaGraphicsSettingsSubsystem::SetNaniteBudget(int32 Level)
 {
-    // Ajustar presupuestos de clústers Nanite según el perfil
+    if (IConsoleVariable* CVar = IConsoleManager::Get().FindConsoleVariable(TEXT("r.Nanite.MaxPixelsPerEdge")))
+    {
+        float Values[] = {2.0f, 1.5f, 1.0f, 0.5f};
+        CVar->Set(Values[FMath::Clamp(Level, 0, 3)]);
+    }
+    if (IConsoleVariable* CVar = IConsoleManager::Get().FindConsoleVariable(TEXT("r.Nanite.ProxyTriangleThreshold")))
+    {
+        int32 Values[] = {1000000, 500000, 200000, 50000};
+        CVar->Set(Values[FMath::Clamp(Level, 0, 3)]);
+    }
 }

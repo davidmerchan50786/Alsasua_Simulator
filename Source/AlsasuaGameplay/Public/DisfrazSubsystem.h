@@ -1,5 +1,9 @@
 // DisfrazSubsystem.h (capa GAMEPLAY)
-// Encubierto: la policía te reconoce menos. Disparar te delata. Puerto de SistemaDisfraz.
+// Wrapper simple de backward-compat. El sistema completo vive en
+// UDisguiseComponent (módulo AlsasuaManifa).
+//
+// Los callers existentes (PlayerController, ArmasComponent, PoliciaController)
+// siguen funcionando sin cambios.
 #pragma once
 
 #include "CoreMinimal.h"
@@ -13,12 +17,17 @@ class ALSASUAGAMEPLAY_API UDisfrazSubsystem : public UGameInstanceSubsystem, pub
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(BlueprintReadOnly, Category="Disfraz") bool bEncubierto = false;
+	UPROPERTY(BlueprintReadOnly, Category = "Disfraz")
+	bool bEncubierto = false;
 
-	UFUNCTION(BlueprintPure, Category="Disfraz") float FactorReconocimiento() const { return bEncubierto ? 0.4f : 1.f; }
+	UFUNCTION(BlueprintPure, Category = "Disfraz")
+	float FactorReconocimiento() const { return bEncubierto ? 0.4f : 1.f; }
 
-	UFUNCTION(BlueprintCallable, Category="Disfraz") void Alternar();   // tecla H
-	UFUNCTION(BlueprintCallable, Category="Disfraz") void Delatar();    // al disparar
+	UFUNCTION(BlueprintCallable, Category = "Disfraz")
+	void Alternar();
+
+	UFUNCTION(BlueprintCallable, Category = "Disfraz")
+	void Delatar();
 
 	virtual void Tick(float DeltaTime) override;
 	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(UDisfrazSubsystem, STATGROUP_Tickables); }

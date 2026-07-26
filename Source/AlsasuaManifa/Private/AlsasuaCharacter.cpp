@@ -117,12 +117,16 @@ void AAlsasuaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		}
 	}
 
-	PlayerInputComponent->BindAxis(TEXT("MoveForward"), this, &AAlsasuaCharacter::MoveForward);
-	PlayerInputComponent->BindAxis(TEXT("MoveRight"),   this, &AAlsasuaCharacter::MoveRight);
-	PlayerInputComponent->BindAxis(TEXT("Turn"),        this, &AAlsasuaCharacter::TurnAt);
-	PlayerInputComponent->BindAxis(TEXT("LookUp"),      this, &AAlsasuaCharacter::LookUpAt);
-	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Pressed,  this, &ACharacter::Jump);
-	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Released, this, &ACharacter::StopJumping);
+	// Legacy fallback: only bind if Enhanced Input actions are not set.
+	if (!IA_Mover)
+	{
+		PlayerInputComponent->BindAxis(TEXT("MoveForward"), this, &AAlsasuaCharacter::MoveForward);
+		PlayerInputComponent->BindAxis(TEXT("MoveRight"),   this, &AAlsasuaCharacter::MoveRight);
+		PlayerInputComponent->BindAxis(TEXT("Turn"),        this, &AAlsasuaCharacter::TurnAt);
+		PlayerInputComponent->BindAxis(TEXT("LookUp"),      this, &AAlsasuaCharacter::LookUpAt);
+		PlayerInputComponent->BindAction(TEXT("Jump"), IE_Pressed,  this, &ACharacter::Jump);
+		PlayerInputComponent->BindAction(TEXT("Jump"), IE_Released, this, &ACharacter::StopJumping);
+	}
 }
 
 // ── GAS ─────────────────────────────────────────────────────────────────────
@@ -165,7 +169,7 @@ int32 AAlsasuaCharacter::GetVida() const
 
 int32 AAlsasuaCharacter::GetVidaMax() const
 {
-	return 100;
+	return AttributeSet ? FMath::RoundToInt(AttributeSet->GetMaxHealth()) : 100;
 }
 
 bool AAlsasuaCharacter::EstaMuerto() const
@@ -176,22 +180,36 @@ bool AAlsasuaCharacter::EstaMuerto() const
 void AAlsasuaCharacter::RecibirDano(int32 Cantidad, FVector Origen, ETipoDano Tipo)
 {
 	if (!AbilitySystemComponent || !AttributeSet) return;
-	FGameplayEffectContextHandle Context = AbilitySystemComponent->MakeEffectContext();
-	Context.AddHitResult(FHitResult(this, nullptr, Origen, FVector::ZeroVector));
-	FGameplayEffectSpecHandle Spec = AbilitySystemComponent->MakeOutgoingSpec(
-		nullptr, 0, Context);
-	if (Spec.IsValid())
-		AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*Spec.Data.Get());
+
+	float DanoReal = static_cast<float>(Cantidad);
+
+	// Explosiones ignoran armadura y hacen daño doble.
+	if (Tipo == ETipoDano::Explosion)
+	{
+		DanoReal *= 2.0f;
+	}
+	// Balas hacen daño base, otras formas reducen un 30%.
+	else if (Tipo != ETipoDano::Bala)
+	{
+		DanoReal *= 0.7f;
+	}
+
+	AbilitySystemComponent->ApplyModToAttribute(AttributeSet->GetHealthAttribute(),
+		EGameplayModOp::Additive, -DanoReal);
+
+	if (GetHealth() <= 0.f)
+	{
+		AbilitySystemComponent->ApplyModToAttribute(AttributeSet->GetWantedLevelAttribute(),
+			EGameplayModOp::Additive, 1.f);
+	}
 }
 
 void AAlsasuaCharacter::Curar(int32 Cantidad)
 {
-	if (!AbilitySystemComponent) return;
-	FGameplayEffectContextHandle Context = AbilitySystemComponent->MakeEffectContext();
-	FGameplayEffectSpecHandle Spec = AbilitySystemComponent->MakeOutgoingSpec(
-		nullptr, 0, Context);
-	if (Spec.IsValid())
-		AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*Spec.Data.Get());
+	if (!AbilitySystemComponent || !AttributeSet) return;
+
+	AbilitySystemComponent->ApplyModToAttribute(AttributeSet->GetHealthAttribute(),
+		EGameplayModOp::Additive, static_cast<float>(Cantidad));
 }
 
 // ── Locomoción ──────────────────────────────────────────────────────────────
@@ -249,7 +267,9 @@ float AAlsasuaCharacter::GetAimOffsetPitch() const
 
 float AAlsasuaCharacter::GetAimYawRate() const
 {
-	return 0.f;
+	return (GetWorld() && GetWorld()->GetFirstPlayerController())
+		? FMath::Abs(GetWorld()->GetFirstPlayerController()->GetInputAxisValue(TEXT("Turn")))
+		: 0.f;
 }
 
 UCharacterTrajectoryComponent* AAlsasuaCharacter::GetCharacterTrajectory() const
@@ -405,5 +425,5 @@ void AAlsasuaCharacter::MoveRight(float Value)
 	}
 }
 
-void AAlsasuaCharacter::TurnAt(float Value)   { AddControllerYawInput(Value); }
-void AAlsasuaCharacter::LookUpAt(float Value) { AddControllerPitchInput(Value); }
+void AAlsasuaCharacter::TurnAt(float Value)   { AddControllerYawInput(Value * Sensitivity); }
+void AAlsasuaCharacter::LookUpAt(float Value) { AddControllerPitchInput(Value * Sensitivity); }

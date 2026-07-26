@@ -1,0 +1,2036 @@
+[
+ {
+  "type": "banco",
+  "x": -125.90194136326176,
+  "z": -1225.0695785237024,
+  "calle": "Sakanako autobia",
+  "barrio": "Monte",
+  "material": "madera_piedra",
+  "rotacion": 265.1296370990445
+ },
+ {
+  "type": "banco",
+  "x": -773.7601563606295,
+  "z": 1250.154594438876,
+  "calle": "Iparraldeko autobia",
+  "barrio": "Ferroviario",
+  "material": "madera_piedra",
+  "rotacion": 78.7096709292972
+ },
+ {
+  "type": "banco",
+  "x": -735.0133246986267,
+  "z": -1387.999231124441,
+  "calle": "Sakanako autobia",
+  "barrio": "Intxostia",
+  "material": "madera_piedra",
+  "rotacion": 196.17893301715802
+ },
+ {
+  "type": "banco",
+  "x": -692.5794686322482,
+  "z": -703.6021390866443,
+  "calle": "Iparraldeko autobia",
+  "barrio": "Zelai",
+  "material": "madera_piedra",
+  "rotacion": 2.339553484101966
+ },
+ {
+  "type": "banco",
+  "x": -753.7055738555864,
+  "z": 1116.8621890902252,
+  "calle": "Iparraldeko autobia",
+  "barrio": "Ferroviario",
+  "material": "madera_piedra",
+  "rotacion": 33.38850361685325
+ },
+ {
+  "type": "banco",
+  "x": -1038.4070112673053,
+  "z": 1525.5564520627338,
+  "calle": "Iparraldeko autobia",
+  "barrio": "Ferroviario",
+  "material": "madera_piedra",
+  "rotacion": 290.5661783787769
+ },
+ {
+  "type": "banco",
+  "x": -916.4292034486969,
+  "z": -1531.7682240727959,
+  "calle": "Sakanako autobia",
+  "barrio": "Intxostia",
+  "material": "madera_piedra",
+  "rotacion": 28.725111692505898
+ },
+ {
+  "type": "banco",
+  "x": -2936.3319971411806,
+  "z": -2648.51705279378,
+  "calle": "Iparraldeko autobia",
+  "barrio": "Intxostia",
+  "material": "madera_piedra",
+  "rotacion": 228.84639993518405
+ },
+ {
+  "type": "banco",
+  "x": -641.4100443559017,
+  "z": 239.25230917542498,
+  "calle": "Iparraldeko autobia",
+  "barrio": "SanPedro",
+  "material": "madera_piedra",
+  "rotacion": 233.29273868877368
+ },
+ {
+  "type": "banco",
+  "x": -755.8517464040992,
+  "z": -1356.0351950124762,
+  "calle": "Iparraldeko autobia",
+  "barrio": "Intxostia",
+  "material": "madera_piedra",
+  "rotacion": 136.6039590327532
+ },
+ {
+  "type": "banco",
+  "x": -392.7297995121919,
+  "z": -1302.1600939038817,
+  "calle": "Sakanako autobia",
+  "barrio": "Intxostia",
+  "material": "madera_piedra",
+  "rotacion": 96.38671535125299
+ },
+ {
+  "type": "banco",
+  "x": -2382.47518057133,
+  "z": -2296.9242647470546,
+  "calle": "Iparraldeko autobia",
+  "barrio": "Intxostia",
+  "material": "madera_piedra",
+  "rotacion": 113.28403708745205
+ },
+ {
+  "type": "fuente",
+  "x": 1891.5,
+  "z": 8572.0,
+  "nombre": "Fuente Foruen Plaza",
+  "material": "piedra_caliza",
+  "activa": true,
+  "rotacion": 0
+ },
+ {
+  "type": "fuente",
+  "x": 1890.0,
+  "z": 8573.5,
+  "nombre": "Fuente Kale Nagusia",
+  "material": "piedra_caliza",
+  "activa": true,
+  "rotacion": 0
+ },
+ {
+  "type": "fuente",
+  "x": 1892.5,
+  "z": 8571.0,
+  "nombre": "Fuente Zelai Kalea",
+  "material": "piedra_caliza",
+  "activa": true,
+  "rotacion": 0
+ },
+ {
+  "type": "fuente",
+  "x": 1889.0,
+  "z": 8570.0,
+  "nombre": "Fuente Harrobieta",
+  "material": "piedra_caliza",
+  "activa": true,
+  "rotacion": 0
+ },
+ {
+  "type": "fuente",
+  "x": 1893.0,
+  "z": 8576.0,
+  "nombre": "Fuente Intxostia",
+  "material": "piedra_caliza",
+  "activa": true,
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -722.1688836245753,
+  "z": 367.20164913035063,
+  "calle": "Camino vecinal 48764437",
+  "barrio": "Zelai",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -253.92538071349344,
+  "z": -567.9998786197599,
+  "calle": "Aralar",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -308.4522781806398,
+  "z": -102.04528963097343,
+  "calle": "Zelai",
+  "barrio": "Herriko",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -240.5432347493309,
+  "z": -456.0652762936708,
+  "calle": "Intxostia",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -526.5313721606551,
+  "z": -693.6294814301632,
+  "calle": "José María Ezcurra",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -305.32348919992484,
+  "z": -449.7346209698804,
+  "calle": "Erkuden",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 127.37915605700468,
+  "z": -470.5105232576141,
+  "calle": "Aldautia",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -346.4469904007959,
+  "z": -680.678050554702,
+  "calle": "Andia",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -282.7370095366834,
+  "z": -510.68478748153166,
+  "calle": "Bakea",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -458.1157176219013,
+  "z": -183.26319640650505,
+  "calle": "Zelandi",
+  "barrio": "Zelai",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -377.02030266296845,
+  "z": -424.6269144378525,
+  "calle": "Nafarroa",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -472.8158970427299,
+  "z": -625.6960582161888,
+  "calle": "Gipuzkoa",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -353.814995365631,
+  "z": -266.76502222170376,
+  "calle": "Intxaurrondo",
+  "barrio": "Zelai",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 56.24651424058067,
+  "z": -419.63795690667473,
+  "calle": "Txiki Polita",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 583.1129308142288,
+  "z": -973.7359488175937,
+  "calle": "Calle 91918733",
+  "barrio": "Monte",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 181.19762128210226,
+  "z": -103.05569739460503,
+  "calle": "San Pedroko Bidea",
+  "barrio": "Harrobieta",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -5.769386452166868,
+  "z": -401.4161183601656,
+  "calle": "Foruen Plaza",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -772.2437175315873,
+  "z": -458.2739724149201,
+  "calle": "Isasia",
+  "barrio": "Zelai",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 5.989641125450718,
+  "z": -432.67125270080084,
+  "calle": "Txikipolita",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -141.2070268810231,
+  "z": -568.1106911562202,
+  "calle": "Auzobide",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 0.047707825494564204,
+  "z": -542.8982906350308,
+  "calle": "Solana",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 133.34817759445897,
+  "z": -402.64714961708046,
+  "calle": "Galtzada",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 103.79077890327444,
+  "z": -428.6318885347594,
+  "calle": "Ferialeku",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 114.78703510645002,
+  "z": -447.44878744639595,
+  "calle": "Ferialeku",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 120.76228731412944,
+  "z": -386.52878465221136,
+  "calle": "Galtzada",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -700.2207144773814,
+  "z": 153.78245444085442,
+  "calle": "Calle 103009112",
+  "barrio": "Zelai",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -764.8248456877329,
+  "z": -389.4207995852496,
+  "calle": "Geltokia kalea",
+  "barrio": "Zelai",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -805.0862550453602,
+  "z": -418.5234600749126,
+  "calle": "Geltokia kalea",
+  "barrio": "Zelai",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -1221.9598958648846,
+  "z": -2.045621247800022,
+  "calle": "Ameztia",
+  "barrio": "Zelai",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 334.96942867041906,
+  "z": -439.99696402229057,
+  "calle": "Amandrea",
+  "barrio": "Monte",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -528.5924242274363,
+  "z": 161.76168022397226,
+  "calle": "Texeria",
+  "barrio": "Zelai",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -422.31588077698035,
+  "z": -239.02288662269862,
+  "calle": "Zelandi",
+  "barrio": "Zelai",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 501.5692438600738,
+  "z": -820.9028936066998,
+  "calle": "Calle 296656285",
+  "barrio": "Monte",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 337.71944551928215,
+  "z": -781.9607416500698,
+  "calle": "Iruñeko etorbidea",
+  "barrio": "Monte",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 324.50611624187144,
+  "z": -840.572865298549,
+  "calle": "Acceso 296656298",
+  "barrio": "Monte",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 348.3668810156937,
+  "z": -848.41939430378,
+  "calle": "Acceso 296656301",
+  "barrio": "Monte",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 101.23656447175509,
+  "z": -781.9788145320537,
+  "calle": "Camino vecinal 296656305",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -122.01583321709391,
+  "z": -467.14540674866225,
+  "calle": "Erkuden",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 333.2081297883277,
+  "z": 264.5032619511977,
+  "calle": "San Pedroko Bidea",
+  "barrio": "Errota",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 221.97740061102223,
+  "z": -416.7234321838275,
+  "calle": "Lapurbide",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 75.12956375856464,
+  "z": -308.8304549393473,
+  "calle": "Santa Kruz",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 111.17657516549909,
+  "z": -12.587548002907207,
+  "calle": "Mendizabal",
+  "barrio": "Harrobieta",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -571.7407623150887,
+  "z": 343.3582000360426,
+  "calle": "Beikolar",
+  "barrio": "Zelai",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 54.04844633377291,
+  "z": -571.8346363292698,
+  "calle": "Gartzia Ximenez etorbidea",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 49.58991371686893,
+  "z": -590.7901118500102,
+  "calle": "Beheko Benta",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 504.2237955367251,
+  "z": -834.3375479900848,
+  "calle": "Calle 297445888",
+  "barrio": "Monte",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -708.2725746122732,
+  "z": -1051.1341574559215,
+  "calle": "Isasia",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -1029.4505589890023,
+  "z": -1123.3872346192622,
+  "calle": "Isasia",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -1054.4106457495095,
+  "z": -1117.6596228309895,
+  "calle": "Ameztia",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 317.8039644766185,
+  "z": 237.84404618857403,
+  "calle": "San Pedroko Bidea",
+  "barrio": "Errota",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 288.00614619394275,
+  "z": 112.03888668170653,
+  "calle": "San Pedroko Bidea",
+  "barrio": "Errota",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -1202.61180172034,
+  "z": 9.35833634735166,
+  "calle": "Ameztia",
+  "barrio": "Zelai",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -655.2792718491369,
+  "z": -424.2482848929178,
+  "calle": "San Juan",
+  "barrio": "Zelai",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 180.5612614797282,
+  "z": -118.45305018770095,
+  "calle": "Amandrea",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -291.34240063033343,
+  "z": -487.66138885949607,
+  "calle": "San Pedro D auzunea",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -561.1392411973281,
+  "z": 433.14547512505936,
+  "calle": "Texeria Aldapa kalea",
+  "barrio": "Zelai",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 396.89512954369843,
+  "z": 455.5621418850283,
+  "calle": "San Pedroko Bidea",
+  "barrio": "Errota",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -785.8716098507678,
+  "z": -422.42837220271883,
+  "calle": "Geltokia kalea",
+  "barrio": "Zelai",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 221.5420202563397,
+  "z": -768.0236080169752,
+  "calle": "Iruñeko etorbidea",
+  "barrio": "Monte",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 109.94574964800934,
+  "z": -809.3973005127694,
+  "calle": "Iruñeko etorbidea",
+  "barrio": "Monte",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -1439.7458961358118,
+  "z": 120.59866028421148,
+  "calle": "Acceso 882508265",
+  "barrio": "Zelai",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 1008.26638328705,
+  "z": 1393.9824190479226,
+  "calle": "Vía 1156783833",
+  "barrio": "Ferroviario",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -502.79261998267964,
+  "z": 245.4323823457848,
+  "calle": "Vía 1188311072",
+  "barrio": "Zelai",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -1371.3845411553802,
+  "z": 750.21896958193,
+  "calle": "Vía 1188311734",
+  "barrio": "Zelai",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -1258.681752506109,
+  "z": -107.72307434804472,
+  "calle": "Acceso 1188336570",
+  "barrio": "Zelai",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 174.10830117431107,
+  "z": -778.5702792269659,
+  "calle": "Iruñeko etorbidea",
+  "barrio": "Monte",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -155.46732157450253,
+  "z": -319.5620427556053,
+  "calle": "Zelai",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -727.4913855840671,
+  "z": 411.70724239560104,
+  "calle": "Altsasu - Gipuzkoako muga errepidea",
+  "barrio": "SanPedro",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -819.7705191150487,
+  "z": 730.5512932390889,
+  "calle": "Camino vecinal 1225734427",
+  "barrio": "SanPedro",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -106.71615564848533,
+  "z": -1003.2703646536389,
+  "calle": "Acceso 1227104514",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -1414.4502124327855,
+  "z": 1695.4855851061013,
+  "calle": "Altsasu - Gipuzkoako muga errepidea",
+  "barrio": "Ferroviario",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 576.9426311840028,
+  "z": -961.8981365608091,
+  "calle": "Calle 1314656082",
+  "barrio": "Monte",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 1131.0829528363124,
+  "z": 854.0398398571576,
+  "calle": "Vía 1359779931",
+  "barrio": "Errota",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 1048.2320625777772,
+  "z": 1521.238612961958,
+  "calle": "Vía 1359779947",
+  "barrio": "Ferroviario",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 5.725596400472529,
+  "z": -432.1932128447048,
+  "calle": "Txiki Polita",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -526.5374157065485,
+  "z": -645.663445258745,
+  "calle": "Urbasa",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -529.1116153601214,
+  "z": 215.39619858721272,
+  "calle": "Camino vecinal 1492207743",
+  "barrio": "Zelai",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -761.245882421909,
+  "z": -1227.8305168365175,
+  "calle": "Autovia",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -764.2548516327439,
+  "z": -1489.5368649107322,
+  "calle": "Autovia",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -1193.2655388027372,
+  "z": -1642.129121305476,
+  "calle": "Autovia",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -858.4136232828165,
+  "z": -1425.5029364032318,
+  "calle": "Autovia",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -615.004554293048,
+  "z": 419.44260907429253,
+  "calle": "Autovia",
+  "barrio": "Zelai",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -692.6951604029155,
+  "z": -704.4171644881578,
+  "calle": "Iparraldeko autobia",
+  "barrio": "Zelai",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -685.6955565546739,
+  "z": -750.425682348757,
+  "calle": "Iparraldeko autobia",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 2303.1508135483264,
+  "z": -710.6209351310988,
+  "calle": "Autovia",
+  "barrio": "Monte",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 6977.3485037046175,
+  "z": -197.65918880488042,
+  "calle": "NA-2410",
+  "barrio": "Monte",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": 441.2399227892207,
+  "z": -1080.112388187386,
+  "calle": "Sakanako autobia",
+  "barrio": "Monte",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -1193.445322008788,
+  "z": -1641.9202663150243,
+  "calle": "Iparraldeko autobia",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -661.6941392158164,
+  "z": 500.1640286641608,
+  "calle": "Autovia",
+  "barrio": "Zelai",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -633.6380888978072,
+  "z": 113.51995861390618,
+  "calle": "Autovia",
+  "barrio": "Zelai",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -628.4707311695875,
+  "z": 642.2865008232517,
+  "calle": "Iparraldeko autobia",
+  "barrio": "SanPedro",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -619.1066703747222,
+  "z": -414.0492152805459,
+  "calle": "Autovia",
+  "barrio": "Zelai",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera",
+  "x": -712.2420389437054,
+  "z": -652.2906916063349,
+  "calle": "Iparraldeko autobia",
+  "barrio": "Intxostia",
+  "material": "metal_verde",
+  "rotacion": 0
+ },
+ {
+  "type": "parada_bus",
+  "x": 1891.0,
+  "z": 8572.5,
+  "nombre": "Parada Foruen Plaza",
+  "linea": "Sakana",
+  "con_techo": true,
+  "rotacion": 116.37856305935809
+ },
+ {
+  "type": "parada_bus",
+  "x": 1893.0,
+  "z": 8574.0,
+  "nombre": "Parada Zelai",
+  "linea": "Sakana",
+  "con_techo": true,
+  "rotacion": 349.26650165108776
+ },
+ {
+  "type": "parada_bus",
+  "x": 1895.0,
+  "z": 8575.0,
+  "nombre": "Parada Intxostia",
+  "linea": "Sakana",
+  "con_techo": true,
+  "rotacion": 145.50302052026842
+ },
+ {
+  "type": "parada_bus",
+  "x": 1888.0,
+  "z": 8568.0,
+  "nombre": "Parada San Pedro",
+  "linea": "Sakana",
+  "con_techo": true,
+  "rotacion": 185.25465083847783
+ },
+ {
+  "type": "parada_bus",
+  "x": 1889.5,
+  "z": 8570.0,
+  "nombre": "Parada Harrobieta",
+  "linea": "Sakana",
+  "con_techo": true,
+  "rotacion": 355.7229173214315
+ },
+ {
+  "type": "parada_bus",
+  "x": 1896.0,
+  "z": 8577.0,
+  "nombre": "Parada Zelandi",
+  "linea": "Sakana",
+  "con_techo": true,
+  "rotacion": 236.75773913392644
+ },
+ {
+  "type": "parada_bus",
+  "x": 1890.0,
+  "z": 8573.0,
+  "nombre": "Parada Kale Nagusia",
+  "linea": "Sakana",
+  "con_techo": true,
+  "rotacion": 195.3336939685902
+ },
+ {
+  "type": "señal_stop",
+  "x": 1891.0,
+  "z": 8572.0,
+  "rotacion": 90,
+  "altura_m": 2.2,
+  "material": "metal_blanco"
+ },
+ {
+  "type": "señal_stop",
+  "x": 1893.0,
+  "z": 8574.0,
+  "rotacion": 180,
+  "altura_m": 2.2,
+  "material": "metal_blanco"
+ },
+ {
+  "type": "señal_stop",
+  "x": 1889.5,
+  "z": 8570.5,
+  "rotacion": 270,
+  "altura_m": 2.2,
+  "material": "metal_blanco"
+ },
+ {
+  "type": "señal_velocidad",
+  "x": 1892.0,
+  "z": 8573.0,
+  "velocidad": 30,
+  "rotacion": 148.76912548775573,
+  "altura_m": 2.0
+ },
+ {
+  "type": "señal_velocidad",
+  "x": 1894.0,
+  "z": 8575.0,
+  "velocidad": 30,
+  "rotacion": 67.52971490202977,
+  "altura_m": 2.0
+ },
+ {
+  "type": "señal_velocidad",
+  "x": 1890.5,
+  "z": 8571.5,
+  "velocidad": 30,
+  "rotacion": 130.2405692946031,
+  "altura_m": 2.0
+ },
+ {
+  "type": "señal_velocidad",
+  "x": 1889.0,
+  "z": 8569.0,
+  "velocidad": 30,
+  "rotacion": 272.31953546000653,
+  "altura_m": 2.0
+ },
+ {
+  "type": "señal_velocidad",
+  "x": 1896.0,
+  "z": 8576.0,
+  "velocidad": 30,
+  "rotacion": 225.14714717220323,
+  "altura_m": 2.0
+ },
+ {
+  "type": "cruce_peatonal",
+  "x": 1891.5,
+  "z": 8572.0,
+  "rotacion": 0,
+  "ancho_m": 3.0,
+  "material": "pintura_blanca"
+ },
+ {
+  "type": "cruce_peatonal",
+  "x": 1893.0,
+  "z": 8574.5,
+  "rotacion": 45,
+  "ancho_m": 3.0,
+  "material": "pintura_blanca"
+ },
+ {
+  "type": "cruce_peatonal",
+  "x": 1890.0,
+  "z": 8571.0,
+  "rotacion": 90,
+  "ancho_m": 3.0,
+  "material": "pintura_blanca"
+ },
+ {
+  "type": "cruce_peatonal",
+  "x": 1895.0,
+  "z": 8576.0,
+  "rotacion": 0,
+  "ancho_m": 3.0,
+  "material": "pintura_blanca"
+ },
+ {
+  "type": "bollard",
+  "x": -999.4170056783634,
+  "z": 1560.0281349430102,
+  "calle": "Altsasu - Gipuzkoako muga errepidea",
+  "material": "metal_gris",
+  "altura_m": 0.7,
+  "rotacion": 0
+ },
+ {
+  "type": "bollard",
+  "x": -815.6284682165489,
+  "z": 732.1106036565067,
+  "calle": "Altsasu - Gipuzkoako muga errepidea",
+  "material": "metal_gris",
+  "altura_m": 0.7,
+  "rotacion": 0
+ },
+ {
+  "type": "bollard",
+  "x": -679.1651303429567,
+  "z": 310.7889500174733,
+  "calle": "Altsasu - Gipuzkoako muga errepidea",
+  "material": "metal_gris",
+  "altura_m": 0.7,
+  "rotacion": 0
+ },
+ {
+  "type": "bollard",
+  "x": -537.3511443499824,
+  "z": 282.315888089493,
+  "calle": "Texeria Aldapa kalea",
+  "material": "metal_gris",
+  "altura_m": 0.7,
+  "rotacion": 0
+ },
+ {
+  "type": "bollard",
+  "x": -679.0626769997509,
+  "z": 310.5135784773966,
+  "calle": "Camino vecinal 48715648",
+  "material": "metal_gris",
+  "altura_m": 0.7,
+  "rotacion": 0
+ },
+ {
+  "type": "bollard",
+  "x": -710.5079731017169,
+  "z": 311.83950340420165,
+  "calle": "Camino vecinal 48715652",
+  "material": "metal_gris",
+  "altura_m": 0.7,
+  "rotacion": 0
+ },
+ {
+  "type": "bollard",
+  "x": -517.4646491545677,
+  "z": 211.89192552076892,
+  "calle": "Camino vecinal 48715656",
+  "material": "metal_gris",
+  "altura_m": 0.7,
+  "rotacion": 0
+ },
+ {
+  "type": "bollard",
+  "x": -512.1226457163629,
+  "z": 244.9177579270905,
+  "calle": "Texeria Aldapa kalea",
+  "material": "metal_gris",
+  "altura_m": 0.7,
+  "rotacion": 0
+ },
+ {
+  "type": "bollard",
+  "x": -537.1471312634927,
+  "z": 281.8024796894537,
+  "calle": "Camino vecinal 48715658",
+  "material": "metal_gris",
+  "altura_m": 0.7,
+  "rotacion": 0
+ },
+ {
+  "type": "bollard",
+  "x": -517.2967140957386,
+  "z": 212.13502530282432,
+  "calle": "Camino vecinal 48715659",
+  "material": "metal_gris",
+  "altura_m": 0.7,
+  "rotacion": 0
+ },
+ {
+  "type": "bollard",
+  "x": -487.97103800440493,
+  "z": 196.9923232090417,
+  "calle": "Camino vecinal 48715660",
+  "material": "metal_gris",
+  "altura_m": 0.7,
+  "rotacion": 0
+ },
+ {
+  "type": "bollard",
+  "x": -531.728945061972,
+  "z": 240.228834367346,
+  "calle": "Camino vecinal 48715661",
+  "material": "metal_gris",
+  "altura_m": 0.7,
+  "rotacion": 0
+ },
+ {
+  "type": "bollard",
+  "x": -710.679853220438,
+  "z": 362.89023854364507,
+  "calle": "Camino vecinal 48764432",
+  "material": "metal_gris",
+  "altura_m": 0.7,
+  "rotacion": 0
+ },
+ {
+  "type": "bollard",
+  "x": -721.6852409538717,
+  "z": 367.5221516079483,
+  "calle": "Camino vecinal 48764437",
+  "material": "metal_gris",
+  "altura_m": 0.7,
+  "rotacion": 0
+ },
+ {
+  "type": "bollard",
+  "x": -727.4288791100411,
+  "z": 411.5849445349557,
+  "calle": "Camino vecinal 48764438",
+  "material": "metal_gris",
+  "altura_m": 0.7,
+  "rotacion": 0
+ },
+ {
+  "type": "guarda_barandas",
+  "x": 1891.0,
+  "z": 8571.5,
+  "material": "hierro_forjado",
+  "altura_m": 1.0,
+  "rotacion": 0
+ },
+ {
+  "type": "guarda_barandas",
+  "x": 1893.5,
+  "z": 8575.0,
+  "material": "hierro_forjado",
+  "altura_m": 1.0,
+  "rotacion": 0
+ },
+ {
+  "type": "papelera_reciclaje",
+  "x": 1891.0,
+  "z": 8572.0,
+  "tipo": "organico",
+  "material": "metal_color",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera_reciclaje",
+  "x": 1893.0,
+  "z": 8574.0,
+  "tipo": "envases",
+  "material": "metal_color",
+  "rotacion": 0
+ },
+ {
+  "type": "papelera_reciclaje",
+  "x": 1895.0,
+  "z": 8576.0,
+  "tipo": "papel",
+  "material": "metal_color",
+  "rotacion": 0
+ },
+ {
+  "type": "farola_decorativa",
+  "x": 181.295,
+  "z": -102.895,
+  "calle": "Calle 91904060",
+  "barrio": "Harrobieta",
+  "estilo": "forjado_tradicional",
+  "altura_m": 3.5,
+  "rotacion": 0
+ },
+ {
+  "type": "farola_decorativa",
+  "x": 110.751,
+  "z": -12.626,
+  "calle": "Mendizabal",
+  "barrio": "Harrobieta",
+  "estilo": "forjado_tradicional",
+  "altura_m": 3.5,
+  "rotacion": 0
+ },
+ {
+  "type": "parada_bus",
+  "x": -170.0,
+  "z": 111.3,
+  "nombre": "Parada Kale Nagusia Norte",
+  "barrio": "Herriko",
+  "material": "metal",
+  "calle": "Kale Nagusia",
+  "rotacion": 352.6
+ },
+ {
+  "type": "parada_bus",
+  "x": 425.0,
+  "z": 779.2,
+  "nombre": "Parada Kale Nagusia Sur",
+  "barrio": "Herriko",
+  "material": "metal",
+  "calle": "Kale Nagusia",
+  "rotacion": 138.6
+ },
+ {
+  "type": "parada_bus",
+  "x": -1530.0,
+  "z": -1113.2,
+  "nombre": "Parada Errota",
+  "barrio": "Errota",
+  "material": "metal",
+  "calle": "Errota Kalea",
+  "rotacion": 293.4
+ },
+ {
+  "type": "parada_bus",
+  "x": -2125.0,
+  "z": 2226.4,
+  "nombre": "Parada Ferroviario",
+  "barrio": "Ferroviario",
+  "material": "metal",
+  "calle": "Ferroviario Kalea",
+  "rotacion": 292.1
+ },
+ {
+  "type": "parada_bus",
+  "x": 3825.0,
+  "z": 4452.8,
+  "nombre": "Parada Avenida Pamplona",
+  "barrio": "Herriko",
+  "material": "metal",
+  "calle": "Avenida Pamplona",
+  "rotacion": 328.4
+ },
+ {
+  "type": "banco",
+  "x": 765.0,
+  "z": -222.6,
+  "nombre": "Banco Foruen Plaza Norte",
+  "barrio": "Herriko",
+  "material": "madera_piedra",
+  "calle": "Foruen Plaza",
+  "rotacion": 33.7
+ },
+ {
+  "type": "banco",
+  "x": 765.0,
+  "z": -0.0,
+  "nombre": "Banco Foruen Plaza Sur",
+  "barrio": "Herriko",
+  "material": "madera_piedra",
+  "calle": "Foruen Plaza",
+  "rotacion": 222.8
+ },
+ {
+  "type": "banco",
+  "x": 0.0,
+  "z": 1224.5,
+  "nombre": "Banco Kale Nagusia Fuente",
+  "barrio": "Herriko",
+  "material": "madera_piedra",
+  "calle": "Kale Nagusia",
+  "rotacion": 31.4
+ },
+ {
+  "type": "banco",
+  "x": -2975.0,
+  "z": 1669.8,
+  "nombre": "Banco Parque Zelai",
+  "barrio": "Zelai",
+  "material": "madera_piedra",
+  "calle": "Zelai Kalea",
+  "rotacion": 234.2
+ },
+ {
+  "type": "banco",
+  "x": -850.0,
+  "z": 222.6,
+  "nombre": "Banco Intxostia Paseo",
+  "barrio": "Intxostia",
+  "material": "madera_piedra",
+  "calle": "Intxostia Kalea",
+  "rotacion": 283.8
+ },
+ {
+  "type": "banco",
+  "x": -1275.0,
+  "z": -1447.2,
+  "nombre": "Banco Errota Parque",
+  "barrio": "Errota",
+  "material": "madera_piedra",
+  "calle": "Errota Kalea",
+  "rotacion": 162.6
+ },
+ {
+  "type": "banco",
+  "x": 170.0,
+  "z": 1892.4,
+  "nombre": "Banco Harrobieta",
+  "barrio": "Harrobieta",
+  "material": "madera_piedra",
+  "calle": "Harrobieta Kalea",
+  "rotacion": 345.3
+ },
+ {
+  "type": "banco",
+  "x": -2550.0,
+  "z": 2560.4,
+  "nombre": "Banco Estacion Tren",
+  "barrio": "Ferroviario",
+  "material": "madera_piedra",
+  "calle": "Ferroviario Kalea",
+  "rotacion": 84.3
+ },
+ {
+  "type": "banco",
+  "x": 3570.0,
+  "z": 4118.8,
+  "nombre": "Banco Avenida Pamplona",
+  "barrio": "Herriko",
+  "material": "madera_piedra",
+  "calle": "Avenida Pamplona",
+  "rotacion": 297.5
+ },
+ {
+  "type": "banco",
+  "x": 2720.0,
+  "z": -111.3,
+  "nombre": "Banco San Pedro Plaza",
+  "barrio": "SanPedro",
+  "material": "madera_piedra",
+  "calle": "San Pedro Kalea",
+  "rotacion": 67.4
+ },
+ {
+  "type": "banco",
+  "x": 3400.0,
+  "z": -779.2,
+  "nombre": "Banco Monte Calvario",
+  "barrio": "Monte",
+  "material": "madera_piedra",
+  "calle": "Monte Kalea",
+  "rotacion": 280.2
+ },
+ {
+  "type": "banco",
+  "x": -1700.0,
+  "z": 1113.2,
+  "nombre": "Banco Arakil Pasealekua",
+  "barrio": "Intxostia",
+  "material": "madera_piedra",
+  "calle": "Arakil Pasealekua",
+  "rotacion": 69.5
+ },
+ {
+  "type": "bollard",
+  "x": 722.5,
+  "z": -167.0,
+  "nombre": "Bollard Foruen Plaza 1",
+  "barrio": "Herriko",
+  "material": "metal",
+  "calle": "Foruen Plaza",
+  "rotacion": 237.2
+ },
+ {
+  "type": "bollard",
+  "x": 807.5,
+  "z": -55.7,
+  "nombre": "Bollard Foruen Plaza 2",
+  "barrio": "Herriko",
+  "material": "metal",
+  "calle": "Foruen Plaza",
+  "rotacion": 358.3
+ },
+ {
+  "type": "bollard",
+  "x": 85.0,
+  "z": 445.3,
+  "nombre": "Bollard Kale Nagusia 1",
+  "barrio": "Herriko",
+  "material": "metal",
+  "calle": "Kale Nagusia",
+  "rotacion": 106.7
+ },
+ {
+  "type": "bollard",
+  "x": 255.0,
+  "z": 667.9,
+  "nombre": "Bollard Kale Nagusia 2",
+  "barrio": "Herriko",
+  "material": "metal",
+  "calle": "Kale Nagusia",
+  "rotacion": 14.5
+ },
+ {
+  "type": "papelera",
+  "x": 782.0,
+  "z": -89.1,
+  "nombre": "Papelera Foruen Plaza",
+  "barrio": "Herriko",
+  "material": "metal",
+  "calle": "Foruen Plaza",
+  "rotacion": 114.0
+ },
+ {
+  "type": "papelera",
+  "x": -85.0,
+  "z": 222.6,
+  "nombre": "Papelera Kale Nagusia Norte",
+  "barrio": "Herriko",
+  "material": "metal",
+  "calle": "Kale Nagusia",
+  "rotacion": 259.2
+ },
+ {
+  "type": "papelera",
+  "x": -1105.0,
+  "z": 334.0,
+  "nombre": "Papelera Intxostia Centro",
+  "barrio": "Intxostia",
+  "material": "metal",
+  "calle": "Intxostia Kalea",
+  "rotacion": 141.2
+ },
+ {
+  "type": "papelera",
+  "x": -3230.0,
+  "z": 1558.5,
+  "nombre": "Papelera Zelai Parque",
+  "barrio": "Zelai",
+  "material": "metal",
+  "calle": "Zelai Kalea",
+  "rotacion": 92.7
+ },
+ {
+  "type": "boca_incendio",
+  "x": 170.0,
+  "z": 222.6,
+  "nombre": "Hidrante Kale Nagusia 1",
+  "barrio": "Herriko",
+  "material": "hierro_rojo",
+  "calle": "Kale Nagusia",
+  "rotacion": 312.4
+ },
+ {
+  "type": "boca_incendio",
+  "x": 425.0,
+  "z": 890.6,
+  "nombre": "Hidrante Kale Nagusia 2",
+  "barrio": "Herriko",
+  "material": "hierro_rojo",
+  "calle": "Kale Nagusia",
+  "rotacion": 2.3
+ },
+ {
+  "type": "boca_incendio",
+  "x": 765.0,
+  "z": -0.0,
+  "nombre": "Hidrante Foruen Plaza",
+  "barrio": "Herriko",
+  "material": "hierro_rojo",
+  "calle": "Foruen Plaza",
+  "rotacion": 342.4
+ },
+ {
+  "type": "boca_incendio",
+  "x": -1020.0,
+  "z": 334.0,
+  "nombre": "Hidrante Intxostia",
+  "barrio": "Intxostia",
+  "material": "hierro_rojo",
+  "calle": "Intxostia Kalea",
+  "rotacion": 69.1
+ },
+ {
+  "type": "boca_incendio",
+  "x": -1360.0,
+  "z": -1113.2,
+  "nombre": "Hidrante Errota",
+  "barrio": "Errota",
+  "material": "hierro_rojo",
+  "calle": "Errota Kalea",
+  "rotacion": 112.5
+ },
+ {
+  "type": "boca_incendio",
+  "x": -2125.0,
+  "z": 1892.4,
+  "nombre": "Hidrante Ferroviario",
+  "barrio": "Ferroviario",
+  "material": "hierro_rojo",
+  "calle": "Ferroviario Kalea",
+  "rotacion": 336.0
+ },
+ {
+  "type": "boca_incendio",
+  "x": -3230.0,
+  "z": 1447.2,
+  "nombre": "Hidrante Zelai",
+  "barrio": "Zelai",
+  "material": "hierro_rojo",
+  "calle": "Zelai Kalea",
+  "rotacion": 264.5
+ },
+ {
+  "type": "boca_incendio",
+  "x": 3825.0,
+  "z": 4452.8,
+  "nombre": "Hidrante Avenida Pamplona",
+  "barrio": "Herriko",
+  "material": "hierro_rojo",
+  "calle": "Avenida Pamplona",
+  "rotacion": 13.2
+ },
+ {
+  "type": "cuadro_electrico",
+  "x": 0.0,
+  "z": 445.3,
+  "nombre": "Cuadro Electrico Kale Nagusia",
+  "barrio": "Herriko",
+  "material": "hormigon",
+  "calle": "Kale Nagusia",
+  "rotacion": 296.7
+ },
+ {
+  "type": "cuadro_electrico",
+  "x": 1020.0,
+  "z": 111.3,
+  "nombre": "Cuadro Electrico Foruen Plaza",
+  "barrio": "Herriko",
+  "material": "hormigon",
+  "calle": "Foruen Plaza",
+  "rotacion": 140.2
+ },
+ {
+  "type": "cuadro_electrico",
+  "x": -1190.0,
+  "z": 222.6,
+  "nombre": "Cuadro Electrico Intxostia",
+  "barrio": "Intxostia",
+  "material": "hormigon",
+  "calle": "Intxostia Kalea",
+  "rotacion": 181.6
+ },
+ {
+  "type": "cuadro_electrico",
+  "x": -1445.0,
+  "z": -1335.8,
+  "nombre": "Cuadro Electrico Errota",
+  "barrio": "Errota",
+  "material": "hormigon",
+  "calle": "Errota Kalea",
+  "rotacion": 2.8
+ },
+ {
+  "type": "cuadro_electrico",
+  "x": -2380.0,
+  "z": 2115.1,
+  "nombre": "Cuadro Electrico Ferroviario",
+  "barrio": "Ferroviario",
+  "material": "hormigon",
+  "calle": "Ferroviario Kalea",
+  "rotacion": 217.3
+ },
+ {
+  "type": "buzon_correos",
+  "x": 935.0,
+  "z": -111.3,
+  "nombre": "Buzon Foruen Plaza",
+  "barrio": "Herriko",
+  "material": "hierro_verde",
+  "calle": "Foruen Plaza",
+  "rotacion": 31.3
+ },
+ {
+  "type": "buzon_correos",
+  "x": -85.0,
+  "z": 1224.5,
+  "nombre": "Buzon Kale Nagusia Sur",
+  "barrio": "Herriko",
+  "material": "hierro_verde",
+  "calle": "Kale Nagusia",
+  "rotacion": 24.1
+ },
+ {
+  "type": "buzon_correos",
+  "x": -935.0,
+  "z": 334.0,
+  "nombre": "Buzon Intxostia Centro",
+  "barrio": "Intxostia",
+  "material": "hierro_verde",
+  "calle": "Intxostia Kalea",
+  "rotacion": 239.5
+ },
+ {
+  "type": "buzon_correos",
+  "x": -3060.0,
+  "z": 1558.5,
+  "nombre": "Buzon Zelai Parque",
+  "barrio": "Zelai",
+  "material": "hierro_verde",
+  "calle": "Zelai Kalea",
+  "rotacion": 179.7
+ },
+ {
+  "type": "rejilla ventilacion",
+  "x": 340.0,
+  "z": 556.6,
+  "nombre": "Rejilla Kale Nagusia",
+  "barrio": "Herriko",
+  "material": "hierro",
+  "calle": "Kale Nagusia",
+  "rotacion": 15.6
+ },
+ {
+  "type": "rejilla ventilacion",
+  "x": 850.0,
+  "z": -0.0,
+  "nombre": "Rejilla Foruen Plaza",
+  "barrio": "Herriko",
+  "material": "hierro",
+  "calle": "Foruen Plaza",
+  "rotacion": 170.3
+ },
+ {
+  "type": "espejo_seguridad",
+  "x": -255.0,
+  "z": 445.3,
+  "nombre": "Espejo Callejón Norte",
+  "barrio": "Herriko",
+  "material": "metal",
+  "calle": "Kale Nagusia",
+  "rotacion": 60.4
+ },
+ {
+  "type": "espejo_seguridad",
+  "x": 510.0,
+  "z": 667.9,
+  "nombre": "Espejo Cruzamiento Sur",
+  "barrio": "Herriko",
+  "material": "metal",
+  "calle": "Kale Nagusia",
+  "rotacion": 8.5
+ },
+ {
+  "type": "espejo_seguridad",
+  "x": -1105.0,
+  "z": 222.6,
+  "nombre": "Espejo Intxostia Esquina",
+  "barrio": "Intxostia",
+  "material": "metal",
+  "calle": "Intxostia Kalea",
+  "rotacion": 308.1
+ },
+ {
+  "type": "tapa_alcantarilla",
+  "x": 85.0,
+  "z": 334.0,
+  "nombre": "Tapa Alcantarilla Kale Nagusia 1",
+  "barrio": "Herriko",
+  "material": "hierro",
+  "calle": "Kale Nagusia",
+  "rotacion": 310.0
+ },
+ {
+  "type": "tapa_alcantarilla",
+  "x": 255.0,
+  "z": 1001.9,
+  "nombre": "Tapa Alcantarilla Kale Nagusia 2",
+  "barrio": "Herriko",
+  "material": "hierro",
+  "calle": "Kale Nagusia",
+  "rotacion": 52.3
+ },
+ {
+  "type": "tapa_alcantarilla",
+  "x": 680.0,
+  "z": 111.3,
+  "nombre": "Tapa Alcantarilla Foruen Plaza",
+  "barrio": "Herriko",
+  "material": "hierro",
+  "calle": "Foruen Plaza",
+  "rotacion": 337.0
+ },
+ {
+  "type": "tapa_alcantarilla",
+  "x": -935.0,
+  "z": 445.3,
+  "nombre": "Tapa Alcantarilla Intxostia",
+  "barrio": "Intxostia",
+  "material": "hierro",
+  "calle": "Intxostia Kalea",
+  "rotacion": 72.4
+ },
+ {
+  "type": "tapa_alcantarilla",
+  "x": -1275.0,
+  "z": -1224.5,
+  "nombre": "Tapa Alcantarilla Errota",
+  "barrio": "Errota",
+  "material": "hierro",
+  "calle": "Errota Kalea",
+  "rotacion": 261.6
+ },
+ {
+  "type": "tapa_alcantarilla",
+  "x": -2210.0,
+  "z": 2003.8,
+  "nombre": "Tapa Alcantarilla Ferroviario",
+  "barrio": "Ferroviario",
+  "material": "hierro",
+  "calle": "Ferroviario Kalea",
+  "rotacion": 52.3
+ },
+ {
+  "type": "maceta",
+  "x": 595.0,
+  "z": -0.0,
+  "nombre": "Maceta Foruen Plaza NE",
+  "barrio": "Herriko",
+  "material": "hormigon",
+  "calle": "Foruen Plaza",
+  "rotacion": 168.9
+ },
+ {
+  "type": "maceta",
+  "x": 595.0,
+  "z": 111.3,
+  "nombre": "Maceta Foruen Plaza SE",
+  "barrio": "Herriko",
+  "material": "hormigon",
+  "calle": "Foruen Plaza",
+  "rotacion": 240.8
+ },
+ {
+  "type": "maceta",
+  "x": 595.0,
+  "z": -111.3,
+  "nombre": "Maceta Foruen Plaza NW",
+  "barrio": "Herriko",
+  "material": "hormigon",
+  "calle": "Foruen Plaza",
+  "rotacion": 145.8
+ },
+ {
+  "type": "maceta",
+  "x": 595.0,
+  "z": -111.3,
+  "nombre": "Maceta Foruen Plaza SW",
+  "barrio": "Herriko",
+  "material": "hormigon",
+  "calle": "Foruen Plaza",
+  "rotacion": 66.4
+ },
+ {
+  "type": "maceta",
+  "x": 255.0,
+  "z": 556.6,
+  "nombre": "Maceta Kale Nagusia Norte",
+  "barrio": "Herriko",
+  "material": "hormigon",
+  "calle": "Kale Nagusia",
+  "rotacion": 162.3
+ },
+ {
+  "type": "maceta",
+  "x": 255.0,
+  "z": 779.2,
+  "nombre": "Maceta Kale Nagusia Sur",
+  "barrio": "Herriko",
+  "material": "hormigon",
+  "calle": "Kale Nagusia",
+  "rotacion": 290.7
+ },
+ {
+  "type": "placa_calle",
+  "x": 425.0,
+  "z": -111.3,
+  "nombre": "Placa Kale Nagusia-Foruen Plaza",
+  "barrio": "Herriko",
+  "material": "piedra",
+  "calle": "Kale Nagusia",
+  "rotacion": 127.9
+ },
+ {
+  "type": "placa_calle",
+  "x": -1105.0,
+  "z": 445.3,
+  "nombre": "Placa Intxostia Kalea",
+  "barrio": "Intxostia",
+  "material": "piedra",
+  "calle": "Intxostia Kalea",
+  "rotacion": 48.4
+ },
+ {
+  "type": "placa_calle",
+  "x": -2975.0,
+  "z": 1335.8,
+  "nombre": "Placa Zelai Kalea",
+  "barrio": "Zelai",
+  "material": "piedra",
+  "calle": "Zelai Kalea",
+  "rotacion": 255.2
+ },
+ {
+  "type": "placa_calle",
+  "x": -1530.0,
+  "z": -1224.5,
+  "nombre": "Placa Errota Kalea",
+  "barrio": "Errota",
+  "material": "piedra",
+  "calle": "Errota Kalea",
+  "rotacion": 65.7
+ },
+ {
+  "type": "placa_calle",
+  "x": -2380.0,
+  "z": 2226.4,
+  "nombre": "Placa Ferroviario Kalea",
+  "barrio": "Ferroviario",
+  "material": "piedra",
+  "calle": "Ferroviario Kalea",
+  "rotacion": 200.9
+ },
+ {
+  "type": "resalto_vial",
+  "x": -85.0,
+  "z": 222.6,
+  "nombre": "Resalto Kale Nagusia Norte",
+  "barrio": "Herriko",
+  "material": "hormigon",
+  "calle": "Kale Nagusia",
+  "rotacion": 115.7
+ },
+ {
+  "type": "resalto_vial",
+  "x": 340.0,
+  "z": 779.2,
+  "nombre": "Resalto Kale Nagusia Sur",
+  "barrio": "Herriko",
+  "material": "hormigon",
+  "calle": "Kale Nagusia",
+  "rotacion": 170.1
+ },
+ {
+  "type": "resalto_vial",
+  "x": -1020.0,
+  "z": 334.0,
+  "nombre": "Resalto Intxostia Centro",
+  "barrio": "Intxostia",
+  "material": "hormigon",
+  "calle": "Intxostia Kalea",
+  "rotacion": 111.9
+ },
+ {
+  "type": "bici_arbol",
+  "x": 850.0,
+  "z": -0.0,
+  "nombre": "Bici-Arbol Foruen Plaza",
+  "barrio": "Herriko",
+  "material": "metal_negro",
+  "calle": "Foruen Plaza",
+  "rotacion": 47.4
+ },
+ {
+  "type": "bici_arbol",
+  "x": 0.0,
+  "z": 1113.2,
+  "nombre": "Bici-Arbol Kale Nagusia",
+  "barrio": "Herriko",
+  "material": "metal_negro",
+  "calle": "Kale Nagusia",
+  "rotacion": 279.5
+ }
+]

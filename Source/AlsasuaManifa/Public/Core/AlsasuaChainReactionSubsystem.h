@@ -30,8 +30,8 @@ class ALSASUAMANIFA_API UAlsasuaChainReactionSubsystem : public UWorldSubsystem,
 
 public:
     virtual void Tick(float DeltaTime) override;
-    virtual bool IsAllowedToTick() const { return true; }
-    virtual TStatId GetStatId() const { return TStatId(); }
+    virtual bool IsAllowedToTick() const override { return true; }
+    virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(AlsasuaChainReactionSubsystem, STATGROUP_AlsasuaCrowd); }
 
     UFUNCTION(BlueprintCallable, Category = "AAA|Chain")
     void EmitChainEvent(FVector Origin, float Radius, float Strength);

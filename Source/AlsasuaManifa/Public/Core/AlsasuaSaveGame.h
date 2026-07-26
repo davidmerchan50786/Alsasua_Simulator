@@ -2,10 +2,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/SaveGame.h"
-#include "Systems/MisionManager.h"
 #include "AlsasuaSaveGame.generated.h"
 
-UCLASS()
+/**
+ * SaveGame wrapper unificado. Esta clase es un adaptador para migración.
+ * La fuente de verdad real es UAlsasuaLegacySaveGame en AlsasuaGameplay.
+ * Esta clase existe para compatibilidad con código existente que use UAlsasuaSaveGame.
+ */
+UCLASS(Deprecated, meta=(DeprecationMessage="Usa UAlsasuaLegacySaveGame directamente"))
 class ALSASUAMANIFA_API UAlsasuaSaveGame : public USaveGame
 {
 	GENERATED_BODY()
@@ -13,25 +17,21 @@ class ALSASUAMANIFA_API UAlsasuaSaveGame : public USaveGame
 public:
 	UAlsasuaSaveGame();
 
-	// --- Datos del Jugador ---
 	UPROPERTY(VisibleAnywhere, Category = "Player")
 	FVector PlayerLocation;
 
 	UPROPERTY(VisibleAnywhere, Category = "Player")
 	FRotator PlayerRotation;
 
-	// --- Datos del Mundo y GAS ---
 	UPROPERTY(VisibleAnywhere, Category = "World State")
 	float SavedPopularSupport;
 
 	UPROPERTY(VisibleAnywhere, Category = "World State")
 	float SavedWantedLevel;
 
-	// --- Estado de Misiones ---
 	UPROPERTY(VisibleAnywhere, Category = "Missions")
 	TArray<FString> CompletedMissionIDs;
 
-	// --- Estado de la Ciudad ---
 	UPROPERTY(VisibleAnywhere, Category = "Climate")
 	float SavedCurrentTime;
 

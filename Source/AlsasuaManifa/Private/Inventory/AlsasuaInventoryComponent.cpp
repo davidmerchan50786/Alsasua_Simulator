@@ -44,9 +44,45 @@ bool UAlsasuaInventoryComponent::RemoveItem(FName ItemID, int32 Amount)
 
 void UAlsasuaInventoryComponent::UseItem(FName ItemID)
 {
-    // Lógica de equipamiento con delay de 0.75s (simulado para BP/GAS)
-    UE_LOG(LogAlsasua, Log, TEXT("Iniciando uso de item: %s... (0.75s equip time)"), *ItemID.ToString());
-    // Se conectaría con un Montage de equipamiento
+    // Find the item in inventory.
+    FAlsasuaItemData* FoundItem = nullptr;
+    for (FAlsasuaItemData& Item : Items)
+    {
+        if (Item.ItemID == ItemID)
+        {
+            FoundItem = &Item;
+            break;
+        }
+    }
+    if (!FoundItem)
+    {
+        UE_LOG(LogAlsasua, Warning, TEXT("UseItem: Item %s no encontrado en inventario."), *ItemID.ToString());
+        return;
+    }
+
+    AActor* Owner = GetOwner();
+    if (!Owner) return;
+
+    // Try to use via IAlsasuaItemUsable interface.
+    if (Owner->GetClass()->ImplementsInterface(UAlsasuaItemUsable::StaticClass()))
+    {
+        bool bSuccess = IAlsasuaItemUsable::Execute_OnUse(Owner, Owner);
+        if (bSuccess)
+        {
+            RemoveItem(ItemID, 1);
+            UE_LOG(LogAlsasua, Log, TEXT("Item %s usado correctamente."), *ItemID.ToString());
+        }
+        else
+        {
+            UE_LOG(LogAlsasua, Warning, TEXT("UseItem: OnUse falló para %s."), *ItemID.ToString());
+        }
+    }
+    else
+    {
+        // No Usable interface — just consume the item.
+        RemoveItem(ItemID, 1);
+        UE_LOG(LogAlsasua, Log, TEXT("Item %s consumido (sin interfaz IAlsasuaItemUsable)."), *ItemID.ToString());
+    }
 }
 
 void UAlsasuaInventoryComponent::RecalculateWeight()

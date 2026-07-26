@@ -82,7 +82,7 @@ float UCargadorEdificios::AlturaSuelo(const FVector2D& XY) const
 	if (!W) return 0.f;
 	FHitResult Hit;
 	FCollisionQueryParams Q(SCENE_QUERY_STAT(AlturaSuelo), true);
-	if (W->LineTraceSingleByChannel(Hit, FVector(XY.X, XY.Y, 500000.f), FVector(XY.X, XY.Y, -500000.f), ECC_Visibility, Q))
+	if (W->LineTraceSingleByChannel(Hit, FVector(XY.X, XY.Y, UAlsasuaGeoData::TraceUp), FVector(XY.X, XY.Y, UAlsasuaGeoData::TraceDown), ECC_Visibility, Q))
 		return Hit.Location.Z;
 	return 0.f;
 }
@@ -148,17 +148,75 @@ void UCargadorEdificios::ConstruirUno(const TSharedPtr<FJsonObject>& O)
 	float EscalaTejado = 1.f;
 	const EFormaTejado Forma = FormaReal(O, EscalaTejado);
 
-	E->Construir(Local, (float)(AlturaM * 100.0),
-		MuroReal(O, E->Id), TejadoReal(O, E->Id), Forma, Eje, EscalaTejado);
+	// Edificios importantes (con nombre, >2 plantas, o >8m) usan fachada detallada.
+	const bool bImportante = !E->NombreEdificio.IsEmpty() || E->Plantas > 2 || AlturaM > 8.0;
+	const FColor ColorTejado = TejadoReal(O, E->Id);
+
+	if (bImportante)
+	{
+		E->bDetalleActivo = true;
+
+		// Configuración adaptativa según tamaño del edificio.
+		FFachadaConfig Cfg;
+		const float LadoGrande = FMath::Max(
+			FVector2D(MundoXY[0] - MundoXY[1]).Size(),
+			FVector2D(MundoXY[1] - MundoXY[2]).Size()) / 100.f;
+
+		// Escalar espaciado de ventanas según tamaño.
+		const float Factor = FMath::Clamp(LadoGrande / 15.f, 0.6f, 2.0f);
+		Cfg.EspaciadoX = 300.f * Factor;
+		Cfg.EspaciadoY = FMath::Max(280.f, 320.f * (E->Plantas > 0 ? 1.f : 0.8f));
+		Cfg.AnchoVentana = FMath::Clamp(120.f * Factor, 80.f, 200.f);
+		Cfg.AltoVentana = FMath::Clamp(160.f * Factor, 100.f, 220.f);
+		Cfg.OffsetPrimerPiso = (E->Plantas > 1) ? 180.f : 120.f;
+		Cfg.ColorMuro = MuroReal(O, E->Id);
+		Cfg.ColorPuerta = FColor(static_cast<uint8>(Cfg.ColorMuro.R * 0.5f), static_cast<uint8>(Cfg.ColorMuro.G * 0.4f), static_cast<uint8>(Cfg.ColorMuro.B * 0.3f), 255);
+		Cfg.bPonerPuerta = (AlturaM < 25.0); // no poner puerta en edificios muy altos
+
+		E->ConstruirConDetalle(Local, (float)(AlturaM * 100.0), Cfg, ColorTejado, Forma, Eje, EscalaTejado);
+	}
+	else
+	{
+		E->Construir(Local, (float)(AlturaM * 100.0),
+			MuroReal(O, E->Id), ColorTejado, Forma, Eje, EscalaTejado);
+	}
 
 	// Sección 0 = muros+suelo (fachada); sección 1 = tejado (ortofoto real si existe).
 	if (E->Malla)
 	{
-		static UMaterialInterface* MatMuro = CargarMaterialEdificio();
-		if (MatMuro) E->Malla->SetMaterial(0, MatMuro);
+		static UMaterialInterface* MatMuro = nullptr;
+		static UMaterialInterface* MatFachada = nullptr;
+		static bool bBuscados = false;
+		if (!bBuscados)
+		{
+			bBuscados = true;
+			MatFachada = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Fachada.M_Fachada"));
+			MatMuro = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Edificio.M_Edificio"));
+			if (!MatMuro) MatMuro = MatFachada;
+		}
+
+		UMaterialInterface* MatUsar = MatFachada ? MatFachada : MatMuro;
+		if (MatUsar) E->Malla->SetMaterial(0, MatUsar);
+
 		static UMaterialInterface* MatTejado = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Tejado_Orto.M_Tejado_Orto"));
 		if (MatTejado) E->Malla->SetMaterial(1, MatTejado);
-		else if (MatMuro) E->Malla->SetMaterial(1, MatMuro);   // respaldo: color de tejado por vértice
+		else if (MatMuro) E->Malla->SetMaterial(1, MatMuro);
+
+		// Barrio-specific material override
+		const FString Barrio = O->HasField(TEXT("barrio")) ? O->GetStringField(TEXT("barrio")) : FString();
+		const FString MatType = O->HasField(TEXT("material_type")) ? O->GetStringField(TEXT("material_type")) : FString();
+
+		if (!Barrio.IsEmpty() && !MatType.IsEmpty())
+		{
+			FString MatPath = FString::Printf(TEXT("/Game/Materiales/M_%s_%s"), *MatType, *Barrio);
+			UMaterialInterface* MatBarrio = LoadObject<UMaterialInterface>(nullptr, *MatPath);
+			if (!MatBarrio)
+			{
+				MatPath = FString::Printf(TEXT("/Game/Materiales/M_%s"), *MatType);
+				MatBarrio = LoadObject<UMaterialInterface>(nullptr, *MatPath);
+			}
+			if (MatBarrio) E->Malla->SetMaterial(0, MatBarrio);
+		}
 	}
 	++Construidos;
 }
@@ -180,7 +238,10 @@ int32 UCargadorEdificios::Cargar()
 	if (bHecho) return 0;
 	bHecho = true;
 	PrepararCarga();
-	while (!PasoPresupuesto(1000.0)) {}   // sin límite práctico
+	int32 IterGuard = 0;
+	const int32 MaxIter = 10000;
+	while (!PasoPresupuesto(1000.0) && ++IterGuard < MaxIter) {}
+	if (IterGuard >= MaxIter) UE_LOG(LogTemp, Warning, TEXT("[Edificios] Iteration guard reached (%d)"), MaxIter);
 	UE_LOG(LogTemp, Log, TEXT("[Edificios] %d edificios construidos"), Construidos);
 	return Construidos;
 }

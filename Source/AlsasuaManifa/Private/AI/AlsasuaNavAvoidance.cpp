@@ -4,12 +4,37 @@
 
 UAlsasuaNavAvoidance::UAlsasuaNavAvoidance()
 {
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 }
 
-void UAlsasuaNavAvoidance::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UAlsasuaNavAvoidance::DetectConflictAgencies(TArray<AActor*>& OutConflicts)
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	AActor* Owner = GetOwner();
+	if (!Owner) return;
+
+	UWorld* W = GetWorld();
+	if (!W) return;
+
+	UAlsasuaSpatialGrid* Grid = W->GetSubsystem<UAlsasuaSpatialGrid>();
+	if (!Grid) return;
+
+	TArray<AActor*> Nearby;
+	Grid->GetNearbyActors(Owner->GetActorLocation(), AgentRadius * 3.f, Nearby);
+
+	for (AActor* Other : Nearby)
+	{
+		if (Other == Owner) continue;
+
+		FVector ToOther = Other->GetActorLocation() - Owner->GetActorLocation();
+		float Distance = ToOther.Size();
+		if (Distance > AgentRadius * 2.f) continue;
+
+		FVector RelativeVelocity = Owner->GetVelocity() - Other->GetVelocity();
+		if (FVector::DotProduct(RelativeVelocity, ToOther) > 0)
+		{
+			OutConflicts.Add(Other);
+		}
+	}
 }
 
 FVector UAlsasuaNavAvoidance::GetSteeringAdjustment(const FVector& DesiredVelocity)
@@ -17,7 +42,10 @@ FVector UAlsasuaNavAvoidance::GetSteeringAdjustment(const FVector& DesiredVeloci
 	AActor* Owner = GetOwner();
 	if (!Owner || DesiredVelocity.IsNearlyZero()) return FVector::ZeroVector;
 
-	UAlsasuaSpatialGrid* Grid = GetWorld()->GetSubsystem<UAlsasuaSpatialGrid>();
+	UWorld* W = GetWorld();
+	if (!W) return FVector::ZeroVector;
+
+	UAlsasuaSpatialGrid* Grid = W->GetSubsystem<UAlsasuaSpatialGrid>();
 	if (!Grid) return FVector::ZeroVector;
 
 	TArray<AActor*> NearbyActors;

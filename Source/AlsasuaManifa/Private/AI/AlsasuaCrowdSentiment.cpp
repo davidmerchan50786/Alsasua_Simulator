@@ -1,8 +1,10 @@
 #include "AI/AlsasuaCrowdSentiment.h"
 #include "Core/AlsasuaSpatialGrid.h"
+#include "Core/AlsasuaProfiling.h"
 
 void UAlsasuaCrowdSentiment::Tick(float DeltaTime)
 {
+	SCOPE_CYCLE_COUNTER(STAT_AlsasuaAI_CrowdSentimentTick);
 	DecayTension(DeltaTime);
 	PropagateTension();
 
@@ -18,10 +20,27 @@ void UAlsasuaCrowdSentiment::Tick(float DeltaTime)
 void UAlsasuaCrowdSentiment::TriggerSocialEvent(FVector Location, float Intensity, float Radius)
 {
 	// Convertimos localización a coordenadas de celda (celdas de 10m)
-	FIntPoint Cell = FIntPoint(FMath::FloorToInt(Location.X / 1000.f), FMath::FloorToInt(Location.Y / 1000.f));
+	const int32 CenterX = FMath::FloorToInt(Location.X / 1000.f);
+	const int32 CenterY = FMath::FloorToInt(Location.Y / 1000.f);
+	const int32 RadiusCells = FMath::Max(1, FMath::CeilToInt(Radius / 1000.f));
 
-	TensionMap.FindOrAdd(Cell) += Intensity;
-	UE_LOG(LogTemp, Log, TEXT("Incidente Social en %s. Tensión Celda: %f"), *Cell.ToString(), TensionMap[Cell]);
+	// Inyectar tensión en todas las celdas dentro del radio
+	const float Falloff = 1.0f / FMath::Max(1.f, static_cast<float>(RadiusCells));
+	for (int32 DX = -RadiusCells; DX <= RadiusCells; ++DX)
+	{
+		for (int32 DY = -RadiusCells; DY <= RadiusCells; ++DY)
+		{
+			if (DX * DX + DY * DY > RadiusCells * RadiusCells) continue;
+
+			FIntPoint Cell(CenterX + DX, CenterY + DY);
+			const float Dist = FMath::Sqrt(static_cast<float>(DX * DX + DY * DY));
+			const float Factor = FMath::Clamp(1.0f - Dist * Falloff, 0.1f, 1.0f);
+			TensionMap.FindOrAdd(Cell) += Intensity * Factor;
+		}
+	}
+	UE_LOG(LogTemp, Log, TEXT("Incidente Social en %s (radio %.0fcm, %d celdas). Tensión max: %.2f"),
+		*Location.ToString(), Radius, (RadiusCells * 2 + 1) * (RadiusCells * 2 + 1),
+		TensionMap.FindOrAdd(FIntPoint(CenterX, CenterY)));
 }
 
 void UAlsasuaCrowdSentiment::DecayTension(float DeltaTime)

@@ -29,4 +29,8 @@ private:
 	UPROPERTY() TArray<TWeakObjectPtr<ANegocioActor>> Negocios;
 	float Acumulado = 0.f;
 	static constexpr float PERIODO = 60.f;
+
+	bool bCooldownActive = false;
+	float CooldownTimer = 0.f;
+	static constexpr float REDADA_COOLDOWN = 120.f;
 };

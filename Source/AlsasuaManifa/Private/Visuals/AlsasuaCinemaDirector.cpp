@@ -3,9 +3,18 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerController.h"
 
+void UAlsasuaCinemaDirector::Initialize(FSubsystemCollectionBase& Collection)
+{
+    Super::Initialize(Collection);
+    CachedMPC = LoadObject<UMaterialParameterCollection>(
+        nullptr, TEXT("/Game/Materials/MPC_AlsasuaGlobal.MPC_AlsasuaGlobal"));
+}
+
 void UAlsasuaCinemaDirector::Tick(float DeltaTime)
 {
-    UAlsasuaCrowdSentiment* Sentiment = GetWorld()->GetSubsystem<UAlsasuaCrowdSentiment>();
+    UWorld* W = GetWorld();
+    if (!W) return;
+    UAlsasuaCrowdSentiment* Sentiment = W->GetSubsystem<UAlsasuaCrowdSentiment>();
     if (!Sentiment) return;
 
     // 1. La sacudida de cámara depende de la tensión global (AAA+++)
@@ -25,7 +34,27 @@ void UAlsasuaCinemaDirector::RegisterVisualInterest(FVector Location, float Impo
 
 void UAlsasuaCinemaDirector::UpdatePostProcessing(float DeltaTime)
 {
-    // Aquí se inyectarían valores al PostProcessVolume global (Aberración cromática, grano)
+    UWorld* W = GetWorld();
+    if (!W) return;
+    UAlsasuaCrowdSentiment* Sentiment = W->GetSubsystem<UAlsasuaCrowdSentiment>();
+    if (!Sentiment) return;
+
+    const float Tension = Sentiment->GlobalTension;
+
+    // Chromatic aberration scales with tension (0→0, 1→2.0).
+    ChromaticAberration = FMath::FInterpTo(ChromaticAberration, Tension * 2.f, DeltaTime, 1.5f);
+
+    // Film grain scales with tension (0→0, 1→1.0).
+    FilmGrain = FMath::FInterpTo(FilmGrain, Tension, DeltaTime, 1.5f);
+
+    // Apply to post-process volume via MaterialParameterCollection.
+    if (!CachedMPC) return;
+
+    UMaterialParameterCollectionInstance* Inst = W->GetParameterCollectionInstance(CachedMPC);
+    if (!Inst) return;
+
+    Inst->SetScalarParameterValue(FName("ChromaticAberration"), ChromaticAberration);
+    Inst->SetScalarParameterValue(FName("FilmGrain"), FilmGrain);
 }
 
 void UAlsasuaCinemaDirector::CalculateCameraFocus(float DeltaTime)

@@ -6,14 +6,15 @@
 FAlsasuaMissionResult UAlsasuaOutcomeSystem::EvaluateManifestation()
 {
     FAlsasuaMissionResult Result;
-    UAlsasuaCrowdSentiment* Sentiment = GetWorld()->GetSubsystem<UAlsasuaCrowdSentiment>();
+    UWorld* World = GetWorld();
+    if (!World) return Result;
 
+    UAlsasuaCrowdSentiment* Sentiment = World->GetSubsystem<UAlsasuaCrowdSentiment>();
     if (!Sentiment) return Result;
 
     float FinalSupport = Sentiment->PopularSupport;
     float FinalTension = Sentiment->GlobalTension;
 
-    // Lógica de éxito AAA+++
     if (FinalSupport > 60.f && FinalTension < 0.8f)
     {
         Result.bSuccess = true;
@@ -39,21 +40,49 @@ FAlsasuaMissionResult UAlsasuaOutcomeSystem::EvaluateManifestation()
 
 void UAlsasuaOutcomeSystem::ProcessFeats(FAlsasuaMissionResult& OutResult)
 {
-    // Aquí se chequearían hitos específicos logrados durante la partida
-    OutResult.AccomplishedFeats.Add("Pancarta Principal Desplegada");
-    OutResult.AccomplishedFeats.Add("Evacuación del Furgón completada");
+    UWorld* World = GetWorld();
+    if (!World) return;
+
+    // Evaluar hitos reales de la partida.
+    UAlsasuaCrowdSentiment* Sentiment = World->GetSubsystem<UAlsasuaCrowdSentiment>();
+    if (Sentiment)
+    {
+        if (Sentiment->PopularSupport > 80.f)
+            OutResult.AccomplishedFeats.Add(TEXT("Apoyo Popular Superior (80%+)"));
+        if (Sentiment->GlobalTension < 0.3f)
+            OutResult.AccomplishedFeats.Add(TEXT("Tensión Controlada (baja violencia)"));
+
+        if (OutResult.bSuccess && Sentiment->PopularSupport > 60.f)
+            OutResult.AccomplishedFeats.Add(TEXT("Mayoría de apoyo popular lograda"));
+    }
+
+    if (OutResult.bSuccess)
+        OutResult.AccomplishedFeats.Add(TEXT("Manifestación completada con éxito"));
 }
 
 void UAlsasuaOutcomeSystem::FinalizeSession()
 {
     FAlsasuaMissionResult FinalData = EvaluateManifestation();
 
-    // Guardado persistente
     UAlsasuaSaveGame* Save = Cast<UAlsasuaSaveGame>(UGameplayStatics::CreateSaveGameObject(UAlsasuaSaveGame::StaticClass()));
     if (Save)
     {
-        // Actualizar estadísticas globales del jugador en el SaveGame
-        // UGameplayStatics::SaveGameToSlot(Save, "AltsasuSlot", 0);
+        UWorld* World = GetWorld();
+        if (World)
+        {
+            APlayerController* PC = UGameplayStatics::GetPlayerController(World, 0);
+            if (PC && PC->GetPawn())
+            {
+                Save->PlayerLocation = PC->GetPawn()->GetActorLocation();
+                Save->PlayerRotation = PC->GetPawn()->GetActorRotation();
+            }
+        }
+
+        Save->CompletedMissionIDs.Add(FinalData.bSuccess ? TEXT("manifestacion_success") : TEXT("manifestacion_fail"));
+        if (!UGameplayStatics::SaveGameToSlot(Save, TEXT("AltsasuSlot"), 0))
+        {
+            UE_LOG(LogTemp, Error, TEXT("OUTCOME: Error al guardar juego en slot AltsasuSlot"));
+        }
     }
 
     UE_LOG(LogTemp, Warning, TEXT("OUTCOME: Sesión Finalizada. Resultado: %s"), *FinalData.FinalVerdict.ToString());

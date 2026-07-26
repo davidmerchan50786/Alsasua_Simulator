@@ -15,7 +15,10 @@ void UAlsasuaPhotoComponent::TakeSocialPhoto()
 
     if (DetectedSubjects.Num() > 0)
     {
-        UAlsasuaCrowdSentiment* Sentiment = GetWorld()->GetSubsystem<UAlsasuaCrowdSentiment>();
+        UWorld* W = GetWorld();
+        if (!W) return;
+
+        UAlsasuaCrowdSentiment* Sentiment = W->GetSubsystem<UAlsasuaCrowdSentiment>();
         if (Sentiment)
         {
             float TotalImpact = 0.f;
@@ -46,7 +49,10 @@ void UAlsasuaPhotoComponent::AnalyzeFrame(TArray<FPhotoSubject>& OutSubjects)
     TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
     ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn));
 
-    UKismetSystemLibrary::SphereOverlapActors(GetWorld(), End, 500.f, ObjectTypes, nullptr, TArray<AActor*>(), OverlappingActors);
+    UWorld* W = GetWorld();
+    if (!W) return;
+
+    UKismetSystemLibrary::SphereOverlapActors(W, End, 500.f, ObjectTypes, nullptr, TArray<AActor*>(), OverlappingActors);
 
     for (AActor* A : OverlappingActors)
     {

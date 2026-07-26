@@ -2,7 +2,6 @@
 #include "AI/AlsasuaCrowdAgentComponent.h"
 #include "AIController.h"
 #include "Navigation/PathFollowingComponent.h"
-#include "DrawDebugHelpers.h"
 
 void UManifaFormationManager::CreateFormation(AActor* Leader, EFormationType Type) {
     if (!Leader) return;
@@ -21,8 +20,8 @@ void UManifaFormationManager::CreateFormation(AActor* Leader, EFormationType Typ
         }
     }
 
+    FormationTypes.Add(Leader, Type);
     ActiveFormations.Add(Leader, Followers);
-    UE_LOG(LogTemp, Warning, TEXT("Formaci�n creada con %d seguidores."), Followers.Num());
 }
 
 TArray<FVector> UManifaFormationManager::CalculateFormationOffsets(EFormationType Type, int32 Count, float Spacing) {
@@ -43,6 +42,12 @@ TArray<FVector> UManifaFormationManager::CalculateFormationOffsets(EFormationTyp
             case EFormationType::Column:
                 Offset = FVector(-(i + 1) * Spacing, 0, 0);
                 break;
+            case EFormationType::Circle:
+                {
+                    float Angle = (Count > 0) ? (2.f * PI * i / Count) : 0.f;
+                    Offset = FVector(FMath::Cos(Angle) * Spacing, FMath::Sin(Angle) * Spacing, 0);
+                }
+                break;
         }
         Offsets.Add(Offset);
     }
@@ -55,7 +60,13 @@ void UManifaFormationManager::UpdateFormations(float DeltaTime) {
         TArray<AActor*>& Followers = Elem.Value;
         if (!Leader) continue;
 
-        TArray<FVector> Offsets = CalculateFormationOffsets(EFormationType::Wedge, Followers.Num(), 150.f);
+        EFormationType Type = EFormationType::Wedge;
+        if (EFormationType* FoundType = FormationTypes.Find(Leader))
+        {
+            Type = *FoundType;
+        }
+
+        TArray<FVector> Offsets = CalculateFormationOffsets(Type, Followers.Num(), 150.f);
         FVector LeaderForward = Leader->GetActorForwardVector();
         FVector LeaderRight = Leader->GetActorRightVector();
         FVector LeaderLoc = Leader->GetActorLocation();
@@ -64,8 +75,6 @@ void UManifaFormationManager::UpdateFormations(float DeltaTime) {
             if (!Followers[i]) continue;
 
             FVector TargetLoc = LeaderLoc + (LeaderForward * Offsets[i].X) + (LeaderRight * Offsets[i].Y);
-
-            DrawDebugSphere(GetWorld(), TargetLoc, 50.f, 8, FColor::Green, false, 0.1f);
 
             if (APawn* Pawn = Cast<APawn>(Followers[i])) {
                 if (AAIController* AIC = Cast<AAIController>(Pawn->GetController())) {

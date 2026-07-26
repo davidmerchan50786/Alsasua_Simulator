@@ -13,7 +13,7 @@
 #include "Materials/MaterialInterface.h"
 
 // Material vertex-color compartido por todas las superficies de suelo teñidas.
-static UMaterialInterface* CargarMaterialSuelo()
+static UMaterialInterface* CargarMaterialSueloCalles()
 {
 	return LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Edificio.M_Edificio"));
 }
@@ -74,7 +74,7 @@ void UCargadorCalles::ConstruirUna(const TSharedPtr<FJsonObject>& O)
 	else
 		C->ColorBase = FColor(42, 42, 46, 255);
 	C->Construir(XY, (float)(AnchoM * 100.0));
-	if (C->Malla) { static UMaterialInterface* Mat = CargarMaterialSuelo(); if (Mat) C->Malla->SetMaterial(0, Mat); }
+	if (C->Malla) { static UMaterialInterface* Mat = CargarMaterialSueloCalles(); if (Mat) C->Malla->SetMaterial(0, Mat); }
 	FEjeVial Eje; Eje.Puntos = XY; Eje.AnchoCm = (float)(AnchoM * 100.0);
 	EjesViarios.Add(MoveTemp(Eje));   // eje + ancho disponible para el tráfico
 	++Construidas;
@@ -97,7 +97,10 @@ int32 UCargadorCalles::Cargar()
 	if (bHecho) return 0;
 	bHecho = true;
 	PrepararCarga();
-	while (!PasoPresupuesto(1000.0)) {}
+	int32 IterGuard = 0;
+	const int32 MaxIter = 10000;
+	while (!PasoPresupuesto(1000.0) && ++IterGuard < MaxIter) {}
+	if (IterGuard >= MaxIter) UE_LOG(LogTemp, Warning, TEXT("[Calles] Iteration guard reached (%d)"), MaxIter);
 	UE_LOG(LogTemp, Log, TEXT("[Calles] %d calles construidas"), Construidas);
 	return Construidas;
 }

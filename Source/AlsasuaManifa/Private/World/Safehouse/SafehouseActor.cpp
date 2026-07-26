@@ -21,12 +21,10 @@ void ASafehouseActor::EnterSafehouse(AActor* PlayerActor)
 {
     if (!bIsUnlocked) return;
 
-    // Al entrar a una casa segura, el nivel de sospecha baja drásticamente
     if (UWorld* W = GetWorld())
     {
         if (UFactionSubsystem* FS = W->GetSubsystem<UFactionSubsystem>())
         {
-            // Reset de sospecha de El Centro sobre el jugador
             FFactionData Data = FS->GetFactionData(FName("ElCentro"));
             Data.Suspicion = FMath::Max(0.f, Data.Suspicion - 50.f);
             FS->RegisterFaction(Data);
@@ -38,9 +36,24 @@ void ASafehouseActor::EnterSafehouse(AActor* PlayerActor)
 
 void ASafehouseActor::ChangeDisguise(AActor* PlayerActor, FName NewOutfitId)
 {
-    // Lógica para cambiar el Mesh o Tags del personaje para confundir a la IA
-    // Esto podría llamar a una función en AAlsasuaCharacter
-    UE_LOG(LogTemp, Log, TEXT("Cambiando apariencia a: %s"), *NewOutfitId.ToString());
+    if (!PlayerActor || !bIsUnlocked) return;
+
+    UDisguiseComponent* Disguise = PlayerActor->FindComponentByClass<UDisguiseComponent>();
+    if (!Disguise)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ChangeDisguise: Jugador no tiene UDisguiseComponent."));
+        return;
+    }
+
+    const EDisguiseType NewType = ParseOutfitName(NewOutfitId);
+    if (NewType == EDisguiseType::None)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ChangeDisguise: Outfit desconocido: %s"), *NewOutfitId.ToString());
+        return;
+    }
+
+    Disguise->EquipDisguise(NewType, false);
+    UE_LOG(LogTemp, Log, TEXT("Disfraz cambiado a: %s"), *NewOutfitId.ToString());
 }
 
 void ASafehouseActor::DepositEvidence()
@@ -50,8 +63,36 @@ void ASafehouseActor::DepositEvidence()
         if (UEvidenceSubsystem* ES = W->GetSubsystem<UEvidenceSubsystem>())
         {
             int32 Count = ES->CollectedEvidence.Num();
-            // Aquí se podría implementar una mecánica de guardado persistente de las pruebas
-            UE_LOG(LogTemp, Warning, TEXT("Depositadas %d pruebas en la caja fuerte."), Count);
+            if (Count > 0)
+            {
+                EvidenceDeposited.Add(Count);
+                ES->CollectedEvidence.Empty();
+                UE_LOG(LogTemp, Warning, TEXT("Depositadas %d pruebas en la caja fuerte. Evidencia asegurada."), Count);
+            }
+            else
+            {
+                UE_LOG(LogTemp, Log, TEXT("No hay evidencia para depositar."));
+            }
         }
     }
+}
+
+EDisguiseType ASafehouseActor::ParseOutfitName(FName OutfitId)
+{
+    const FString Name = OutfitId.ToString().ToLower();
+
+    if (Name.Contains(TEXT("momo")) || Name.Contains(TEXT("tradicional")) || Name.Contains(TEXT("sakoa")))
+    {
+        return EDisguiseType::Momotxorro;
+    }
+    if (Name.Contains(TEXT("casual")) || Name.Contains(TEXT("infiltrador")) || Name.Contains(TEXT("ropa")))
+    {
+        return EDisguiseType::Casual_Infiltrator;
+    }
+    if (Name.Contains(TEXT("press")) || Name.Contains(TEXT("prensa")) || Name.Contains(TEXT("periodista")))
+    {
+        return EDisguiseType::Press_Press;
+    }
+
+    return EDisguiseType::None;
 }

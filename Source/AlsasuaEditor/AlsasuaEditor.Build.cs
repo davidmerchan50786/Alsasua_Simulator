@@ -8,6 +8,9 @@ public class AlsasuaEditor : ModuleRules
         PublicDependencyModuleNames.AddRange(new string[] {
             "Core", "CoreUObject", "Engine",
             "UnrealEd", "Blutility", "MaterialEditor", "EditorScriptingUtilities", "Landscape",
+            "MeshDescription", "StaticMeshDescription", "MeshConversion",
+            "ProceduralMeshComponent", "Foliage",
+            "Json", "JsonUtilities",
             "AlsasuaCore", "AlsasuaWorld"
         });
     }

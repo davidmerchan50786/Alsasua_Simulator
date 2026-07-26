@@ -33,7 +33,22 @@ public:
     UFUNCTION(BlueprintCallable, Category="Alsasua|Factions")
     FFactionData GetFactionData(FName Id) const;
 
+    // ── Reputation System ──────────────────────────────────────────────
+    UFUNCTION(BlueprintCallable, Category="Alsasua|Factions|Reputation")
+    float GetReputation(FName FactionId) const;
+
+    UFUNCTION(BlueprintCallable, Category="Alsasua|Factions|Reputation")
+    void ModifyReputation(FName FactionId, float Delta);
+
+    UFUNCTION(BlueprintCallable, Category="Alsasua|Factions|Reputation")
+    bool AreAllied(FName FactionA, FName FactionB) const;
+
 private:
+    bool CargarDesdeJSON();
+
     UPROPERTY()
     TMap<FName, FFactionData> Factions;
+
+    UPROPERTY()
+    TMap<FName, float> FactionReputation;
 };

@@ -16,9 +16,10 @@ void UViralPushAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
         return;
     }
 
-    if (USocialMediaSubsystem* SMS = GetWorld()->GetSubsystem<USocialMediaSubsystem>()) {
-        SMS->ViralMultiplier += 0.5f;
-        UE_LOG(LogTemp, Warning, TEXT("¡Habilidad ViralPush activada! Multiplicador de red aumentado."));
+    UWorld* W = GetWorld();
+    if (USocialMediaSubsystem* SMS = W ? W->GetSubsystem<USocialMediaSubsystem>() : nullptr) {
+        SMS->ViralMultiplier = FMath::Min(SMS->ViralMultiplier + 0.5f, 5.0f);
+        UE_LOG(LogTemp, Warning, TEXT("¡Habilidad ViralPush activada! Multiplicador de red: %.1f"), SMS->ViralMultiplier);
     }
     EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 }

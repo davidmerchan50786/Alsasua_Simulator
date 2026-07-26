@@ -1,0 +1,372 @@
+{
+    "_comment": "Mapa de assets importados para uso en Alsasua - COPIA 1:1",
+    "_fuente": "J:\\assets y J:\\3D_Assets",
+    "_fecha": "2026-07-25",
+    
+    "farolas": {
+        "asset": "Street Lamps 2.unitypackage",
+        "ubicacion": "AssetsImportados/Farolas/",
+        "uso": "Farolas reales de Alsasua (street_furniture.json)",
+        "tipos": {
+            "farola_tradicional": "Lámpara clásica con brazo curvado",
+            "farola_moderna": "Poste vertical con LED",
+            "farola_plaza": "Farola ornamental para plazas"
+        },
+        "material": "Metal pintado negro o verde oscuro",
+        "altura_m": 3.5
+    },
+    
+    "casas": {
+        "village_houses_pack": {
+            "asset": "VILLAGE HOUSES PACK.unitypackage",
+            "ubicacion": "AssetsImportados/Casas/",
+            "uso": "Casas del casco viejo (Herriko Aldea)",
+            "barrios": ["Herriko", "Harrobieta"],
+            "material_fachada": "piedra_caliza",
+            "colores_fachada": [[0.72, 0.70, 0.65], [0.68, 0.65, 0.60]],
+            "tejado": "teja_terracota"
+        },
+        "house_pack": {
+            "asset": "House Pack.unitypackage",
+            "ubicacion": "AssetsImportados/Casas/",
+            "uso": "Viviendas residenciales (Zelai, Intxostia)",
+            "barrios": ["Zelai", "Intxostia"],
+            "material_fachada": "hormigon_pintado",
+            "colores_fachada": [[0.80, 0.78, 0.75], [0.75, 0.73, 0.70]],
+            "tejado": "gris_plano"
+        },
+        "hq_building": {
+            "asset": "hq_building.gltf_.zip",
+            "ubicacion": "AssetsImportados/Casas/",
+            "uso": "Edificios importantes (Ayuntamiento, iglesia, etc.)",
+            "barrios": ["Herriko"],
+            "edificios_especiales": [
+                "Ayuntamiento (arkupe 3 ojos)",
+                "Iglesia de la Asunción (s. XVI)",
+                "Centro Cultural IORTIA"
+            ]
+        }
+    },
+    
+    "arboles_reales": {
+        "_comment": "Árboles reales de Alsasua - datos de trees_unity.json (2783 árboles)",
+        "especies": {
+            "aliso_negro": {
+                "asset": "01_Aliso_Negro_HALTZA.zip",
+                "nombre_cientifico": "Alnus glutinosa",
+                "nombre_eu": "Haltza (EL ÁRBOL QUE DA NOMBRE A ALSASUA)",
+                "descripcion": "Árbol emblemático de Alsasua. Nombre: Haltza + su = Alsasua",
+                "distribucion": "Junto al río Arakil, zonas húmedas",
+                "altura_media": 15,
+                "follaje": "Verde oscuro, caducifolio"
+            },
+            "haya_europea": {
+                "asset": "02_Haya_Europea.zip",
+                "nombre_cientifico": "Fagus sylvatica",
+                "nombre_eu": "Hadia",
+                "descripcion": "Bosque de Sierra Urbasa (norte de Alsasua)",
+                "distribucion": "Sierra Urbasa, laderas norte",
+                "altura_media": 25,
+                "follaje": "Verde brillante, caducifolio"
+            },
+            "abedul": {
+                "asset": "03_Abedul.zip",
+                "nombre_cientifico": "Betula pendula",
+                "nombre_eu": "Urki",
+                "descripcion": "Bosques de ribera junto al río",
+                "distribucion": "Orillas del Arakil",
+                "altura_media": 18,
+                "follaje": "Verde claro, caducifolio"
+            },
+            "sauce": {
+                "asset": "04_Sauce.zip",
+                "nombre_cientifico": "Salix alba",
+                "nombre_eu": "Sahats",
+                "descripcion": "Junto al río Arakil",
+                "distribucion": "Ribera del río",
+                "altura_media": 12,
+                "follaje": "Verde claro, caducifolio"
+            },
+            "pino_carrasco": {
+                "asset": "05_Pino_Carrasco.zip",
+                "nombre_cientifico": "Pinus halepensis",
+                "nombre_eu": "Pinu horizin",
+                "descripcion": "Sierra de Andía (sur de Alsasua)",
+                "distribucion": "Sierra de Andía",
+                "altura_media": 12,
+                "follaje": "Perenne, verde oscuro"
+            },
+            "pino_baltico": {
+                "asset": "06_Pino_Baltico.zip",
+                "nombre_cientifico": "Pinus sylvestris",
+                "nombre_eu": "Pinu larrein",
+                "descripcion": "Bosques mixtos de montaña",
+                "distribucion": "Sierras de Urbasa y Andía",
+                "altura_media": 20,
+                "follaje": "Perenne, verde azulado"
+            },
+            "alamo_temblon": {
+                "asset": "07_Alamo_Temblon.zip",
+                "nombre_cientifico": "Populus tremula",
+                "nombre_eu": "Laranondo",
+                "descripcion": "Zonas húmedas y ribera",
+                "distribucion": "Junto al río Arakil",
+                "altura_media": 20,
+                "follaje": "Verde claro, caducifolio"
+            },
+            "roble": {
+                "asset": "11_Roble.zip",
+                "nombre_cientifico": "Quercus robur",
+                "nombre_eu": "Haritz",
+                "descripcion": "Bosques mixtos, campa de San Pedro",
+                "distribucion": "Campa de San Pedro, sierras",
+                "altura_media": 22,
+                "follaje": "Verde oscuro, caducifolio"
+            },
+            "pino_general": {
+                "asset": "12_Pino.zip",
+                "nombre_cientifico": "Pinus",
+                "nombre_eu": "Pinu",
+                "descripcion": "Pino general para zonas de montaña",
+                "distribucion": "Sierras",
+                "altura_media": 15,
+                "follaje": "Perenne"
+            }
+        },
+        "distribucion_por_zona": {
+            "ribo_arakil": ["aliso_negro", "sauce", "abedul", "alamo_temblon"],
+            "sierra_urbasa_norte": ["haya_europea", "roble", "pino_baltico"],
+            "sierra_andia_sur": ["pino_carrasco", "pino_baltico", "roble"],
+            "campa_san_pedro": ["roble", "haya_europea"],
+            "casco_urbano": ["roble", "pino_general"]
+        }
+    },
+    
+    "pavimentos": {
+        "asfalto": {
+            "asset": "asphalt_02_4k.blend.zip",
+            "ubicacion": "AssetsImportados/Pavimentos/",
+            "uso": "Avenidas principales: Pamplona, Félix Arano, Vitoria",
+            "calles": ["Avenida Pamplona", "Avenida Félix Arano", "Avenida Vitoria"],
+            "color": [0.15, 0.15, 0.15],
+            "roughness": 0.9
+        },
+        "asfalto_guijarros": {
+            "asset": "pebbled-asphalt1-unity.zip",
+            "ubicacion": "AssetsImportados/Pavimentos/",
+            "uso": "Calles residenciales: Zelai, Aralar, Urbasa",
+            "calles": ["Calle Zelai", "Calle Aralar", "Calle Urbasa"],
+            "color": [0.20, 0.18, 0.16],
+            "roughness": 0.85
+        },
+        "empedrado": {
+            "asset": "t_ground_cobblestone_3.png",
+            "ubicacion": "AssetsImportados/Pavimentos/",
+            "uso": "Casco viejo: Foruen Plaza, Calle Mayor",
+            "calles": ["Foruen Plaza", "Calle Mayor", "Calle San Juan", "Calle Navarra"],
+            "color": [0.45, 0.40, 0.35],
+            "roughness": 0.8
+        }
+    },
+    
+    "muros": {
+        "piedra_caliza": {
+            "asset": "wall_cobblestone_1024px.png",
+            "ubicacion": "AssetsImportados/Muros/",
+            "uso": "Casco viejo (Herriko), ermitas",
+            "barrios": ["Herriko", "Harrobieta"],
+            "color": [0.72, 0.70, 0.65],
+            "roughness": 0.85
+        },
+        "ladrillo": {
+            "asset": "wall_bricks_old_1024.png",
+            "ubicacion": "AssetsImportados/Muros/",
+            "uso": "Zona industrial, Errota",
+            "barrios": ["Errota", "Ferroviario"],
+            "color": [0.55, 0.40, 0.30],
+            "roughness": 0.9
+        },
+        "ladrillo_visto": {
+            "asset": "brick7.png",
+            "ubicacion": "AssetsImportados/Muros/",
+            "uso": "Fachadas decorativas",
+            "barrios": ["SanPedro"],
+            "color": [0.65, 0.45, 0.35],
+            "roughness": 0.85
+        }
+    },
+    
+    "naturaleza": {
+        "hierba": {
+            "assets": ["grass_02.7z", "grass_07.7z", "multi stylized grass.7z", "tiny weeds 2.7z"],
+            "ubicacion": "AssetsImportados/Naturaleza/",
+            "uso": "Suelo hierba en parques, jardines, sierras",
+            "densidad": {
+                "parques": 0.8,
+                "calle": 0.3,
+                "sierra": 0.6
+            }
+        },
+        "setos": {
+            "asset": "Free Hedges.7z",
+            "ubicacion": "AssetsImportados/Naturaleza/",
+            "uso": "Setos en jardines, separadores de calles"
+        },
+        "arbustos": {
+            "asset": "Yughues Free Bushes.unitypackage",
+            "ubicacion": "AssetsImportados/Naturaleza/",
+            "uso": "Arbustos en parques y jardines"
+        },
+        "plantas": {
+            "asset": "plant-pack.zip",
+            "ubicacion": "AssetsImportados/Naturaleza/",
+            "uso": "Plantas decorativas, macetas en fachadas"
+        },
+        "rocas": {
+            "asset": "rocks.7z",
+            "ubicacion": "AssetsImportados/Naturaleza/",
+            "uso": "Piedras en ribera del río, jardines"
+        },
+        "nature_essentials": {
+            "asset": "Nature - Essentials.unitypackage",
+            "ubicacion": "AssetsImportados/Naturaleza/",
+            "uso": "Asset pack completo de naturaleza"
+        },
+        "nature_starter": {
+            "asset": "Nature Starter Kit 2.unitypackage",
+            "ubicacion": "AssetsImportados/Naturaleza/",
+            "uso": "Pack de inicio de naturaleza"
+        },
+        "forest_pack": {
+            "asset": "Free Low Poly Nature Forest.unitypackage",
+            "ubicacion": "AssetsImportados/Naturaleza/",
+            "uso": "Bosques de baja poligonización"
+        }
+    },
+    
+    "vallas": {
+        "realistic_fences": {
+            "asset": "Realistic Fences Pack.unitypackage",
+            "ubicacion": "AssetsImportados/Muros/",
+            "uso": "Vallas de jardín, separadores"
+        },
+        "modular_fence": {
+            "asset": "Modular self-stand fence.unitypackage",
+            "ubicacion": "AssetsImportados/Muros/",
+            "uso": "Vallas modulares para zonas industriales"
+        },
+        "barriers": {
+            "asset": "Metal and Concrete Barriers.unitypackage",
+            "ubicacion": "AssetsImportados/Muros/",
+            "uso": "Barreras de tráfico, obras"
+        }
+    },
+    
+    "cielo": {
+        "stars": {
+            "asset": "Real Stars Skybox Lite.unitypackage",
+            "ubicacion": "AssetsImportados/Naturaleza/",
+            "uso": "Cielo nocturno realista"
+        },
+        "dynamic_sky": {
+            "asset": "Fast Dynamic Sky.unitypackage",
+            "ubicacion": "AssetsImportados/Naturaleza/",
+            "uso": "Cielo dinámico día/noche"
+        },
+        "clouds": {
+            "asset": "VolClouds.unitypackage",
+            "ubicacion": "AssetsImportados/Naturaleza/",
+            "uso": "Nubes volumétricas"
+        }
+    },
+    
+    "sonido": {
+        "ambiente": {
+            "asset": "Free General Ambience Sounds.unitypackage",
+            "ubicacion": "AssetsImportados/Sonido/",
+            "uso": "Sonidos ambiente de calle, pájaros, viento"
+        },
+        "naturaleza": {
+            "asset": "Nature Sounds Pack - Free.unitypackage",
+            "ubicacion": "AssetsImportados/Sonido/",
+            "uso": "Sonidos de naturaleza: río Arakil, viento, pájaros"
+        },
+        "agua": {
+            "asset": "Free Water Stream Sounds.unitypackage",
+            "ubicacion": "AssetsImportados/Sonido/",
+            "uso": "Sonido del río Arakil"
+        },
+        "efectos": {
+            "asset": "Free Sound Effects Pack.unitypackage",
+            "ubicacion": "AssetsImportados/Sonido/",
+            "uso": "Efectos de sonido generales"
+        }
+    },
+    
+    "mapa_por_barrio": {
+        "Herriko": {
+            "muros": "piedra_caliza",
+            "pavimento": "empedrado",
+            "arboles": ["roble", "haya_europea"],
+            "farolas": "farola_tradicional",
+            "casas": "village_houses_pack",
+            "altura_media": 12
+        },
+        "Zelai": {
+            "muros": "piedra_caliza",
+            "pavimento": "asfalto_guijarros",
+            "arboles": ["roble", "pino_general"],
+            "farolas": "farola_moderna",
+            "casas": "house_pack",
+            "altura_media": 8
+        },
+        "Intxostia": {
+            "muros": "piedra_caliza",
+            "pavimento": "asfalto",
+            "arboles": ["roble", "pino_general"],
+            "farolas": "farola_moderna",
+            "casas": "house_pack",
+            "altura_media": 15
+        },
+        "Errota": {
+            "muros": "ladrillo",
+            "pavimento": "asfalto",
+            "arboles": ["aliso_negro", "sauce"],
+            "farolas": "farola_moderna",
+            "casas": "house_pack",
+            "altura_media": 6
+        },
+        "SanPedro": {
+            "muros": "ladrillo_visto",
+            "pavimento": "asfalto",
+            "arboles": ["roble", "pino_general"],
+            "farolas": "farola_moderna",
+            "casas": "house_pack",
+            "altura_media": 10
+        },
+        "Harrobieta": {
+            "muros": "piedra_caliza",
+            "pavimento": "empedrado",
+            "arboles": ["roble", "haya_europea"],
+            "farolas": "farola_tradicional",
+            "casas": "village_houses_pack",
+            "altura_media": 9
+        },
+        "Ferroviario": {
+            "muros": "ladrillo",
+            "pavimento": "asfalto",
+            "arboles": [],
+            "farolas": "farola_moderna",
+            "casas": "house_pack",
+            "altura_media": 5
+        },
+        "Monte": {
+            "muros": "piedra_caliza",
+            "pavimento": "tierra",
+            "arboles": ["pino_carrasco", "pino_baltico", "roble"],
+            "farolas": [],
+            "casas": "village_houses_pack",
+            "altura_media": 4
+        }
+    }
+}

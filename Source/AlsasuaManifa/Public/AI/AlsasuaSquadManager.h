@@ -20,7 +20,7 @@ class ALSASUAMANIFA_API UAlsasuaSquadManager : public UWorldSubsystem
     GENERATED_BODY()
 
 public:
-    virtual void Tick(float DeltaTime);
+    virtual void Tick(float DeltaTime) override;
 
     // Registra una unidad en el sistema táctico
     void RegisterUnit(AAlsasuaAIController* Unit);
@@ -33,7 +33,10 @@ public:
 private:
     TArray<TWeakObjectPtr<AAlsasuaAIController>> ActiveUnits;
     ESquadTactic CurrentTactic = ESquadTactic::Patrol;
+    float TacticTimer = 0.f;
 
     void ExecuteEncircleTactic();
     void ExecuteContainTactic();
+    void ExecutePatrolTactic();
+    void ExecuteSupportTactic();
 };

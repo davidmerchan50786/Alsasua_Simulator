@@ -4,7 +4,7 @@
 #include "GameFramework/HUD.h"
 #include "AlsasuaMainHUD.generated.h"
 
-/** HUD AAA que centraliza la visualización de la tensión y apoyo social */
+/** HUD AAA que centraliza la visualización de la tensión, apoyo social, multitud y disfraz */
 UCLASS()
 class ALSASUAMANIFA_API AAlsasuaMainHUD : public AHUD
 {
@@ -22,7 +22,17 @@ public:
     UPROPERTY(EditAnywhere, Category = "AAA|Style")
     FColor SupportBlue = FColor(30, 150, 250);
 
+    UPROPERTY(EditAnywhere, Category = "AAA|Style")
+    FColor DurabilityGreen = FColor(30, 200, 80);
+
+    UPROPERTY(EditAnywhere, Category = "AAA|Style")
+    FColor DurabilityYellow = FColor(220, 200, 40);
+
+    UPROPERTY(EditAnywhere, Category = "AAA|Style")
+    FColor DurabilityRed = FColor(220, 40, 40);
+
 private:
     void DrawSocialBars();
     void DrawCrowdTelemetry();
+    void DrawDisguiseBar();
 };

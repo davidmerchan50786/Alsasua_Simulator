@@ -27,4 +27,11 @@ public:
 
     static constexpr double OX = 1918.0;
     static constexpr double OZ = 8570.0;
+
+    // Altura de Herriko Plaza sobre el nivel del mar (cm).
+    static constexpr float CotaPlazaCm = 53194.0f;
+
+    // Límites para raycasts de suelo (trace vertical desde/to).
+    static constexpr float TraceUp = 500000.0f;
+    static constexpr float TraceDown = -500000.0f;
 };

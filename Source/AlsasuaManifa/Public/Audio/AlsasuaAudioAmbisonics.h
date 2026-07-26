@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Sound/SoundAttenuation.h"
 #include "AlsasuaAudioAmbisonics.generated.h"
 
 /** Gestiona el paisaje sonoro envolvente de la manifestación */
@@ -24,6 +25,15 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AAA|Audio")
     float CrowdHumIntensity = 0.5f;
 
+    // Mapa de IDs de cántico a assets de sonido
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AAA|Audio")
+    TMap<FString, class USoundBase*> ChantSounds;
+
+    // Atenuación por defecto para los cánticos
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AAA|Audio")
+    class USoundAttenuation* ChantAttenuation;
+
 private:
     void HandleAcousticOcclusion(float DeltaTime);
+    float OcclusionFactor = 1.0f;
 };

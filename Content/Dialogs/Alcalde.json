@@ -1,0 +1,74 @@
+{
+    "StartNodeID": 0,
+    "Nodes": [
+        {
+            "ID": 0,
+            "Type": "NPC_Statement",
+            "DialogueText": "Bienvenido al ayuntamiento. Soy el Alcalde. ¿Qué quieres?",
+            "Options": [
+                {
+                    "OptionText": "Vengo a hablar de la resistencia.",
+                    "TargetNodeID": 1,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                },
+                {
+                    "OptionText": "[PERSUASIÓN] La gente confía en ti. Ayúdanos.",
+                    "TargetNodeID": 2,
+                    "bRequiresSkillCheck": true,
+                    "DifficultyClass": 14
+                },
+                {
+                    "OptionText": "[INTIMIDACIÓN] Sabemos lo que has hecho.",
+                    "TargetNodeID": 3,
+                    "bRequiresSkillCheck": true,
+                    "DifficultyClass": 16
+                }
+            ]
+        },
+        {
+            "ID": 1,
+            "Type": "NPC_Statement",
+            "DialogueText": "La resistencia... No sé de qué hablas. No me meto en política.",
+            "Options": [
+                {
+                    "OptionText": "Volver",
+                    "TargetNodeID": 0,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                }
+            ]
+        },
+        {
+            "ID": 2,
+            "Type": "Action_Trigger",
+            "DialogueText": "Mmm... tiene sentido. La gente está harta. Quizás debería escuchar lo que tenéis que decir. Te doy acceso a los archivos del ayuntamiento.",
+            "Options": [
+                {
+                    "OptionText": "Gracias, Alcalde.",
+                    "TargetNodeID": 4,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                }
+            ]
+        },
+        {
+            "ID": 3,
+            "Type": "NPC_Statement",
+            "DialogueText": "¡¿Qué?! No sé de qué me hablas. ¡Sal de mi despacho!",
+            "Options": [
+                {
+                    "OptionText": "Adiós.",
+                    "TargetNodeID": 4,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                }
+            ]
+        },
+        {
+            "ID": 4,
+            "Type": "End_Conversation",
+            "DialogueText": "La conversación ha terminado."
+        }
+    ]
+}

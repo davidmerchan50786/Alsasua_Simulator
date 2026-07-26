@@ -14,7 +14,8 @@ void UEvidenceSubsystem::PublishToPress(FName EvidenceId)
         if (CollectedEvidence[i].EvidenceId == EvidenceId)
         {
             // Aplicar impacto al mundo mediante el FactionSubsystem
-            if (UFactionSubsystem* FS = GetWorld()->GetSubsystem<UFactionSubsystem>())
+            UWorld* W = GetWorld();
+            if (UFactionSubsystem* FS = W ? W->GetSubsystem<UFactionSubsystem>() : nullptr)
             {
                 // Publicar evidencia debilita la influencia de "El Centro" (Estado)
                 FS->PublishEvidence(FName("ElCentro"), CollectedEvidence[i].ImpactPower);

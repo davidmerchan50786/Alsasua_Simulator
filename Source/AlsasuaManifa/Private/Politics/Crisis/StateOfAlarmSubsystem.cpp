@@ -29,6 +29,6 @@ void UStateOfAlarmSubsystem::UpdateState(float StateInfluence, float ProtestInte
     {
         CurrentLevel = NewLevel;
         OnAlarmLevelChanged.Broadcast(CurrentLevel);
-        UE_LOG(LogTemp, Error, TEXT("EL ESTADO HA CAMBIADO EL NIVEL DE ALARMA A: %d"), (int32)CurrentLevel);
+        UE_LOG(LogTemp, Warning, TEXT("EL ESTADO HA CAMBIADO EL NIVEL DE ALARMA A: %d"), (int32)CurrentLevel);
     }
 }

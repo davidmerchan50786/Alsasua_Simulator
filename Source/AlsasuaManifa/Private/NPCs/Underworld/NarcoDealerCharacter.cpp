@@ -30,15 +30,18 @@ void ANarcoDealerCharacter::ExposeDealer() {
     ImmunityLevel = 0.f;
 
     // Impacto social: El pueblo ve la corrupción de las cloacas
-    if (USocialMediaSubsystem* Social = GetWorld()->GetSubsystem<USocialMediaSubsystem>()) {
-        Social->AddFollowers(2500);
-    }
+    UWorld* W = GetWorld();
+    if (W) {
+        if (USocialMediaSubsystem* Social = W->GetSubsystem<USocialMediaSubsystem>()) {
+            Social->AddFollowers(2500);
+        }
 
-    if (URadioSubsystem* Radio = GetWorld()->GetSubsystem<URadioSubsystem>()) {
-        Radio->TriggerUrgentNews(
-            FText::FromString("¡ESCÁNDALO! Se filtra red de informantes protegidos por el Estado."),
-            FText::FromString("ISLADA! Estatuak babestutako informatzaile sarea filtratu da."),
-            nullptr
-        );
+        if (URadioSubsystem* Radio = W->GetSubsystem<URadioSubsystem>()) {
+            Radio->TriggerUrgentNews(
+                FText::FromString("¡ESCÁNDALO! Se filtra red de informantes protegidos por el Estado."),
+                FText::FromString("ISLADA! Estatuak babestutako informatzaile sarea filtratu da."),
+                nullptr
+            );
+        }
     }
 }

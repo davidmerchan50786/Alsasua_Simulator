@@ -12,7 +12,7 @@
 #include "ProceduralMeshComponent.h"
 #include "Materials/MaterialInterface.h"
 
-static UMaterialInterface* CargarMaterialSuelo()
+static UMaterialInterface* CargarMaterialSueloPoligonos()
 {
 	return LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Edificio.M_Edificio"));
 }
@@ -88,7 +88,7 @@ bool UCargadorPoligonos::PasoPresupuesto(double PresupuestoMs)
 		{
 			S->Tipo = T.Tipo;
 			S->Construir(T.Anillo, T.Color, T.EpsilonCm);
-			if (S->Malla) { static UMaterialInterface* Mat = CargarMaterialSuelo(); if (Mat) S->Malla->SetMaterial(0, Mat); }
+			if (S->Malla) { static UMaterialInterface* Mat = CargarMaterialSueloPoligonos(); if (Mat) S->Malla->SetMaterial(0, Mat); }
 			++Construidos;
 		}
 		if ((FPlatformTime::Seconds() - t0) * 1000.0 >= PresupuestoMs) break;
@@ -101,7 +101,10 @@ int32 UCargadorPoligonos::Cargar()
 	if (bHecho) return 0;
 	bHecho = true;
 	PrepararCarga();
-	while (!PasoPresupuesto(1000.0)) {}
+	int32 IterGuard = 0;
+	const int32 MaxIter = 10000;
+	while (!PasoPresupuesto(1000.0) && ++IterGuard < MaxIter) {}
+	if (IterGuard >= MaxIter) UE_LOG(LogTemp, Warning, TEXT("[Suelos] Iteration guard reached (%d)"), MaxIter);
 	UE_LOG(LogTemp, Log, TEXT("[Suelos] %d polígonos (plazas+zonas verdes)"), Construidos);
 	return Construidos;
 }

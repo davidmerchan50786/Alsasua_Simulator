@@ -1,8 +1,42 @@
 #include "AI/AlsasuaTacticManager.h"
+#include "AI/AlsasuaCrowdSentiment.h"
+#include "Engine/World.h"
 
 void UAlsasuaTacticManager::Tick(float DeltaTime)
 {
-    // Lógica de decisión simplificada para el tick
+    AccumulatedTime += DeltaTime;
+    if (AccumulatedTime < EvaluationInterval) return;
+    AccumulatedTime = 0.f;
+
+    UAlsasuaCrowdSentiment* Sentiment = GetWorld() ? GetWorld()->GetSubsystem<UAlsasuaCrowdSentiment>() : nullptr;
+    if (!Sentiment) return;
+
+    const float Tension = Sentiment->GlobalTension;
+    const float Support = Sentiment->PopularSupport;
+
+    EAlsasuaTactic Suggested;
+
+    if (Tension > 0.8f)
+    {
+        Suggested = EAlsasuaTactic::Scatter;
+    }
+    else if (Tension > 0.5f)
+    {
+        Suggested = EAlsasuaTactic::Blockade;
+    }
+    else if (Support > 50.f && Tension < 0.3f)
+    {
+        Suggested = EAlsasuaTactic::SitIn;
+    }
+    else
+    {
+        Suggested = EAlsasuaTactic::March;
+    }
+
+    if (Suggested != CurrentTactic)
+    {
+        SetGlobalTactic(Suggested);
+    }
 }
 
 void UAlsasuaTacticManager::SetGlobalTactic(EAlsasuaTactic NewTactic)

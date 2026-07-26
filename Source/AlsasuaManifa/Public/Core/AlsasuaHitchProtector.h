@@ -10,7 +10,7 @@ class ALSASUAMANIFA_API UAlsasuaHitchProtector : public UWorldSubsystem
 	GENERATED_BODY()
 
 public:
-	virtual void Tick(float DeltaTime);
+	virtual void Tick(float DeltaTime) override;
 
 	// Devuelve el factor de escala de densidad actual (1.0 = normal, 0.2 = pánico)
 	UFUNCTION(BlueprintCallable, Category = "AAA|Optimization")

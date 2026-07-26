@@ -49,7 +49,9 @@ void UCicloVisualSubsystem::CrearCielo(UWorld* W)
 	if (!Atmosfera) Atmosfera = W->SpawnActor<AActor>();
 	if (Atmosfera && !Atmosfera->FindComponentByClass<USkyAtmosphereComponent>())
 	{
+#if WITH_EDITOR
 		Atmosfera->SetActorLabel(TEXT("SkyAtmosphere_Alsasua"));
+#endif
 		USkyAtmosphereComponent* Atm = NewObject<USkyAtmosphereComponent>(Atmosfera, TEXT("SkyAtmosphere"));
 		Atmosfera->SetRootComponent(Atm);
 		Atm->RegisterComponent();

@@ -16,6 +16,12 @@ public:
     int32 BaseProtesterCount = 20;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AAA|Protest")
+    int32 MaxProtesterCount = 200;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AAA|Protest")
+    float ProtesterLifetimeSeconds = 120.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AAA|Protest")
     TSubclassOf<AActor> ProtesterClass;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AAA|Protest")
@@ -34,6 +40,7 @@ public:
 
 protected:
     virtual void BeginPlay() override;
+    virtual void Tick(float DeltaTime) override;
 
 private:
     UPROPERTY()

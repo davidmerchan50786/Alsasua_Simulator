@@ -9,6 +9,7 @@ class ALSASUAMANIFA_API UDialogInstance : public UObject {
     GENERATED_BODY()
 public:
     void Init(class UDialogAsset* Asset, AActor* InParticipant);
+    void Shutdown();
 
     UFUNCTION(BlueprintCallable, Category="AAA|Dialog")
     FDialogNode GetCurrentNode() const;
@@ -28,4 +29,7 @@ private:
     AActor* Participant;
 
     int32 CurrentNodeID = 0;
+
+    FTimerHandle AutoAdvanceTimerHandle;
+    void AutoAdvanceTick();
 };

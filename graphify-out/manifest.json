@@ -1,0 +1,4487 @@
+{
+  ".opencode/opencode.json": {
+    "mtime": 1784997104.0,
+    "ast_hash": "f2ae21510d07365eb2bce8159272c7a0",
+    "semantic_hash": "f2ae21510d07365eb2bce8159272c7a0"
+  },
+  ".opencode/plugins/graphify.js": {
+    "mtime": 1784997104.0,
+    "ast_hash": "b33d000860642c6f4907a877e0387a21",
+    "semantic_hash": "b33d000860642c6f4907a877e0387a21"
+  },
+  "AlsasuaSimulator.slnx": {
+    "mtime": 1784724880.0,
+    "ast_hash": "d72cc2e3aa556fc1da83a5af592e4ba2",
+    "semantic_hash": "d72cc2e3aa556fc1da83a5af592e4ba2"
+  },
+  "Automation_AlsasuaSimulator.slnx": {
+    "mtime": 1784724880.0,
+    "ast_hash": "af0901f2704445609ee79080eb96a717",
+    "semantic_hash": "af0901f2704445609ee79080eb96a717"
+  },
+  "Content/AssetsImportados/Arboles/Abedul/Tree_Silver_Birch_01_A_DynamicWind.json": {
+    "mtime": 1777547158.0,
+    "ast_hash": "ba1639057345ead2e7c6f9200cb0f8e6",
+    "semantic_hash": "ba1639057345ead2e7c6f9200cb0f8e6"
+  },
+  "Content/AssetsImportados/Arboles/Abedul/Tree_Silver_Birch_01_B_DynamicWind.json": {
+    "mtime": 1777547158.0,
+    "ast_hash": "6213c8af70fd5aeb09c529b3957108b1",
+    "semantic_hash": "6213c8af70fd5aeb09c529b3957108b1"
+  },
+  "Content/AssetsImportados/Arboles/Abedul/Tree_Silver_Birch_01_C_DynamicWind.json": {
+    "mtime": 1777547160.0,
+    "ast_hash": "43c2306ebf146f418c8d1de99fd2566d",
+    "semantic_hash": "43c2306ebf146f418c8d1de99fd2566d"
+  },
+  "Content/AssetsImportados/Arboles/Abedul/Tree_Silver_Birch_01_D_DynamicWind.json": {
+    "mtime": 1777547160.0,
+    "ast_hash": "68195adb5f433057d3ad087664ee152c",
+    "semantic_hash": "68195adb5f433057d3ad087664ee152c"
+  },
+  "Content/AssetsImportados/Arboles/Alamo_Temblon/Tree_European_Aspen_01_A_DynamicWind.json": {
+    "mtime": 1762549060.0,
+    "ast_hash": "a9859707c05e558b46a9a9f8e72817e0",
+    "semantic_hash": "a9859707c05e558b46a9a9f8e72817e0"
+  },
+  "Content/AssetsImportados/Arboles/Alamo_Temblon/Tree_European_Aspen_01_B_DynamicWind.json": {
+    "mtime": 1762549134.0,
+    "ast_hash": "860ffffd2f585460b3fbf1723210c74e",
+    "semantic_hash": "860ffffd2f585460b3fbf1723210c74e"
+  },
+  "Content/AssetsImportados/Arboles/Alamo_Temblon/Tree_European_Aspen_01_C_DynamicWind.json": {
+    "mtime": 1762549568.0,
+    "ast_hash": "bcbd98c89eb53e262b7cde63da8ae43a",
+    "semantic_hash": "bcbd98c89eb53e262b7cde63da8ae43a"
+  },
+  "Content/AssetsImportados/Arboles/Alamo_Temblon/Tree_European_Aspen_01_D_DynamicWind.json": {
+    "mtime": 1762549616.0,
+    "ast_hash": "c3ee3bb5139e14952d5c62b7e71f5b84",
+    "semantic_hash": "c3ee3bb5139e14952d5c62b7e71f5b84"
+  },
+  "Content/AssetsImportados/Arboles/Aliso_Negro/Tree_Black_Alder_01_A_DynamicWind.json": {
+    "mtime": 1762557968.0,
+    "ast_hash": "e06386a4330600f887dcbd031fcb3eda",
+    "semantic_hash": "e06386a4330600f887dcbd031fcb3eda"
+  },
+  "Content/AssetsImportados/Arboles/Aliso_Negro/Tree_Black_Alder_01_B_DynamicWind.json": {
+    "mtime": 1762557968.0,
+    "ast_hash": "63ccd8ce769f4169107bb43b53d10d98",
+    "semantic_hash": "63ccd8ce769f4169107bb43b53d10d98"
+  },
+  "Content/AssetsImportados/Arboles/Aliso_Negro/Tree_Black_Alder_01_C_DynamicWind.json": {
+    "mtime": 1762557968.0,
+    "ast_hash": "73b19ee3728c7b16d5475de4487b8fbe",
+    "semantic_hash": "73b19ee3728c7b16d5475de4487b8fbe"
+  },
+  "Content/AssetsImportados/Arboles/Aliso_Negro/Tree_Black_Alder_01_D_DynamicWind.json": {
+    "mtime": 1762557968.0,
+    "ast_hash": "a8b196b4c38b4763d62fd64977f4edf1",
+    "semantic_hash": "a8b196b4c38b4763d62fd64977f4edf1"
+  },
+  "Content/AssetsImportados/Arboles/Haya_Europea/Tree_European_Beech_01_A_DynamicWind.json": {
+    "mtime": 1762524030.0,
+    "ast_hash": "2694831c1384756c0e1a16e96114c43f",
+    "semantic_hash": "2694831c1384756c0e1a16e96114c43f"
+  },
+  "Content/AssetsImportados/Arboles/Haya_Europea/Tree_European_Beech_01_B_DynamicWind.json": {
+    "mtime": 1762524102.0,
+    "ast_hash": "62f8f68d47e9b721a85bb9efb33904d1",
+    "semantic_hash": "62f8f68d47e9b721a85bb9efb33904d1"
+  },
+  "Content/AssetsImportados/Arboles/Haya_Europea/Tree_European_Beech_01_C_DynamicWind.json": {
+    "mtime": 1762525688.0,
+    "ast_hash": "fb58813ea5e2811dec2ee95dc502d174",
+    "semantic_hash": "fb58813ea5e2811dec2ee95dc502d174"
+  },
+  "Content/AssetsImportados/Arboles/Haya_Europea/Tree_European_Beech_01_D_DynamicWind.json": {
+    "mtime": 1762527740.0,
+    "ast_hash": "5f24940e2b1bb6dc837c7804dbc0a13f",
+    "semantic_hash": "5f24940e2b1bb6dc837c7804dbc0a13f"
+  },
+  "Content/AssetsImportados/Arboles/Nispero/Tree_Japanese_Medlar_01_A_DynamicWind.json": {
+    "mtime": 1778824776.0,
+    "ast_hash": "f1c1caeb336180b996941975aaeba736",
+    "semantic_hash": "f1c1caeb336180b996941975aaeba736"
+  },
+  "Content/AssetsImportados/Arboles/Nispero/Tree_Japanese_Medlar_01_B_DynamicWind.json": {
+    "mtime": 1778824852.0,
+    "ast_hash": "eb67a3c290c25147c4a6fb90da019174",
+    "semantic_hash": "eb67a3c290c25147c4a6fb90da019174"
+  },
+  "Content/AssetsImportados/Arboles/Nispero/Tree_Japanese_Medlar_01_C_DynamicWind.json": {
+    "mtime": 1778824882.0,
+    "ast_hash": "cb061f735dc0eedb3cb95bfe8bdda2ca",
+    "semantic_hash": "cb061f735dc0eedb3cb95bfe8bdda2ca"
+  },
+  "Content/AssetsImportados/Arboles/Nispero/Tree_Japanese_Medlar_01_D_DynamicWind.json": {
+    "mtime": 1778824910.0,
+    "ast_hash": "e377aa7cf0a5e365b5f7df7cdeec2e22",
+    "semantic_hash": "e377aa7cf0a5e365b5f7df7cdeec2e22"
+  },
+  "Content/AssetsImportados/Arboles/Pino_Baltico/Tree_Baltic_Pine_01_A_DynamicWind.json": {
+    "mtime": 1773408006.0,
+    "ast_hash": "b0ea421417cd8c18b510064177dd9c73",
+    "semantic_hash": "b0ea421417cd8c18b510064177dd9c73"
+  },
+  "Content/AssetsImportados/Arboles/Pino_Baltico/Tree_Baltic_Pine_01_B_DynamicWind.json": {
+    "mtime": 1773408006.0,
+    "ast_hash": "d78b62e2e02312ffa522b5f9d27729e5",
+    "semantic_hash": "d78b62e2e02312ffa522b5f9d27729e5"
+  },
+  "Content/AssetsImportados/Arboles/Pino_Baltico/Tree_Baltic_Pine_01_C_DynamicWind.json": {
+    "mtime": 1773408006.0,
+    "ast_hash": "6eac00dcbc93a6f4eeb72f5a84410e81",
+    "semantic_hash": "6eac00dcbc93a6f4eeb72f5a84410e81"
+  },
+  "Content/AssetsImportados/Arboles/Pino_Baltico/Tree_Baltic_Pine_01_D_DynamicWind.json": {
+    "mtime": 1773408006.0,
+    "ast_hash": "c8bfe989ab781c25cb9dc99df2dc352e",
+    "semantic_hash": "c8bfe989ab781c25cb9dc99df2dc352e"
+  },
+  "Content/AssetsImportados/Arboles/Pino_Carrasco/Tree_Aleppo_Pine_01_A_DynamicWind.json": {
+    "mtime": 1765813252.0,
+    "ast_hash": "6d2e630ab5f4aa1fa029e6d2b86c9bcc",
+    "semantic_hash": "6d2e630ab5f4aa1fa029e6d2b86c9bcc"
+  },
+  "Content/AssetsImportados/Arboles/Pino_Carrasco/Tree_Aleppo_Pine_01_B_DynamicWind.json": {
+    "mtime": 1765813252.0,
+    "ast_hash": "4dd7d65f8ad50848f47da0329429a611",
+    "semantic_hash": "4dd7d65f8ad50848f47da0329429a611"
+  },
+  "Content/AssetsImportados/Arboles/Pino_Carrasco/Tree_Aleppo_Pine_01_C_DynamicWind.json": {
+    "mtime": 1765813252.0,
+    "ast_hash": "b2562e034df208d2a48d0bde92c0b231",
+    "semantic_hash": "b2562e034df208d2a48d0bde92c0b231"
+  },
+  "Content/AssetsImportados/Arboles/Pino_Carrasco/Tree_Aleppo_Pine_01_D_DynamicWind.json": {
+    "mtime": 1765813252.0,
+    "ast_hash": "e229c8116ed84f04d1b121389987fee1",
+    "semantic_hash": "e229c8116ed84f04d1b121389987fee1"
+  },
+  "Content/AssetsImportados/Arboles/Sauce/Tree_Goat_Willow_01_A_DynamicWind.json": {
+    "mtime": 1768480618.0,
+    "ast_hash": "9c4499ba46b931c8cb8f8ef20f0a0421",
+    "semantic_hash": "9c4499ba46b931c8cb8f8ef20f0a0421"
+  },
+  "Content/AssetsImportados/Arboles/Sauce/Tree_Goat_Willow_01_B_DynamicWind.json": {
+    "mtime": 1768480620.0,
+    "ast_hash": "b4effdec31d7dbff804bd55a469613cb",
+    "semantic_hash": "b4effdec31d7dbff804bd55a469613cb"
+  },
+  "Content/AssetsImportados/Arboles/Sauce/Tree_Goat_Willow_01_C_DynamicWind.json": {
+    "mtime": 1768468304.0,
+    "ast_hash": "681b35c34afb63034a44576d8e60b3d1",
+    "semantic_hash": "681b35c34afb63034a44576d8e60b3d1"
+  },
+  "Content/AssetsImportados/Arboles/Sauce/Tree_Goat_Willow_01_D_DynamicWind.json": {
+    "mtime": 1768481574.0,
+    "ast_hash": "91874f5a431db52081f30745d83de5e3",
+    "semantic_hash": "91874f5a431db52081f30745d83de5e3"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Editor/ImageEffects/AntialiasingEditor.cs": {
+    "mtime": 1784995498.0,
+    "ast_hash": "02aab967047a048f17db9a537d1e67df",
+    "semantic_hash": "02aab967047a048f17db9a537d1e67df"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Editor/ImageEffects/BloomAndFlaresEditor.cs": {
+    "mtime": 1784995492.0,
+    "ast_hash": "62447ed17f218e896563d6aa7f14600f",
+    "semantic_hash": "62447ed17f218e896563d6aa7f14600f"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Editor/ImageEffects/BloomEditor.cs": {
+    "mtime": 1784995492.0,
+    "ast_hash": "8528b18567a871b03d167b921a9d92e5",
+    "semantic_hash": "8528b18567a871b03d167b921a9d92e5"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Editor/ImageEffects/CameraMotionBlurEditor.cs": {
+    "mtime": 1784995494.0,
+    "ast_hash": "f309e20ec5eb3311b65f11125af96411",
+    "semantic_hash": "f309e20ec5eb3311b65f11125af96411"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Editor/ImageEffects/ColorCorrectionCurvesEditor.cs": {
+    "mtime": 1784995498.0,
+    "ast_hash": "1c2abbc5ceaf25467f4532449777e520",
+    "semantic_hash": "1c2abbc5ceaf25467f4532449777e520"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Editor/ImageEffects/ColorCorrectionLookupEditor.cs": {
+    "mtime": 1784995492.0,
+    "ast_hash": "49c8c547b154ac8daf05c63c163c2067",
+    "semantic_hash": "49c8c547b154ac8daf05c63c163c2067"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Editor/ImageEffects/CreaseShadingEditor.cs": {
+    "mtime": 1784995492.0,
+    "ast_hash": "a8d70db8dcc642c1abb4b6513eb4c679",
+    "semantic_hash": "a8d70db8dcc642c1abb4b6513eb4c679"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Editor/ImageEffects/DepthOfFieldDeprecatedEditor.cs": {
+    "mtime": 1784995496.0,
+    "ast_hash": "5331c68f0b0def0c6a7f30e5620f95b7",
+    "semantic_hash": "5331c68f0b0def0c6a7f30e5620f95b7"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Editor/ImageEffects/DepthOfFieldEditor.cs": {
+    "mtime": 1784995492.0,
+    "ast_hash": "fcb9d4d1cfff339e1070581139e69ed5",
+    "semantic_hash": "fcb9d4d1cfff339e1070581139e69ed5"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Editor/ImageEffects/EdgeDetectionEditor.cs": {
+    "mtime": 1784995498.0,
+    "ast_hash": "01bb931599dfe49ee9b958111172e6ec",
+    "semantic_hash": "01bb931599dfe49ee9b958111172e6ec"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Editor/ImageEffects/NoiseAndGrainEditor.cs": {
+    "mtime": 1784995498.0,
+    "ast_hash": "a81328c75d4dd2455987e142aa958a75",
+    "semantic_hash": "a81328c75d4dd2455987e142aa958a75"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Editor/ImageEffects/SunShaftsEditor.cs": {
+    "mtime": 1784995492.0,
+    "ast_hash": "c53f328f8b99351e377d6b9796e5368c",
+    "semantic_hash": "c53f328f8b99351e377d6b9796e5368c"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Editor/ImageEffects/TonemappingEditor.cs": {
+    "mtime": 1784995492.0,
+    "ast_hash": "0ca98014849c00ce93600e9aac8326ce",
+    "semantic_hash": "0ca98014849c00ce93600e9aac8326ce"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Editor/ImageEffects/VignetteAndChromaticAberrationEditor.cs": {
+    "mtime": 1784995492.0,
+    "ast_hash": "3c23deedb5d062a3909885aad7a28b90",
+    "semantic_hash": "3c23deedb5d062a3909885aad7a28b90"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/Antialiasing.cs": {
+    "mtime": 1784995492.0,
+    "ast_hash": "8234fbf2be21965c4107109a93a50917",
+    "semantic_hash": "8234fbf2be21965c4107109a93a50917"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/Bloom.cs": {
+    "mtime": 1784995494.0,
+    "ast_hash": "38476ef945a06b161d058a0fa51de93d",
+    "semantic_hash": "38476ef945a06b161d058a0fa51de93d"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/BloomAndFlares.cs": {
+    "mtime": 1784995492.0,
+    "ast_hash": "7e57a9418adac5e8caa7d230e9ed8ac4",
+    "semantic_hash": "7e57a9418adac5e8caa7d230e9ed8ac4"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/BloomOptimized.cs": {
+    "mtime": 1784995492.0,
+    "ast_hash": "1c0eb5b104cf071ec0ec81835dd445db",
+    "semantic_hash": "1c0eb5b104cf071ec0ec81835dd445db"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/Blur.cs": {
+    "mtime": 1784995492.0,
+    "ast_hash": "a7b5ae63e78fc28fdd752f527e9afaf9",
+    "semantic_hash": "a7b5ae63e78fc28fdd752f527e9afaf9"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/BlurOptimized.cs": {
+    "mtime": 1784995494.0,
+    "ast_hash": "b9edfc65afc6472d71e6cfe8da31eed5",
+    "semantic_hash": "b9edfc65afc6472d71e6cfe8da31eed5"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/CameraMotionBlur.cs": {
+    "mtime": 1784995496.0,
+    "ast_hash": "865bbada25c769319fa2f68155314093",
+    "semantic_hash": "865bbada25c769319fa2f68155314093"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/ColorCorrectionCurves.cs": {
+    "mtime": 1784995492.0,
+    "ast_hash": "151401e2bc69322fe0f5327265d18cea",
+    "semantic_hash": "151401e2bc69322fe0f5327265d18cea"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/ColorCorrectionLookup.cs": {
+    "mtime": 1784995494.0,
+    "ast_hash": "81a163eabc2616a2082e9cee92810235",
+    "semantic_hash": "81a163eabc2616a2082e9cee92810235"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/ColorCorrectionRamp.cs": {
+    "mtime": 1784995504.0,
+    "ast_hash": "122c247346e8475ff58ad7f417eb4d14",
+    "semantic_hash": "122c247346e8475ff58ad7f417eb4d14"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/ContrastEnhance.cs": {
+    "mtime": 1784995492.0,
+    "ast_hash": "1b6c5c799948c6982decef0659de28ce",
+    "semantic_hash": "1b6c5c799948c6982decef0659de28ce"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/ContrastStretch.cs": {
+    "mtime": 1784995504.0,
+    "ast_hash": "d88e5cd370b1a7da518de93f68156603",
+    "semantic_hash": "d88e5cd370b1a7da518de93f68156603"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/CreaseShading.cs": {
+    "mtime": 1784995502.0,
+    "ast_hash": "5b2dede3c8a8290a066d829568a67cc9",
+    "semantic_hash": "5b2dede3c8a8290a066d829568a67cc9"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/DepthOfField.cs": {
+    "mtime": 1784995500.0,
+    "ast_hash": "7c66897cb847f1e91304a7c3dfc35475",
+    "semantic_hash": "7c66897cb847f1e91304a7c3dfc35475"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/DepthOfFieldDeprecated.cs": {
+    "mtime": 1784995494.0,
+    "ast_hash": "af697a255669ee22f7e26b446864e560",
+    "semantic_hash": "af697a255669ee22f7e26b446864e560"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/EdgeDetection.cs": {
+    "mtime": 1784995494.0,
+    "ast_hash": "fa2ea23a6ed7a4d17749b5f78d998276",
+    "semantic_hash": "fa2ea23a6ed7a4d17749b5f78d998276"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/Fisheye.cs": {
+    "mtime": 1784995492.0,
+    "ast_hash": "000b2fea7999177ca7368078f8b81570",
+    "semantic_hash": "000b2fea7999177ca7368078f8b81570"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/GlobalFog.cs": {
+    "mtime": 1784995494.0,
+    "ast_hash": "f1595cf3b709ab5d611954719eda0843",
+    "semantic_hash": "f1595cf3b709ab5d611954719eda0843"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/Grayscale.cs": {
+    "mtime": 1784995492.0,
+    "ast_hash": "eaa99ccee9b46d8a796eacf23640e84a",
+    "semantic_hash": "eaa99ccee9b46d8a796eacf23640e84a"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/ImageEffectBase.cs": {
+    "mtime": 1784995506.0,
+    "ast_hash": "c39554f2ba4c9fc866d98eba3aebe3db",
+    "semantic_hash": "c39554f2ba4c9fc866d98eba3aebe3db"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/ImageEffects.cs": {
+    "mtime": 1784995494.0,
+    "ast_hash": "ebb003d16c4337ed01b1e431e5f494f8",
+    "semantic_hash": "ebb003d16c4337ed01b1e431e5f494f8"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/MotionBlur.cs": {
+    "mtime": 1784995492.0,
+    "ast_hash": "8063dc73c2a239ef89dba9e5dd80ad57",
+    "semantic_hash": "8063dc73c2a239ef89dba9e5dd80ad57"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/NoiseAndGrain.cs": {
+    "mtime": 1784995496.0,
+    "ast_hash": "44dd26b014dbaa344b5c0853ce37e348",
+    "semantic_hash": "44dd26b014dbaa344b5c0853ce37e348"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/NoiseAndScratches.cs": {
+    "mtime": 1784995498.0,
+    "ast_hash": "ec7559496efdc12e13f15aff46c0e164",
+    "semantic_hash": "ec7559496efdc12e13f15aff46c0e164"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/PostEffectsBase.cs": {
+    "mtime": 1784995498.0,
+    "ast_hash": "abd3e38ecb61295d4e0bf116959f08f9",
+    "semantic_hash": "abd3e38ecb61295d4e0bf116959f08f9"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/PostEffectsHelper.cs": {
+    "mtime": 1784995492.0,
+    "ast_hash": "d8af169ebf32175adbd997c8c8aa1a63",
+    "semantic_hash": "d8af169ebf32175adbd997c8c8aa1a63"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/Quads.cs": {
+    "mtime": 1784995496.0,
+    "ast_hash": "4fbc041bb6121405c98022c1013f9e27",
+    "semantic_hash": "4fbc041bb6121405c98022c1013f9e27"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/ScreenOverlay.cs": {
+    "mtime": 1784995492.0,
+    "ast_hash": "a34c98308d4eb63b5fd9237e610fe4ed",
+    "semantic_hash": "a34c98308d4eb63b5fd9237e610fe4ed"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/ScreenSpaceAmbientObscurance.cs": {
+    "mtime": 1784995494.0,
+    "ast_hash": "5f017bc09c0883602f3bd94291b04778",
+    "semantic_hash": "5f017bc09c0883602f3bd94291b04778"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/ScreenSpaceAmbientOcclusion.cs": {
+    "mtime": 1784995498.0,
+    "ast_hash": "8888e8605efaeae445b540f2cd42cb4a",
+    "semantic_hash": "8888e8605efaeae445b540f2cd42cb4a"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/SepiaTone.cs": {
+    "mtime": 1784995496.0,
+    "ast_hash": "3d1ce832593776275b4ecf25fed96d59",
+    "semantic_hash": "3d1ce832593776275b4ecf25fed96d59"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/SunShafts.cs": {
+    "mtime": 1784995492.0,
+    "ast_hash": "1f8b0e84f265a58c01305f5a267a1cc1",
+    "semantic_hash": "1f8b0e84f265a58c01305f5a267a1cc1"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/TiltShift.cs": {
+    "mtime": 1784995496.0,
+    "ast_hash": "c76fc080707400e5d8ba09c625f794a6",
+    "semantic_hash": "c76fc080707400e5d8ba09c625f794a6"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/Tonemapping.cs": {
+    "mtime": 1784995504.0,
+    "ast_hash": "b4c75f13bb007b1ef8b53ddd71b0ccaf",
+    "semantic_hash": "b4c75f13bb007b1ef8b53ddd71b0ccaf"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/Triangles.cs": {
+    "mtime": 1784995492.0,
+    "ast_hash": "501624abd7080af6f1e368f8fee57f5c",
+    "semantic_hash": "501624abd7080af6f1e368f8fee57f5c"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/Twirl.cs": {
+    "mtime": 1784995500.0,
+    "ast_hash": "07ede4a34aabb6e03265f2685d88f893",
+    "semantic_hash": "07ede4a34aabb6e03265f2685d88f893"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/VignetteAndChromaticAberration.cs": {
+    "mtime": 1784995504.0,
+    "ast_hash": "87a83e31a3309bfa08331a49f1325df4",
+    "semantic_hash": "87a83e31a3309bfa08331a49f1325df4"
+  },
+  "Content/AssetsImportados/ExtractedUnity/NatureStarterKit2/Standard Assets/Effects/ImageEffects/Scripts/Vortex.cs": {
+    "mtime": 1784995498.0,
+    "ast_hash": "722d1ad432721b86af7c1d47dfe0adee",
+    "semantic_hash": "722d1ad432721b86af7c1d47dfe0adee"
+  },
+  "Content/AssetsImportados/ExtractedUnity/_manifest.json": {
+    "mtime": 1784995574.0,
+    "ast_hash": "3cefea6f50663124a55814c4adc25689",
+    "semantic_hash": "3cefea6f50663124a55814c4adc25689"
+  },
+  "Content/Datos/asset_manifest.json": {
+    "mtime": 1784995876.0,
+    "ast_hash": "847218643b88e042f6f0ded74ae4d2b9",
+    "semantic_hash": "847218643b88e042f6f0ded74ae4d2b9"
+  },
+  "Content/Datos/asset_mapping.json": {
+    "mtime": 1784982030.0,
+    "ast_hash": "e13ee07001445da2ca1c685d311a9b31",
+    "semantic_hash": "e13ee07001445da2ca1c685d311a9b31"
+  },
+  "Content/Datos/asset_reference_map.json": {
+    "mtime": 1784994296.0,
+    "ast_hash": "986450dbfecc14ea4fea917854cbedd2",
+    "semantic_hash": "986450dbfecc14ea4fea917854cbedd2"
+  },
+  "Content/Datos/building_facades.json": {
+    "mtime": 1784990494.0,
+    "ast_hash": "ece3a74e679d03faaa0a97a62566b1ed",
+    "semantic_hash": "ece3a74e679d03faaa0a97a62566b1ed"
+  },
+  "Content/Datos/buildings_final.json": {
+    "mtime": 1784990494.0,
+    "ast_hash": "2ad7d6f766cbda14a7fb865c7b245e66",
+    "semantic_hash": "2ad7d6f766cbda14a7fb865c7b245e66"
+  },
+  "Content/Datos/buildings_unity.json": {
+    "mtime": 1784724880.0,
+    "ast_hash": "d047a35cbd920d177a854fc6dfdbfa40",
+    "semantic_hash": "d047a35cbd920d177a854fc6dfdbfa40"
+  },
+  "Content/Datos/climate_data.json": {
+    "mtime": 1784892550.0,
+    "ast_hash": "0d1e92c30067ba76aee29c9c0e3020cc",
+    "semantic_hash": "0d1e92c30067ba76aee29c9c0e3020cc"
+  },
+  "Content/Datos/factions.json": {
+    "mtime": 1784918466.0,
+    "ast_hash": "87ea9ca15b38a95c626efc4c099769c2",
+    "semantic_hash": "87ea9ca15b38a95c626efc4c099769c2"
+  },
+  "Content/Datos/footways_unity.json": {
+    "mtime": 1784724880.0,
+    "ast_hash": "4eeee3f1351b422642ce3b17d942d8ac",
+    "semantic_hash": "4eeee3f1351b422642ce3b17d942d8ac"
+  },
+  "Content/Datos/greenspaces_unity.json": {
+    "mtime": 1784724880.0,
+    "ast_hash": "27df189c7eb6282cf99786e3eabed665",
+    "semantic_hash": "27df189c7eb6282cf99786e3eabed665"
+  },
+  "Content/Datos/landmarks_real.json": {
+    "mtime": 1784991166.0,
+    "ast_hash": "9faebe0084b6e9da10188006b956563e",
+    "semantic_hash": "9faebe0084b6e9da10188006b956563e"
+  },
+  "Content/Datos/meshy_prompts.json": {
+    "mtime": 1784992796.0,
+    "ast_hash": "8cc752fe4eee5e93c07303b946086b66",
+    "semantic_hash": "8cc752fe4eee5e93c07303b946086b66"
+  },
+  "Content/Datos/nighborhoods.json": {
+    "mtime": 1784892508.0,
+    "ast_hash": "5b95e293d36e7aca30f4cbf12de582ea",
+    "semantic_hash": "5b95e293d36e7aca30f4cbf12de582ea"
+  },
+  "Content/Datos/plazas_unity.json": {
+    "mtime": 1784724880.0,
+    "ast_hash": "afa0979a1b022ed6e72a2ddfc76cc47a",
+    "semantic_hash": "afa0979a1b022ed6e72a2ddfc76cc47a"
+  },
+  "Content/Datos/poi_data.json": {
+    "mtime": 1784996646.0,
+    "ast_hash": "40b1972aa2a908f549fa967efb37bad9",
+    "semantic_hash": "40b1972aa2a908f549fa967efb37bad9"
+  },
+  "Content/Datos/railways_unity.json": {
+    "mtime": 1784724880.0,
+    "ast_hash": "5c9411f322237723ae80fdf80f3a1938",
+    "semantic_hash": "5c9411f322237723ae80fdf80f3a1938"
+  },
+  "Content/Datos/roads_unity.json": {
+    "mtime": 1784990494.0,
+    "ast_hash": "9d33a485508c61bde5fd014c0350a860",
+    "semantic_hash": "9d33a485508c61bde5fd014c0350a860"
+  },
+  "Content/Datos/signage_data.json": {
+    "mtime": 1784990496.0,
+    "ast_hash": "cc50414c8c4ed41038af213253f56b15",
+    "semantic_hash": "cc50414c8c4ed41038af213253f56b15"
+  },
+  "Content/Datos/street_furniture.json": {
+    "mtime": 1784990060.0,
+    "ast_hash": "95b0632fd6b3c0748f21d4545d5ab254",
+    "semantic_hash": "95b0632fd6b3c0748f21d4545d5ab254"
+  },
+  "Content/Datos/transport_alsasua.json": {
+    "mtime": 1784993876.0,
+    "ast_hash": "0f6c3f458f4bdc5e20124440078b165f",
+    "semantic_hash": "0f6c3f458f4bdc5e20124440078b165f"
+  },
+  "Content/Datos/trees_unity.json": {
+    "mtime": 1784724880.0,
+    "ast_hash": "3c61fa9feeefb3bcdae8daebe279d231",
+    "semantic_hash": "3c61fa9feeefb3bcdae8daebe279d231"
+  },
+  "Content/Datos/waterways_unity.json": {
+    "mtime": 1784724880.0,
+    "ast_hash": "38b755768f8f792082ce2730da420c75",
+    "semantic_hash": "38b755768f8f792082ce2730da420c75"
+  },
+  "Content/Datos/weather_alsasua.json": {
+    "mtime": 1784993826.0,
+    "ast_hash": "73cb73ced2f7ec281a47499d4ca7ce63",
+    "semantic_hash": "73cb73ced2f7ec281a47499d4ca7ce63"
+  },
+  "Content/Dialogs/Alcalde.json": {
+    "mtime": 1784884798.0,
+    "ast_hash": "8beabcb1d5f08011f5068d12668d479e",
+    "semantic_hash": "8beabcb1d5f08011f5068d12668d479e"
+  },
+  "Content/Dialogs/Guardia.json": {
+    "mtime": 1784884804.0,
+    "ast_hash": "88e4d9a0d22e0f4d139922a60c0b54be",
+    "semantic_hash": "88e4d9a0d22e0f4d139922a60c0b54be"
+  },
+  "Content/Dialogs/Periodista.json": {
+    "mtime": 1784884810.0,
+    "ast_hash": "db9624855fd107dc717d4e53789dde29",
+    "semantic_hash": "db9624855fd107dc717d4e53789dde29"
+  },
+  "Content/Terreno/landscape_import.json": {
+    "mtime": 1784724880.0,
+    "ast_hash": "a7e3ad8cfacc221449bb273a4e615209",
+    "semantic_hash": "a7e3ad8cfacc221449bb273a4e615209"
+  },
+  "Source/AlsasuaCore/AlsasuaCore.Build.cs": {
+    "mtime": 1784724880.0,
+    "ast_hash": "1618307342124784aa0ef0d4504552d5",
+    "semantic_hash": "1618307342124784aa0ef0d4504552d5"
+  },
+  "Source/AlsasuaCore/Private/EventBusAlsasua.cpp": {
+    "mtime": 1784778376.0,
+    "ast_hash": "a1c947df42b1a134fcf28e28756b4884",
+    "semantic_hash": "a1c947df42b1a134fcf28e28756b4884"
+  },
+  "Source/AlsasuaCore/Private/GeoDataAlsasua.cpp": {
+    "mtime": 1784923406.0,
+    "ast_hash": "61144bd110dec8dbef3bb9f108fb7547",
+    "semantic_hash": "61144bd110dec8dbef3bb9f108fb7547"
+  },
+  "Source/AlsasuaCore/Private/SpatialGrid.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "31b347fb1f319dad4f2167417c72bb3c",
+    "semantic_hash": "31b347fb1f319dad4f2167417c72bb3c"
+  },
+  "Source/AlsasuaCore/Public/AlsasuaTypes.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "1ff110f353320be92e3756034ed22e46",
+    "semantic_hash": "1ff110f353320be92e3756034ed22e46"
+  },
+  "Source/AlsasuaCore/Public/EventBusAlsasua.h": {
+    "mtime": 1784778364.0,
+    "ast_hash": "14cc9be3f202b33139a52cc75fd9f6f8",
+    "semantic_hash": "14cc9be3f202b33139a52cc75fd9f6f8"
+  },
+  "Source/AlsasuaCore/Public/GeoDataAlsasua.h": {
+    "mtime": 1784917510.0,
+    "ast_hash": "0e1a0e2beee04877425d1817dde69a3f",
+    "semantic_hash": "0e1a0e2beee04877425d1817dde69a3f"
+  },
+  "Source/AlsasuaCore/Public/SpatialGrid.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "7ff69c47890a93a07a0560d60e096aa2",
+    "semantic_hash": "7ff69c47890a93a07a0560d60e096aa2"
+  },
+  "Source/AlsasuaEditor/AlsasuaEditor.Build.cs": {
+    "mtime": 1784968512.0,
+    "ast_hash": "a8d8bb536a18a7ea283d9ecefeb98f96",
+    "semantic_hash": "a8d8bb536a18a7ea283d9ecefeb98f96"
+  },
+  "Source/AlsasuaEditor/Private/AlsasuaAssetGenerator.cpp": {
+    "mtime": 1784968996.0,
+    "ast_hash": "cde72c3759be8714f14a10ad1954d280",
+    "semantic_hash": "cde72c3759be8714f14a10ad1954d280"
+  },
+  "Source/AlsasuaEditor/Private/AlsasuaBridgeGenerator.cpp": {
+    "mtime": 1784967850.0,
+    "ast_hash": "c5d1558110311a14ce96dd6e60a28638",
+    "semantic_hash": "c5d1558110311a14ce96dd6e60a28638"
+  },
+  "Source/AlsasuaEditor/Private/AlsasuaEditorTool.cpp": {
+    "mtime": 1784853990.0,
+    "ast_hash": "59f0ad3bc6b73404e3ec9fd12a96ab66",
+    "semantic_hash": "59f0ad3bc6b73404e3ec9fd12a96ab66"
+  },
+  "Source/AlsasuaEditor/Private/AlsasuaFoliageLoader.cpp": {
+    "mtime": 1784968520.0,
+    "ast_hash": "b1d90f49b01295c9ef7978230a04428d",
+    "semantic_hash": "b1d90f49b01295c9ef7978230a04428d"
+  },
+  "Source/AlsasuaEditor/Private/AlsasuaRiverMeshGenerator.cpp": {
+    "mtime": 1784968518.0,
+    "ast_hash": "633ee7c5ffd2a44c14b892bc46cf69bc",
+    "semantic_hash": "633ee7c5ffd2a44c14b892bc46cf69bc"
+  },
+  "Source/AlsasuaEditor/Private/CreadorMaterialAgua.cpp": {
+    "mtime": 1784968732.0,
+    "ast_hash": "afacc0468ef375d1221fc1894b6f07dd",
+    "semantic_hash": "afacc0468ef375d1221fc1894b6f07dd"
+  },
+  "Source/AlsasuaEditor/Private/CreadorMaterialArbol.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "6cce38146e0951929594cbf819aa4eeb",
+    "semantic_hash": "6cce38146e0951929594cbf819aa4eeb"
+  },
+  "Source/AlsasuaEditor/Private/CreadorMaterialCalles.cpp": {
+    "mtime": 1784968510.0,
+    "ast_hash": "dc691bce728d9702d7c43d1f0d9a89c0",
+    "semantic_hash": "dc691bce728d9702d7c43d1f0d9a89c0"
+  },
+  "Source/AlsasuaEditor/Private/CreadorMaterialEdificio.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "f09fedae80c57cccd80da95057e6ec84",
+    "semantic_hash": "f09fedae80c57cccd80da95057e6ec84"
+  },
+  "Source/AlsasuaEditor/Private/CreadorMaterialFachada.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "2aff0c6ad34dd52da9c7085d1d03cf0d",
+    "semantic_hash": "2aff0c6ad34dd52da9c7085d1d03cf0d"
+  },
+  "Source/AlsasuaEditor/Private/CreadorMaterialMobiliario.cpp": {
+    "mtime": 1784968918.0,
+    "ast_hash": "60bb3ec6a8509e70c6b42492b3b4e7d6",
+    "semantic_hash": "60bb3ec6a8509e70c6b42492b3b4e7d6"
+  },
+  "Source/AlsasuaEditor/Private/CreadorMaterialMuroPiedra.cpp": {
+    "mtime": 1784967710.0,
+    "ast_hash": "88f78ddebdd09f59c7b91c69938cf8a7",
+    "semantic_hash": "88f78ddebdd09f59c7b91c69938cf8a7"
+  },
+  "Source/AlsasuaEditor/Private/CreadorMaterialTejadoOrto.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "355c3e13c617e1fd5751853cff120dc0",
+    "semantic_hash": "355c3e13c617e1fd5751853cff120dc0"
+  },
+  "Source/AlsasuaEditor/Private/CreadorMaterialTejas.cpp": {
+    "mtime": 1784967728.0,
+    "ast_hash": "cf1d310327c7b204f2d335c090d3d409",
+    "semantic_hash": "cf1d310327c7b204f2d335c090d3d409"
+  },
+  "Source/AlsasuaEditor/Private/CreadorMaterialTerrenoOrto.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "0ada526e6c8dae7fa595515dc28b2ef2",
+    "semantic_hash": "0ada526e6c8dae7fa595515dc28b2ef2"
+  },
+  "Source/AlsasuaEditor/Private/ImportadorLandscape.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "9e10cb2f7619fe105f3fe8c9e9baeb56",
+    "semantic_hash": "9e10cb2f7619fe105f3fe8c9e9baeb56"
+  },
+  "Source/AlsasuaEditor/Public/AlsasuaAssetGenerator.h": {
+    "mtime": 1784967958.0,
+    "ast_hash": "36571336748105f9c957e008f7d7c9b8",
+    "semantic_hash": "36571336748105f9c957e008f7d7c9b8"
+  },
+  "Source/AlsasuaEditor/Public/AlsasuaBridgeGenerator.h": {
+    "mtime": 1784967788.0,
+    "ast_hash": "1d503f588d009d749adc63da224e20b1",
+    "semantic_hash": "1d503f588d009d749adc63da224e20b1"
+  },
+  "Source/AlsasuaEditor/Public/AlsasuaEditorTool.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "6c8cc739c6608b0f880f006be5e1aa24",
+    "semantic_hash": "6c8cc739c6608b0f880f006be5e1aa24"
+  },
+  "Source/AlsasuaEditor/Public/AlsasuaFoliageLoader.h": {
+    "mtime": 1784967856.0,
+    "ast_hash": "71584f7c68e95c469e168cc31160915f",
+    "semantic_hash": "71584f7c68e95c469e168cc31160915f"
+  },
+  "Source/AlsasuaEditor/Public/AlsasuaRiverMeshGenerator.h": {
+    "mtime": 1784967734.0,
+    "ast_hash": "87f5dee1c2d0a6fbfbce44e620b3983d",
+    "semantic_hash": "87f5dee1c2d0a6fbfbce44e620b3983d"
+  },
+  "Source/AlsasuaEditor/Public/CreadorMaterialAgua.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "f7ae7ccf239a3c707036ec92d1757af1",
+    "semantic_hash": "f7ae7ccf239a3c707036ec92d1757af1"
+  },
+  "Source/AlsasuaEditor/Public/CreadorMaterialArbol.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "2cf217286025e781c67740a251395495",
+    "semantic_hash": "2cf217286025e781c67740a251395495"
+  },
+  "Source/AlsasuaEditor/Public/CreadorMaterialCalles.h": {
+    "mtime": 1784967648.0,
+    "ast_hash": "926ce4f6b4810948cd93998df94c0690",
+    "semantic_hash": "926ce4f6b4810948cd93998df94c0690"
+  },
+  "Source/AlsasuaEditor/Public/CreadorMaterialEdificio.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "6f67b2eaa3eb7323e4168788be471cfc",
+    "semantic_hash": "6f67b2eaa3eb7323e4168788be471cfc"
+  },
+  "Source/AlsasuaEditor/Public/CreadorMaterialFachada.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "8efdd67c3bfb9177adb0346c8e24bf4b",
+    "semantic_hash": "8efdd67c3bfb9177adb0346c8e24bf4b"
+  },
+  "Source/AlsasuaEditor/Public/CreadorMaterialMobiliario.h": {
+    "mtime": 1784968904.0,
+    "ast_hash": "6cf3a76e821e59e6b32489e260fa266b",
+    "semantic_hash": "6cf3a76e821e59e6b32489e260fa266b"
+  },
+  "Source/AlsasuaEditor/Public/CreadorMaterialMuroPiedra.h": {
+    "mtime": 1784967650.0,
+    "ast_hash": "99e78558633b83e2dfa2bc2b550b9b6c",
+    "semantic_hash": "99e78558633b83e2dfa2bc2b550b9b6c"
+  },
+  "Source/AlsasuaEditor/Public/CreadorMaterialTejadoOrto.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "2df5fcef07afe2add31bff896d444cf2",
+    "semantic_hash": "2df5fcef07afe2add31bff896d444cf2"
+  },
+  "Source/AlsasuaEditor/Public/CreadorMaterialTejas.h": {
+    "mtime": 1784967652.0,
+    "ast_hash": "23a240caf86073d67f898c83f52469ab",
+    "semantic_hash": "23a240caf86073d67f898c83f52469ab"
+  },
+  "Source/AlsasuaEditor/Public/CreadorMaterialTerrenoOrto.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "149ad48ad3716d3528a6d3ecaa7bd346",
+    "semantic_hash": "149ad48ad3716d3528a6d3ecaa7bd346"
+  },
+  "Source/AlsasuaEditor/Public/ImportadorLandscape.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "db8f99296e2702ece21de947b429c5bf",
+    "semantic_hash": "db8f99296e2702ece21de947b429c5bf"
+  },
+  "Source/AlsasuaEntities/AlsasuaEntities.Build.cs": {
+    "mtime": 1784724880.0,
+    "ast_hash": "079ddd1989513d00e4278630ffa3d54e",
+    "semantic_hash": "079ddd1989513d00e4278630ffa3d54e"
+  },
+  "Source/AlsasuaEntities/Private/AlsasuaEntitiesCharacter.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "3fe07c1e19be71af044f7c4ba95b62f3",
+    "semantic_hash": "3fe07c1e19be71af044f7c4ba95b62f3"
+  },
+  "Source/AlsasuaEntities/Private/AlsasuaNPC.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "f9aab18835b66243f4a56d95a837da63",
+    "semantic_hash": "f9aab18835b66243f4a56d95a837da63"
+  },
+  "Source/AlsasuaEntities/Private/AlsasuaPlayerCharacter.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "397af1a243a8d95b12c441a89876f58b",
+    "semantic_hash": "397af1a243a8d95b12c441a89876f58b"
+  },
+  "Source/AlsasuaEntities/Private/GuardiaCivil.cpp": {
+    "mtime": 1784854038.0,
+    "ast_hash": "6d7bfcde44b9bc404d1f76435dd48749",
+    "semantic_hash": "6d7bfcde44b9bc404d1f76435dd48749"
+  },
+  "Source/AlsasuaEntities/Private/NPCCharacter.cpp": {
+    "mtime": 1784854036.0,
+    "ast_hash": "41af9bbed519da44a487b8b80a41a2bc",
+    "semantic_hash": "41af9bbed519da44a487b8b80a41a2bc"
+  },
+  "Source/AlsasuaEntities/Public/AlsasuaEntitiesCharacter.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "61c63e522164f70b006f03ba62a38194",
+    "semantic_hash": "61c63e522164f70b006f03ba62a38194"
+  },
+  "Source/AlsasuaEntities/Public/AlsasuaNPC.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "e55e487ec3d1fd40893dbeb96d84ab64",
+    "semantic_hash": "e55e487ec3d1fd40893dbeb96d84ab64"
+  },
+  "Source/AlsasuaEntities/Public/AlsasuaPlayerCharacter.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "83492e72e108ca92035d9bb72f914f11",
+    "semantic_hash": "83492e72e108ca92035d9bb72f914f11"
+  },
+  "Source/AlsasuaEntities/Public/GuardiaCivil.h": {
+    "mtime": 1784854068.0,
+    "ast_hash": "c665f8e85e8eae05e3024c41a5541add",
+    "semantic_hash": "c665f8e85e8eae05e3024c41a5541add"
+  },
+  "Source/AlsasuaEntities/Public/NPCCharacter.h": {
+    "mtime": 1784854064.0,
+    "ast_hash": "1d4d052cc6bb4a3c3a490a053ed80772",
+    "semantic_hash": "1d4d052cc6bb4a3c3a490a053ed80772"
+  },
+  "Source/AlsasuaGameplay/AlsasuaGameplay.Build.cs": {
+    "mtime": 1784724880.0,
+    "ast_hash": "4be5f884316efc2d4606a12379094973",
+    "semantic_hash": "4be5f884316efc2d4606a12379094973"
+  },
+  "Source/AlsasuaGameplay/Private/AlsasuaGameplay.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "739b4412043cf6fe3427c145e864455b",
+    "semantic_hash": "739b4412043cf6fe3427c145e864455b"
+  },
+  "Source/AlsasuaGameplay/Private/AlsasuaGameplayGameMode.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "dd12d2204aa0b2bbe4034b3a8adcd6a8",
+    "semantic_hash": "dd12d2204aa0b2bbe4034b3a8adcd6a8"
+  },
+  "Source/AlsasuaGameplay/Private/AlsasuaGameplayHUD.cpp": {
+    "mtime": 1784854046.0,
+    "ast_hash": "d3bdeca62ebd77f0398e561c5ce0fe95",
+    "semantic_hash": "d3bdeca62ebd77f0398e561c5ce0fe95"
+  },
+  "Source/AlsasuaGameplay/Private/AlsasuaLegacyGameMode.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "6c71eec8dc81e386a982c338211dd167",
+    "semantic_hash": "6c71eec8dc81e386a982c338211dd167"
+  },
+  "Source/AlsasuaGameplay/Private/AlsasuaLegacyPlayerController.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "e0dc655d311ba2dc011d79a863548c4b",
+    "semantic_hash": "e0dc655d311ba2dc011d79a863548c4b"
+  },
+  "Source/AlsasuaGameplay/Private/ApoyoPopularSubsystem.cpp": {
+    "mtime": 1784867956.0,
+    "ast_hash": "b6d35e350d8736215409b1f6297f5b35",
+    "semantic_hash": "b6d35e350d8736215409b1f6297f5b35"
+  },
+  "Source/AlsasuaGameplay/Private/ArmasComponent.cpp": {
+    "mtime": 1784923952.0,
+    "ast_hash": "18d82fc0e609cc6f054e73547da143d3",
+    "semantic_hash": "18d82fc0e609cc6f054e73547da143d3"
+  },
+  "Source/AlsasuaGameplay/Private/AudioAmbienteSubsystem.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "3e4e809e37c4b7960ff2b47c087a1a85",
+    "semantic_hash": "3e4e809e37c4b7960ff2b47c087a1a85"
+  },
+  "Source/AlsasuaGameplay/Private/CicloVisualSubsystem.cpp": {
+    "mtime": 1784923026.0,
+    "ast_hash": "8384e9f3e167356764dc57506d38b0d3",
+    "semantic_hash": "8384e9f3e167356764dc57506d38b0d3"
+  },
+  "Source/AlsasuaGameplay/Private/ClimaSubsystem.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "33cef3a1a93fc0a515061884589f3e65",
+    "semantic_hash": "33cef3a1a93fc0a515061884589f3e65"
+  },
+  "Source/AlsasuaGameplay/Private/ConsecuenciasSubsystem.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "744135565f3e9fcd43ba9422f67c2d78",
+    "semantic_hash": "744135565f3e9fcd43ba9422f67c2d78"
+  },
+  "Source/AlsasuaGameplay/Private/DiaNocheSubsystem.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "4e19a17624589343ac7d1fadf0091de7",
+    "semantic_hash": "4e19a17624589343ac7d1fadf0091de7"
+  },
+  "Source/AlsasuaGameplay/Private/DialogoSubsystem.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "5a381faf7dd60692b172bc4ead6d6af8",
+    "semantic_hash": "5a381faf7dd60692b172bc4ead6d6af8"
+  },
+  "Source/AlsasuaGameplay/Private/DisfrazSubsystem.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "19ceb94e27ffa8a6151598cfc71fac28",
+    "semantic_hash": "19ceb94e27ffa8a6151598cfc71fac28"
+  },
+  "Source/AlsasuaGameplay/Private/DrogasSubsystem.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "62899da0ae214a9c2e2ed7ee76582ab0",
+    "semantic_hash": "62899da0ae214a9c2e2ed7ee76582ab0"
+  },
+  "Source/AlsasuaGameplay/Private/EconomiaCriminalSubsystem.cpp": {
+    "mtime": 1784815634.0,
+    "ast_hash": "71b029a18171b4d01519c227074f8892",
+    "semantic_hash": "71b029a18171b4d01519c227074f8892"
+  },
+  "Source/AlsasuaGameplay/Private/EconomiaSubsystem.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "07253e23af11fb15c0c1027a204467b3",
+    "semantic_hash": "07253e23af11fb15c0c1027a204467b3"
+  },
+  "Source/AlsasuaGameplay/Private/GuardadoSubsystem.cpp": {
+    "mtime": 1784976576.0,
+    "ast_hash": "5489ad1fdccdc8f8350d95e848676d5b",
+    "semantic_hash": "5489ad1fdccdc8f8350d95e848676d5b"
+  },
+  "Source/AlsasuaGameplay/Private/LocalizacionSubsystem.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "149176565f065cd690a01871b16410c8",
+    "semantic_hash": "149176565f065cd690a01871b16410c8"
+  },
+  "Source/AlsasuaGameplay/Private/ManifestacionSubsystem.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "5465547b7c271ab1533825150dc1282c",
+    "semantic_hash": "5465547b7c271ab1533825150dc1282c"
+  },
+  "Source/AlsasuaGameplay/Private/ManifestanteActor.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "543080cec4afb5428ecd0163ad19efc2",
+    "semantic_hash": "543080cec4afb5428ecd0163ad19efc2"
+  },
+  "Source/AlsasuaGameplay/Private/ManifestanteController.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "eb9ba199449bbfca0d7d3924f20af9b5",
+    "semantic_hash": "eb9ba199449bbfca0d7d3924f20af9b5"
+  },
+  "Source/AlsasuaGameplay/Private/MenuPrincipalController.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "cdb921385c927020afd6605d8041feef",
+    "semantic_hash": "cdb921385c927020afd6605d8041feef"
+  },
+  "Source/AlsasuaGameplay/Private/MenuPrincipalGameMode.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "929803f54230703a4529dc462eeb5a8e",
+    "semantic_hash": "929803f54230703a4529dc462eeb5a8e"
+  },
+  "Source/AlsasuaGameplay/Private/MenuSubsystem.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "8f09803a91a4b5e8d444800e51e4fe8f",
+    "semantic_hash": "8f09803a91a4b5e8d444800e51e4fe8f"
+  },
+  "Source/AlsasuaGameplay/Private/MisionesSubsystem.cpp": {
+    "mtime": 1784923410.0,
+    "ast_hash": "7a6b8348e963616e16d2eead0abc54ec",
+    "semantic_hash": "7a6b8348e963616e16d2eead0abc54ec"
+  },
+  "Source/AlsasuaGameplay/Private/NegocioActor.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "22a44712e1a01342595ba2eacb3e8716",
+    "semantic_hash": "22a44712e1a01342595ba2eacb3e8716"
+  },
+  "Source/AlsasuaGameplay/Private/PeatonActor.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "a15eb44e424698c9dd706f63b3893c9f",
+    "semantic_hash": "a15eb44e424698c9dd706f63b3893c9f"
+  },
+  "Source/AlsasuaGameplay/Private/PeatonController.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "6a721edafdb1a9d623d7a4ba2c3fd586",
+    "semantic_hash": "6a721edafdb1a9d623d7a4ba2c3fd586"
+  },
+  "Source/AlsasuaGameplay/Private/PisoFrancoActor.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "18034b2964e9e79110d63244f47104ff",
+    "semantic_hash": "18034b2964e9e79110d63244f47104ff"
+  },
+  "Source/AlsasuaGameplay/Private/PoblacionSubsystem.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "8b536483da2b997799bc18541df5ab7b",
+    "semantic_hash": "8b536483da2b997799bc18541df5ab7b"
+  },
+  "Source/AlsasuaGameplay/Private/PoliciaActor.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "690d4606560831cd56d941da2b25381d",
+    "semantic_hash": "690d4606560831cd56d941da2b25381d"
+  },
+  "Source/AlsasuaGameplay/Private/PoliciaController.cpp": {
+    "mtime": 1784924094.0,
+    "ast_hash": "0595838e37347958252bcc112fff4408",
+    "semantic_hash": "0595838e37347958252bcc112fff4408"
+  },
+  "Source/AlsasuaGameplay/Private/ProgresionSubsystem.cpp": {
+    "mtime": 1784813634.0,
+    "ast_hash": "151eb3a711ab8028dc8058e6f4a9aef6",
+    "semantic_hash": "151eb3a711ab8028dc8058e6f4a9aef6"
+  },
+  "Source/AlsasuaGameplay/Private/RefuerzosSubsystem.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "ffe2eac8ae2ef660311e169c8b90ee64",
+    "semantic_hash": "ffe2eac8ae2ef660311e169c8b90ee64"
+  },
+  "Source/AlsasuaGameplay/Private/RespawnSubsystem.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "f8d4aec89d58dff70fda7960546fd659",
+    "semantic_hash": "f8d4aec89d58dff70fda7960546fd659"
+  },
+  "Source/AlsasuaGameplay/Private/TraficoSubsystem.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "ae58996b293bca57d50e5a436dbec581",
+    "semantic_hash": "ae58996b293bca57d50e5a436dbec581"
+  },
+  "Source/AlsasuaGameplay/Private/VehiculoAmbiente.cpp": {
+    "mtime": 1784917678.0,
+    "ast_hash": "63bef04a104558b48d696fbfc9792d14",
+    "semantic_hash": "63bef04a104558b48d696fbfc9792d14"
+  },
+  "Source/AlsasuaGameplay/Private/VehiculoJugable.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "2213906f7aef40502da9943004c9e662",
+    "semantic_hash": "2213906f7aef40502da9943004c9e662"
+  },
+  "Source/AlsasuaGameplay/Private/WantedSubsystem.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "d7ae6531c755c20ea838be7f11021fc5",
+    "semantic_hash": "d7ae6531c755c20ea838be7f11021fc5"
+  },
+  "Source/AlsasuaGameplay/Public/AlsasuaGameplayGameMode.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "52394e9aed487f93ee0a6886ceca959b",
+    "semantic_hash": "52394e9aed487f93ee0a6886ceca959b"
+  },
+  "Source/AlsasuaGameplay/Public/AlsasuaGameplayHUD.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "e7fe79618798fa8bcd65b5c1d8183e8e",
+    "semantic_hash": "e7fe79618798fa8bcd65b5c1d8183e8e"
+  },
+  "Source/AlsasuaGameplay/Public/AlsasuaLegacyGameMode.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "1c515341441e1321abd5582803484530",
+    "semantic_hash": "1c515341441e1321abd5582803484530"
+  },
+  "Source/AlsasuaGameplay/Public/AlsasuaLegacyPlayerController.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "48506c50666c8798fc44a9d1d3db213c",
+    "semantic_hash": "48506c50666c8798fc44a9d1d3db213c"
+  },
+  "Source/AlsasuaGameplay/Public/AlsasuaLegacySaveGame.h": {
+    "mtime": 1784975994.0,
+    "ast_hash": "1bf4078392132c9b7ba6f5280111552b",
+    "semantic_hash": "1bf4078392132c9b7ba6f5280111552b"
+  },
+  "Source/AlsasuaGameplay/Public/ApoyoPopularSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "126c8ccb8243189c722019fa23fee833",
+    "semantic_hash": "126c8ccb8243189c722019fa23fee833"
+  },
+  "Source/AlsasuaGameplay/Public/ArmasComponent.h": {
+    "mtime": 1784920342.0,
+    "ast_hash": "b4224a585cfe543608016a968b68c8ea",
+    "semantic_hash": "b4224a585cfe543608016a968b68c8ea"
+  },
+  "Source/AlsasuaGameplay/Public/AudioAmbienteSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "793e6f37c13f69408646a39102f91c3c",
+    "semantic_hash": "793e6f37c13f69408646a39102f91c3c"
+  },
+  "Source/AlsasuaGameplay/Public/CicloVisualSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "01f840e45faa92887d1c7767856da4e1",
+    "semantic_hash": "01f840e45faa92887d1c7767856da4e1"
+  },
+  "Source/AlsasuaGameplay/Public/ClimaSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "cfaa143cd4857eb8aba686fe92523c64",
+    "semantic_hash": "cfaa143cd4857eb8aba686fe92523c64"
+  },
+  "Source/AlsasuaGameplay/Public/ConsecuenciasSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "55e122f94056ce860e022fa807d22198",
+    "semantic_hash": "55e122f94056ce860e022fa807d22198"
+  },
+  "Source/AlsasuaGameplay/Public/DiaNocheSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "332f89315042cdce8beb78151bbd0753",
+    "semantic_hash": "332f89315042cdce8beb78151bbd0753"
+  },
+  "Source/AlsasuaGameplay/Public/DialogoSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "62490e73ae0c0887745294a743a19cf8",
+    "semantic_hash": "62490e73ae0c0887745294a743a19cf8"
+  },
+  "Source/AlsasuaGameplay/Public/DialogoTipos.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "828adcd4cd82597e8c069efff7a47675",
+    "semantic_hash": "828adcd4cd82597e8c069efff7a47675"
+  },
+  "Source/AlsasuaGameplay/Public/DisfrazSubsystem.h": {
+    "mtime": 1784807124.0,
+    "ast_hash": "f5e17798c9db6e04d05cb29d7b4fb3f8",
+    "semantic_hash": "f5e17798c9db6e04d05cb29d7b4fb3f8"
+  },
+  "Source/AlsasuaGameplay/Public/DrogasSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "7d3ff2470ce15b97948e11f1c0462ac3",
+    "semantic_hash": "7d3ff2470ce15b97948e11f1c0462ac3"
+  },
+  "Source/AlsasuaGameplay/Public/EconomiaCriminalSubsystem.h": {
+    "mtime": 1784815664.0,
+    "ast_hash": "b0b3919eda88411229f86ecd2da30b97",
+    "semantic_hash": "b0b3919eda88411229f86ecd2da30b97"
+  },
+  "Source/AlsasuaGameplay/Public/EconomiaSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "e706045456c5d085530c27dcc418ea91",
+    "semantic_hash": "e706045456c5d085530c27dcc418ea91"
+  },
+  "Source/AlsasuaGameplay/Public/GuardadoSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "d7a963b06318731eadd2ff3328c6b7c9",
+    "semantic_hash": "d7a963b06318731eadd2ff3328c6b7c9"
+  },
+  "Source/AlsasuaGameplay/Public/LocalizacionSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "fe8b78fe1940262d352f12a216f5c829",
+    "semantic_hash": "fe8b78fe1940262d352f12a216f5c829"
+  },
+  "Source/AlsasuaGameplay/Public/ManifestacionSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "fa936603c2e482998c6578878b42685b",
+    "semantic_hash": "fa936603c2e482998c6578878b42685b"
+  },
+  "Source/AlsasuaGameplay/Public/ManifestanteActor.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "44d3231120869765254d3576d7eb73e4",
+    "semantic_hash": "44d3231120869765254d3576d7eb73e4"
+  },
+  "Source/AlsasuaGameplay/Public/ManifestanteController.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "14694516e0db4710dd42c058e2aec085",
+    "semantic_hash": "14694516e0db4710dd42c058e2aec085"
+  },
+  "Source/AlsasuaGameplay/Public/MenuPrincipalController.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "1c54785e0dadb47c2dc049f6d85f4a84",
+    "semantic_hash": "1c54785e0dadb47c2dc049f6d85f4a84"
+  },
+  "Source/AlsasuaGameplay/Public/MenuPrincipalGameMode.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "567848d28e8225e727576ad0c954c92d",
+    "semantic_hash": "567848d28e8225e727576ad0c954c92d"
+  },
+  "Source/AlsasuaGameplay/Public/MenuSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "5c279ddf62b2ebba950aa18ffa0c8865",
+    "semantic_hash": "5c279ddf62b2ebba950aa18ffa0c8865"
+  },
+  "Source/AlsasuaGameplay/Public/MisionTipos.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "ca31321a985206eb14dbe01fa32fac73",
+    "semantic_hash": "ca31321a985206eb14dbe01fa32fac73"
+  },
+  "Source/AlsasuaGameplay/Public/MisionesSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "cb7bd5a141442376b224df05c430435a",
+    "semantic_hash": "cb7bd5a141442376b224df05c430435a"
+  },
+  "Source/AlsasuaGameplay/Public/NegocioActor.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "5b14e57d51c27d4447d8a1a761e8f80e",
+    "semantic_hash": "5b14e57d51c27d4447d8a1a761e8f80e"
+  },
+  "Source/AlsasuaGameplay/Public/PeatonActor.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "cd70610c8f92fadc46c1fda079bea63e",
+    "semantic_hash": "cd70610c8f92fadc46c1fda079bea63e"
+  },
+  "Source/AlsasuaGameplay/Public/PeatonController.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "e8f9121adf8aac619dfc3e1263e5cfe8",
+    "semantic_hash": "e8f9121adf8aac619dfc3e1263e5cfe8"
+  },
+  "Source/AlsasuaGameplay/Public/PisoFrancoActor.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "842e5f0770af57dc639ccc6607f188b4",
+    "semantic_hash": "842e5f0770af57dc639ccc6607f188b4"
+  },
+  "Source/AlsasuaGameplay/Public/PoblacionSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "4ae6a9c839ad8b56652721e4bf323c4c",
+    "semantic_hash": "4ae6a9c839ad8b56652721e4bf323c4c"
+  },
+  "Source/AlsasuaGameplay/Public/PoliciaActor.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "21688b5706b37006c61db857d20bfcef",
+    "semantic_hash": "21688b5706b37006c61db857d20bfcef"
+  },
+  "Source/AlsasuaGameplay/Public/PoliciaController.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "79eb963bc052c52386654306692cba1e",
+    "semantic_hash": "79eb963bc052c52386654306692cba1e"
+  },
+  "Source/AlsasuaGameplay/Public/ProgresionSubsystem.h": {
+    "mtime": 1784813626.0,
+    "ast_hash": "1bd65869b60e9dbdc944833ba3da375a",
+    "semantic_hash": "1bd65869b60e9dbdc944833ba3da375a"
+  },
+  "Source/AlsasuaGameplay/Public/RefuerzosSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "de26b0e00a19ff91a237f6cef2a0f654",
+    "semantic_hash": "de26b0e00a19ff91a237f6cef2a0f654"
+  },
+  "Source/AlsasuaGameplay/Public/RespawnSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "168a9af3a50de5c1a15fb5ca3bae726e",
+    "semantic_hash": "168a9af3a50de5c1a15fb5ca3bae726e"
+  },
+  "Source/AlsasuaGameplay/Public/TraficoSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "fabb9d9d58d88bb2c9261d0c4efef2e1",
+    "semantic_hash": "fabb9d9d58d88bb2c9261d0c4efef2e1"
+  },
+  "Source/AlsasuaGameplay/Public/VehiculoAmbiente.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "7f788f0cbe4579b6dc37a83b79fe3ec6",
+    "semantic_hash": "7f788f0cbe4579b6dc37a83b79fe3ec6"
+  },
+  "Source/AlsasuaGameplay/Public/VehiculoJugable.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "92d6a451ab2ed82a57730eaf47395448",
+    "semantic_hash": "92d6a451ab2ed82a57730eaf47395448"
+  },
+  "Source/AlsasuaGameplay/Public/WantedSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "5103bcf555b6a9dd7ad6961306a1fc7d",
+    "semantic_hash": "5103bcf555b6a9dd7ad6961306a1fc7d"
+  },
+  "Source/AlsasuaManifa.Target.cs": {
+    "mtime": 1784724880.0,
+    "ast_hash": "549e1d0259dac08e8a8a591733f24391",
+    "semantic_hash": "549e1d0259dac08e8a8a591733f24391"
+  },
+  "Source/AlsasuaManifaEditor.Target.cs": {
+    "mtime": 1784724880.0,
+    "ast_hash": "b653281e34c14609bbb8108cce50956d",
+    "semantic_hash": "b653281e34c14609bbb8108cce50956d"
+  },
+  "Source/AlsasuaManifa/AlsasuaManifa.Build.cs": {
+    "mtime": 1784993356.0,
+    "ast_hash": "0ffced45eeb7f42c416ee5ae39b84b1e",
+    "semantic_hash": "0ffced45eeb7f42c416ee5ae39b84b1e"
+  },
+  "Source/AlsasuaManifa/AlsasuaManifa.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "0e2b6d151fbf7db0dfe1e61e4edd9208",
+    "semantic_hash": "0e2b6d151fbf7db0dfe1e61e4edd9208"
+  },
+  "Source/AlsasuaManifa/AlsasuaManifa.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "cba7e34de0a57ec1e8aa7463686c60a6",
+    "semantic_hash": "cba7e34de0a57ec1e8aa7463686c60a6"
+  },
+  "Source/AlsasuaManifa/Private/AI/AlsasuaAIController.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "eff755ac5e4d033fb5a5c08ce5db5207",
+    "semantic_hash": "eff755ac5e4d033fb5a5c08ce5db5207"
+  },
+  "Source/AlsasuaManifa/Private/AI/AlsasuaAbility_Shout.cpp": {
+    "mtime": 1784918324.0,
+    "ast_hash": "1eb232193962cc97fb303eb6381952cd",
+    "semantic_hash": "1eb232193962cc97fb303eb6381952cd"
+  },
+  "Source/AlsasuaManifa/Private/AI/AlsasuaCrowdAgentComponent.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "2add61c728d0214c63102a683d559180",
+    "semantic_hash": "2add61c728d0214c63102a683d559180"
+  },
+  "Source/AlsasuaManifa/Private/AI/AlsasuaCrowdSentiment.cpp": {
+    "mtime": 1784884680.0,
+    "ast_hash": "6f5131b49c4d34dfcf8a8ce52c3c73fa",
+    "semantic_hash": "6f5131b49c4d34dfcf8a8ce52c3c73fa"
+  },
+  "Source/AlsasuaManifa/Private/AI/AlsasuaDialogueComponent.cpp": {
+    "mtime": 1784782704.0,
+    "ast_hash": "1ac2c9df55dff47cae4fe6d68e80f9e7",
+    "semantic_hash": "1ac2c9df55dff47cae4fe6d68e80f9e7"
+  },
+  "Source/AlsasuaManifa/Private/AI/AlsasuaNavAvoidance.cpp": {
+    "mtime": 1784918146.0,
+    "ast_hash": "490a16f3ac0fb6dd22b258a4ce6cb091",
+    "semantic_hash": "490a16f3ac0fb6dd22b258a4ce6cb091"
+  },
+  "Source/AlsasuaManifa/Private/AI/AlsasuaSquadManager.cpp": {
+    "mtime": 1784884678.0,
+    "ast_hash": "a3583dd660251d55bcb6191697af3061",
+    "semantic_hash": "a3583dd660251d55bcb6191697af3061"
+  },
+  "Source/AlsasuaManifa/Private/AI/AlsasuaTacticManager.cpp": {
+    "mtime": 1784782568.0,
+    "ast_hash": "f52cfa2aea393252821c91d2448b4a7a",
+    "semantic_hash": "f52cfa2aea393252821c91d2448b4a7a"
+  },
+  "Source/AlsasuaManifa/Private/AI/Crowd/AlsasuaCrowdSubsystem.cpp": {
+    "mtime": 1784918152.0,
+    "ast_hash": "0eeb2c1ec6a2a30f6c72a57e49a876d9",
+    "semantic_hash": "0eeb2c1ec6a2a30f6c72a57e49a876d9"
+  },
+  "Source/AlsasuaManifa/Private/AI/Crowd/AlsasuaManifestacionManager.cpp": {
+    "mtime": 1784734594.0,
+    "ast_hash": "7756df3d48fd98cbfa8f275fa7f0d042",
+    "semantic_hash": "7756df3d48fd98cbfa8f275fa7f0d042"
+  },
+  "Source/AlsasuaManifa/Private/AI/Crowd/AlsasuaRiotControlSubsystem.cpp": {
+    "mtime": 1784917428.0,
+    "ast_hash": "1ba6d4c288b452b882bc59c6b8b9543e",
+    "semantic_hash": "1ba6d4c288b452b882bc59c6b8b9543e"
+  },
+  "Source/AlsasuaManifa/Private/AI/Crowd/CrowdRagdollActor.cpp": {
+    "mtime": 1784918154.0,
+    "ast_hash": "8e640229e4f1e453ed6e3ebe8e3ba105",
+    "semantic_hash": "8e640229e4f1e453ed6e3ebe8e3ba105"
+  },
+  "Source/AlsasuaManifa/Private/AI/Crowd/ManifaFormationManager.cpp": {
+    "mtime": 1784782664.0,
+    "ast_hash": "2d9480841df6bd9c92ddaca76f1d7d45",
+    "semantic_hash": "2d9480841df6bd9c92ddaca76f1d7d45"
+  },
+  "Source/AlsasuaManifa/Private/AI/Crowd/SpatialHashGrid.cpp": {
+    "mtime": 1784734172.0,
+    "ast_hash": "6f2dec2e41ab1038c1e4cc6fb221b3bc",
+    "semantic_hash": "6f2dec2e41ab1038c1e4cc6fb221b3bc"
+  },
+  "Source/AlsasuaManifa/Private/AI/Vehicle/PursuitSubsystem.cpp": {
+    "mtime": 1784923988.0,
+    "ast_hash": "523b78a068f13e2cbb5c351d08db9221",
+    "semantic_hash": "523b78a068f13e2cbb5c351d08db9221"
+  },
+  "Source/AlsasuaManifa/Private/AI/Vehicle/VehicleAIController.cpp": {
+    "mtime": 1784809988.0,
+    "ast_hash": "1316f62f3ae56b5012f461236e929d2e",
+    "semantic_hash": "1316f62f3ae56b5012f461236e929d2e"
+  },
+  "Source/AlsasuaManifa/Private/Abilities/AlsasuaAbility_Rally.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "846f3b20bb11f0ea7cabcddf9d218d02",
+    "semantic_hash": "846f3b20bb11f0ea7cabcddf9d218d02"
+  },
+  "Source/AlsasuaManifa/Private/Abilities/AlsasuaAbility_Sprint.cpp": {
+    "mtime": 1784918422.0,
+    "ast_hash": "362994cfce6bf9a8b3708e68ef282ce8",
+    "semantic_hash": "362994cfce6bf9a8b3708e68ef282ce8"
+  },
+  "Source/AlsasuaManifa/Private/Abilities/AlsasuaGameplayAbility.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "56d80a8897308db8cee1ac8455420246",
+    "semantic_hash": "56d80a8897308db8cee1ac8455420246"
+  },
+  "Source/AlsasuaManifa/Private/Abilities/Infiltration/AlsasuaAbility_Lockpick.cpp": {
+    "mtime": 1784924010.0,
+    "ast_hash": "ac27877901a9216805fc2ef5ab0dff3f",
+    "semantic_hash": "ac27877901a9216805fc2ef5ab0dff3f"
+  },
+  "Source/AlsasuaManifa/Private/Abilities/Infiltration/AlsasuaAbility_SilentTakedown.cpp": {
+    "mtime": 1784924020.0,
+    "ast_hash": "e0a39152fdfa96676e674d0460a0c753",
+    "semantic_hash": "e0a39152fdfa96676e674d0460a0c753"
+  },
+  "Source/AlsasuaManifa/Private/Abilities/Social/BoostRecruitmentAbility.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "f688ce23a4c659017d676c3cc5730bca",
+    "semantic_hash": "f688ce23a4c659017d676c3cc5730bca"
+  },
+  "Source/AlsasuaManifa/Private/Abilities/Social/ViralPushAbility.cpp": {
+    "mtime": 1784918326.0,
+    "ast_hash": "77dfb2f1bb92733533036099ab98093e",
+    "semantic_hash": "77dfb2f1bb92733533036099ab98093e"
+  },
+  "Source/AlsasuaManifa/Private/AlsasuaAbilitySystemComponent.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "c2acb0f4efa3273ad3c9cb660073348f",
+    "semantic_hash": "c2acb0f4efa3273ad3c9cb660073348f"
+  },
+  "Source/AlsasuaManifa/Private/AlsasuaAnimInstance.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "92813b13be2a85b27e0582b474bed801",
+    "semantic_hash": "92813b13be2a85b27e0582b474bed801"
+  },
+  "Source/AlsasuaManifa/Private/AlsasuaAttributeSet.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "a71442252bc5fe1ecfbd4629c9e2ce9c",
+    "semantic_hash": "a71442252bc5fe1ecfbd4629c9e2ce9c"
+  },
+  "Source/AlsasuaManifa/Private/AlsasuaCharacter.cpp": {
+    "mtime": 1784868766.0,
+    "ast_hash": "d3977e9623e6b1e4c848636d9270e9c6",
+    "semantic_hash": "d3977e9623e6b1e4c848636d9270e9c6"
+  },
+  "Source/AlsasuaManifa/Private/AlsasuaCore.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "bf98f747aba98c45d662a4a3a4d1c9af",
+    "semantic_hash": "bf98f747aba98c45d662a4a3a4d1c9af"
+  },
+  "Source/AlsasuaManifa/Private/AlsasuaDebugComponent.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "ba0a14725af24fb4264cbad15d2b1260",
+    "semantic_hash": "ba0a14725af24fb4264cbad15d2b1260"
+  },
+  "Source/AlsasuaManifa/Private/AlsasuaGameInstance.cpp": {
+    "mtime": 1784778406.0,
+    "ast_hash": "9dc77e00a0ccc2f3f9fad8a5008b7a54",
+    "semantic_hash": "9dc77e00a0ccc2f3f9fad8a5008b7a54"
+  },
+  "Source/AlsasuaManifa/Private/AlsasuaGameMode.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "594562ef1fb34e096290ebe2a461a6a2",
+    "semantic_hash": "594562ef1fb34e096290ebe2a461a6a2"
+  },
+  "Source/AlsasuaManifa/Private/AlsasuaGameState.cpp": {
+    "mtime": 1784734268.0,
+    "ast_hash": "f68b6051a7debbc0fd0df0b98af2083b",
+    "semantic_hash": "f68b6051a7debbc0fd0df0b98af2083b"
+  },
+  "Source/AlsasuaManifa/Private/AlsasuaNoiseComponent.cpp": {
+    "mtime": 1784917432.0,
+    "ast_hash": "98de3570c9236b0c381d4c15fea78011",
+    "semantic_hash": "98de3570c9236b0c381d4c15fea78011"
+  },
+  "Source/AlsasuaManifa/Private/AlsasuaOptimizerSubsystem.cpp": {
+    "mtime": 1784890244.0,
+    "ast_hash": "1ecdd9e9e1585c9c1e96c6c07f34a21e",
+    "semantic_hash": "1ecdd9e9e1585c9c1e96c6c07f34a21e"
+  },
+  "Source/AlsasuaManifa/Private/AlsasuaPlayerController.cpp": {
+    "mtime": 1784976928.0,
+    "ast_hash": "cfa8220ddd95e78882300eba349ad0cb",
+    "semantic_hash": "cfa8220ddd95e78882300eba349ad0cb"
+  },
+  "Source/AlsasuaManifa/Private/AlsasuaPlayerState.cpp": {
+    "mtime": 1784734272.0,
+    "ast_hash": "d0b590d1649d7f527f60f74070101c0f",
+    "semantic_hash": "d0b590d1649d7f527f60f74070101c0f"
+  },
+  "Source/AlsasuaManifa/Private/AlsasuaSaveGame.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "35e1240926d1f500fe34918b7f064272",
+    "semantic_hash": "35e1240926d1f500fe34918b7f064272"
+  },
+  "Source/AlsasuaManifa/Private/AlsasuaSubsystemTests.cpp": {
+    "mtime": 1784885050.0,
+    "ast_hash": "62c73f67ea7763bf358746b251c1c1db",
+    "semantic_hash": "62c73f67ea7763bf358746b251c1c1db"
+  },
+  "Source/AlsasuaManifa/Private/AlsasuaTrafficAgent.cpp": {
+    "mtime": 1784867954.0,
+    "ast_hash": "8f07e6fa9667e576d6cae9fa2f1ad583",
+    "semantic_hash": "8f07e6fa9667e576d6cae9fa2f1ad583"
+  },
+  "Source/AlsasuaManifa/Private/Audio/AlsasuaAdaptiveMusic.cpp": {
+    "mtime": 1784884742.0,
+    "ast_hash": "d96ca492f4247f1020ffa38a75b53b7b",
+    "semantic_hash": "d96ca492f4247f1020ffa38a75b53b7b"
+  },
+  "Source/AlsasuaManifa/Private/Audio/AlsasuaAudioAmbisonics.cpp": {
+    "mtime": 1784918322.0,
+    "ast_hash": "c9480d68751bf80b446c288479008bcb",
+    "semantic_hash": "c9480d68751bf80b446c288479008bcb"
+  },
+  "Source/AlsasuaManifa/Private/Audio/AlsasuaAudioManager.cpp": {
+    "mtime": 1784918298.0,
+    "ast_hash": "b21a2bda0fd1fd554811916e1bb52b81",
+    "semantic_hash": "b21a2bda0fd1fd554811916e1bb52b81"
+  },
+  "Source/AlsasuaManifa/Private/Character/Camera/PhotoCameraComponent.cpp": {
+    "mtime": 1784923968.0,
+    "ast_hash": "dd815b91c30a8de48b154150eb91c50b",
+    "semantic_hash": "dd815b91c30a8de48b154150eb91c50b"
+  },
+  "Source/AlsasuaManifa/Private/Character/GameplayPostProcessComponent.cpp": {
+    "mtime": 1784923288.0,
+    "ast_hash": "78fb55bc50bdc4fc671854c0d8c8eeb7",
+    "semantic_hash": "78fb55bc50bdc4fc671854c0d8c8eeb7"
+  },
+  "Source/AlsasuaManifa/Private/Character/Stealth/GuardDetectionComponent.cpp": {
+    "mtime": 1784923300.0,
+    "ast_hash": "3cdf740ac709d6052823345b7e251269",
+    "semantic_hash": "3cdf740ac709d6052823345b7e251269"
+  },
+  "Source/AlsasuaManifa/Private/Character/Stealth/SocialStealthComponent.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "b67b3dab99af1eab99b316768d6ddabb",
+    "semantic_hash": "b67b3dab99af1eab99b316768d6ddabb"
+  },
+  "Source/AlsasuaManifa/Private/ClimateSubsystem.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "06814882ae56c8d9dba103a7520d44de",
+    "semantic_hash": "06814882ae56c8d9dba103a7520d44de"
+  },
+  "Source/AlsasuaManifa/Private/Components/Camera/AdvancedCameraComponent.cpp": {
+    "mtime": 1784923980.0,
+    "ast_hash": "e004624ca1ddbb6949a773192d22bbd5",
+    "semantic_hash": "e004624ca1ddbb6949a773192d22bbd5"
+  },
+  "Source/AlsasuaManifa/Private/Core/AlsasuaAsyncProcessor.cpp": {
+    "mtime": 1784782580.0,
+    "ast_hash": "2c187e3d3dfbf5484fe81707192ed8a6",
+    "semantic_hash": "2c187e3d3dfbf5484fe81707192ed8a6"
+  },
+  "Source/AlsasuaManifa/Private/Core/AlsasuaBudgetManager.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "8a046a2d4f854a1cf562901b2d61c106",
+    "semantic_hash": "8a046a2d4f854a1cf562901b2d61c106"
+  },
+  "Source/AlsasuaManifa/Private/Core/AlsasuaChainReactionSubsystem.cpp": {
+    "mtime": 1784918134.0,
+    "ast_hash": "cc1ef46eacf0b30b136541746c72c591",
+    "semantic_hash": "cc1ef46eacf0b30b136541746c72c591"
+  },
+  "Source/AlsasuaManifa/Private/Core/AlsasuaCommandQueue.cpp": {
+    "mtime": 1784918136.0,
+    "ast_hash": "25eb860aa05adff449978371d6a9dec4",
+    "semantic_hash": "25eb860aa05adff449978371d6a9dec4"
+  },
+  "Source/AlsasuaManifa/Private/Core/AlsasuaCrowdAssembler.cpp": {
+    "mtime": 1784918150.0,
+    "ast_hash": "537e6fe409c6a3f827b942217b86faca",
+    "semantic_hash": "537e6fe409c6a3f827b942217b86faca"
+  },
+  "Source/AlsasuaManifa/Private/Core/AlsasuaDemoOrchestrator.cpp": {
+    "mtime": 1784890220.0,
+    "ast_hash": "97803b8c43a5d34ce9ad7cb4eda61162",
+    "semantic_hash": "97803b8c43a5d34ce9ad7cb4eda61162"
+  },
+  "Source/AlsasuaManifa/Private/Core/AlsasuaEventManager.cpp": {
+    "mtime": 1784918158.0,
+    "ast_hash": "7f2bfa558c7e9847607b2ffbe897ee08",
+    "semantic_hash": "7f2bfa558c7e9847607b2ffbe897ee08"
+  },
+  "Source/AlsasuaManifa/Private/Core/AlsasuaHitchProtector.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "1a7ce5f3e99d35533d6533f9ca75ad83",
+    "semantic_hash": "1a7ce5f3e99d35533d6533f9ca75ad83"
+  },
+  "Source/AlsasuaManifa/Private/Core/AlsasuaOutcomeSystem.cpp": {
+    "mtime": 1784918784.0,
+    "ast_hash": "48e5a4f2fd8472ae40e3b4956366d987",
+    "semantic_hash": "48e5a4f2fd8472ae40e3b4956366d987"
+  },
+  "Source/AlsasuaManifa/Private/Core/AlsasuaProfiling.h": {
+    "mtime": 1784883632.0,
+    "ast_hash": "fa869519c9cc04f92b8ea831bf0a7df0",
+    "semantic_hash": "fa869519c9cc04f92b8ea831bf0a7df0"
+  },
+  "Source/AlsasuaManifa/Private/Core/AlsasuaReplaySystem.cpp": {
+    "mtime": 1784924048.0,
+    "ast_hash": "81209aa6d1c75b876668389cb4e2e755",
+    "semantic_hash": "81209aa6d1c75b876668389cb4e2e755"
+  },
+  "Source/AlsasuaManifa/Private/Core/AlsasuaSpatialGrid.cpp": {
+    "mtime": 1784809862.0,
+    "ast_hash": "e64b80c4c38caf7ba985643089a7645c",
+    "semantic_hash": "e64b80c4c38caf7ba985643089a7645c"
+  },
+  "Source/AlsasuaManifa/Private/Core/Manifa/ManifaManager.cpp": {
+    "mtime": 1784802940.0,
+    "ast_hash": "54632899dd1fc6afcfc9b0102af4a4cb",
+    "semantic_hash": "54632899dd1fc6afcfc9b0102af4a4cb"
+  },
+  "Source/AlsasuaManifa/Private/CrowdAudioManager.cpp": {
+    "mtime": 1784923282.0,
+    "ast_hash": "dd8637084b35ab7bcb8e7ff399c69142",
+    "semantic_hash": "dd8637084b35ab7bcb8e7ff399c69142"
+  },
+  "Source/AlsasuaManifa/Private/Data/AlsasuaEntityDataAsset.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "8df61528925f37907892c335327bbe0e",
+    "semantic_hash": "8df61528925f37907892c335327bbe0e"
+  },
+  "Source/AlsasuaManifa/Private/Environment/TreeSpawnerComponent.cpp": {
+    "mtime": 1784923022.0,
+    "ast_hash": "3d4be6fa86387fda1c127998566249c7",
+    "semantic_hash": "3d4be6fa86387fda1c127998566249c7"
+  },
+  "Source/AlsasuaManifa/Private/Environment/VegetationSpawnerSubsystem.cpp": {
+    "mtime": 1784923020.0,
+    "ast_hash": "20be2ce99648c20ab5d086596430fb12",
+    "semantic_hash": "20be2ce99648c20ab5d086596430fb12"
+  },
+  "Source/AlsasuaManifa/Private/Environment/VegetationType.cpp": {
+    "mtime": 1784734068.0,
+    "ast_hash": "6f965c5e5a76d94a227c937a7f611d51",
+    "semantic_hash": "6f965c5e5a76d94a227c937a7f611d51"
+  },
+  "Source/AlsasuaManifa/Private/GAS/GameplayEffect_Stress.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "9d1587ace682482ab1de64e4432318b9",
+    "semantic_hash": "9d1587ace682482ab1de64e4432318b9"
+  },
+  "Source/AlsasuaManifa/Private/Gameplay/Detention/DetentionMinigameComponent.cpp": {
+    "mtime": 1784818032.0,
+    "ast_hash": "15db7fe8ee6454d96f35dacda10a18ae",
+    "semantic_hash": "15db7fe8ee6454d96f35dacda10a18ae"
+  },
+  "Source/AlsasuaManifa/Private/Gameplay/Detention/InterrogatorActor.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "bb2dfd72222643200fca311159dc0c22",
+    "semantic_hash": "bb2dfd72222643200fca311159dc0c22"
+  },
+  "Source/AlsasuaManifa/Private/Gameplay/Narco/NarcoSyndicateComponent.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "d3e37e557ca45a6727f2e53ab9cedd27",
+    "semantic_hash": "d3e37e557ca45a6727f2e53ab9cedd27"
+  },
+  "Source/AlsasuaManifa/Private/IInteractuable.cpp": {
+    "mtime": 1784890258.0,
+    "ast_hash": "4410ebf792b52d3839f2f0c5b4933d9d",
+    "semantic_hash": "4410ebf792b52d3839f2f0c5b4933d9d"
+  },
+  "Source/AlsasuaManifa/Private/Interaction/AlsasuaSmartObject.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "64eaba81cf0b244ba2a388f3e36d6973",
+    "semantic_hash": "64eaba81cf0b244ba2a388f3e36d6973"
+  },
+  "Source/AlsasuaManifa/Private/Inventory/AlsasuaInventoryComponent.cpp": {
+    "mtime": 1784815408.0,
+    "ast_hash": "c23c25b2167a9b97f56863e03404a320",
+    "semantic_hash": "c23c25b2167a9b97f56863e03404a320"
+  },
+  "Source/AlsasuaManifa/Private/Items/Explosives/IncendiaryCharge.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "0a3a40a6bcdf8633c9a25c4f0cea56d8",
+    "semantic_hash": "0a3a40a6bcdf8633c9a25c4f0cea56d8"
+  },
+  "Source/AlsasuaManifa/Private/Items/MegaphoneTool.cpp": {
+    "mtime": 1784811792.0,
+    "ast_hash": "cff53b3caa66393cdc6a0a95a5bd88a7",
+    "semantic_hash": "cff53b3caa66393cdc6a0a95a5bd88a7"
+  },
+  "Source/AlsasuaManifa/Private/Items/ResistanceTool.cpp": {
+    "mtime": 1784923580.0,
+    "ast_hash": "6a605d65c87fe2f6f15f6d2a69d2acd5",
+    "semantic_hash": "6a605d65c87fe2f6f15f6d2a69d2acd5"
+  },
+  "Source/AlsasuaManifa/Private/Mass/AlsasuaMassParallelManager.cpp": {
+    "mtime": 1784923262.0,
+    "ast_hash": "38283a851414cf500b5caa4eff196176",
+    "semantic_hash": "38283a851414cf500b5caa4eff196176"
+  },
+  "Source/AlsasuaManifa/Private/Mass/AlsasuaMassProxiesManager.cpp": {
+    "mtime": 1784923268.0,
+    "ast_hash": "c3ab4b9abfb4a60d89da0073de4a7f93",
+    "semantic_hash": "c3ab4b9abfb4a60d89da0073de4a7f93"
+  },
+  "Source/AlsasuaManifa/Private/MegaphoneActor.cpp": {
+    "mtime": 1784778352.0,
+    "ast_hash": "f3b698782030622990a647109f3e3738",
+    "semantic_hash": "f3b698782030622990a647109f3e3738"
+  },
+  "Source/AlsasuaManifa/Private/MisionManager.cpp": {
+    "mtime": 1784778394.0,
+    "ast_hash": "fe419835376b80958e4b4f04fe75a4ee",
+    "semantic_hash": "fe419835376b80958e4b4f04fe75a4ee"
+  },
+  "Source/AlsasuaManifa/Private/Mision/SabotageMissionActor.cpp": {
+    "mtime": 1784918316.0,
+    "ast_hash": "87383bdb73de5ec6a83b6827d05b6835",
+    "semantic_hash": "87383bdb73de5ec6a83b6827d05b6835"
+  },
+  "Source/AlsasuaManifa/Private/NPCGuardCharacter.cpp": {
+    "mtime": 1784811774.0,
+    "ast_hash": "aff2e6d6228fa8b37a75f14c1e10167f",
+    "semantic_hash": "aff2e6d6228fa8b37a75f14c1e10167f"
+  },
+  "Source/AlsasuaManifa/Private/NPCs/DeepState/OperativeCharacter.cpp": {
+    "mtime": 1784812518.0,
+    "ast_hash": "e2977f8bd3c09cbeda3ce6258c59b5f4",
+    "semantic_hash": "e2977f8bd3c09cbeda3ce6258c59b5f4"
+  },
+  "Source/AlsasuaManifa/Private/NPCs/DeepState/PoliticalAgent.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "e6d9ee5d42f42ffd17ed3b07b13cd109",
+    "semantic_hash": "e6d9ee5d42f42ffd17ed3b07b13cd109"
+  },
+  "Source/AlsasuaManifa/Private/NPCs/HostageCharacter.cpp": {
+    "mtime": 1784923672.0,
+    "ast_hash": "e52e5e7f3628c738a4d47187368a14af",
+    "semantic_hash": "e52e5e7f3628c738a4d47187368a14af"
+  },
+  "Source/AlsasuaManifa/Private/NPCs/Underworld/NarcoDealerCharacter.cpp": {
+    "mtime": 1784918304.0,
+    "ast_hash": "abe0b325dc51cb9e2bf5175bb1d6a620",
+    "semantic_hash": "abe0b325dc51cb9e2bf5175bb1d6a620"
+  },
+  "Source/AlsasuaManifa/Private/Optimization/AlsasuaActorPoolSubsystem.cpp": {
+    "mtime": 1784924042.0,
+    "ast_hash": "f4bf0471ee840c8a656bbcb81f82ff85",
+    "semantic_hash": "f4bf0471ee840c8a656bbcb81f82ff85"
+  },
+  "Source/AlsasuaManifa/Private/Optimization/AlsasuaCrowdHISMManager.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "1dc50fbfb8abb296dafb74a14d01198c",
+    "semantic_hash": "1dc50fbfb8abb296dafb74a14d01198c"
+  },
+  "Source/AlsasuaManifa/Private/Politics/Crisis/StateOfAlarmSubsystem.cpp": {
+    "mtime": 1784890222.0,
+    "ast_hash": "f2ce5f36053e8c644b966f49a854ec97",
+    "semantic_hash": "f2ce5f36053e8c644b966f49a854ec97"
+  },
+  "Source/AlsasuaManifa/Private/Politics/FactionSubsystem.cpp": {
+    "mtime": 1784918568.0,
+    "ast_hash": "8dc5db4da686821791c39833414c7085",
+    "semantic_hash": "8dc5db4da686821791c39833414c7085"
+  },
+  "Source/AlsasuaManifa/Private/Politics/ReputationComponent.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "1987fe96f42c7a61748a3e0b8f70da90",
+    "semantic_hash": "1987fe96f42c7a61748a3e0b8f70da90"
+  },
+  "Source/AlsasuaManifa/Private/Press/AlsasuaPhotoComponent.cpp": {
+    "mtime": 1784918310.0,
+    "ast_hash": "9d517378d5d97ecc08245c414937cd6b",
+    "semantic_hash": "9d517378d5d97ecc08245c414937cd6b"
+  },
+  "Source/AlsasuaManifa/Private/Social/EvidenceSubsystem.cpp": {
+    "mtime": 1784918312.0,
+    "ast_hash": "7adcac53d9d471bd30d11a62af00e4a2",
+    "semantic_hash": "7adcac53d9d471bd30d11a62af00e4a2"
+  },
+  "Source/AlsasuaManifa/Private/Social/Interrogatorio/InterrogationManager.cpp": {
+    "mtime": 1784815386.0,
+    "ast_hash": "20a688c77e43b873e92ed6042f7fd3aa",
+    "semantic_hash": "20a688c77e43b873e92ed6042f7fd3aa"
+  },
+  "Source/AlsasuaManifa/Private/Systems/Camera/EvidenceCaptureComponent.cpp": {
+    "mtime": 1784924082.0,
+    "ast_hash": "b18833cded31c679c412385efe1ed0f5",
+    "semantic_hash": "b18833cded31c679c412385efe1ed0f5"
+  },
+  "Source/AlsasuaManifa/Private/Systems/Cinema/ProcessionDirectorSubsystem.cpp": {
+    "mtime": 1784918176.0,
+    "ast_hash": "f762115a735bcd0fff0b843a4f4948e8",
+    "semantic_hash": "f762115a735bcd0fff0b843a4f4948e8"
+  },
+  "Source/AlsasuaManifa/Private/Systems/Criminal/ExtortionComponent.cpp": {
+    "mtime": 1784868828.0,
+    "ast_hash": "cec8fa932d3340061f405488549d181c",
+    "semantic_hash": "cec8fa932d3340061f405488549d181c"
+  },
+  "Source/AlsasuaManifa/Private/Systems/Criminal/HideoutActor.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "b9bbdec84f721b4b902fa9c037f9db4b",
+    "semantic_hash": "b9bbdec84f721b4b902fa9c037f9db4b"
+  },
+  "Source/AlsasuaManifa/Private/Systems/Debug/AlsasuaDebugSteering.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "addad3dc516cd62bfa9f89bad8956702",
+    "semantic_hash": "addad3dc516cd62bfa9f89bad8956702"
+  },
+  "Source/AlsasuaManifa/Private/Systems/Debug/DebugManager.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "706b373ce9b7e4cf7f1dce3b2458e096",
+    "semantic_hash": "706b373ce9b7e4cf7f1dce3b2458e096"
+  },
+  "Source/AlsasuaManifa/Private/Systems/DeepState/DeepStateSubsystem.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "cfe0d8e492f182eb284fd01622733b30",
+    "semantic_hash": "cfe0d8e492f182eb284fd01622733b30"
+  },
+  "Source/AlsasuaManifa/Private/Systems/Dialog/DialogAsset.cpp": {
+    "mtime": 1784809938.0,
+    "ast_hash": "923325bcaec02c8305aa07080264f0dc",
+    "semantic_hash": "923325bcaec02c8305aa07080264f0dc"
+  },
+  "Source/AlsasuaManifa/Private/Systems/Dialog/DialogComponent.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "f0fde68bcd5b36b631787458e767e0a5",
+    "semantic_hash": "f0fde68bcd5b36b631787458e767e0a5"
+  },
+  "Source/AlsasuaManifa/Private/Systems/Dialog/DialogInstance.cpp": {
+    "mtime": 1784921010.0,
+    "ast_hash": "419fb1edb060de0ad6945c449e4bab01",
+    "semantic_hash": "419fb1edb060de0ad6945c449e4bab01"
+  },
+  "Source/AlsasuaManifa/Private/Systems/Dialog/DialogMemoryComponent.cpp": {
+    "mtime": 1784918142.0,
+    "ast_hash": "37c0d1f187ee0f6581ff8ecd1b844a73",
+    "semantic_hash": "37c0d1f187ee0f6581ff8ecd1b844a73"
+  },
+  "Source/AlsasuaManifa/Private/Systems/Dialog/DialogSubsystem.cpp": {
+    "mtime": 1784811698.0,
+    "ast_hash": "4c39e9c0d8cc99084f40579a62d77b32",
+    "semantic_hash": "4c39e9c0d8cc99084f40579a62d77b32"
+  },
+  "Source/AlsasuaManifa/Private/Systems/Dialog/DialogTextFormatter.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "7b7c1cba05bc4bfcc0dae07c9ef346b7",
+    "semantic_hash": "7b7c1cba05bc4bfcc0dae07c9ef346b7"
+  },
+  "Source/AlsasuaManifa/Private/Systems/Disguise/DisguiseComponent.cpp": {
+    "mtime": 1784854058.0,
+    "ast_hash": "acdc9d758fa10695c1eb2add2e5b9725",
+    "semantic_hash": "acdc9d758fa10695c1eb2add2e5b9725"
+  },
+  "Source/AlsasuaManifa/Private/Systems/Ethics/KarmaSubsystem.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "a26837d7b8c43a5877f01e2f1ba9b9a4",
+    "semantic_hash": "a26837d7b8c43a5877f01e2f1ba9b9a4"
+  },
+  "Source/AlsasuaManifa/Private/Systems/Events/EventManagerSubsystem.cpp": {
+    "mtime": 1784868852.0,
+    "ast_hash": "18793c124fa15d533f96a25954c09aa6",
+    "semantic_hash": "18793c124fa15d533f96a25954c09aa6"
+  },
+  "Source/AlsasuaManifa/Private/Systems/Festivals/FestivalSubsystem.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "861b945064e3d03f92c97cf622a73b23",
+    "semantic_hash": "861b945064e3d03f92c97cf622a73b23"
+  },
+  "Source/AlsasuaManifa/Private/Systems/Fire/FirePropagationComponent.cpp": {
+    "mtime": 1784923296.0,
+    "ast_hash": "44239987b13f1111aa9a62e9aaeac07d",
+    "semantic_hash": "44239987b13f1111aa9a62e9aaeac07d"
+  },
+  "Source/AlsasuaManifa/Private/Systems/Forensics/EvidenceComponent.cpp": {
+    "mtime": 1784918142.0,
+    "ast_hash": "c5025068c2c903233bdb9bb2cc14aad2",
+    "semantic_hash": "c5025068c2c903233bdb9bb2cc14aad2"
+  },
+  "Source/AlsasuaManifa/Private/Systems/Legacy/LegacySubsystem.cpp": {
+    "mtime": 1784924074.0,
+    "ast_hash": "c2829075bb2399c6337bc175d12536cc",
+    "semantic_hash": "c2829075bb2399c6337bc175d12536cc"
+  },
+  "Source/AlsasuaManifa/Private/Systems/Media/RadioSubsystem.cpp": {
+    "mtime": 1784868800.0,
+    "ast_hash": "62e6f3e45031ce48dddde0d11e7ee24a",
+    "semantic_hash": "62e6f3e45031ce48dddde0d11e7ee24a"
+  },
+  "Source/AlsasuaManifa/Private/Systems/Missions/DeepStateMissionLogic.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "e6121840b2b9178c2330d2506018663d",
+    "semantic_hash": "e6121840b2b9178c2330d2506018663d"
+  },
+  "Source/AlsasuaManifa/Private/Systems/Social/SocialMediaSubsystem.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "c7532dd3a3dc1046fd3c34515235ca14",
+    "semantic_hash": "c7532dd3a3dc1046fd3c34515235ca14"
+  },
+  "Source/AlsasuaManifa/Private/Systems/Urban/UrbanStateSubsystem.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "10fca855149660c9e4ced9f879469d65",
+    "semantic_hash": "10fca855149660c9e4ced9f879469d65"
+  },
+  "Source/AlsasuaManifa/Private/UI/AlsasuaBannerRenderer.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "09df34cfa35e137347399ec0390c6318",
+    "semantic_hash": "09df34cfa35e137347399ec0390c6318"
+  },
+  "Source/AlsasuaManifa/Private/UI/AlsasuaDebugHUD.cpp": {
+    "mtime": 1784923404.0,
+    "ast_hash": "48f4e26ae6813f9579acc64a6896e81c",
+    "semantic_hash": "48f4e26ae6813f9579acc64a6896e81c"
+  },
+  "Source/AlsasuaManifa/Private/UI/AlsasuaEventHUD.cpp": {
+    "mtime": 1784924068.0,
+    "ast_hash": "1214e491ef357caa5197c9be75b67d2f",
+    "semantic_hash": "1214e491ef357caa5197c9be75b67d2f"
+  },
+  "Source/AlsasuaManifa/Private/UI/AlsasuaMainHUD.cpp": {
+    "mtime": 1784924060.0,
+    "ast_hash": "df0c77ac9ccddfffba0c4f74ecee5f68",
+    "semantic_hash": "df0c77ac9ccddfffba0c4f74ecee5f68"
+  },
+  "Source/AlsasuaManifa/Private/UI/DialogWidgetBase.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "78bd3242ba158a82163184648851b375",
+    "semantic_hash": "78bd3242ba158a82163184648851b375"
+  },
+  "Source/AlsasuaManifa/Private/UI/InvestigationBoardActor.cpp": {
+    "mtime": 1784812584.0,
+    "ast_hash": "2eb6c910df934d37da421444f4926e59",
+    "semantic_hash": "2eb6c910df934d37da421444f4926e59"
+  },
+  "Source/AlsasuaManifa/Private/UI/InvestigationBoardWidget.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "5b07366bfda46496a7c7da56653362d6",
+    "semantic_hash": "5b07366bfda46496a7c7da56653362d6"
+  },
+  "Source/AlsasuaManifa/Private/Vehicle/BaseVehicle.cpp": {
+    "mtime": 1784923166.0,
+    "ast_hash": "1a06243907bddacfc024d34490468d12",
+    "semantic_hash": "1a06243907bddacfc024d34490468d12"
+  },
+  "Source/AlsasuaManifa/Private/Vehicle/PlayerVehicle.cpp": {
+    "mtime": 1784924030.0,
+    "ast_hash": "cfbf1f920b80f1c21c5b6ef3aa10af82",
+    "semantic_hash": "cfbf1f920b80f1c21c5b6ef3aa10af82"
+  },
+  "Source/AlsasuaManifa/Private/Vehicle/SpikeStripActor.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "5a416212d69aa6613da9c27505a313eb",
+    "semantic_hash": "5a416212d69aa6613da9c27505a313eb"
+  },
+  "Source/AlsasuaManifa/Private/Vehicle/Systems/FuelStationActor.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "23d5146c9a2d5514583f0cbedb402974",
+    "semantic_hash": "23d5146c9a2d5514583f0cbedb402974"
+  },
+  "Source/AlsasuaManifa/Private/Vehicle/Systems/HelicopterAI.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "453669f54cae647aad314f1fa3dcb08d",
+    "semantic_hash": "453669f54cae647aad314f1fa3dcb08d"
+  },
+  "Source/AlsasuaManifa/Private/Vehicle/Systems/PoliceScannerComponent.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "a14b3daeb456f2777d7748c27ceb5524",
+    "semantic_hash": "a14b3daeb456f2777d7748c27ceb5524"
+  },
+  "Source/AlsasuaManifa/Private/Vehicle/VehicleDamageComponent.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "145bde813e1a0c2fb525c45900e2053f",
+    "semantic_hash": "145bde813e1a0c2fb525c45900e2053f"
+  },
+  "Source/AlsasuaManifa/Private/Vehicles/AlsasuaPoliceVan.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "d26d64efe691db5dd230236fc429cf68",
+    "semantic_hash": "d26d64efe691db5dd230236fc429cf68"
+  },
+  "Source/AlsasuaManifa/Private/Vehicles/VehicleTarget.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "d974ff9201edf75592fb9da637dd86f7",
+    "semantic_hash": "d974ff9201edf75592fb9da637dd86f7"
+  },
+  "Source/AlsasuaManifa/Private/Visuals/AlsasuaAnimationBlendSystem.cpp": {
+    "mtime": 1784884770.0,
+    "ast_hash": "4601e8b887b10381be16a99a7d67e27b",
+    "semantic_hash": "4601e8b887b10381be16a99a7d67e27b"
+  },
+  "Source/AlsasuaManifa/Private/Visuals/AlsasuaCinemaDirector.cpp": {
+    "mtime": 1784923152.0,
+    "ast_hash": "768559dd52794cac4c5c633edae62aea",
+    "semantic_hash": "768559dd52794cac4c5c633edae62aea"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaAmbientAudioSystem.cpp": {
+    "mtime": 1784996058.0,
+    "ast_hash": "a0119e52d57c3cf5c3dd4b9cc66ee715",
+    "semantic_hash": "a0119e52d57c3cf5c3dd4b9cc66ee715"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaAmbientParticles.cpp": {
+    "mtime": 1784979872.0,
+    "ast_hash": "1945abd73c7b0aa2539b1b6f31f36060",
+    "semantic_hash": "1945abd73c7b0aa2539b1b6f31f36060"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaArakilWaterSystem.cpp": {
+    "mtime": 1784991346.0,
+    "ast_hash": "53fcbb58cfc6a4077de28cca9c0f00f7",
+    "semantic_hash": "53fcbb58cfc6a4077de28cca9c0f00f7"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaAtmosphereController.cpp": {
+    "mtime": 1784976942.0,
+    "ast_hash": "0b213190332bdf4e0e40d090095cc271",
+    "semantic_hash": "0b213190332bdf4e0e40d090095cc271"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaAtmosphereFogComponent.cpp": {
+    "mtime": 1784978562.0,
+    "ast_hash": "2e9790b68f09a02b58fd2e4d4149d27a",
+    "semantic_hash": "2e9790b68f09a02b58fd2e4d4149d27a"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaAwningShutterSystem.cpp": {
+    "mtime": 1784992368.0,
+    "ast_hash": "fd4eb4332d32906489a8aa62395bd524",
+    "semantic_hash": "fd4eb4332d32906489a8aa62395bd524"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaBarrioStyleSystem.cpp": {
+    "mtime": 1784980734.0,
+    "ast_hash": "2a7f5e244bbe97675df45733232495d3",
+    "semantic_hash": "2a7f5e244bbe97675df45733232495d3"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaBuildingEmissiveComponent.cpp": {
+    "mtime": 1784978010.0,
+    "ast_hash": "665e2468242709f80f08228f3665a4cd",
+    "semantic_hash": "665e2468242709f80f08228f3665a4cd"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaBuildingFacadeSystem.cpp": {
+    "mtime": 1784980352.0,
+    "ast_hash": "3896e5b4134216a9e7b3dca128d1f4e1",
+    "semantic_hash": "3896e5b4134216a9e7b3dca128d1f4e1"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaBuildingInteriorSystem.cpp": {
+    "mtime": 1784991794.0,
+    "ast_hash": "37b83ea25185d0a0a2ed742d26b4b450",
+    "semantic_hash": "37b83ea25185d0a0a2ed742d26b4b450"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaCollisionSystem.cpp": {
+    "mtime": 1784990394.0,
+    "ast_hash": "221b64ba9fb3f88a5ba4cc226a6df5ff",
+    "semantic_hash": "221b64ba9fb3f88a5ba4cc226a6df5ff"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaContainerSystem.cpp": {
+    "mtime": 1784992110.0,
+    "ast_hash": "661ad7f9d3da2e70c080b6956eeecfa0",
+    "semantic_hash": "661ad7f9d3da2e70c080b6956eeecfa0"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaDecalSystem.cpp": {
+    "mtime": 1784978486.0,
+    "ast_hash": "ad4add245fcc090f42bf39af26f74bd9",
+    "semantic_hash": "ad4add245fcc090f42bf39af26f74bd9"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaDestructibleObject.cpp": {
+    "mtime": 1784923290.0,
+    "ast_hash": "126e47fd7d26fff3f3a35a804e530fca",
+    "semantic_hash": "126e47fd7d26fff3f3a35a804e530fca"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaDetailDressingSystem.cpp": {
+    "mtime": 1784991752.0,
+    "ast_hash": "d2ba98f116583a7a8b95256ebf925837",
+    "semantic_hash": "d2ba98f116583a7a8b95256ebf925837"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaDoorEntranceSystem.cpp": {
+    "mtime": 1784992436.0,
+    "ast_hash": "7683ceaa19f4940539c83400a02bace9",
+    "semantic_hash": "7683ceaa19f4940539c83400a02bace9"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaDynamicCloudShadows.cpp": {
+    "mtime": 1784979930.0,
+    "ast_hash": "efaa23a43a3776cf650ab3cd3c2584ff",
+    "semantic_hash": "efaa23a43a3776cf650ab3cd3c2584ff"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaDynamicTrafficSystem.cpp": {
+    "mtime": 1784994806.0,
+    "ast_hash": "e167282866cf5af01e5569f00e46b56c",
+    "semantic_hash": "e167282866cf5af01e5569f00e46b56c"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaEnhancedPostProcessComponent.cpp": {
+    "mtime": 1784978178.0,
+    "ast_hash": "1d304e0acb746dd2bf2bc7926c197c69",
+    "semantic_hash": "1d304e0acb746dd2bf2bc7926c197c69"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaEnvironmentalDecals.cpp": {
+    "mtime": 1784980008.0,
+    "ast_hash": "12884b26e00ce249ba6989cfbddf8b5b",
+    "semantic_hash": "12884b26e00ce249ba6989cfbddf8b5b"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaFacadeDetailSystem.cpp": {
+    "mtime": 1784979912.0,
+    "ast_hash": "267a4022fc8e5568ba98c14af9b2b658",
+    "semantic_hash": "267a4022fc8e5568ba98c14af9b2b658"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaFacadeGenerator.cpp": {
+    "mtime": 1784983368.0,
+    "ast_hash": "4968561d15437a79dc2edb9d95d7117f",
+    "semantic_hash": "4968561d15437a79dc2edb9d95d7117f"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaFarolaPlacer.cpp": {
+    "mtime": 1784996302.0,
+    "ast_hash": "ee96ab5e80965c102086be5c1f9f64f1",
+    "semantic_hash": "ee96ab5e80965c102086be5c1f9f64f1"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaFoliageDensitySystem.cpp": {
+    "mtime": 1784980410.0,
+    "ast_hash": "26d0c836a62e51f55a61ab951738999d",
+    "semantic_hash": "26d0c836a62e51f55a61ab951738999d"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaFoliagePainter.cpp": {
+    "mtime": 1784991484.0,
+    "ast_hash": "acad0c6efd89af8508dafb23ec08435a",
+    "semantic_hash": "acad0c6efd89af8508dafb23ec08435a"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaFoliageWindComponent.cpp": {
+    "mtime": 1784978152.0,
+    "ast_hash": "816c90646fb359436e97ffb4b6833c15",
+    "semantic_hash": "816c90646fb359436e97ffb4b6833c15"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaFootstepSystem.cpp": {
+    "mtime": 1784884698.0,
+    "ast_hash": "097e19f4083f9395c455b7dbc5143183",
+    "semantic_hash": "097e19f4083f9395c455b7dbc5143183"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaFountainSystem.cpp": {
+    "mtime": 1784991702.0,
+    "ast_hash": "53c6c85f0d7969023576d7e0b87c6497",
+    "semantic_hash": "53c6c85f0d7969023576d7e0b87c6497"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaGeoWorldBuilderSubsystem.cpp": {
+    "mtime": 1784923028.0,
+    "ast_hash": "fa2378567f9d9449adb8574547db5605",
+    "semantic_hash": "fa2378567f9d9449adb8574547db5605"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaGraphicsSettingsSubsystem.cpp": {
+    "mtime": 1784782640.0,
+    "ast_hash": "9d400986eeaee5a54cffe568338dfdb0",
+    "semantic_hash": "9d400986eeaee5a54cffe568338dfdb0"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaGrassDetailMesh.cpp": {
+    "mtime": 1784979986.0,
+    "ast_hash": "5019310dca461c26681a86211e995775",
+    "semantic_hash": "5019310dca461c26681a86211e995775"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaGroundCoverSystem.cpp": {
+    "mtime": 1784980038.0,
+    "ast_hash": "d8470e3dc3c9c87710e6e8c3d988ff09",
+    "semantic_hash": "d8470e3dc3c9c87710e6e8c3d988ff09"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaGuardrailSystem.cpp": {
+    "mtime": 1784994964.0,
+    "ast_hash": "ceaa21fe1e2452e843288f550511ef50",
+    "semantic_hash": "ceaa21fe1e2452e843288f550511ef50"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaInteriorLightComponent.cpp": {
+    "mtime": 1784978514.0,
+    "ast_hash": "e840eec5345c671b9604d380d9c26516",
+    "semantic_hash": "e840eec5345c671b9604d380d9c26516"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaLODConfigComponent.cpp": {
+    "mtime": 1784976870.0,
+    "ast_hash": "70a79d0a5887a62d93d06f4dfbfbc997",
+    "semantic_hash": "70a79d0a5887a62d93d06f4dfbfbc997"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaLODManager.cpp": {
+    "mtime": 1784990352.0,
+    "ast_hash": "26260345f2b2c96414ebdad813362b41",
+    "semantic_hash": "26260345f2b2c96414ebdad813362b41"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaLightProbeSystem.cpp": {
+    "mtime": 1784980376.0,
+    "ast_hash": "31df4296e69a44e5693ee4dfbbc0cd69",
+    "semantic_hash": "31df4296e69a44e5693ee4dfbbc0cd69"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaNPCPedestrianSystem.cpp": {
+    "mtime": 1784994818.0,
+    "ast_hash": "72a1b8b1ae57ef678ff805f22e6f53e2",
+    "semantic_hash": "72a1b8b1ae57ef678ff805f22e6f53e2"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaNightLightingSystem.cpp": {
+    "mtime": 1784989832.0,
+    "ast_hash": "3763f466ec902ec29cb412db8023af15",
+    "semantic_hash": "3763f466ec902ec29cb412db8023af15"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaOverheadCableSystem.cpp": {
+    "mtime": 1784994968.0,
+    "ast_hash": "62be326c5aae62340bfd20e0573cce7a",
+    "semantic_hash": "62be326c5aae62340bfd20e0573cce7a"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaPaintedStreetSignSystem.cpp": {
+    "mtime": 1784994970.0,
+    "ast_hash": "84ea4c28c7977fd240ddbd132e5704ae",
+    "semantic_hash": "84ea4c28c7977fd240ddbd132e5704ae"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaParkingSystem.cpp": {
+    "mtime": 1784991872.0,
+    "ast_hash": "c4706dd35d3a92c6c2b67ceb52a37df4",
+    "semantic_hash": "c4706dd35d3a92c6c2b67ceb52a37df4"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaPostProcessStack.cpp": {
+    "mtime": 1784980394.0,
+    "ast_hash": "b7cc2a33bcbf3b1229b9cd720cfeadd4",
+    "semantic_hash": "b7cc2a33bcbf3b1229b9cd720cfeadd4"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaProceduralAudio.cpp": {
+    "mtime": 1784980066.0,
+    "ast_hash": "d83e073d69bad246edb584d7cf925ccb",
+    "semantic_hash": "d83e073d69bad246edb584d7cf925ccb"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaPropGenerator.cpp": {
+    "mtime": 1784782744.0,
+    "ast_hash": "5d12b625e3910797eacfe43d654aed8f",
+    "semantic_hash": "5d12b625e3910797eacfe43d654aed8f"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaRVTHelper.cpp": {
+    "mtime": 1784923160.0,
+    "ast_hash": "68f4424ede76ba93d06b66f24f8f0d6a",
+    "semantic_hash": "68f4424ede76ba93d06b66f24f8f0d6a"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaRainParticleComponent.cpp": {
+    "mtime": 1784978420.0,
+    "ast_hash": "da0954c17295b72d81b9800b8a8d9b32",
+    "semantic_hash": "da0954c17295b72d81b9800b8a8d9b32"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaReverbZoneSystem.cpp": {
+    "mtime": 1784980460.0,
+    "ast_hash": "dbaab17a6ea98ef2b33f4ab27eb2fdde",
+    "semantic_hash": "dbaab17a6ea98ef2b33f4ab27eb2fdde"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaRoadDecalSystem.cpp": {
+    "mtime": 1784980318.0,
+    "ast_hash": "39366e603a86b39780c55eb9b2684fc4",
+    "semantic_hash": "39366e603a86b39780c55eb9b2684fc4"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaRoadMarkingsSystem.cpp": {
+    "mtime": 1784994960.0,
+    "ast_hash": "bfeb503985115388b5529d77cf9cc03b",
+    "semantic_hash": "bfeb503985115388b5529d77cf9cc03b"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaRoadSurfaceSystem.cpp": {
+    "mtime": 1784994980.0,
+    "ast_hash": "5a840fe4a53220568c29215c6ebfcf98",
+    "semantic_hash": "5a840fe4a53220568c29215c6ebfcf98"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaRooftopDetailSystem.cpp": {
+    "mtime": 1784996920.0,
+    "ast_hash": "10ef763ed071a18cc9e4db704855ffde",
+    "semantic_hash": "10ef763ed071a18cc9e4db704855ffde"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaSeasonalFoliage.cpp": {
+    "mtime": 1784979968.0,
+    "ast_hash": "50c45b152bafcb7e58d3f542831f10f3",
+    "semantic_hash": "50c45b152bafcb7e58d3f542831f10f3"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaShopFrontSystem.cpp": {
+    "mtime": 1784996842.0,
+    "ast_hash": "60a708fd5557def61be4b4a8179f3a5d",
+    "semantic_hash": "60a708fd5557def61be4b4a8179f3a5d"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaSidewalkSystem.cpp": {
+    "mtime": 1784994956.0,
+    "ast_hash": "513f2125d6ee6550bb4a0e06e4886a2b",
+    "semantic_hash": "513f2125d6ee6550bb4a0e06e4886a2b"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaSignPlacer.cpp": {
+    "mtime": 1784996868.0,
+    "ast_hash": "f56cfacfe3748eb1628616f4fe75f1c1",
+    "semantic_hash": "f56cfacfe3748eb1628616f4fe75f1c1"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaStreetArtSystem.cpp": {
+    "mtime": 1784992078.0,
+    "ast_hash": "f66f6d403b56a4a797a90e821d78c3b6",
+    "semantic_hash": "f66f6d403b56a4a797a90e821d78c3b6"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaStreetLightController.cpp": {
+    "mtime": 1784978446.0,
+    "ast_hash": "abcce38c6900eb96b39c57050bdaf9e7",
+    "semantic_hash": "abcce38c6900eb96b39c57050bdaf9e7"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaTerrainLayersSystem.cpp": {
+    "mtime": 1784991442.0,
+    "ast_hash": "327a46c00bd888e39bdcdb2e1451e8cb",
+    "semantic_hash": "327a46c00bd888e39bdcdb2e1451e8cb"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaTerrainMaterialBlender.cpp": {
+    "mtime": 1784980426.0,
+    "ast_hash": "3151ba9b91cf4b8c9dd6b1bfe4e41ca0",
+    "semantic_hash": "3151ba9b91cf4b8c9dd6b1bfe4e41ca0"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaTrafficLightSystem.cpp": {
+    "mtime": 1784992188.0,
+    "ast_hash": "121d084d497efe625a2e2cc1587db6b7",
+    "semantic_hash": "121d084d497efe625a2e2cc1587db6b7"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaTrafficSystem.cpp": {
+    "mtime": 1784995022.0,
+    "ast_hash": "18d897a6f73e11601649f42d01ba68f7",
+    "semantic_hash": "18d897a6f73e11601649f42d01ba68f7"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaTreePlacer.cpp": {
+    "mtime": 1784991480.0,
+    "ast_hash": "53d68a6463e73f3c09023cc15d929ea1",
+    "semantic_hash": "53d68a6463e73f3c09023cc15d929ea1"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaVFXManager.cpp": {
+    "mtime": 1784993414.0,
+    "ast_hash": "571b7cc1005d4e6b2dd7541a47d3e77c",
+    "semantic_hash": "571b7cc1005d4e6b2dd7541a47d3e77c"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaVisualEffectsManager.cpp": {
+    "mtime": 1784977974.0,
+    "ast_hash": "13f04aa09ffb12425abecd228b2b3f7c",
+    "semantic_hash": "13f04aa09ffb12425abecd228b2b3f7c"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaWaterFlowMap.cpp": {
+    "mtime": 1784980282.0,
+    "ast_hash": "3c6b770a748deaa971b7af84cb4615b2",
+    "semantic_hash": "3c6b770a748deaa971b7af84cb4615b2"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaWaterReflectionManager.cpp": {
+    "mtime": 1784978538.0,
+    "ast_hash": "680afece7c65fe16ffdb5c797f33bde6",
+    "semantic_hash": "680afece7c65fe16ffdb5c797f33bde6"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaWeatherSystem.cpp": {
+    "mtime": 1784993970.0,
+    "ast_hash": "81a1c4afd1d5fab5b0dcbee8969054af",
+    "semantic_hash": "81a1c4afd1d5fab5b0dcbee8969054af"
+  },
+  "Source/AlsasuaManifa/Private/World/AlsasuaZonePostProcess.cpp": {
+    "mtime": 1784976952.0,
+    "ast_hash": "cc2e2706c10269143b7447c0bb941d49",
+    "semantic_hash": "cc2e2706c10269143b7447c0bb941d49"
+  },
+  "Source/AlsasuaManifa/Private/World/Collectibles/HistoricalManager.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "6381b3d164a3a3ce986f853284f4069b",
+    "semantic_hash": "6381b3d164a3a3ce986f853284f4069b"
+  },
+  "Source/AlsasuaManifa/Private/World/Events/ProtestManager.cpp": {
+    "mtime": 1784918216.0,
+    "ast_hash": "7e499624cc52a592ed298056848e75c4",
+    "semantic_hash": "7e499624cc52a592ed298056848e75c4"
+  },
+  "Source/AlsasuaManifa/Private/World/Infrastructure/CheckpointActor.cpp": {
+    "mtime": 1784918308.0,
+    "ast_hash": "38caa364fe1b948e5b4e83825e54024d",
+    "semantic_hash": "38caa364fe1b948e5b4e83825e54024d"
+  },
+  "Source/AlsasuaManifa/Private/World/Propaganda/PropagandaActor.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "ab2aac617603d9901b7844c923505e05",
+    "semantic_hash": "ab2aac617603d9901b7844c923505e05"
+  },
+  "Source/AlsasuaManifa/Private/World/Safehouse/SafehouseActor.cpp": {
+    "mtime": 1784815506.0,
+    "ast_hash": "ac3d6c0d1cb241314a883085d3d86eaf",
+    "semantic_hash": "ac3d6c0d1cb241314a883085d3d86eaf"
+  },
+  "Source/AlsasuaManifa/Private/World/Time/TimeOfDayManager.cpp": {
+    "mtime": 1784804896.0,
+    "ast_hash": "960d6cbe2e129589d026cbe369a7ddda",
+    "semantic_hash": "960d6cbe2e129589d026cbe369a7ddda"
+  },
+  "Source/AlsasuaManifa/Private/World/Urban/UrbanSectorVolume.cpp": {
+    "mtime": 1784782692.0,
+    "ast_hash": "38cb57898966bacd9aa2b2644e8377e5",
+    "semantic_hash": "38cb57898966bacd9aa2b2644e8377e5"
+  },
+  "Source/AlsasuaManifa/Private/World/Weather/WeatherSubsystem.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "3168b381217502cfcea2fd5c6c2b7b7c",
+    "semantic_hash": "3168b381217502cfcea2fd5c6c2b7b7c"
+  },
+  "Source/AlsasuaManifa/Public/AI/AlsasuaAIController.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "add2ab084d83fe83eff2ca1bd8268837",
+    "semantic_hash": "add2ab084d83fe83eff2ca1bd8268837"
+  },
+  "Source/AlsasuaManifa/Public/AI/AlsasuaAbility_Shout.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "789db8356200b55bd6b791bcf05b19a4",
+    "semantic_hash": "789db8356200b55bd6b791bcf05b19a4"
+  },
+  "Source/AlsasuaManifa/Public/AI/AlsasuaCrowdAgentComponent.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "85695580708edeaebd14dd14c0592dd6",
+    "semantic_hash": "85695580708edeaebd14dd14c0592dd6"
+  },
+  "Source/AlsasuaManifa/Public/AI/AlsasuaCrowdSentiment.h": {
+    "mtime": 1784890186.0,
+    "ast_hash": "02db6b756579f78fab9a760d7454a685",
+    "semantic_hash": "02db6b756579f78fab9a760d7454a685"
+  },
+  "Source/AlsasuaManifa/Public/AI/AlsasuaDialogueComponent.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "24bb6c9ea0bfc26aba8bd3c056726d93",
+    "semantic_hash": "24bb6c9ea0bfc26aba8bd3c056726d93"
+  },
+  "Source/AlsasuaManifa/Public/AI/AlsasuaNavAvoidance.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "4b9eed30240c93272162202808e03e2d",
+    "semantic_hash": "4b9eed30240c93272162202808e03e2d"
+  },
+  "Source/AlsasuaManifa/Public/AI/AlsasuaSquadManager.h": {
+    "mtime": 1784867930.0,
+    "ast_hash": "b49203308bd79862d5fd109ab458fe2e",
+    "semantic_hash": "b49203308bd79862d5fd109ab458fe2e"
+  },
+  "Source/AlsasuaManifa/Public/AI/AlsasuaTacticManager.h": {
+    "mtime": 1784867932.0,
+    "ast_hash": "0aafabb4b42092be6695148efa974ba5",
+    "semantic_hash": "0aafabb4b42092be6695148efa974ba5"
+  },
+  "Source/AlsasuaManifa/Public/AI/Crowd/AlsasuaCrowdSubsystem.h": {
+    "mtime": 1784806220.0,
+    "ast_hash": "5c974cbac7b3b02330e520a75de5a6a5",
+    "semantic_hash": "5c974cbac7b3b02330e520a75de5a6a5"
+  },
+  "Source/AlsasuaManifa/Public/AI/Crowd/AlsasuaManifestacionManager.h": {
+    "mtime": 1784734306.0,
+    "ast_hash": "9dd4c5a62f7c8b4e6f972cea2cf38772",
+    "semantic_hash": "9dd4c5a62f7c8b4e6f972cea2cf38772"
+  },
+  "Source/AlsasuaManifa/Public/AI/Crowd/AlsasuaRiotControlSubsystem.h": {
+    "mtime": 1784734376.0,
+    "ast_hash": "a553bc151689aa3218d03f23021d3b83",
+    "semantic_hash": "a553bc151689aa3218d03f23021d3b83"
+  },
+  "Source/AlsasuaManifa/Public/AI/Crowd/CrowdRagdollActor.h": {
+    "mtime": 1784806080.0,
+    "ast_hash": "f542c4931c9e853364a4a69e6e0ee89e",
+    "semantic_hash": "f542c4931c9e853364a4a69e6e0ee89e"
+  },
+  "Source/AlsasuaManifa/Public/AI/Crowd/ManifaFormationManager.h": {
+    "mtime": 1784782676.0,
+    "ast_hash": "3811d9bb768e4bbdf291ea40946f8233",
+    "semantic_hash": "3811d9bb768e4bbdf291ea40946f8233"
+  },
+  "Source/AlsasuaManifa/Public/AI/Crowd/SpatialHashGrid.h": {
+    "mtime": 1784734152.0,
+    "ast_hash": "0e3de4432e35e0ff22f9b641fdf2f612",
+    "semantic_hash": "0e3de4432e35e0ff22f9b641fdf2f612"
+  },
+  "Source/AlsasuaManifa/Public/AI/Vehicle/PursuitSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "e74f42be532866b344e1bfcaf8f61984",
+    "semantic_hash": "e74f42be532866b344e1bfcaf8f61984"
+  },
+  "Source/AlsasuaManifa/Public/AI/Vehicle/VehicleAIController.h": {
+    "mtime": 1784809958.0,
+    "ast_hash": "e171898b922074e586bd0e1de9b024b4",
+    "semantic_hash": "e171898b922074e586bd0e1de9b024b4"
+  },
+  "Source/AlsasuaManifa/Public/Abilities/AlsasuaAbility_Rally.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "0d416f9c0ccde4c6ee770f0c5a30e6f6",
+    "semantic_hash": "0d416f9c0ccde4c6ee770f0c5a30e6f6"
+  },
+  "Source/AlsasuaManifa/Public/Abilities/AlsasuaAbility_Sprint.h": {
+    "mtime": 1784918380.0,
+    "ast_hash": "dcffb161a92e5b9a58625418bc94f3cb",
+    "semantic_hash": "dcffb161a92e5b9a58625418bc94f3cb"
+  },
+  "Source/AlsasuaManifa/Public/Abilities/AlsasuaGameplayAbility.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "2873c025ae91fd1c6f7d645373826266",
+    "semantic_hash": "2873c025ae91fd1c6f7d645373826266"
+  },
+  "Source/AlsasuaManifa/Public/Abilities/Infiltration/AlsasuaAbility_Lockpick.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "bd81b1747c3035c50fe05ae15b4697b7",
+    "semantic_hash": "bd81b1747c3035c50fe05ae15b4697b7"
+  },
+  "Source/AlsasuaManifa/Public/Abilities/Infiltration/AlsasuaAbility_SilentTakedown.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "7afe3473c6f921597077e789db21f2c3",
+    "semantic_hash": "7afe3473c6f921597077e789db21f2c3"
+  },
+  "Source/AlsasuaManifa/Public/Abilities/Social/BoostRecruitmentAbility.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "1febc62bd242506d2f09b86189f42ac5",
+    "semantic_hash": "1febc62bd242506d2f09b86189f42ac5"
+  },
+  "Source/AlsasuaManifa/Public/Abilities/Social/ViralPushAbility.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "28f6537c3f1426e185f588e72423f138",
+    "semantic_hash": "28f6537c3f1426e185f588e72423f138"
+  },
+  "Source/AlsasuaManifa/Public/AlsasuaAnimInstance.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "823752f8a7424522a8dc344881516fea",
+    "semantic_hash": "823752f8a7424522a8dc344881516fea"
+  },
+  "Source/AlsasuaManifa/Public/AlsasuaAttributeSet.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "e2b52c08182bd72b7cf8a3531574d5fe",
+    "semantic_hash": "e2b52c08182bd72b7cf8a3531574d5fe"
+  },
+  "Source/AlsasuaManifa/Public/AlsasuaCharacter.h": {
+    "mtime": 1784868768.0,
+    "ast_hash": "b7df8bfcd8d99c700e7b52fce605d580",
+    "semantic_hash": "b7df8bfcd8d99c700e7b52fce605d580"
+  },
+  "Source/AlsasuaManifa/Public/AlsasuaCore.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "d31cd07463ae93e87017bb93cd8c8228",
+    "semantic_hash": "d31cd07463ae93e87017bb93cd8c8228"
+  },
+  "Source/AlsasuaManifa/Public/AlsasuaDebugComponent.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "d63d68b08c7a6dd74c0c6dca1be37571",
+    "semantic_hash": "d63d68b08c7a6dd74c0c6dca1be37571"
+  },
+  "Source/AlsasuaManifa/Public/AlsasuaGameInstance.h": {
+    "mtime": 1784734256.0,
+    "ast_hash": "b168964ff0e2c605f50fb0a58d8849eb",
+    "semantic_hash": "b168964ff0e2c605f50fb0a58d8849eb"
+  },
+  "Source/AlsasuaManifa/Public/AlsasuaGameMode.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "d08329ac7d973b25319389ee75d73b7a",
+    "semantic_hash": "d08329ac7d973b25319389ee75d73b7a"
+  },
+  "Source/AlsasuaManifa/Public/AlsasuaGameState.h": {
+    "mtime": 1784734264.0,
+    "ast_hash": "b3444cfe46f059f89694eb46f4ebe4c7",
+    "semantic_hash": "b3444cfe46f059f89694eb46f4ebe4c7"
+  },
+  "Source/AlsasuaManifa/Public/AlsasuaInputIDs.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "23c125cdabefccb8a5396e20517f0db8",
+    "semantic_hash": "23c125cdabefccb8a5396e20517f0db8"
+  },
+  "Source/AlsasuaManifa/Public/AlsasuaMovementTypes.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "9eaef4ad218e03d90836c32c33317464",
+    "semantic_hash": "9eaef4ad218e03d90836c32c33317464"
+  },
+  "Source/AlsasuaManifa/Public/AlsasuaNoiseComponent.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "df280034bf050d5430792c4e35b2282e",
+    "semantic_hash": "df280034bf050d5430792c4e35b2282e"
+  },
+  "Source/AlsasuaManifa/Public/AlsasuaOptimizerSubsystem.h": {
+    "mtime": 1784867930.0,
+    "ast_hash": "881bf6e5f5e291296524d68991f4059c",
+    "semantic_hash": "881bf6e5f5e291296524d68991f4059c"
+  },
+  "Source/AlsasuaManifa/Public/AlsasuaPlayerController.h": {
+    "mtime": 1784976900.0,
+    "ast_hash": "4ff541e46fcff5c7f57eabd0ef4f7ed7",
+    "semantic_hash": "4ff541e46fcff5c7f57eabd0ef4f7ed7"
+  },
+  "Source/AlsasuaManifa/Public/AlsasuaPlayerState.h": {
+    "mtime": 1784734270.0,
+    "ast_hash": "8acad496551d46059b85935cedabab49",
+    "semantic_hash": "8acad496551d46059b85935cedabab49"
+  },
+  "Source/AlsasuaManifa/Public/AlsasuaTrafficAgent.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "82840fd73483cc81db77fad07fd0f6f3",
+    "semantic_hash": "82840fd73483cc81db77fad07fd0f6f3"
+  },
+  "Source/AlsasuaManifa/Public/Audio/AlsasuaAdaptiveMusic.h": {
+    "mtime": 1784884732.0,
+    "ast_hash": "a7ddae332061420f9c458c38045d64aa",
+    "semantic_hash": "a7ddae332061420f9c458c38045d64aa"
+  },
+  "Source/AlsasuaManifa/Public/Audio/AlsasuaAudioAmbisonics.h": {
+    "mtime": 1784818610.0,
+    "ast_hash": "36c322dc89577802ffd33c4443f3c54c",
+    "semantic_hash": "36c322dc89577802ffd33c4443f3c54c"
+  },
+  "Source/AlsasuaManifa/Public/Audio/AlsasuaAudioManager.h": {
+    "mtime": 1784890176.0,
+    "ast_hash": "3f15d9fa2306f2cea5ea144f39367113",
+    "semantic_hash": "3f15d9fa2306f2cea5ea144f39367113"
+  },
+  "Source/AlsasuaManifa/Public/Character/Camera/PhotoCameraComponent.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "9af104cf03c8b9c9a3541b69c6059f4d",
+    "semantic_hash": "9af104cf03c8b9c9a3541b69c6059f4d"
+  },
+  "Source/AlsasuaManifa/Public/Character/GameplayPostProcessComponent.h": {
+    "mtime": 1784804782.0,
+    "ast_hash": "f126d20f9d979dff7faac2bf36140f80",
+    "semantic_hash": "f126d20f9d979dff7faac2bf36140f80"
+  },
+  "Source/AlsasuaManifa/Public/Character/Stealth/GuardDetectionComponent.h": {
+    "mtime": 1784920920.0,
+    "ast_hash": "148723b60660bf16f6b7a51655809147",
+    "semantic_hash": "148723b60660bf16f6b7a51655809147"
+  },
+  "Source/AlsasuaManifa/Public/Character/Stealth/SocialStealthComponent.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "a30e0844ea24dcfd2adbfa8690535b8d",
+    "semantic_hash": "a30e0844ea24dcfd2adbfa8690535b8d"
+  },
+  "Source/AlsasuaManifa/Public/ClimateSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "d5a0b592011e54179370017b1be1ed51",
+    "semantic_hash": "d5a0b592011e54179370017b1be1ed51"
+  },
+  "Source/AlsasuaManifa/Public/Components/Camera/AdvancedCameraComponent.h": {
+    "mtime": 1784818618.0,
+    "ast_hash": "7f36b830566093fbce20f581b6f2948c",
+    "semantic_hash": "7f36b830566093fbce20f581b6f2948c"
+  },
+  "Source/AlsasuaManifa/Public/Config/AlsasuaGameplayTags.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "9e06f818a72df7a4fc33a3ff08d4d686",
+    "semantic_hash": "9e06f818a72df7a4fc33a3ff08d4d686"
+  },
+  "Source/AlsasuaManifa/Public/Core/AlsasuaAsyncProcessor.h": {
+    "mtime": 1784782586.0,
+    "ast_hash": "4cd617208ebaf9fa27017d5197c5d55c",
+    "semantic_hash": "4cd617208ebaf9fa27017d5197c5d55c"
+  },
+  "Source/AlsasuaManifa/Public/Core/AlsasuaBudgetManager.h": {
+    "mtime": 1784890180.0,
+    "ast_hash": "1587871e6183e7e5e353b6600e7a1995",
+    "semantic_hash": "1587871e6183e7e5e353b6600e7a1995"
+  },
+  "Source/AlsasuaManifa/Public/Core/AlsasuaChainReactionSubsystem.h": {
+    "mtime": 1784890182.0,
+    "ast_hash": "f98419d1a922883f07f323b0efd63acc",
+    "semantic_hash": "f98419d1a922883f07f323b0efd63acc"
+  },
+  "Source/AlsasuaManifa/Public/Core/AlsasuaCommandQueue.h": {
+    "mtime": 1784890182.0,
+    "ast_hash": "9a610539b3cd1b71efad1bcafee0a5a3",
+    "semantic_hash": "9a610539b3cd1b71efad1bcafee0a5a3"
+  },
+  "Source/AlsasuaManifa/Public/Core/AlsasuaCrowdAssembler.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "3dae362ec634a5f87081cb21f4904292",
+    "semantic_hash": "3dae362ec634a5f87081cb21f4904292"
+  },
+  "Source/AlsasuaManifa/Public/Core/AlsasuaDemoOrchestrator.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "c66fdac97949763668d4111d4e0ddd06",
+    "semantic_hash": "c66fdac97949763668d4111d4e0ddd06"
+  },
+  "Source/AlsasuaManifa/Public/Core/AlsasuaEventManager.h": {
+    "mtime": 1784890174.0,
+    "ast_hash": "ce922989149af89e1c3fe25a18f46c41",
+    "semantic_hash": "ce922989149af89e1c3fe25a18f46c41"
+  },
+  "Source/AlsasuaManifa/Public/Core/AlsasuaHitchProtector.h": {
+    "mtime": 1784890174.0,
+    "ast_hash": "c7330e73737c893397462207eaec7dc6",
+    "semantic_hash": "c7330e73737c893397462207eaec7dc6"
+  },
+  "Source/AlsasuaManifa/Public/Core/AlsasuaOutcomeSystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "ddbf73026ea8ad8908e90e244ab2caeb",
+    "semantic_hash": "ddbf73026ea8ad8908e90e244ab2caeb"
+  },
+  "Source/AlsasuaManifa/Public/Core/AlsasuaReplaySystem.h": {
+    "mtime": 1784868032.0,
+    "ast_hash": "11d360d9d7881e169ba696a8fba18281",
+    "semantic_hash": "11d360d9d7881e169ba696a8fba18281"
+  },
+  "Source/AlsasuaManifa/Public/Core/AlsasuaSaveGame.h": {
+    "mtime": 1784976038.0,
+    "ast_hash": "d52e79010ec3d140b8eab07c6a912d5f",
+    "semantic_hash": "d52e79010ec3d140b8eab07c6a912d5f"
+  },
+  "Source/AlsasuaManifa/Public/Core/AlsasuaSpatialGrid.h": {
+    "mtime": 1784809838.0,
+    "ast_hash": "b8d189f5d3e5d046fa88428fe2d745f3",
+    "semantic_hash": "b8d189f5d3e5d046fa88428fe2d745f3"
+  },
+  "Source/AlsasuaManifa/Public/Core/Manifa/ManifaManager.h": {
+    "mtime": 1784890188.0,
+    "ast_hash": "d5c36bdb254f45df82babcb090f5faed",
+    "semantic_hash": "d5c36bdb254f45df82babcb090f5faed"
+  },
+  "Source/AlsasuaManifa/Public/CrowdAudioManager.h": {
+    "mtime": 1784804946.0,
+    "ast_hash": "2451d9fbc9b69de4094a1994a164c1f7",
+    "semantic_hash": "2451d9fbc9b69de4094a1994a164c1f7"
+  },
+  "Source/AlsasuaManifa/Public/Data/AlsasuaEntityDataAsset.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "6065879fa66faf4a02373dd6c0248aa7",
+    "semantic_hash": "6065879fa66faf4a02373dd6c0248aa7"
+  },
+  "Source/AlsasuaManifa/Public/Data/AlsasuaGameData.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "06efb5c00276c6c376a605f7efa10976",
+    "semantic_hash": "06efb5c00276c6c376a605f7efa10976"
+  },
+  "Source/AlsasuaManifa/Public/Data/VehicleTuningData.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "b74abca2c7e6c1beac88fb19fb40515a",
+    "semantic_hash": "b74abca2c7e6c1beac88fb19fb40515a"
+  },
+  "Source/AlsasuaManifa/Public/Environment/TreeSpawnerComponent.h": {
+    "mtime": 1784734040.0,
+    "ast_hash": "786d0c64ad0d488caeebe0f5ed832c59",
+    "semantic_hash": "786d0c64ad0d488caeebe0f5ed832c59"
+  },
+  "Source/AlsasuaManifa/Public/Environment/VegetationSpawnerSubsystem.h": {
+    "mtime": 1784734074.0,
+    "ast_hash": "d4998d0d42fdecb3cb58176bff4bd21f",
+    "semantic_hash": "d4998d0d42fdecb3cb58176bff4bd21f"
+  },
+  "Source/AlsasuaManifa/Public/Environment/VegetationType.h": {
+    "mtime": 1784734064.0,
+    "ast_hash": "22d7f13da5d965b0df070088b30c1f66",
+    "semantic_hash": "22d7f13da5d965b0df070088b30c1f66"
+  },
+  "Source/AlsasuaManifa/Public/GAS/AlsasuaAbilitySystemComponent.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "894d7c1f04942288df096b21e21e82cc",
+    "semantic_hash": "894d7c1f04942288df096b21e21e82cc"
+  },
+  "Source/AlsasuaManifa/Public/GAS/GameplayEffect_Stress.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "fddd8563bf937b4f933601dbc2b44df0",
+    "semantic_hash": "fddd8563bf937b4f933601dbc2b44df0"
+  },
+  "Source/AlsasuaManifa/Public/Gameplay/Detention/DetentionMinigameComponent.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "6408b2439b534ae407aa98ceb6d32e4d",
+    "semantic_hash": "6408b2439b534ae407aa98ceb6d32e4d"
+  },
+  "Source/AlsasuaManifa/Public/Gameplay/Detention/DetentionMinigameWidget.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "573662a9012daa2b53ce9d2fa3a962a9",
+    "semantic_hash": "573662a9012daa2b53ce9d2fa3a962a9"
+  },
+  "Source/AlsasuaManifa/Public/Gameplay/Detention/InterrogatorActor.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "561b0095bdf3825997aa08dfd4bcfc99",
+    "semantic_hash": "561b0095bdf3825997aa08dfd4bcfc99"
+  },
+  "Source/AlsasuaManifa/Public/Gameplay/Narco/NarcoSyndicateComponent.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "96b27de2cc0854f3913d80436404b00c",
+    "semantic_hash": "96b27de2cc0854f3913d80436404b00c"
+  },
+  "Source/AlsasuaManifa/Public/IInteractuable.h": {
+    "mtime": 1784868004.0,
+    "ast_hash": "1184afcdb2f4a8b51604390595c0922d",
+    "semantic_hash": "1184afcdb2f4a8b51604390595c0922d"
+  },
+  "Source/AlsasuaManifa/Public/InteractableInterface.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "3c9d8d2bf849ecb6b036de8e88159b07",
+    "semantic_hash": "3c9d8d2bf849ecb6b036de8e88159b07"
+  },
+  "Source/AlsasuaManifa/Public/Interaction/AlsasuaSmartObject.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "91bf4c0c5bbc14634a18a2b7f87d5431",
+    "semantic_hash": "91bf4c0c5bbc14634a18a2b7f87d5431"
+  },
+  "Source/AlsasuaManifa/Public/Inventory/AlsasuaInventoryComponent.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "dcf36440609e36c1a7bb255f491a31e7",
+    "semantic_hash": "dcf36440609e36c1a7bb255f491a31e7"
+  },
+  "Source/AlsasuaManifa/Public/Items/Explosives/ExplosiveDeviceData.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "d5ba65d706cb0fed43bd523955434be1",
+    "semantic_hash": "d5ba65d706cb0fed43bd523955434be1"
+  },
+  "Source/AlsasuaManifa/Public/Items/Explosives/IncendiaryCharge.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "508fa37333752c664a323054286b60a8",
+    "semantic_hash": "508fa37333752c664a323054286b60a8"
+  },
+  "Source/AlsasuaManifa/Public/Items/MegaphoneTool.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "ad26aa075055444c3af8fbb58e1e74ca",
+    "semantic_hash": "ad26aa075055444c3af8fbb58e1e74ca"
+  },
+  "Source/AlsasuaManifa/Public/Items/ResistanceTool.h": {
+    "mtime": 1784923502.0,
+    "ast_hash": "7a3cbfc1cb8917e762ed7e5563bb3d64",
+    "semantic_hash": "7a3cbfc1cb8917e762ed7e5563bb3d64"
+  },
+  "Source/AlsasuaManifa/Public/Mass/AlsasuaMassParallelManager.h": {
+    "mtime": 1784811906.0,
+    "ast_hash": "407728c91e22bcf100f4fa5935d01710",
+    "semantic_hash": "407728c91e22bcf100f4fa5935d01710"
+  },
+  "Source/AlsasuaManifa/Public/Mass/AlsasuaMassProxies.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "d268094c9df6f1c0fe77bde81a6e6386",
+    "semantic_hash": "d268094c9df6f1c0fe77bde81a6e6386"
+  },
+  "Source/AlsasuaManifa/Public/Mass/AlsasuaMassProxiesManager.h": {
+    "mtime": 1784811948.0,
+    "ast_hash": "ef031100aab158ba57d353b6501ce05f",
+    "semantic_hash": "ef031100aab158ba57d353b6501ce05f"
+  },
+  "Source/AlsasuaManifa/Public/MegaphoneActor.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "c3d4ecef982d59e0b684e0447c22245e",
+    "semantic_hash": "c3d4ecef982d59e0b684e0447c22245e"
+  },
+  "Source/AlsasuaManifa/Public/Mision/SabotageMissionActor.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "9fc94299b15bed97719e20eee497ede9",
+    "semantic_hash": "9fc94299b15bed97719e20eee497ede9"
+  },
+  "Source/AlsasuaManifa/Public/NPCGuardCharacter.h": {
+    "mtime": 1784811746.0,
+    "ast_hash": "ddbc621ddd14488a564ab7f68b4e5288",
+    "semantic_hash": "ddbc621ddd14488a564ab7f68b4e5288"
+  },
+  "Source/AlsasuaManifa/Public/NPCs/DeepState/OperativeCharacter.h": {
+    "mtime": 1784812438.0,
+    "ast_hash": "a9f70521757823521842fe07877c54a4",
+    "semantic_hash": "a9f70521757823521842fe07877c54a4"
+  },
+  "Source/AlsasuaManifa/Public/NPCs/DeepState/PoliticalAgent.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "b331025d6da54f9b3bb5975dcbfaac68",
+    "semantic_hash": "b331025d6da54f9b3bb5975dcbfaac68"
+  },
+  "Source/AlsasuaManifa/Public/NPCs/HostageCharacter.h": {
+    "mtime": 1784923508.0,
+    "ast_hash": "5f5eb75fd116d5c34643a49e6ee952e7",
+    "semantic_hash": "5f5eb75fd116d5c34643a49e6ee952e7"
+  },
+  "Source/AlsasuaManifa/Public/NPCs/Underworld/NarcoDealerCharacter.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "2421eae07c72243dd8cce853429ccf3b",
+    "semantic_hash": "2421eae07c72243dd8cce853429ccf3b"
+  },
+  "Source/AlsasuaManifa/Public/Optimization/AlsasuaActorPoolSubsystem.h": {
+    "mtime": 1784803328.0,
+    "ast_hash": "e7cb8080351ca27f41317c8da510a904",
+    "semantic_hash": "e7cb8080351ca27f41317c8da510a904"
+  },
+  "Source/AlsasuaManifa/Public/Optimization/AlsasuaCrowdHISMManager.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "a62949b1d11404a6b3a718a4507a2fa3",
+    "semantic_hash": "a62949b1d11404a6b3a718a4507a2fa3"
+  },
+  "Source/AlsasuaManifa/Public/Politics/Crisis/StateOfAlarmSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "354bc845b17450e85548d5c55d34e9f1",
+    "semantic_hash": "354bc845b17450e85548d5c55d34e9f1"
+  },
+  "Source/AlsasuaManifa/Public/Politics/FactionSubsystem.h": {
+    "mtime": 1784918552.0,
+    "ast_hash": "58ebe3327d004bb68fb37a082066ad05",
+    "semantic_hash": "58ebe3327d004bb68fb37a082066ad05"
+  },
+  "Source/AlsasuaManifa/Public/Politics/ReputationComponent.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "949b647d6b26c5a4bb8f20a7a9adc414",
+    "semantic_hash": "949b647d6b26c5a4bb8f20a7a9adc414"
+  },
+  "Source/AlsasuaManifa/Public/Press/AlsasuaPhotoComponent.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "fdf97a9c7e023fc1dd6ca827caa0ca2e",
+    "semantic_hash": "fdf97a9c7e023fc1dd6ca827caa0ca2e"
+  },
+  "Source/AlsasuaManifa/Public/Social/EvidenceData.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "b496cc5d188e859ad110398174c4a294",
+    "semantic_hash": "b496cc5d188e859ad110398174c4a294"
+  },
+  "Source/AlsasuaManifa/Public/Social/EvidenceSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "41cc63196fe8f5205278affb0ef8dd1b",
+    "semantic_hash": "41cc63196fe8f5205278affb0ef8dd1b"
+  },
+  "Source/AlsasuaManifa/Public/Social/Interrogatorio/InterrogationManager.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "9fdff75d87c293b1702a16c0a34a9bcc",
+    "semantic_hash": "9fdff75d87c293b1702a16c0a34a9bcc"
+  },
+  "Source/AlsasuaManifa/Public/Systems/Camera/EvidenceCaptureComponent.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "2162faca3642089e3d87e16a5a34d6ed",
+    "semantic_hash": "2162faca3642089e3d87e16a5a34d6ed"
+  },
+  "Source/AlsasuaManifa/Public/Systems/Cinema/ProcessionDirectorSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "7e0346571071a3618f180bbcb0ca0f24",
+    "semantic_hash": "7e0346571071a3618f180bbcb0ca0f24"
+  },
+  "Source/AlsasuaManifa/Public/Systems/Criminal/ExtortionComponent.h": {
+    "mtime": 1784815492.0,
+    "ast_hash": "bb5396d0821a3c9ef9c694254c1d8385",
+    "semantic_hash": "bb5396d0821a3c9ef9c694254c1d8385"
+  },
+  "Source/AlsasuaManifa/Public/Systems/Criminal/HideoutActor.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "4e991a86b793a256ea35a045b17521c5",
+    "semantic_hash": "4e991a86b793a256ea35a045b17521c5"
+  },
+  "Source/AlsasuaManifa/Public/Systems/Criminal/MissionRescateData.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "c9196651c432555a795d9d7b47410deb",
+    "semantic_hash": "c9196651c432555a795d9d7b47410deb"
+  },
+  "Source/AlsasuaManifa/Public/Systems/Debug/AlsasuaDebugSteering.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "f535b1c8f089a89d48d5067b907886f1",
+    "semantic_hash": "f535b1c8f089a89d48d5067b907886f1"
+  },
+  "Source/AlsasuaManifa/Public/Systems/Debug/DebugManager.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "ac9902fd0b180062077df06ef2aa7e25",
+    "semantic_hash": "ac9902fd0b180062077df06ef2aa7e25"
+  },
+  "Source/AlsasuaManifa/Public/Systems/DeepState/DeepStateFactionComponent.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "6d26db4585ad906c8e05f219d58c6b60",
+    "semantic_hash": "6d26db4585ad906c8e05f219d58c6b60"
+  },
+  "Source/AlsasuaManifa/Public/Systems/DeepState/DeepStateSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "f156b628de7f23aee5cce8656be8a257",
+    "semantic_hash": "f156b628de7f23aee5cce8656be8a257"
+  },
+  "Source/AlsasuaManifa/Public/Systems/Dialog/DialogAsset.h": {
+    "mtime": 1784811648.0,
+    "ast_hash": "c333c782382eccbcee504d1b4e8d13c1",
+    "semantic_hash": "c333c782382eccbcee504d1b4e8d13c1"
+  },
+  "Source/AlsasuaManifa/Public/Systems/Dialog/DialogComponent.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "3a1bd3981e5ddf475556d1f50a4192dc",
+    "semantic_hash": "3a1bd3981e5ddf475556d1f50a4192dc"
+  },
+  "Source/AlsasuaManifa/Public/Systems/Dialog/DialogInstance.h": {
+    "mtime": 1784920938.0,
+    "ast_hash": "7f8b4d0016ae55bc91fbffc2b020d6a3",
+    "semantic_hash": "7f8b4d0016ae55bc91fbffc2b020d6a3"
+  },
+  "Source/AlsasuaManifa/Public/Systems/Dialog/DialogMemoryComponent.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "7b84315b1bfc9e4ef53d0b2eafe67da4",
+    "semantic_hash": "7b84315b1bfc9e4ef53d0b2eafe67da4"
+  },
+  "Source/AlsasuaManifa/Public/Systems/Dialog/DialogSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "808f8e6275b8466736ace50b06bf3ec5",
+    "semantic_hash": "808f8e6275b8466736ace50b06bf3ec5"
+  },
+  "Source/AlsasuaManifa/Public/Systems/Dialog/DialogTextFormatter.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "7da39d6678f8ed2b17e42bd3dc862cfa",
+    "semantic_hash": "7da39d6678f8ed2b17e42bd3dc862cfa"
+  },
+  "Source/AlsasuaManifa/Public/Systems/Dialog/DialogTypes.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "082ba076d66f474deb7d67147a6fad5b",
+    "semantic_hash": "082ba076d66f474deb7d67147a6fad5b"
+  },
+  "Source/AlsasuaManifa/Public/Systems/Disguise/DisguiseComponent.h": {
+    "mtime": 1784809924.0,
+    "ast_hash": "b386feefdc27a31c5a0faa9674de5440",
+    "semantic_hash": "b386feefdc27a31c5a0faa9674de5440"
+  },
+  "Source/AlsasuaManifa/Public/Systems/Ethics/KarmaSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "4d621967a34be4ffcdce30243d5ccbf4",
+    "semantic_hash": "4d621967a34be4ffcdce30243d5ccbf4"
+  },
+  "Source/AlsasuaManifa/Public/Systems/Events/EventManagerSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "35366a26b81f3d1ba98b368b68056159",
+    "semantic_hash": "35366a26b81f3d1ba98b368b68056159"
+  },
+  "Source/AlsasuaManifa/Public/Systems/Festivals/FestivalSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "449f59a201d4a66e8c4c3ffab5a2931d",
+    "semantic_hash": "449f59a201d4a66e8c4c3ffab5a2931d"
+  },
+  "Source/AlsasuaManifa/Public/Systems/Fire/FirePropagationComponent.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "1a3f2b3547a4ed7c5a47b852a2a33561",
+    "semantic_hash": "1a3f2b3547a4ed7c5a47b852a2a33561"
+  },
+  "Source/AlsasuaManifa/Public/Systems/Forensics/EvidenceComponent.h": {
+    "mtime": 1784812798.0,
+    "ast_hash": "76e797943ea068c6295f2aa0fed2251f",
+    "semantic_hash": "76e797943ea068c6295f2aa0fed2251f"
+  },
+  "Source/AlsasuaManifa/Public/Systems/Legacy/LegacySubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "884f9ae3867ca7a2498215d241f43ae5",
+    "semantic_hash": "884f9ae3867ca7a2498215d241f43ae5"
+  },
+  "Source/AlsasuaManifa/Public/Systems/Media/RadioBroadcastTypes.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "3f32ab0169af2345ce49f6a86ebf56b8",
+    "semantic_hash": "3f32ab0169af2345ce49f6a86ebf56b8"
+  },
+  "Source/AlsasuaManifa/Public/Systems/Media/RadioSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "f2791b53e6d1d1a628b341e423c67c9c",
+    "semantic_hash": "f2791b53e6d1d1a628b341e423c67c9c"
+  },
+  "Source/AlsasuaManifa/Public/Systems/MisionData.h": {
+    "mtime": 1784883636.0,
+    "ast_hash": "c18894bfba215f47272281920119bc6a",
+    "semantic_hash": "c18894bfba215f47272281920119bc6a"
+  },
+  "Source/AlsasuaManifa/Public/Systems/MisionManager.h": {
+    "mtime": 1784778386.0,
+    "ast_hash": "b3974639e805555be5309f89dab00acf",
+    "semantic_hash": "b3974639e805555be5309f89dab00acf"
+  },
+  "Source/AlsasuaManifa/Public/Systems/Missions/DeepStateMissionData.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "20a4a8c1c9df7eeee37244389c929ab6",
+    "semantic_hash": "20a4a8c1c9df7eeee37244389c929ab6"
+  },
+  "Source/AlsasuaManifa/Public/Systems/Social/SocialMediaSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "8b3970855166cfb3d59bb63e63469ff8",
+    "semantic_hash": "8b3970855166cfb3d59bb63e63469ff8"
+  },
+  "Source/AlsasuaManifa/Public/Systems/Urban/UrbanStateSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "145450623b51c827b12b11da5d8debf1",
+    "semantic_hash": "145450623b51c827b12b11da5d8debf1"
+  },
+  "Source/AlsasuaManifa/Public/UI/AlsasuaBannerRenderer.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "b8f7fc4979f455396d6f35e4e83a5b60",
+    "semantic_hash": "b8f7fc4979f455396d6f35e4e83a5b60"
+  },
+  "Source/AlsasuaManifa/Public/UI/AlsasuaDebugHUD.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "8c762db2167b5ac788fbc23b8208358f",
+    "semantic_hash": "8c762db2167b5ac788fbc23b8208358f"
+  },
+  "Source/AlsasuaManifa/Public/UI/AlsasuaEventHUD.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "3ae1c86023da2b94cecfaa323a8be4ba",
+    "semantic_hash": "3ae1c86023da2b94cecfaa323a8be4ba"
+  },
+  "Source/AlsasuaManifa/Public/UI/AlsasuaMainHUD.h": {
+    "mtime": 1784809880.0,
+    "ast_hash": "7aa394ae4058ced03b7597d27485224e",
+    "semantic_hash": "7aa394ae4058ced03b7597d27485224e"
+  },
+  "Source/AlsasuaManifa/Public/UI/DialogWidgetBase.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "3b34e71d4b3a4a59c878e5d69e487575",
+    "semantic_hash": "3b34e71d4b3a4a59c878e5d69e487575"
+  },
+  "Source/AlsasuaManifa/Public/UI/InvestigationBoardActor.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "817a86443b8c7a67f08763c33ccd2e81",
+    "semantic_hash": "817a86443b8c7a67f08763c33ccd2e81"
+  },
+  "Source/AlsasuaManifa/Public/UI/InvestigationBoardWidget.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "76000399cb6e1fcb0ba932faaf758ea9",
+    "semantic_hash": "76000399cb6e1fcb0ba932faaf758ea9"
+  },
+  "Source/AlsasuaManifa/Public/Vehicle/BaseVehicle.h": {
+    "mtime": 1784923174.0,
+    "ast_hash": "9f9c89a256521c05174c8c1811237ed2",
+    "semantic_hash": "9f9c89a256521c05174c8c1811237ed2"
+  },
+  "Source/AlsasuaManifa/Public/Vehicle/PlayerVehicle.h": {
+    "mtime": 1784811828.0,
+    "ast_hash": "334eb4652627da9b522f857f8067fd07",
+    "semantic_hash": "334eb4652627da9b522f857f8067fd07"
+  },
+  "Source/AlsasuaManifa/Public/Vehicle/SpikeStripActor.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "f9c1b47f6114c298d2837c336adfe442",
+    "semantic_hash": "f9c1b47f6114c298d2837c336adfe442"
+  },
+  "Source/AlsasuaManifa/Public/Vehicle/Systems/FuelStationActor.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "c345d35e85699a37979b71f87486ee67",
+    "semantic_hash": "c345d35e85699a37979b71f87486ee67"
+  },
+  "Source/AlsasuaManifa/Public/Vehicle/Systems/HelicopterAI.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "9d64eaec9254dce7189aaa73e4419cac",
+    "semantic_hash": "9d64eaec9254dce7189aaa73e4419cac"
+  },
+  "Source/AlsasuaManifa/Public/Vehicle/Systems/PoliceScannerComponent.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "ce079c01791330247b0f92a103e2c208",
+    "semantic_hash": "ce079c01791330247b0f92a103e2c208"
+  },
+  "Source/AlsasuaManifa/Public/Vehicle/VehicleDamageComponent.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "6db6cc0fe6235df0a81c37583b748eec",
+    "semantic_hash": "6db6cc0fe6235df0a81c37583b748eec"
+  },
+  "Source/AlsasuaManifa/Public/Vehicles/AlsasuaPoliceVan.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "9bd6a5612447b4c6af38ed43adf6e3e2",
+    "semantic_hash": "9bd6a5612447b4c6af38ed43adf6e3e2"
+  },
+  "Source/AlsasuaManifa/Public/Vehicles/VehicleTarget.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "914062203848be23997f94a021c6749c",
+    "semantic_hash": "914062203848be23997f94a021c6749c"
+  },
+  "Source/AlsasuaManifa/Public/Visuals/AlsasuaAnimationBlendSystem.h": {
+    "mtime": 1784884754.0,
+    "ast_hash": "9b4dabbdc7977e33a1dbff1c7cd2e6b0",
+    "semantic_hash": "9b4dabbdc7977e33a1dbff1c7cd2e6b0"
+  },
+  "Source/AlsasuaManifa/Public/Visuals/AlsasuaCinemaDirector.h": {
+    "mtime": 1784923134.0,
+    "ast_hash": "c307e0278e19366b6c919560555f6d77",
+    "semantic_hash": "c307e0278e19366b6c919560555f6d77"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaAmbientAudioSystem.h": {
+    "mtime": 1784996028.0,
+    "ast_hash": "b1c0ae42f84fda6eaa7d94b2f143bafa",
+    "semantic_hash": "b1c0ae42f84fda6eaa7d94b2f143bafa"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaAmbientParticles.h": {
+    "mtime": 1784979848.0,
+    "ast_hash": "8cb9e8ef58e0eaad7bc8c456c76389f8",
+    "semantic_hash": "8cb9e8ef58e0eaad7bc8c456c76389f8"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaArakilWaterSystem.h": {
+    "mtime": 1784990604.0,
+    "ast_hash": "70d0bdd0f3e265dd30af5b906649560f",
+    "semantic_hash": "70d0bdd0f3e265dd30af5b906649560f"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaAtmosphereController.h": {
+    "mtime": 1784977032.0,
+    "ast_hash": "637c114e04086865ed5e1e08b5f2abdf",
+    "semantic_hash": "637c114e04086865ed5e1e08b5f2abdf"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaAtmosphereFogComponent.h": {
+    "mtime": 1784978548.0,
+    "ast_hash": "110ceaeceaa0e36be1a7c6818e6e9db0",
+    "semantic_hash": "110ceaeceaa0e36be1a7c6818e6e9db0"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaAwningShutterSystem.h": {
+    "mtime": 1784992336.0,
+    "ast_hash": "910d7e3d351704dbecd8e9a2a275f2ae",
+    "semantic_hash": "910d7e3d351704dbecd8e9a2a275f2ae"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaBarrioStyleSystem.h": {
+    "mtime": 1784980722.0,
+    "ast_hash": "6087975436aea0af326ecea5b30d6eb6",
+    "semantic_hash": "6087975436aea0af326ecea5b30d6eb6"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaBuildingEmissiveComponent.h": {
+    "mtime": 1784977994.0,
+    "ast_hash": "908a48b97193981293879ee315270cbe",
+    "semantic_hash": "908a48b97193981293879ee315270cbe"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaBuildingFacadeSystem.h": {
+    "mtime": 1784989726.0,
+    "ast_hash": "327e382c83fabed76a3405b85586391f",
+    "semantic_hash": "327e382c83fabed76a3405b85586391f"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaBuildingInteriorSystem.h": {
+    "mtime": 1784991762.0,
+    "ast_hash": "ae4b26860f8f4db4b6a4b97c793da511",
+    "semantic_hash": "ae4b26860f8f4db4b6a4b97c793da511"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaCollisionSystem.h": {
+    "mtime": 1784990358.0,
+    "ast_hash": "5ed4d8716e5d1999da870e444cf49807",
+    "semantic_hash": "5ed4d8716e5d1999da870e444cf49807"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaContainerSystem.h": {
+    "mtime": 1784992086.0,
+    "ast_hash": "4a644b70cb3bc3b1dc97a5d39ab31049",
+    "semantic_hash": "4a644b70cb3bc3b1dc97a5d39ab31049"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaDecalSystem.h": {
+    "mtime": 1784978462.0,
+    "ast_hash": "20c5336dfca465a367498ebd96d3dd40",
+    "semantic_hash": "20c5336dfca465a367498ebd96d3dd40"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaDestructibleObject.h": {
+    "mtime": 1784890174.0,
+    "ast_hash": "d32044eb4729e05ccfc194ff1d422214",
+    "semantic_hash": "d32044eb4729e05ccfc194ff1d422214"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaDetailDressingSystem.h": {
+    "mtime": 1784991714.0,
+    "ast_hash": "23105be4ec3af7d2c0bf324bc4d96362",
+    "semantic_hash": "23105be4ec3af7d2c0bf324bc4d96362"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaDoorEntranceSystem.h": {
+    "mtime": 1784992410.0,
+    "ast_hash": "f1d171da4b817de240336c2508d7fdad",
+    "semantic_hash": "f1d171da4b817de240336c2508d7fdad"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaDynamicCloudShadows.h": {
+    "mtime": 1784979922.0,
+    "ast_hash": "0dc50a8ec32d99b3ad2eebbdc476d54e",
+    "semantic_hash": "0dc50a8ec32d99b3ad2eebbdc476d54e"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaDynamicTrafficSystem.h": {
+    "mtime": 1784993628.0,
+    "ast_hash": "d710f51afcb4f328dd075977db58af37",
+    "semantic_hash": "d710f51afcb4f328dd075977db58af37"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaEnhancedPostProcessComponent.h": {
+    "mtime": 1784978162.0,
+    "ast_hash": "ba4960e104cf0abea7a876623b140283",
+    "semantic_hash": "ba4960e104cf0abea7a876623b140283"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaEnvironmentalDecals.h": {
+    "mtime": 1784979994.0,
+    "ast_hash": "16016ff71084a17c771ec682b273c0aa",
+    "semantic_hash": "16016ff71084a17c771ec682b273c0aa"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaFacadeDetailSystem.h": {
+    "mtime": 1784979888.0,
+    "ast_hash": "8f72808b8ea954f4a2d85454e42c7953",
+    "semantic_hash": "8f72808b8ea954f4a2d85454e42c7953"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaFacadeGenerator.h": {
+    "mtime": 1784983390.0,
+    "ast_hash": "87b11e4a8ea383b9249c283e0ecc012c",
+    "semantic_hash": "87b11e4a8ea383b9249c283e0ecc012c"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaFarolaPlacer.h": {
+    "mtime": 1784982296.0,
+    "ast_hash": "548790cdc62ac60fc04f12d1be64378d",
+    "semantic_hash": "548790cdc62ac60fc04f12d1be64378d"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaFoliageDensitySystem.h": {
+    "mtime": 1784980406.0,
+    "ast_hash": "d7540e5bf7a918a7c0527dad9ef6923f",
+    "semantic_hash": "d7540e5bf7a918a7c0527dad9ef6923f"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaFoliagePainter.h": {
+    "mtime": 1784989580.0,
+    "ast_hash": "35df9377c8b604cebad3bfdbf0a70cc6",
+    "semantic_hash": "35df9377c8b604cebad3bfdbf0a70cc6"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaFoliageWindComponent.h": {
+    "mtime": 1784978138.0,
+    "ast_hash": "92c0fed56ec4b05c7ff0cf9116a316bc",
+    "semantic_hash": "92c0fed56ec4b05c7ff0cf9116a316bc"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaFootstepSystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "6d42f011b65aa96c56ee5ca03caff55b",
+    "semantic_hash": "6d42f011b65aa96c56ee5ca03caff55b"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaFountainSystem.h": {
+    "mtime": 1784991682.0,
+    "ast_hash": "b7ce0bf1c74f448b88c5592f99b28a19",
+    "semantic_hash": "b7ce0bf1c74f448b88c5592f99b28a19"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaGeoWorldBuilderSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "22cd139c1036da5a6899493cf0f93490",
+    "semantic_hash": "22cd139c1036da5a6899493cf0f93490"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaGraphicsSettingsSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "835262766e99d4d65566b1376a17735f",
+    "semantic_hash": "835262766e99d4d65566b1376a17735f"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaGrassDetailMesh.h": {
+    "mtime": 1784979974.0,
+    "ast_hash": "efe13bfe9a6c2b8b3177be96f020450d",
+    "semantic_hash": "efe13bfe9a6c2b8b3177be96f020450d"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaGroundCoverSystem.h": {
+    "mtime": 1784980018.0,
+    "ast_hash": "4b792cf062e1deab3885cef6a44eb581",
+    "semantic_hash": "4b792cf062e1deab3885cef6a44eb581"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaGuardrailSystem.h": {
+    "mtime": 1784992126.0,
+    "ast_hash": "7c53fb8320c09d5c9f0cf3ca1d06dd69",
+    "semantic_hash": "7c53fb8320c09d5c9f0cf3ca1d06dd69"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaInteriorLightComponent.h": {
+    "mtime": 1784978496.0,
+    "ast_hash": "c09e2cc22839fc5765fefe25df94eab8",
+    "semantic_hash": "c09e2cc22839fc5765fefe25df94eab8"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaLODConfigComponent.h": {
+    "mtime": 1784976778.0,
+    "ast_hash": "03a8628ea70b2a0decd2047eda5d259e",
+    "semantic_hash": "03a8628ea70b2a0decd2047eda5d259e"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaLODManager.h": {
+    "mtime": 1784990320.0,
+    "ast_hash": "30ba8181cfc2e9cbc5c65c1f385aa246",
+    "semantic_hash": "30ba8181cfc2e9cbc5c65c1f385aa246"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaLightProbeSystem.h": {
+    "mtime": 1784980370.0,
+    "ast_hash": "4ea7c55e37c12cb4d0a6050e84ef000e",
+    "semantic_hash": "4ea7c55e37c12cb4d0a6050e84ef000e"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaNPCPedestrianSystem.h": {
+    "mtime": 1784994680.0,
+    "ast_hash": "8243af50f0dbeefd53d5d4edf218fc7e",
+    "semantic_hash": "8243af50f0dbeefd53d5d4edf218fc7e"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaNightLightingSystem.h": {
+    "mtime": 1784989808.0,
+    "ast_hash": "8633b6bd332a46168aad745dd6398301",
+    "semantic_hash": "8633b6bd332a46168aad745dd6398301"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaOverheadCableSystem.h": {
+    "mtime": 1784992448.0,
+    "ast_hash": "dd055af58099e6925a10528f687746ee",
+    "semantic_hash": "dd055af58099e6925a10528f687746ee"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaPaintedStreetSignSystem.h": {
+    "mtime": 1784992520.0,
+    "ast_hash": "cae58da44a7a552d40d6145f46b2e239",
+    "semantic_hash": "cae58da44a7a552d40d6145f46b2e239"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaParkingSystem.h": {
+    "mtime": 1784991838.0,
+    "ast_hash": "4b813d51ba1ea8a63b70b1fcbba47251",
+    "semantic_hash": "4b813d51ba1ea8a63b70b1fcbba47251"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaPostProcessStack.h": {
+    "mtime": 1784980384.0,
+    "ast_hash": "939e758d8fdd4d9db8f8846ab14dc459",
+    "semantic_hash": "939e758d8fdd4d9db8f8846ab14dc459"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaProceduralAudio.h": {
+    "mtime": 1784980054.0,
+    "ast_hash": "370288eb70f3c909fb07fe7da4a6737e",
+    "semantic_hash": "370288eb70f3c909fb07fe7da4a6737e"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaPropGenerator.h": {
+    "mtime": 1784782738.0,
+    "ast_hash": "bbde71a53d39eabc1cdef918d3949cb3",
+    "semantic_hash": "bbde71a53d39eabc1cdef918d3949cb3"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaRVTHelper.h": {
+    "mtime": 1784923174.0,
+    "ast_hash": "678483dea16f11866fdffbebf6f6cf62",
+    "semantic_hash": "678483dea16f11866fdffbebf6f6cf62"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaRainParticleComponent.h": {
+    "mtime": 1784978400.0,
+    "ast_hash": "425073f183a3b103177d1ab02287ce78",
+    "semantic_hash": "425073f183a3b103177d1ab02287ce78"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaReverbZoneSystem.h": {
+    "mtime": 1784980454.0,
+    "ast_hash": "f022eeb47ecc54acedc98316bb4338ab",
+    "semantic_hash": "f022eeb47ecc54acedc98316bb4338ab"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaRoadDecalSystem.h": {
+    "mtime": 1784980298.0,
+    "ast_hash": "95d8cb3250417d99f58705c02e51a037",
+    "semantic_hash": "95d8cb3250417d99f58705c02e51a037"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaRoadMarkingsSystem.h": {
+    "mtime": 1784992010.0,
+    "ast_hash": "7f25922df7053622b35cef3e10fbf065",
+    "semantic_hash": "7f25922df7053622b35cef3e10fbf065"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaRoadSurfaceSystem.h": {
+    "mtime": 1784989894.0,
+    "ast_hash": "7b42ac3d7bf51c854a935e0b1cad475d",
+    "semantic_hash": "7b42ac3d7bf51c854a935e0b1cad475d"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaRooftopDetailSystem.h": {
+    "mtime": 1784992378.0,
+    "ast_hash": "8845c1fd75711c5dd3850c34e4b1e93a",
+    "semantic_hash": "8845c1fd75711c5dd3850c34e4b1e93a"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaSeasonalFoliage.h": {
+    "mtime": 1784980080.0,
+    "ast_hash": "d4f2b60a824cf0c4d58b31d2a5b40e4a",
+    "semantic_hash": "d4f2b60a824cf0c4d58b31d2a5b40e4a"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaShopFrontSystem.h": {
+    "mtime": 1784991206.0,
+    "ast_hash": "d5e963758d4f94dfe35a736a3e42f732",
+    "semantic_hash": "d5e963758d4f94dfe35a736a3e42f732"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaSidewalkSystem.h": {
+    "mtime": 1784991646.0,
+    "ast_hash": "b5f72dd4fec430fedb399e774a1e71f1",
+    "semantic_hash": "b5f72dd4fec430fedb399e774a1e71f1"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaSignPlacer.h": {
+    "mtime": 1784983060.0,
+    "ast_hash": "18fded5dcbcae1cc0e0b4a0851857b9c",
+    "semantic_hash": "18fded5dcbcae1cc0e0b4a0851857b9c"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaStreetArtSystem.h": {
+    "mtime": 1784992048.0,
+    "ast_hash": "bfb056534c984cf711aafe5f92a43be4",
+    "semantic_hash": "bfb056534c984cf711aafe5f92a43be4"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaStreetLightController.h": {
+    "mtime": 1784978432.0,
+    "ast_hash": "e5377e0ff7e2d8184892e0136cb617bd",
+    "semantic_hash": "e5377e0ff7e2d8184892e0136cb617bd"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaTerrainLayersSystem.h": {
+    "mtime": 1784990836.0,
+    "ast_hash": "5b2fe0380eaecf2f38798b0eb97918ea",
+    "semantic_hash": "5b2fe0380eaecf2f38798b0eb97918ea"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaTerrainMaterialBlender.h": {
+    "mtime": 1784980434.0,
+    "ast_hash": "ae654d20fcf61407615648a3f567ef58",
+    "semantic_hash": "ae654d20fcf61407615648a3f567ef58"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaTrafficLightSystem.h": {
+    "mtime": 1784992154.0,
+    "ast_hash": "37e56f1c6d9658f95c1c6e009b003d8a",
+    "semantic_hash": "37e56f1c6d9658f95c1c6e009b003d8a"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaTrafficSystem.h": {
+    "mtime": 1784989842.0,
+    "ast_hash": "d12f587ea8fa4cf46114e79b8026886a",
+    "semantic_hash": "d12f587ea8fa4cf46114e79b8026886a"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaTreePlacer.h": {
+    "mtime": 1784982228.0,
+    "ast_hash": "a7cd73ce0c7bbb787230e9b9f752c54f",
+    "semantic_hash": "a7cd73ce0c7bbb787230e9b9f752c54f"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaVFXManager.h": {
+    "mtime": 1784990452.0,
+    "ast_hash": "4266e2acf5a135c8ad91a233d2db083a",
+    "semantic_hash": "4266e2acf5a135c8ad91a233d2db083a"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaVisualEffectsManager.h": {
+    "mtime": 1784977954.0,
+    "ast_hash": "cce44e91eaf1c814656003a794b2fb2d",
+    "semantic_hash": "cce44e91eaf1c814656003a794b2fb2d"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaWaterFlowMap.h": {
+    "mtime": 1784980274.0,
+    "ast_hash": "55aeaa69b26fb57570d761a66b8140a4",
+    "semantic_hash": "55aeaa69b26fb57570d761a66b8140a4"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaWaterReflectionManager.h": {
+    "mtime": 1784978526.0,
+    "ast_hash": "36ce595ccc2c8e0c23da7e2109998d0f",
+    "semantic_hash": "36ce595ccc2c8e0c23da7e2109998d0f"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaWeatherSystem.h": {
+    "mtime": 1784993900.0,
+    "ast_hash": "c33eac741fdde6b10238fe682770d68e",
+    "semantic_hash": "c33eac741fdde6b10238fe682770d68e"
+  },
+  "Source/AlsasuaManifa/Public/World/AlsasuaZonePostProcess.h": {
+    "mtime": 1784976752.0,
+    "ast_hash": "ef4594f664f7c42e2f1369e656bed4c1",
+    "semantic_hash": "ef4594f664f7c42e2f1369e656bed4c1"
+  },
+  "Source/AlsasuaManifa/Public/World/Collectibles/CollectibleData.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "7222fdaa03bf194243a9d2d77aed0d4d",
+    "semantic_hash": "7222fdaa03bf194243a9d2d77aed0d4d"
+  },
+  "Source/AlsasuaManifa/Public/World/Collectibles/HistoricalManager.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "6d3a287bf9dcee6d2eb873490098dbb6",
+    "semantic_hash": "6d3a287bf9dcee6d2eb873490098dbb6"
+  },
+  "Source/AlsasuaManifa/Public/World/Events/ProtestManager.h": {
+    "mtime": 1784868880.0,
+    "ast_hash": "5beb17794c74a1f591a9463fc47de78a",
+    "semantic_hash": "5beb17794c74a1f591a9463fc47de78a"
+  },
+  "Source/AlsasuaManifa/Public/World/Infrastructure/CheckpointActor.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "0151348a267843009258c50cc5c6b8e1",
+    "semantic_hash": "0151348a267843009258c50cc5c6b8e1"
+  },
+  "Source/AlsasuaManifa/Public/World/Propaganda/PropagandaActor.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "897c3789f2a9e353039521840cdf56b0",
+    "semantic_hash": "897c3789f2a9e353039521840cdf56b0"
+  },
+  "Source/AlsasuaManifa/Public/World/Safehouse/SafehouseActor.h": {
+    "mtime": 1784815538.0,
+    "ast_hash": "9d66323c4925ada9ff95677b87a6227f",
+    "semantic_hash": "9d66323c4925ada9ff95677b87a6227f"
+  },
+  "Source/AlsasuaManifa/Public/World/Time/TimeOfDayManager.h": {
+    "mtime": 1784804872.0,
+    "ast_hash": "ae458617fa677b17a4a250fb1b446301",
+    "semantic_hash": "ae458617fa677b17a4a250fb1b446301"
+  },
+  "Source/AlsasuaManifa/Public/World/Urban/UrbanSectorVolume.h": {
+    "mtime": 1784782686.0,
+    "ast_hash": "69d91779e7544509d309d5aa75419cb5",
+    "semantic_hash": "69d91779e7544509d309d5aa75419cb5"
+  },
+  "Source/AlsasuaManifa/Public/World/Weather/WeatherSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "0b97b0ea7a3875fee09f9f9e042591d2",
+    "semantic_hash": "0b97b0ea7a3875fee09f9f9e042591d2"
+  },
+  "Source/AlsasuaSimulator.Target.cs": {
+    "mtime": 1784724880.0,
+    "ast_hash": "66497095c7545b2e8153246efab9113e",
+    "semantic_hash": "66497095c7545b2e8153246efab9113e"
+  },
+  "Source/AlsasuaSimulatorEditor.Target.cs": {
+    "mtime": 1784724880.0,
+    "ast_hash": "cfa67754cffdd2bda0cbaf719ca315ec",
+    "semantic_hash": "cfa67754cffdd2bda0cbaf719ca315ec"
+  },
+  "Source/AlsasuaSimulator/AlsasuaSimulator.Build.cs": {
+    "mtime": 1784724880.0,
+    "ast_hash": "054d1e151b63cf8e4fe50e9b1a4be0f9",
+    "semantic_hash": "054d1e151b63cf8e4fe50e9b1a4be0f9"
+  },
+  "Source/AlsasuaSimulator/Private/AI/Agents/AlsasuaAgentController.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "ec8e0ac2eb99ed471c5e56745a51239c",
+    "semantic_hash": "ec8e0ac2eb99ed471c5e56745a51239c"
+  },
+  "Source/AlsasuaSimulator/Private/AI/Agents/AlsasuaChatManager.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "4ce5ed08aa001af348a79075884602aa",
+    "semantic_hash": "4ce5ed08aa001af348a79075884602aa"
+  },
+  "Source/AlsasuaSimulator/Private/Audio/AlsasuaWhisperManager.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "c8331e45882e5e29f04a8a1d98def7ff",
+    "semantic_hash": "c8331e45882e5e29f04a8a1d98def7ff"
+  },
+  "Source/AlsasuaSimulator/Private/Components/AlsasuaParanoiaComponent.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "7a3a2a52cf7c7d5cf19dc3e204aa52e8",
+    "semantic_hash": "7a3a2a52cf7c7d5cf19dc3e204aa52e8"
+  },
+  "Source/AlsasuaSimulator/Private/Effects/AlsasuaVisualGlitch.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "09eb39f91b60c474ddf540c911eb1084",
+    "semantic_hash": "09eb39f91b60c474ddf540c911eb1084"
+  },
+  "Source/AlsasuaSimulator/Private/Environment/AlsasuaBuildingGenerator.cpp": {
+    "mtime": 1784854000.0,
+    "ast_hash": "c0dc37a0272391d498e1babba921587c",
+    "semantic_hash": "c0dc37a0272391d498e1babba921587c"
+  },
+  "Source/AlsasuaSimulator/Private/Environment/AlsasuaRoadComponent.cpp": {
+    "mtime": 1784890226.0,
+    "ast_hash": "8f28a83ba94659ac5fa06cdd3b3e60d2",
+    "semantic_hash": "8f28a83ba94659ac5fa06cdd3b3e60d2"
+  },
+  "Source/AlsasuaSimulator/Private/Environment/AlsasuaRoadManager.cpp": {
+    "mtime": 1784854008.0,
+    "ast_hash": "ddf4b1975603a5cf7aec2020e72d5905",
+    "semantic_hash": "ddf4b1975603a5cf7aec2020e72d5905"
+  },
+  "Source/AlsasuaSimulator/Private/Environment/AlsasuaWeatherManager.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "4e48a524001f54f1bdaa8cd53efd1b06",
+    "semantic_hash": "4e48a524001f54f1bdaa8cd53efd1b06"
+  },
+  "Source/AlsasuaSimulator/Private/World/AlsasuaWorldSubsystem.cpp": {
+    "mtime": 1784817856.0,
+    "ast_hash": "6f846a10fccb0fb59b45fb7b9486bb9b",
+    "semantic_hash": "6f846a10fccb0fb59b45fb7b9486bb9b"
+  },
+  "Source/AlsasuaSimulator/Public/AI/Agents/AlsasuaAgentController.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "965b2cf133f3ff34558bd992603ceb9e",
+    "semantic_hash": "965b2cf133f3ff34558bd992603ceb9e"
+  },
+  "Source/AlsasuaSimulator/Public/AI/Agents/AlsasuaChatManager.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "ffd7846881ef7643fa58d6be037d246a",
+    "semantic_hash": "ffd7846881ef7643fa58d6be037d246a"
+  },
+  "Source/AlsasuaSimulator/Public/Audio/AlsasuaWhisperManager.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "52b7354d2036a7d629810d2451dc9a3c",
+    "semantic_hash": "52b7354d2036a7d629810d2451dc9a3c"
+  },
+  "Source/AlsasuaSimulator/Public/Components/AlsasuaParanoiaComponent.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "36c679af438245f790a53c3e58144a6f",
+    "semantic_hash": "36c679af438245f790a53c3e58144a6f"
+  },
+  "Source/AlsasuaSimulator/Public/Effects/AlsasuaVisualGlitch.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "1581e72264267ae72f38d04befabe09a",
+    "semantic_hash": "1581e72264267ae72f38d04befabe09a"
+  },
+  "Source/AlsasuaSimulator/Public/Environment/AlsasuaBuildingGenerator.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "e61ce2031445191b63cbde2126d9f912",
+    "semantic_hash": "e61ce2031445191b63cbde2126d9f912"
+  },
+  "Source/AlsasuaSimulator/Public/Environment/AlsasuaRoadComponent.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "99d886d59476c019550ce5101ed63900",
+    "semantic_hash": "99d886d59476c019550ce5101ed63900"
+  },
+  "Source/AlsasuaSimulator/Public/Environment/AlsasuaRoadManager.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "edc829e8327744af3ae69bafe45a72e1",
+    "semantic_hash": "edc829e8327744af3ae69bafe45a72e1"
+  },
+  "Source/AlsasuaSimulator/Public/Environment/AlsasuaWeatherManager.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "2eca8ba9e67b4a3556b3311c8ef77584",
+    "semantic_hash": "2eca8ba9e67b4a3556b3311c8ef77584"
+  },
+  "Source/AlsasuaSimulator/Public/World/AlsasuaWorldSubsystem.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "ebfb07d85c8b9f667a2e84cd6b3ded2d",
+    "semantic_hash": "ebfb07d85c8b9f667a2e84cd6b3ded2d"
+  },
+  "Source/AlsasuaUI/AlsasuaUI.Build.cs": {
+    "mtime": 1784976402.0,
+    "ast_hash": "0a91c87be4b685d263e0a580cd4985e5",
+    "semantic_hash": "0a91c87be4b685d263e0a580cd4985e5"
+  },
+  "Source/AlsasuaUI/Private/AlsasuaHUD.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "143969ddfa2644f06318b1da40a01178",
+    "semantic_hash": "143969ddfa2644f06318b1da40a01178"
+  },
+  "Source/AlsasuaUI/Private/AlsasuaMainMenuWidget.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "fc55073bee8d1fed9b7048b3f5fbe4bc",
+    "semantic_hash": "fc55073bee8d1fed9b7048b3f5fbe4bc"
+  },
+  "Source/AlsasuaUI/Private/AlsasuaMinimapWidget.cpp": {
+    "mtime": 1784976588.0,
+    "ast_hash": "44d4b21c81c6d816c1b38024da87d399",
+    "semantic_hash": "44d4b21c81c6d816c1b38024da87d399"
+  },
+  "Source/AlsasuaUI/Private/AlsasuaPauseMenuWidget.cpp": {
+    "mtime": 1784976050.0,
+    "ast_hash": "7d69757ad4a89562e4014b310905bd84",
+    "semantic_hash": "7d69757ad4a89562e4014b310905bd84"
+  },
+  "Source/AlsasuaUI/Private/AlsasuaSettingsWidget.cpp": {
+    "mtime": 1784976520.0,
+    "ast_hash": "80eff2693bd4a3c63e85ac99c3723a51",
+    "semantic_hash": "80eff2693bd4a3c63e85ac99c3723a51"
+  },
+  "Source/AlsasuaUI/Private/MenuPrincipalHUD.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "42dd76d2774f34b98de5c78301923d19",
+    "semantic_hash": "42dd76d2774f34b98de5c78301923d19"
+  },
+  "Source/AlsasuaUI/Public/AlsasuaHUD.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "9529592b9aa54369d878f9feaf17b3d3",
+    "semantic_hash": "9529592b9aa54369d878f9feaf17b3d3"
+  },
+  "Source/AlsasuaUI/Public/AlsasuaMainMenuWidget.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "848ef061f6bee901aeab68b20d18ba3c",
+    "semantic_hash": "848ef061f6bee901aeab68b20d18ba3c"
+  },
+  "Source/AlsasuaUI/Public/AlsasuaMinimapWidget.h": {
+    "mtime": 1784976090.0,
+    "ast_hash": "1dd53058444ffc71b99cc4b5e646d1a0",
+    "semantic_hash": "1dd53058444ffc71b99cc4b5e646d1a0"
+  },
+  "Source/AlsasuaUI/Public/AlsasuaPauseMenuWidget.h": {
+    "mtime": 1784975760.0,
+    "ast_hash": "149396c126ae63e0bf85e7840d8e0ac7",
+    "semantic_hash": "149396c126ae63e0bf85e7840d8e0ac7"
+  },
+  "Source/AlsasuaUI/Public/AlsasuaSettingsWidget.h": {
+    "mtime": 1784976284.0,
+    "ast_hash": "5c38b715ed0db198b5ea674607d8ec38",
+    "semantic_hash": "5c38b715ed0db198b5ea674607d8ec38"
+  },
+  "Source/AlsasuaUI/Public/MenuPrincipalHUD.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "77f1a611001d03471e7867c73edf595c",
+    "semantic_hash": "77f1a611001d03471e7867c73edf595c"
+  },
+  "Source/AlsasuaWorld/AlsasuaWorld.Build.cs": {
+    "mtime": 1784783174.0,
+    "ast_hash": "1352042c98a99e617637252d4fbb75c1",
+    "semantic_hash": "1352042c98a99e617637252d4fbb75c1"
+  },
+  "Source/AlsasuaWorld/Private/AguaNivel.cpp": {
+    "mtime": 1784923254.0,
+    "ast_hash": "ea292f3bf06f1ffa13aa866ffefc628d",
+    "semantic_hash": "ea292f3bf06f1ffa13aa866ffefc628d"
+  },
+  "Source/AlsasuaWorld/Private/AlsasuaVegetationSpawner.cpp": {
+    "mtime": 1784969044.0,
+    "ast_hash": "68a0acb8cb8c6fcb9024047f30aca8a9",
+    "semantic_hash": "68a0acb8cb8c6fcb9024047f30aca8a9"
+  },
+  "Source/AlsasuaWorld/Private/ArranqueMundo.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "ef6aabc5f24ff0c14d66d86d1bc42e4d",
+    "semantic_hash": "ef6aabc5f24ff0c14d66d86d1bc42e4d"
+  },
+  "Source/AlsasuaWorld/Private/CalleGenerada.cpp": {
+    "mtime": 1784917674.0,
+    "ast_hash": "98939ba40bfd9544b8c96fc5c4914852",
+    "semantic_hash": "98939ba40bfd9544b8c96fc5c4914852"
+  },
+  "Source/AlsasuaWorld/Private/CargadorArboles.cpp": {
+    "mtime": 1784926508.0,
+    "ast_hash": "d594898c2a647ef784965ec07054e7ad",
+    "semantic_hash": "d594898c2a647ef784965ec07054e7ad"
+  },
+  "Source/AlsasuaWorld/Private/CargadorCalles.cpp": {
+    "mtime": 1784917366.0,
+    "ast_hash": "935e7c746b773299469f1906b5a9509e",
+    "semantic_hash": "935e7c746b773299469f1906b5a9509e"
+  },
+  "Source/AlsasuaWorld/Private/CargadorEdificios.cpp": {
+    "mtime": 1784989558.0,
+    "ast_hash": "3e6d63898eb4f12b5eebbcf026f5791e",
+    "semantic_hash": "3e6d63898eb4f12b5eebbcf026f5791e"
+  },
+  "Source/AlsasuaWorld/Private/CargadorPOI.cpp": {
+    "mtime": 1784894056.0,
+    "ast_hash": "eeaabbaa23b0ea7485c05cf4f4d1d3b1",
+    "semantic_hash": "eeaabbaa23b0ea7485c05cf4f4d1d3b1"
+  },
+  "Source/AlsasuaWorld/Private/CargadorPoligonos.cpp": {
+    "mtime": 1784917362.0,
+    "ast_hash": "bf2d4afb2dd1e0e11660141beb1f9764",
+    "semantic_hash": "bf2d4afb2dd1e0e11660141beb1f9764"
+  },
+  "Source/AlsasuaWorld/Private/CargadorPuentes.cpp": {
+    "mtime": 1784893596.0,
+    "ast_hash": "edd5b8259ef22d2cf15329c21a35cf98",
+    "semantic_hash": "edd5b8259ef22d2cf15329c21a35cf98"
+  },
+  "Source/AlsasuaWorld/Private/CargadorVias.cpp": {
+    "mtime": 1784917358.0,
+    "ast_hash": "2ec7a1f6bb593785fe6cc0bc94fb9ec9",
+    "semantic_hash": "2ec7a1f6bb593785fe6cc0bc94fb9ec9"
+  },
+  "Source/AlsasuaWorld/Private/DirectorArranque.cpp": {
+    "mtime": 1784996326.0,
+    "ast_hash": "0b169aabc72028495890b10adbd3d54c",
+    "semantic_hash": "0b169aabc72028495890b10adbd3d54c"
+  },
+  "Source/AlsasuaWorld/Private/EdificioGenerado.cpp": {
+    "mtime": 1784892274.0,
+    "ast_hash": "f159a12546bc74174c09968d337743c7",
+    "semantic_hash": "f159a12546bc74174c09968d337743c7"
+  },
+  "Source/AlsasuaWorld/Private/GobernadorRender.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "7820df6888acfa3c20ad0272a081053d",
+    "semantic_hash": "7820df6888acfa3c20ad0272a081053d"
+  },
+  "Source/AlsasuaWorld/Private/HerrikoPlazaGenerator.cpp": {
+    "mtime": 1784918780.0,
+    "ast_hash": "b6d5b7ee202ef6940fa628e1cc8f3a50",
+    "semantic_hash": "b6d5b7ee202ef6940fa628e1cc8f3a50"
+  },
+  "Source/AlsasuaWorld/Private/MuestreadorAltura.cpp": {
+    "mtime": 1784725384.0,
+    "ast_hash": "c9cd90507be2ca8075691e11ef78158d",
+    "semantic_hash": "c9cd90507be2ca8075691e11ef78158d"
+  },
+  "Source/AlsasuaWorld/Private/NavMeshAlsasua.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "d8c80a547ec1aafab60448467997ecb5",
+    "semantic_hash": "d8c80a547ec1aafab60448467997ecb5"
+  },
+  "Source/AlsasuaWorld/Private/PoligonoSuelo.cpp": {
+    "mtime": 1784917676.0,
+    "ast_hash": "2770e0cad5bd30578d578fd50ca080de",
+    "semantic_hash": "2770e0cad5bd30578d578fd50ca080de"
+  },
+  "Source/AlsasuaWorld/Private/StreamerMundoEstatico.cpp": {
+    "mtime": 1784724880.0,
+    "ast_hash": "2dbf126fd97e4c586503e3d497a39a18",
+    "semantic_hash": "2dbf126fd97e4c586503e3d497a39a18"
+  },
+  "Source/AlsasuaWorld/Private/TerrenoGenerado.cpp": {
+    "mtime": 1784890762.0,
+    "ast_hash": "27363789a203b0ab46a84e7f1446b17d",
+    "semantic_hash": "27363789a203b0ab46a84e7f1446b17d"
+  },
+  "Source/AlsasuaWorld/Public/AguaNivel.h": {
+    "mtime": 1784725332.0,
+    "ast_hash": "c4f71c7acd235f87e48829640d581ab5",
+    "semantic_hash": "c4f71c7acd235f87e48829640d581ab5"
+  },
+  "Source/AlsasuaWorld/Public/AlsasuaVegetationSpawner.h": {
+    "mtime": 1784969008.0,
+    "ast_hash": "de9b43588872b85f0f44e226c71e648c",
+    "semantic_hash": "de9b43588872b85f0f44e226c71e648c"
+  },
+  "Source/AlsasuaWorld/Public/ArranqueMundo.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "0b086c7b9f0183440e8ab000d65e81a9",
+    "semantic_hash": "0b086c7b9f0183440e8ab000d65e81a9"
+  },
+  "Source/AlsasuaWorld/Public/CalleGenerada.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "4cf4fde46b27088be1f4a26094c8fa51",
+    "semantic_hash": "4cf4fde46b27088be1f4a26094c8fa51"
+  },
+  "Source/AlsasuaWorld/Public/CargadorArboles.h": {
+    "mtime": 1784926462.0,
+    "ast_hash": "9fd9368d068f753f6c9b1e767326818d",
+    "semantic_hash": "9fd9368d068f753f6c9b1e767326818d"
+  },
+  "Source/AlsasuaWorld/Public/CargadorCalles.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "8de0109bbc3f492bfb67dd71e703f74a",
+    "semantic_hash": "8de0109bbc3f492bfb67dd71e703f74a"
+  },
+  "Source/AlsasuaWorld/Public/CargadorEdificios.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "563304b12bc0ed11e652985b2f784fac",
+    "semantic_hash": "563304b12bc0ed11e652985b2f784fac"
+  },
+  "Source/AlsasuaWorld/Public/CargadorPOI.h": {
+    "mtime": 1784892424.0,
+    "ast_hash": "a61c347aa8a58c362a8203928b0d7e94",
+    "semantic_hash": "a61c347aa8a58c362a8203928b0d7e94"
+  },
+  "Source/AlsasuaWorld/Public/CargadorPoligonos.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "18ba15a85af1caeed3165e5a71e7a56d",
+    "semantic_hash": "18ba15a85af1caeed3165e5a71e7a56d"
+  },
+  "Source/AlsasuaWorld/Public/CargadorPuentes.h": {
+    "mtime": 1784892316.0,
+    "ast_hash": "b2a7c01f86d6e9b005d92771210f5d28",
+    "semantic_hash": "b2a7c01f86d6e9b005d92771210f5d28"
+  },
+  "Source/AlsasuaWorld/Public/CargadorVias.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "f276eff4b0187e8c16e4d8c1a4c4276a",
+    "semantic_hash": "f276eff4b0187e8c16e4d8c1a4c4276a"
+  },
+  "Source/AlsasuaWorld/Public/DirectorArranque.h": {
+    "mtime": 1784996166.0,
+    "ast_hash": "20c0842aa7eb6d7bcf6f7b5fa05df778",
+    "semantic_hash": "20c0842aa7eb6d7bcf6f7b5fa05df778"
+  },
+  "Source/AlsasuaWorld/Public/EdificioGenerado.h": {
+    "mtime": 1784893204.0,
+    "ast_hash": "b0a946581ab011db56a7394d394c3f8f",
+    "semantic_hash": "b0a946581ab011db56a7394d394c3f8f"
+  },
+  "Source/AlsasuaWorld/Public/GobernadorRender.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "7fcea5b1405f49783618693774e97f41",
+    "semantic_hash": "7fcea5b1405f49783618693774e97f41"
+  },
+  "Source/AlsasuaWorld/Public/HerrikoPlazaGenerator.h": {
+    "mtime": 1784893278.0,
+    "ast_hash": "a0822b7671272ad49d4e33e608617b8f",
+    "semantic_hash": "a0822b7671272ad49d4e33e608617b8f"
+  },
+  "Source/AlsasuaWorld/Public/MuestreadorAltura.h": {
+    "mtime": 1784725372.0,
+    "ast_hash": "c732cbfce5648cb9602214e4b35a9945",
+    "semantic_hash": "c732cbfce5648cb9602214e4b35a9945"
+  },
+  "Source/AlsasuaWorld/Public/NavMeshAlsasua.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "cb845e7bcce2344ad6c9561b85b91a2b",
+    "semantic_hash": "cb845e7bcce2344ad6c9561b85b91a2b"
+  },
+  "Source/AlsasuaWorld/Public/PoligonoSuelo.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "1928376e30bea4d0e6fa403d15a60948",
+    "semantic_hash": "1928376e30bea4d0e6fa403d15a60948"
+  },
+  "Source/AlsasuaWorld/Public/StreamerMundoEstatico.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "a6a015827a95616ea768469e360e35cb",
+    "semantic_hash": "a6a015827a95616ea768469e360e35cb"
+  },
+  "Source/AlsasuaWorld/Public/TerrenoGenerado.h": {
+    "mtime": 1784890742.0,
+    "ast_hash": "c4402c583855120e6c89bb5d88322e27",
+    "semantic_hash": "c4402c583855120e6c89bb5d88322e27"
+  },
+  "Source/AlsasuaWorld/Public/TrianguladorPoligono.h": {
+    "mtime": 1784724880.0,
+    "ast_hash": "343581fdf492faa73f83bc63b367e67a",
+    "semantic_hash": "343581fdf492faa73f83bc63b367e67a"
+  },
+  "Tools/DownloadTextures.py": {
+    "mtime": 1784973444.0,
+    "ast_hash": "8fda43ee9f8369d8cd7eab0c6f716684",
+    "semantic_hash": "8fda43ee9f8369d8cd7eab0c6f716684"
+  },
+  "Tools/PrepararLandscape.py": {
+    "mtime": 1784247218.0,
+    "ast_hash": "c973b4240550a6f9051b71a543d7db4c",
+    "semantic_hash": "c973b4240550a6f9051b71a543d7db4c"
+  },
+  "Tools/RunAll.py": {
+    "mtime": 1784724880.0,
+    "ast_hash": "d2c4c98d1ab4eb0df445c712180c315d",
+    "semantic_hash": "d2c4c98d1ab4eb0df445c712180c315d"
+  },
+  "Tools/SetupActors.py": {
+    "mtime": 1784724880.0,
+    "ast_hash": "d9fb7dbc09a1a5d6244d49eb011f8af0",
+    "semantic_hash": "d9fb7dbc09a1a5d6244d49eb011f8af0"
+  },
+  "Tools/SetupAdvancedVisuals.py": {
+    "mtime": 1784980496.0,
+    "ast_hash": "7c065031c9fd25b16b8e06e264c4c823",
+    "semantic_hash": "7c065031c9fd25b16b8e06e264c4c823"
+  },
+  "Tools/SetupAllRealData.py": {
+    "mtime": 1784990488.0,
+    "ast_hash": "23b1714aedffb8ef9f571b583f12f374",
+    "semantic_hash": "23b1714aedffb8ef9f571b583f12f374"
+  },
+  "Tools/SetupAmbientParticles.py": {
+    "mtime": 1784980088.0,
+    "ast_hash": "ec62507d2864b55572fd8c21d3cc1989",
+    "semantic_hash": "ec62507d2864b55572fd8c21d3cc1989"
+  },
+  "Tools/SetupAssets.py": {
+    "mtime": 1784977284.0,
+    "ast_hash": "9469e79ee8730f4e4e7069092523bf18",
+    "semantic_hash": "9469e79ee8730f4e4e7069092523bf18"
+  },
+  "Tools/SetupAudio.py": {
+    "mtime": 1784724880.0,
+    "ast_hash": "32537c85e978b269d00bff5621998207",
+    "semantic_hash": "32537c85e978b269d00bff5621998207"
+  },
+  "Tools/SetupBarrioStyles.py": {
+    "mtime": 1784980762.0,
+    "ast_hash": "8e458884078828724e2af72487d49497",
+    "semantic_hash": "8e458884078828724e2af72487d49497"
+  },
+  "Tools/SetupBridgeDetails.py": {
+    "mtime": 1784978276.0,
+    "ast_hash": "f25036fcb8ed765c54ce6502f16de103",
+    "semantic_hash": "f25036fcb8ed765c54ce6502f16de103"
+  },
+  "Tools/SetupDecals.py": {
+    "mtime": 1784978614.0,
+    "ast_hash": "3d41417dcd7157c3c06a4a78cf052b77",
+    "semantic_hash": "3d41417dcd7157c3c06a4a78cf052b77"
+  },
+  "Tools/SetupEnhancedMaterials.py": {
+    "mtime": 1784978240.0,
+    "ast_hash": "079f93a369fdb074c524d723ae36b446",
+    "semantic_hash": "079f93a369fdb074c524d723ae36b446"
+  },
+  "Tools/SetupFacadeDetails.py": {
+    "mtime": 1784980092.0,
+    "ast_hash": "9fe9a5289bd4f13ead879a43330f7056",
+    "semantic_hash": "9fe9a5289bd4f13ead879a43330f7056"
+  },
+  "Tools/SetupFoliageWind.py": {
+    "mtime": 1784978264.0,
+    "ast_hash": "446707173f81cf758f5f85dacea94bc0",
+    "semantic_hash": "446707173f81cf758f5f85dacea94bc0"
+  },
+  "Tools/SetupGroundCover.py": {
+    "mtime": 1784980106.0,
+    "ast_hash": "516b4c4ac1e30ce23bcdaea74d8cf226",
+    "semantic_hash": "516b4c4ac1e30ce23bcdaea74d8cf226"
+  },
+  "Tools/SetupInput.py": {
+    "mtime": 1784724880.0,
+    "ast_hash": "b679355e35c4977b0f39df15a0055f98",
+    "semantic_hash": "b679355e35c4977b0f39df15a0055f98"
+  },
+  "Tools/SetupInteriorLights.py": {
+    "mtime": 1784978602.0,
+    "ast_hash": "4607c945f217a20ca01f2a6be4dcae7d",
+    "semantic_hash": "4607c945f217a20ca01f2a6be4dcae7d"
+  },
+  "Tools/SetupLandscape.py": {
+    "mtime": 1784724880.0,
+    "ast_hash": "63e24a3c1821ab0cbd3890708f8ad33b",
+    "semantic_hash": "63e24a3c1821ab0cbd3890708f8ad33b"
+  },
+  "Tools/SetupLevel.py": {
+    "mtime": 1784724880.0,
+    "ast_hash": "330c593e03918a0ae039ecbb16f885da",
+    "semantic_hash": "330c593e03918a0ae039ecbb16f885da"
+  },
+  "Tools/SetupMaterials.py": {
+    "mtime": 1784724880.0,
+    "ast_hash": "9e9c36fa77e17926a9832059d14d3059",
+    "semantic_hash": "9e9c36fa77e17926a9832059d14d3059"
+  },
+  "Tools/SetupMegascansFoliage.py": {
+    "mtime": 1784977362.0,
+    "ast_hash": "79645f388fe5c728b8cac6857a3281ea",
+    "semantic_hash": "79645f388fe5c728b8cac6857a3281ea"
+  },
+  "Tools/SetupNightBuildings.py": {
+    "mtime": 1784978254.0,
+    "ast_hash": "fb19525bf071fec47f6865c3221cd483",
+    "semantic_hash": "fb19525bf071fec47f6865c3221cd483"
+  },
+  "Tools/SetupRainParticles.py": {
+    "mtime": 1784978582.0,
+    "ast_hash": "6cd6605dadf13da9883f340bd69c1ca3",
+    "semantic_hash": "6cd6605dadf13da9883f340bd69c1ca3"
+  },
+  "Tools/SetupStreetLights.py": {
+    "mtime": 1784978596.0,
+    "ast_hash": "1bcdc6d330d5e28246a1db892fe26987",
+    "semantic_hash": "1bcdc6d330d5e28246a1db892fe26987"
+  },
+  "Tools/SetupTerrainAutoTexture.py": {
+    "mtime": 1784978206.0,
+    "ast_hash": "5ac7a450761f05ea7e97b3ceb331e9bd",
+    "semantic_hash": "5ac7a450761f05ea7e97b3ceb331e9bd"
+  },
+  "Tools/SetupWaterReflections.py": {
+    "mtime": 1784978608.0,
+    "ast_hash": "c2c46b11ca0ad0fbf5894ad8114991da",
+    "semantic_hash": "c2c46b11ca0ad0fbf5894ad8114991da"
+  },
+  "Tools/add_sign_positions.py": {
+    "mtime": 1784983036.0,
+    "ast_hash": "e29d9d57d883048892104f72f540c98c",
+    "semantic_hash": "e29d9d57d883048892104f72f540c98c"
+  },
+  "Tools/asset_manifest.py": {
+    "mtime": 1784989476.0,
+    "ast_hash": "4a840e1fb3348eb7f09c59fde95a20e4",
+    "semantic_hash": "4a840e1fb3348eb7f09c59fde95a20e4"
+  },
+  "Tools/convert_blend_to_fbx.py": {
+    "mtime": 1784995648.0,
+    "ast_hash": "a0ebf7d862e41b8dfc9984a93c3418d7",
+    "semantic_hash": "a0ebf7d862e41b8dfc9984a93c3418d7"
+  },
+  "Tools/enrich_furniture.py": {
+    "mtime": 1784990052.0,
+    "ast_hash": "1c6edf5ab7c0ec0eb6b3ea8670e9038f",
+    "semantic_hash": "1c6edf5ab7c0ec0eb6b3ea8670e9038f"
+  },
+  "Tools/enrich_real_data.py": {
+    "mtime": 1784981666.0,
+    "ast_hash": "0c26c199d96538d0ea5a7dae0856a2ab",
+    "semantic_hash": "0c26c199d96538d0ea5a7dae0856a2ab"
+  },
+  "Tools/enrich_real_pois.py": {
+    "mtime": 1784991158.0,
+    "ast_hash": "94d2065e06d9e781cf8417aaa6b9f200",
+    "semantic_hash": "94d2065e06d9e781cf8417aaa6b9f200"
+  },
+  "Tools/extract_unity_packages.py": {
+    "mtime": 1784995466.0,
+    "ast_hash": "4dd0f47fac41de1400796c40059fa236",
+    "semantic_hash": "4dd0f47fac41de1400796c40059fa236"
+  },
+  "Tools/meshy_prompts.py": {
+    "mtime": 1784992760.0,
+    "ast_hash": "44234dc2f9bad7019f6b8c516f69ae7f",
+    "semantic_hash": "44234dc2f9bad7019f6b8c516f69ae7f"
+  },
+  "Tools/ue5_import_all_assets.py": {
+    "mtime": 1784993182.0,
+    "ast_hash": "23a1bb51d84e0cc618a7753b68d15a0e",
+    "semantic_hash": "23a1bb51d84e0cc618a7753b68d15a0e"
+  },
+  "Tools/ue5_import_assets.py": {
+    "mtime": 1784983232.0,
+    "ast_hash": "306e3955aff83962f785add5fdf9cb1c",
+    "semantic_hash": "306e3955aff83962f785add5fdf9cb1c"
+  },
+  "Tools/ue5_materials_barrio.py": {
+    "mtime": 1784989692.0,
+    "ast_hash": "18ce7fdb57ccff9a73f66277afab00a8",
+    "semantic_hash": "18ce7fdb57ccff9a73f66277afab00a8"
+  },
+  "Tools/ue5_setup_assets.py": {
+    "mtime": 1784982788.0,
+    "ast_hash": "32cf0032d989d5af92cf90eec2d15b09",
+    "semantic_hash": "32cf0032d989d5af92cf90eec2d15b09"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Gregor Quendel - Free General Ambience Sounds/City Ambience - Park - Spring - With birds, cars, and planes.wav": {
+    "mtime": 1784995538.0,
+    "ast_hash": "7fcbae021d88cc8429dd3e71d24e3131",
+    "semantic_hash": "7fcbae021d88cc8429dd3e71d24e3131"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Gregor Quendel - Free General Ambience Sounds/City Ambience - Traffic - Bridge - Tram, train, cars, pedestrians.wav": {
+    "mtime": 1784995560.0,
+    "ast_hash": "0fc3dc8a30df61790c9929a6f639e067",
+    "semantic_hash": "0fc3dc8a30df61790c9929a6f639e067"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Gregor Quendel - Free General Ambience Sounds/City Ambience - Traffic - Street - Cars and tram.wav": {
+    "mtime": 1784995528.0,
+    "ast_hash": "bdec2947ed90cdaabd5a9bc7e8e02b73",
+    "semantic_hash": "bdec2947ed90cdaabd5a9bc7e8e02b73"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Gregor Quendel - Free General Ambience Sounds/Crowd - Cheering - Soft cheering - I.wav": {
+    "mtime": 1784995514.0,
+    "ast_hash": "ae9698d5a5c8da9ccc2f630ff80f7c98",
+    "semantic_hash": "ae9698d5a5c8da9ccc2f630ff80f7c98"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Gregor Quendel - Free General Ambience Sounds/Crowd - Cheering - Soft cheering and chatter.wav": {
+    "mtime": 1784995564.0,
+    "ast_hash": "4d7ddc8fe2aff5e4a8531edd94c56665",
+    "semantic_hash": "4d7ddc8fe2aff5e4a8531edd94c56665"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Gregor Quendel - Free General Ambience Sounds/Crowd - Cheering - Strong cheering - I.wav": {
+    "mtime": 1784995532.0,
+    "ast_hash": "a85e8d9a78886b1c3f46c1a045abe247",
+    "semantic_hash": "a85e8d9a78886b1c3f46c1a045abe247"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Gregor Quendel - Free General Ambience Sounds/Crowd - Cheering - Strong cheering - II.wav": {
+    "mtime": 1784995522.0,
+    "ast_hash": "626a88cce21462b6cf5dd4be4c3cf0f2",
+    "semantic_hash": "626a88cce21462b6cf5dd4be4c3cf0f2"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Gregor Quendel - Free General Ambience Sounds/Crowd - Cheering - Strong cheering and soft rhythmic cheering.wav": {
+    "mtime": 1784995574.0,
+    "ast_hash": "7fc19ea1ca846ffecae52c149f917e40",
+    "semantic_hash": "7fc19ea1ca846ffecae52c149f917e40"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Gregor Quendel - Free General Ambience Sounds/Crowd - Cheering - Strong cheering and strong rhythmic cheering.wav": {
+    "mtime": 1784995540.0,
+    "ast_hash": "f7c6fb278d074164294cbb9db5ecee6c",
+    "semantic_hash": "f7c6fb278d074164294cbb9db5ecee6c"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Gregor Quendel - Free General Ambience Sounds/Crowd - Mall ambience.wav": {
+    "mtime": 1784995544.0,
+    "ast_hash": "7a3a8c11aa6ac5ea049efccb3db5afde",
+    "semantic_hash": "7a3a8c11aa6ac5ea049efccb3db5afde"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Gregor Quendel - Free General Ambience Sounds/Crowd - School excursion.wav": {
+    "mtime": 1784995534.0,
+    "ast_hash": "14e704d58a59dc925a3383724091bf1b",
+    "semantic_hash": "14e704d58a59dc925a3383724091bf1b"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Gregor Quendel - Free General Ambience Sounds/Fireworks - New Year's Eve.wav": {
+    "mtime": 1784995552.0,
+    "ast_hash": "1d9f0fba87d91bdbfac316c9055c6a09",
+    "semantic_hash": "1d9f0fba87d91bdbfac316c9055c6a09"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Gregor Quendel - Free General Ambience Sounds/Ice - Walking on ice - II.wav": {
+    "mtime": 1784995568.0,
+    "ast_hash": "463fae18811e695bd7acc7e737665398",
+    "semantic_hash": "463fae18811e695bd7acc7e737665398"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Gregor Quendel - Free General Ambience Sounds/Ice - Walking on ice - IV.wav": {
+    "mtime": 1784995514.0,
+    "ast_hash": "b1abde119f9f312daf85e868ae8c1f10",
+    "semantic_hash": "b1abde119f9f312daf85e868ae8c1f10"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Gregor Quendel - Free General Ambience Sounds/Rain - Distant thunder.wav": {
+    "mtime": 1784995520.0,
+    "ast_hash": "1dd5b96a73034540b38f40950f554f42",
+    "semantic_hash": "1dd5b96a73034540b38f40950f554f42"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Gregor Quendel - Free General Ambience Sounds/Rain - Falling on a metal roof.wav": {
+    "mtime": 1784995546.0,
+    "ast_hash": "bac711b5a964f59daf87dddb074f5348",
+    "semantic_hash": "bac711b5a964f59daf87dddb074f5348"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Gregor Quendel - Free General Ambience Sounds/Thunder - Lightning - Ambience - Field recording.wav": {
+    "mtime": 1784995516.0,
+    "ast_hash": "4ea43337977c63279da9bd73328be26e",
+    "semantic_hash": "4ea43337977c63279da9bd73328be26e"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Gregor Quendel - Free General Ambience Sounds/Thunder - Lightning - I - Without rain, wind, background noise.wav": {
+    "mtime": 1784995554.0,
+    "ast_hash": "b29865dbe06018ba794a27e1608bb93c",
+    "semantic_hash": "b29865dbe06018ba794a27e1608bb93c"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Gregor Quendel - Free General Ambience Sounds/Water Stream - II.wav": {
+    "mtime": 1784995524.0,
+    "ast_hash": "effa6b79bec1ef964ffc2fead2faf59e",
+    "semantic_hash": "effa6b79bec1ef964ffc2fead2faf59e"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Gregor Quendel - Free General Ambience Sounds/Water Stream - III.wav": {
+    "mtime": 1784995530.0,
+    "ast_hash": "dd6c45e2e1415010d0a51f1ae21eccb2",
+    "semantic_hash": "dd6c45e2e1415010d0a51f1ae21eccb2"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Gregor Quendel - Free General Ambience Sounds/Water Stream - V.wav": {
+    "mtime": 1784995518.0,
+    "ast_hash": "fb9813334906a59dad1f47867dc9e300",
+    "semantic_hash": "fb9813334906a59dad1f47867dc9e300"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Gregor Quendel - Free General Ambience Sounds/Water Stream - VII.wav": {
+    "mtime": 1784995514.0,
+    "ast_hash": "20a991ebead6adac204a55c0e6f64264",
+    "semantic_hash": "20a991ebead6adac204a55c0e6f64264"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Gregor Quendel - Free General Ambience Sounds/Water Stream - X.wav": {
+    "mtime": 1784995522.0,
+    "ast_hash": "e45747ada8ab56d19b74e89b58cac485",
+    "semantic_hash": "e45747ada8ab56d19b74e89b58cac485"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Gregor Quendel - Free General Ambience Sounds/Wind - Autumn wind with leaves rustling.wav": {
+    "mtime": 1784995518.0,
+    "ast_hash": "ad4cac59ff60116a5abbfdf46d5e7c1e",
+    "semantic_hash": "ad4cac59ff60116a5abbfdf46d5e7c1e"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Nature - Essentials/Ambiance_Cave_Dark_Loop_Stereo.wav": {
+    "mtime": 1784995488.0,
+    "ast_hash": "baf607f378efc1082c60d00249a756e8",
+    "semantic_hash": "baf607f378efc1082c60d00249a756e8"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Nature - Essentials/Ambiance_Cave_Deep_Loop_Stereo.wav": {
+    "mtime": 1784995490.0,
+    "ast_hash": "4e8b1ae2d222a7036884c0509207f5c9",
+    "semantic_hash": "4e8b1ae2d222a7036884c0509207f5c9"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Nature - Essentials/Ambiance_Cave_Drips_Loop_Stereo.wav": {
+    "mtime": 1784995490.0,
+    "ast_hash": "6fe71f8c4ce7f67562d83fa484e92232",
+    "semantic_hash": "6fe71f8c4ce7f67562d83fa484e92232"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Nature - Essentials/Ambiance_Cicadas_Loop_Stereo.wav": {
+    "mtime": 1784995486.0,
+    "ast_hash": "6e3538afb8ba7cfec8cad4e1d76b06fa",
+    "semantic_hash": "6e3538afb8ba7cfec8cad4e1d76b06fa"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Nature - Essentials/Ambiance_Fire_Big_Loop_Mono.wav": {
+    "mtime": 1784995486.0,
+    "ast_hash": "634bd030bf84dc94e2bb729c6d7f29df",
+    "semantic_hash": "634bd030bf84dc94e2bb729c6d7f29df"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Nature - Essentials/Ambiance_Firecamp_Medium_Loop_Mono.wav": {
+    "mtime": 1784995488.0,
+    "ast_hash": "ef858f4b0e1688a5d05802bf5506dfa1",
+    "semantic_hash": "ef858f4b0e1688a5d05802bf5506dfa1"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Nature - Essentials/Ambiance_Firecamp_Small_Loop_Mono.wav": {
+    "mtime": 1784995486.0,
+    "ast_hash": "3d92c6563f3d938cbf1a34e34e958b26",
+    "semantic_hash": "3d92c6563f3d938cbf1a34e34e958b26"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Nature - Essentials/Ambiance_Forest_Birds_Loop_Stereo.wav": {
+    "mtime": 1784995488.0,
+    "ast_hash": "4a265eda3605490dc32228880f68faab",
+    "semantic_hash": "4a265eda3605490dc32228880f68faab"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Nature - Essentials/Ambiance_Night_Loop_Stereo.wav": {
+    "mtime": 1784995486.0,
+    "ast_hash": "496a4bb6768421b225bc372e9e0ac52e",
+    "semantic_hash": "496a4bb6768421b225bc372e9e0ac52e"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Nature - Essentials/Ambiance_Rain_Calm_Loop_Stereo.wav": {
+    "mtime": 1784995490.0,
+    "ast_hash": "c679113d7d1a3a8faa4ee7f957bd1ead",
+    "semantic_hash": "c679113d7d1a3a8faa4ee7f957bd1ead"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Nature - Essentials/Ambiance_Rain_Strong_Loop_Stereo.wav": {
+    "mtime": 1784995486.0,
+    "ast_hash": "46e9e48b02a769b0713655d4a84c71d9",
+    "semantic_hash": "46e9e48b02a769b0713655d4a84c71d9"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Nature - Essentials/Ambiance_River_Moderate_Loop_Stereo.wav": {
+    "mtime": 1784995488.0,
+    "ast_hash": "7f1f3f333c160c1e9cbe8c55ff845f35",
+    "semantic_hash": "7f1f3f333c160c1e9cbe8c55ff845f35"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Nature - Essentials/Ambiance_Sea_Loop_Stereo.wav": {
+    "mtime": 1784995486.0,
+    "ast_hash": "07fb43af8c337cada804a5829d5cd382",
+    "semantic_hash": "07fb43af8c337cada804a5829d5cd382"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Nature - Essentials/Ambiance_Stream_Calm_Loop_Stereo.wav": {
+    "mtime": 1784995490.0,
+    "ast_hash": "b7a05077f2efab051b71df88c2252bb9",
+    "semantic_hash": "b7a05077f2efab051b71df88c2252bb9"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Nature - Essentials/Ambiance_Waterfall_Calm_Loop_Stereo.wav": {
+    "mtime": 1784995488.0,
+    "ast_hash": "fccc0b532d0f5518945428cc32c6182f",
+    "semantic_hash": "fccc0b532d0f5518945428cc32c6182f"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Nature - Essentials/Ambiance_Waterfall_Strong_Loop_Stereo.wav": {
+    "mtime": 1784995488.0,
+    "ast_hash": "5371b89cf450b20a040540d7e0bc640d",
+    "semantic_hash": "5371b89cf450b20a040540d7e0bc640d"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Nature - Essentials/Ambiance_Wind_Calm_Loop_Stereo.wav": {
+    "mtime": 1784995488.0,
+    "ast_hash": "5da49422b8be7b0bb796f2ce732e9e20",
+    "semantic_hash": "5da49422b8be7b0bb796f2ce732e9e20"
+  },
+  "Content/AssetsImportados/ExtractedUnity/Nature - Essentials/Ambiance_Wind_Forest_Loop_Stereo.wav": {
+    "mtime": 1784995488.0,
+    "ast_hash": "b77b2811745373f77937754f33e60ed8",
+    "semantic_hash": "b77b2811745373f77937754f33e60ed8"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Ambiance_Cave_Dark_Loop_Stereo.wav": {
+    "mtime": 1784995488.0,
+    "ast_hash": "baf607f378efc1082c60d00249a756e8",
+    "semantic_hash": "baf607f378efc1082c60d00249a756e8"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Ambiance_Cave_Deep_Loop_Stereo.wav": {
+    "mtime": 1784995490.0,
+    "ast_hash": "4e8b1ae2d222a7036884c0509207f5c9",
+    "semantic_hash": "4e8b1ae2d222a7036884c0509207f5c9"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Ambiance_Cave_Drips_Loop_Stereo.wav": {
+    "mtime": 1784995490.0,
+    "ast_hash": "6fe71f8c4ce7f67562d83fa484e92232",
+    "semantic_hash": "6fe71f8c4ce7f67562d83fa484e92232"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Ambiance_Cicadas_Loop_Stereo.wav": {
+    "mtime": 1784995486.0,
+    "ast_hash": "6e3538afb8ba7cfec8cad4e1d76b06fa",
+    "semantic_hash": "6e3538afb8ba7cfec8cad4e1d76b06fa"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Ambiance_Fire_Big_Loop_Mono.wav": {
+    "mtime": 1784995486.0,
+    "ast_hash": "634bd030bf84dc94e2bb729c6d7f29df",
+    "semantic_hash": "634bd030bf84dc94e2bb729c6d7f29df"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Ambiance_Firecamp_Medium_Loop_Mono.wav": {
+    "mtime": 1784995488.0,
+    "ast_hash": "ef858f4b0e1688a5d05802bf5506dfa1",
+    "semantic_hash": "ef858f4b0e1688a5d05802bf5506dfa1"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Ambiance_Firecamp_Small_Loop_Mono.wav": {
+    "mtime": 1784995486.0,
+    "ast_hash": "3d92c6563f3d938cbf1a34e34e958b26",
+    "semantic_hash": "3d92c6563f3d938cbf1a34e34e958b26"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Ambiance_Forest_Birds_Loop_Stereo.wav": {
+    "mtime": 1784995488.0,
+    "ast_hash": "4a265eda3605490dc32228880f68faab",
+    "semantic_hash": "4a265eda3605490dc32228880f68faab"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Ambiance_Night_Loop_Stereo.wav": {
+    "mtime": 1784995486.0,
+    "ast_hash": "496a4bb6768421b225bc372e9e0ac52e",
+    "semantic_hash": "496a4bb6768421b225bc372e9e0ac52e"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Ambiance_Rain_Calm_Loop_Stereo.wav": {
+    "mtime": 1784995490.0,
+    "ast_hash": "c679113d7d1a3a8faa4ee7f957bd1ead",
+    "semantic_hash": "c679113d7d1a3a8faa4ee7f957bd1ead"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Ambiance_Rain_Strong_Loop_Stereo.wav": {
+    "mtime": 1784995486.0,
+    "ast_hash": "46e9e48b02a769b0713655d4a84c71d9",
+    "semantic_hash": "46e9e48b02a769b0713655d4a84c71d9"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Ambiance_River_Moderate_Loop_Stereo.wav": {
+    "mtime": 1784995488.0,
+    "ast_hash": "7f1f3f333c160c1e9cbe8c55ff845f35",
+    "semantic_hash": "7f1f3f333c160c1e9cbe8c55ff845f35"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Ambiance_Sea_Loop_Stereo.wav": {
+    "mtime": 1784995486.0,
+    "ast_hash": "07fb43af8c337cada804a5829d5cd382",
+    "semantic_hash": "07fb43af8c337cada804a5829d5cd382"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Ambiance_Stream_Calm_Loop_Stereo.wav": {
+    "mtime": 1784995490.0,
+    "ast_hash": "b7a05077f2efab051b71df88c2252bb9",
+    "semantic_hash": "b7a05077f2efab051b71df88c2252bb9"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Ambiance_Waterfall_Calm_Loop_Stereo.wav": {
+    "mtime": 1784995488.0,
+    "ast_hash": "fccc0b532d0f5518945428cc32c6182f",
+    "semantic_hash": "fccc0b532d0f5518945428cc32c6182f"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Ambiance_Waterfall_Strong_Loop_Stereo.wav": {
+    "mtime": 1784995488.0,
+    "ast_hash": "5371b89cf450b20a040540d7e0bc640d",
+    "semantic_hash": "5371b89cf450b20a040540d7e0bc640d"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Ambiance_Wind_Calm_Loop_Stereo.wav": {
+    "mtime": 1784995488.0,
+    "ast_hash": "5da49422b8be7b0bb796f2ce732e9e20",
+    "semantic_hash": "5da49422b8be7b0bb796f2ce732e9e20"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Ambiance_Wind_Forest_Loop_Stereo.wav": {
+    "mtime": 1784995488.0,
+    "ast_hash": "b77b2811745373f77937754f33e60ed8",
+    "semantic_hash": "b77b2811745373f77937754f33e60ed8"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/City Ambience - Park - Spring - With birds, cars, and planes.wav": {
+    "mtime": 1784995538.0,
+    "ast_hash": "7fcbae021d88cc8429dd3e71d24e3131",
+    "semantic_hash": "7fcbae021d88cc8429dd3e71d24e3131"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/City Ambience - Traffic - Bridge - Tram, train, cars, pedestrians.wav": {
+    "mtime": 1784995560.0,
+    "ast_hash": "0fc3dc8a30df61790c9929a6f639e067",
+    "semantic_hash": "0fc3dc8a30df61790c9929a6f639e067"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/City Ambience - Traffic - Street - Cars and tram.wav": {
+    "mtime": 1784995528.0,
+    "ast_hash": "bdec2947ed90cdaabd5a9bc7e8e02b73",
+    "semantic_hash": "bdec2947ed90cdaabd5a9bc7e8e02b73"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Crowd - Cheering - Soft cheering - I.wav": {
+    "mtime": 1784995514.0,
+    "ast_hash": "ae9698d5a5c8da9ccc2f630ff80f7c98",
+    "semantic_hash": "ae9698d5a5c8da9ccc2f630ff80f7c98"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Crowd - Cheering - Soft cheering and chatter.wav": {
+    "mtime": 1784995564.0,
+    "ast_hash": "4d7ddc8fe2aff5e4a8531edd94c56665",
+    "semantic_hash": "4d7ddc8fe2aff5e4a8531edd94c56665"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Crowd - Cheering - Strong cheering - I.wav": {
+    "mtime": 1784995532.0,
+    "ast_hash": "a85e8d9a78886b1c3f46c1a045abe247",
+    "semantic_hash": "a85e8d9a78886b1c3f46c1a045abe247"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Crowd - Cheering - Strong cheering - II.wav": {
+    "mtime": 1784995522.0,
+    "ast_hash": "626a88cce21462b6cf5dd4be4c3cf0f2",
+    "semantic_hash": "626a88cce21462b6cf5dd4be4c3cf0f2"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Crowd - Cheering - Strong cheering and soft rhythmic cheering.wav": {
+    "mtime": 1784995574.0,
+    "ast_hash": "7fc19ea1ca846ffecae52c149f917e40",
+    "semantic_hash": "7fc19ea1ca846ffecae52c149f917e40"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Crowd - Cheering - Strong cheering and strong rhythmic cheering.wav": {
+    "mtime": 1784995540.0,
+    "ast_hash": "f7c6fb278d074164294cbb9db5ecee6c",
+    "semantic_hash": "f7c6fb278d074164294cbb9db5ecee6c"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Crowd - Mall ambience.wav": {
+    "mtime": 1784995544.0,
+    "ast_hash": "7a3a8c11aa6ac5ea049efccb3db5afde",
+    "semantic_hash": "7a3a8c11aa6ac5ea049efccb3db5afde"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Crowd - School excursion.wav": {
+    "mtime": 1784995534.0,
+    "ast_hash": "14e704d58a59dc925a3383724091bf1b",
+    "semantic_hash": "14e704d58a59dc925a3383724091bf1b"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Fireworks - New Year's Eve.wav": {
+    "mtime": 1784995552.0,
+    "ast_hash": "1d9f0fba87d91bdbfac316c9055c6a09",
+    "semantic_hash": "1d9f0fba87d91bdbfac316c9055c6a09"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Ice - Walking on ice - II.wav": {
+    "mtime": 1784995568.0,
+    "ast_hash": "463fae18811e695bd7acc7e737665398",
+    "semantic_hash": "463fae18811e695bd7acc7e737665398"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Ice - Walking on ice - IV.wav": {
+    "mtime": 1784995514.0,
+    "ast_hash": "b1abde119f9f312daf85e868ae8c1f10",
+    "semantic_hash": "b1abde119f9f312daf85e868ae8c1f10"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Rain - Distant thunder.wav": {
+    "mtime": 1784995520.0,
+    "ast_hash": "1dd5b96a73034540b38f40950f554f42",
+    "semantic_hash": "1dd5b96a73034540b38f40950f554f42"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Rain - Falling on a metal roof.wav": {
+    "mtime": 1784995546.0,
+    "ast_hash": "bac711b5a964f59daf87dddb074f5348",
+    "semantic_hash": "bac711b5a964f59daf87dddb074f5348"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Thunder - Lightning - Ambience - Field recording.wav": {
+    "mtime": 1784995516.0,
+    "ast_hash": "4ea43337977c63279da9bd73328be26e",
+    "semantic_hash": "4ea43337977c63279da9bd73328be26e"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Thunder - Lightning - I - Without rain, wind, background noise.wav": {
+    "mtime": 1784995554.0,
+    "ast_hash": "b29865dbe06018ba794a27e1608bb93c",
+    "semantic_hash": "b29865dbe06018ba794a27e1608bb93c"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Water Stream - II.wav": {
+    "mtime": 1784995524.0,
+    "ast_hash": "effa6b79bec1ef964ffc2fead2faf59e",
+    "semantic_hash": "effa6b79bec1ef964ffc2fead2faf59e"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Water Stream - III.wav": {
+    "mtime": 1784995530.0,
+    "ast_hash": "dd6c45e2e1415010d0a51f1ae21eccb2",
+    "semantic_hash": "dd6c45e2e1415010d0a51f1ae21eccb2"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Water Stream - V.wav": {
+    "mtime": 1784995518.0,
+    "ast_hash": "fb9813334906a59dad1f47867dc9e300",
+    "semantic_hash": "fb9813334906a59dad1f47867dc9e300"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Water Stream - VII.wav": {
+    "mtime": 1784995514.0,
+    "ast_hash": "20a991ebead6adac204a55c0e6f64264",
+    "semantic_hash": "20a991ebead6adac204a55c0e6f64264"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Water Stream - X.wav": {
+    "mtime": 1784995522.0,
+    "ast_hash": "e45747ada8ab56d19b74e89b58cac485",
+    "semantic_hash": "e45747ada8ab56d19b74e89b58cac485"
+  },
+  "Content/AssetsImportados/Sonido/ExtractedSounds/Wind - Autumn wind with leaves rustling.wav": {
+    "mtime": 1784995518.0,
+    "ast_hash": "ad4cac59ff60116a5abbfdf46d5e7c1e",
+    "semantic_hash": "ad4cac59ff60116a5abbfdf46d5e7c1e"
+  }
+}

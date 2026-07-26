@@ -24,16 +24,22 @@ private:
 	TArray<FVector> TargetLocations;
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnVisibilityUpdated, const TArray<int32>&, VisibleIndices);
+
 UCLASS()
 class ALSASUAMANIFA_API UAlsasuaAsyncProcessor : public UWorldSubsystem
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	// Encola una tarea de cálculo de visibilidad para no bloquear el GameThread
-	void ScheduleVisibilityCheck(FVector ObserverLoc, const TArray<FVector>& Targets);
+    void ScheduleVisibilityCheck(FVector ObserverLoc, const TArray<FVector>& Targets);
+
+    UPROPERTY(BlueprintAssignable, Category = "AAA|Async")
+    FOnVisibilityUpdated OnVisibilityUpdated;
+
+    UPROPERTY(BlueprintReadOnly, Category = "AAA|Async")
+    TArray<int32> LatestVisibleIndices;
 
 protected:
-	// Callback cuando la tarea termina (Thread Safe)
-	void OnVisibilityComplete(TArray<int32> Results);
+    void OnVisibilityComplete(TArray<int32> Results);
 };

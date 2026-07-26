@@ -30,7 +30,10 @@ void UAlsasuaEventManager::ProcessTimeline()
             // Efectos sistémicos inmediatos (AAA+++)
             if (Milestone.EventIdentifier == "POLICE_CHARGE")
             {
-                if (UAlsasuaCrowdSentiment* Sentiment = GetWorld()->GetSubsystem<UAlsasuaCrowdSentiment>())
+                UWorld* W = GetWorld();
+                if (!W) continue;
+
+                if (UAlsasuaCrowdSentiment* Sentiment = W->GetSubsystem<UAlsasuaCrowdSentiment>())
                 {
                     Sentiment->TriggerSocialEvent(FVector(0,0,0), 0.9f, 5000.f); // Pánico masivo
                 }

@@ -1,0 +1,22 @@
+{
+    "_comment": "Facciones del conflicto de Alsasua. influence = poder/político, suspicion = sospecha ante el jugador",
+    "factions": [
+        {"id": "Resistencia",  "nombre": "Resistencia",  "influence": 50, "suspicion": 0},
+        {"id": "ERTA",         "nombre": "ERTA",         "influence": 40, "suspicion": 0},
+        {"id": "Policia",      "nombre": "Policía Local", "influence": 60, "suspicion": 0},
+        {"id": "GuardiaCivil", "nombre": "Guardia Civil", "influence": 70, "suspicion": 0},
+        {"id": "DeepState",    "nombre": "Deep State",    "influence": 30, "suspicion": 0},
+        {"id": "Gremios",      "nombre": "Gremios",      "influence": 45, "suspicion": 0},
+        {"id": "Prensa",       "nombre": "Prensa",       "influence": 55, "suspicion": 0},
+        {"id": "Politicos",    "nombre": "Políticos",    "influence": 65, "suspicion": 0},
+        {"id": "ElCentro",     "nombre": "El Centro",    "influence": 50, "suspicion": 0},
+        {"id": "LaAsamblea",   "nombre": "La Asamblea",  "influence": 55, "suspicion": 0},
+        {"id": "ElGremio",     "nombre": "El Gremio",    "influence": 45, "suspicion": 0}
+    ],
+    "relations": [
+        {"from": "Resistencia", "to": "Policia",      "value": -30},
+        {"from": "Resistencia", "to": "GuardiaCivil",  "value": -40},
+        {"from": "Resistencia", "to": "DeepState",     "value": -60},
+        {"from": "Resistencia", "to": "Gremios",       "value":  20}
+    ]
+}

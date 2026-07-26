@@ -1,0 +1,79 @@
+{
+    "StartNodeID": 0,
+    "Nodes": [
+        {
+            "ID": 0,
+            "Type": "NPC_Statement",
+            "DialogueText": "Hola, soy Ane, periodista independiente. He oído que estás metido en líos. ¿Puedo hacerte unas preguntas?",
+            "Options": [
+                {
+                    "OptionText": "Depende de qué quieras saber.",
+                    "TargetNodeID": 1,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                },
+                {
+                    "OptionText": "No hablo con la prensa.",
+                    "TargetNodeID": 4,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                }
+            ]
+        },
+        {
+            "ID": 1,
+            "Type": "NPC_Statement",
+            "DialogueText": "Tengo fuentes que dicen que Deep State está operando en Alsasua. ¿Es verdad que hansecuestrado a alguien?",
+            "Options": [
+                {
+                    "OptionText": "Sí, tienen a alguien. Te puedo dar pruebas.",
+                    "TargetNodeID": 2,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                },
+                {
+                    "OptionText": "[PERSUASIÓN] Publica esto: el gobierno miente sobre Alsasua.",
+                    "TargetNodeID": 3,
+                    "bRequiresSkillCheck": true,
+                    "DifficultyClass": 13
+                }
+            ]
+        },
+        {
+            "ID": 2,
+            "Type": "Action_Trigger",
+            "DialogueText": "Esto es oro puro. Si me das las pruebas, publico un reportaje que puede cambiar todo. Esto va a ser grande.",
+            "Options": [
+                {
+                    "OptionText": "Aquí tienes los archivos.",
+                    "TargetNodeID": 5,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                }
+            ]
+        },
+        {
+            "ID": 3,
+            "Type": "NPC_Statement",
+            "DialogueText": "¿El gobierno miente? Dame las pruebas y yo hago el resto. Mi artículo puede hacer temblar al poder.",
+            "Options": [
+                {
+                    "OptionText": "Toma esto.",
+                    "TargetNodeID": 5,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                }
+            ]
+        },
+        {
+            "ID": 4,
+            "Type": "End_Conversation",
+            "DialogueText": "Vale, entiendo. Si cambias de opinión, ya sabes dónde encontrarme."
+        },
+        {
+            "ID": 5,
+            "Type": "End_Conversation",
+            "DialogueText": "Gracias. Publico mañana. Esto va a cambiar las cosas en Alsasua."
+        }
+    ]
+}

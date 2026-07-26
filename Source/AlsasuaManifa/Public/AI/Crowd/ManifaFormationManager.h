@@ -39,5 +39,6 @@ public:
 
 private:
     TMap<AActor*, TArray<AActor*>> ActiveFormations;
+    TMap<AActor*, EFormationType> FormationTypes;
     TArray<FVector> CalculateFormationOffsets(EFormationType Type, int32 Count, float Spacing);
 };

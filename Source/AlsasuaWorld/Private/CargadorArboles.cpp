@@ -39,7 +39,7 @@ float UCargadorArboles::AlturaSuelo(const FVector2D& XY) const
 	if (!W) return 0.f;
 	FHitResult Hit;
 	FCollisionQueryParams Q(SCENE_QUERY_STAT(AlturaArbol), true);
-	if (W->LineTraceSingleByChannel(Hit, FVector(XY.X, XY.Y, 500000.f), FVector(XY.X, XY.Y, -500000.f), ECC_Visibility, Q))
+	if (W->LineTraceSingleByChannel(Hit, FVector(XY.X, XY.Y, UAlsasuaGeoData::TraceUp), FVector(XY.X, XY.Y, UAlsasuaGeoData::TraceDown), ECC_Visibility, Q))
 		return Hit.Location.Z;
 	return 0.f;
 }
@@ -49,7 +49,16 @@ UHierarchicalInstancedStaticMeshComponent* UCargadorArboles::ComponenteDe(const 
 	if (UHierarchicalInstancedStaticMeshComponent** F = PorEspecie.Find(Especie)) return *F;
 	UHierarchicalInstancedStaticMeshComponent* C =
 		NewObject<UHierarchicalInstancedStaticMeshComponent>(Host);
-	C->SetStaticMesh(MallaDefecto);
+
+	// Usar mesh de especie si existe, fallback al cilindro.
+	if (UStaticMesh** SpMesh = MallasPorEspecie.Find(Especie))
+	{
+		C->SetStaticMesh(*SpMesh);
+	}
+	else
+	{
+		C->SetStaticMesh(MallaDefecto);
+	}
 	C->SetCullDistances(0, 30000);
 	C->SetCastShadow(true);
 	C->RegisterComponent();
@@ -76,10 +85,27 @@ void UCargadorArboles::PrepararCarga()
 	if (!W) return;
 
 	MallaDefecto = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
+
+	// Cargar meshes de especies generados por AlsasuaAssetGenerator.
+	const FString RutaMeshes = TEXT("/Game/Meshes/Arboles/");
+	const TArray<FString> Especies = {TEXT("Tilia"), TEXT("Platanus"), TEXT("QuercusRobur"),
+		TEXT("Pinus"), TEXT("Fagus"), TEXT("Betula"), TEXT("Populus"),
+		TEXT("Salix"), TEXT("Prunus"), TEXT("Acer")};
+	for (const FString& Sp : Especies)
+	{
+		FString Ruta = RutaMeshes + TEXT("SM_") + Sp + TEXT(".") + Sp;
+		if (UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, *Ruta))
+		{
+			MallasPorEspecie.Add(Sp, Mesh);
+		}
+	}
+
 	Host = W->SpawnActor<AActor>();
 	if (Host)
 	{
+#if WITH_EDITOR
 		Host->SetActorLabel(TEXT("Arboleda_Alsasua"));
+#endif
 		USceneComponent* Root = NewObject<USceneComponent>(Host, TEXT("Root"));
 		Root->RegisterComponent();
 		Host->SetRootComponent(Root);
@@ -136,7 +162,10 @@ int32 UCargadorArboles::Cargar()
 	if (bHecho) return 0;
 	bHecho = true;
 	PrepararCarga();
-	while (!PasoPresupuesto(1000.0)) {}
+	int32 IterGuard = 0;
+	const int32 MaxIter = 10000;
+	while (!PasoPresupuesto(1000.0) && ++IterGuard < MaxIter) {}
+	if (IterGuard >= MaxIter) UE_LOG(LogTemp, Warning, TEXT("[Arboles] Iteration guard reached (%d)"), MaxIter);
 	UE_LOG(LogTemp, Log, TEXT("[Arboles] %d árboles en %d especies"), Sembrados, PorEspecie.Num());
 	return Sembrados;
 }

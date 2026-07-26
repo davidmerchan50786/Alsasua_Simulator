@@ -2,6 +2,8 @@
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/FloatingPawnMovement.h"
+#include "Kismet/GameplayStatics.h"
+#include "Engine/World.h"
 
 ABaseVehicle::ABaseVehicle()
 {
@@ -17,15 +19,24 @@ ABaseVehicle::ABaseVehicle()
     MovementComponent->MaxSpeed = MaxSpeed;
 }
 
+void ABaseVehicle::BeginPlay()
+{
+    Super::BeginPlay();
+    CachedExplosionVFX = LoadObject<UParticleSystem>(
+        nullptr, TEXT("/Game/VFX/P_Explosion.P_Explosion"));
+    CachedExplosionSFX = LoadObject<USoundBase>(
+        nullptr, TEXT("/Game/Audio/SC_Explosion.SC_Explosion"));
+}
+
 void ABaseVehicle::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-    CurrentSpeedKmh = GetVelocity().Size() * 0.036f; // Conversion simple a km/h
+    CurrentSpeedKmh = GetVelocity().Size() * 0.036f;
 }
 
 void ABaseVehicle::Drive(float ForwardValue, float RightValue)
 {
-    if (!bEngineActive) return;
+    if (!bEngineActive || bDestruido) return;
 
     AddMovementInput(GetActorForwardVector(), ForwardValue);
 
@@ -39,4 +50,34 @@ void ABaseVehicle::Drive(float ForwardValue, float RightValue)
 void ABaseVehicle::ToggleEngine(bool bOn)
 {
     bEngineActive = bOn;
+}
+
+void ABaseVehicle::RecibirDano(int32 Cantidad, FVector Origen, ETipoDano Tipo)
+{
+    if (bDestruido) return;
+
+    Vida = FMath::Max(0, Vida - Cantidad);
+
+    if (Vida <= 0)
+    {
+        bDestruido = true;
+        bEngineActive = false;
+
+        if (MovementComponent) MovementComponent->StopMovementImmediately();
+
+        // Detonate with explosion effect.
+        UGameplayStatics::SpawnEmitterAtLocation(GetWorld(),
+            CachedExplosionVFX,
+            GetActorLocation(), GetActorRotation(), true);
+        UGameplayStatics::PlaySoundAtLocation(GetWorld(),
+            CachedExplosionSFX,
+            GetActorLocation());
+
+        SetLifeSpan(3.0f);
+    }
+}
+
+void ABaseVehicle::DetonateCarBomb()
+{
+    RecibirDano(VidaMaxima, GetActorLocation(), ETipoDano::Explosion);
 }

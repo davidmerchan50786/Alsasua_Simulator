@@ -5,7 +5,9 @@ AAlsasuaCrowdAssembler::AAlsasuaCrowdAssembler() { PrimaryActorTick.bCanEverTick
 
 void AAlsasuaCrowdAssembler::DeployMassiveCrowd(FVector Center, float Radius, int32 Count)
 {
-	UAlsasuaMassParallelManager* Mass = GetWorld()->GetSubsystem<UAlsasuaMassParallelManager>();
+	UWorld* W = GetWorld();
+	if (!W) return;
+	UAlsasuaMassParallelManager* Mass = W->GetSubsystem<UAlsasuaMassParallelManager>();
 	if (!Mass) return;
 
 	for(int32 i = 0; i < Count; i++)
@@ -19,7 +21,9 @@ void AAlsasuaCrowdAssembler::DeployMassiveCrowd(FVector Center, float Radius, in
 
 void AAlsasuaCrowdAssembler::InternalSpawnProxy(FVector Location)
 {
-	UAlsasuaMassParallelManager* Mass = GetWorld()->GetSubsystem<UAlsasuaMassParallelManager>();
+	UWorld* W = GetWorld();
+	if (!W) return;
+	UAlsasuaMassParallelManager* Mass = W->GetSubsystem<UAlsasuaMassParallelManager>();
 	if (Mass)
 	{
 		FMassProtesterProxy NewProxy;

@@ -12,23 +12,20 @@ struct FReplaySnapshot
     UPROPERTY()
     float TimeStamp;
 
-    // Posiciones de los líderes y jugadores
-    UPROPERTY()
-    TMap<AActor*, FTransform> ActorStates;
-
-    // Estado global de la manifa en este instante
     UPROPERTY()
     float GlobalTension;
+
+    UPROPERTY()
+    TArray<FVector> ActorLocations;
 };
 
-/** Sistema de persistencia para rebobinar o analizar la manifestación */
 UCLASS()
 class ALSASUAMANIFA_API UAlsasuaReplaySystem : public UWorldSubsystem
 {
     GENERATED_BODY()
 
 public:
-    virtual void Tick(float DeltaTime);
+    virtual void Tick(float DeltaTime) override;
 
     UFUNCTION(BlueprintCallable, Category = "AAA|Replay")
     void StartRecording();
@@ -36,7 +33,6 @@ public:
     UFUNCTION(BlueprintCallable, Category = "AAA|Replay")
     void StopRecording();
 
-    // Exporta la sesión a un archivo binario ligero
     UFUNCTION(BlueprintCallable, Category = "AAA|Replay")
     void SaveReplayToFile(FString FileName);
 
@@ -44,5 +40,16 @@ private:
     bool bIsRecording = false;
     TArray<FReplaySnapshot> CurrentSession;
 
+    // Throttle: capturar cada N segundos en vez de cada frame.
+    float CaptureInterval = 0.5f;
+    float CaptureTimer = 0.0f;
+
+    // Cache de actores clave (evitar GetAllActorsOfClass cada captura).
+    UPROPERTY()
+    TArray<TObjectPtr<ACharacter>> CachedKeyActors;
+    float CacheRefreshInterval = 3.0f;
+    float CacheRefreshTimer = 0.0f;
+
     void CaptureFrame();
+    void RefreshActorCache();
 };

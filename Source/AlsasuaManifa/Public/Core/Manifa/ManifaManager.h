@@ -24,7 +24,7 @@ public:
     FOnManifaStateChanged OnManifaStateChanged;
 
 public:
-    bool IsTickable() const { return true; }
-    void Tick(float DeltaTime);
-    TStatId GetStatId() const { RETURN_QUICK_DECLARE_CYCLE_STAT(ManifaManager, STATGROUP_Tickables); }
+    virtual bool IsTickable() const override { return true; }
+    virtual void Tick(float DeltaTime) override;
+    virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(ManifaManager, STATGROUP_AlsasuaCrowd); }
 };

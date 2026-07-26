@@ -18,7 +18,7 @@ static UMaterialInterface* CargarMaterialAgua()
 {
 	return LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_AguaRio.M_AguaRio"));
 }
-static UMaterialInterface* CargarMaterialSuelo()
+static UMaterialInterface* CargarMaterialSueloVias()
 {
 	return LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Edificio.M_Edificio"));
 }
@@ -114,7 +114,7 @@ bool UCargadorVias::PasoPresupuesto(double PresupuestoMs)
 				}
 				else
 				{
-					static UMaterialInterface* MatSuelo = CargarMaterialSuelo();
+					static UMaterialInterface* MatSuelo = CargarMaterialSueloVias();
 					if (MatSuelo) C->Malla->SetMaterial(0, MatSuelo);
 				}
 			}
@@ -130,7 +130,10 @@ int32 UCargadorVias::Cargar()
 	if (bHecho) return 0;
 	bHecho = true;
 	PrepararCarga();
-	while (!PasoPresupuesto(1000.0)) {}
+	int32 IterGuard = 0;
+	const int32 MaxIter = 10000;
+	while (!PasoPresupuesto(1000.0) && ++IterGuard < MaxIter) {}
+	if (IterGuard >= MaxIter) UE_LOG(LogTemp, Warning, TEXT("[Vias] Iteration guard reached (%d)"), MaxIter);
 	UE_LOG(LogTemp, Log, TEXT("[Vias] %d vías construidas (aceras+ferrocarril+ríos)"), Construidas);
 	return Construidas;
 }

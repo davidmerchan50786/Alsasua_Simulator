@@ -1,5 +1,5 @@
 #include "Core/Manifa/ManifaManager.h"
-#include "CrowdAgentComponent.h"
+#include "AI/AlsasuaCrowdAgentComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 void UManifaManager::TriggerManifestation(FVector CenterLocation) {
@@ -8,9 +8,8 @@ void UManifaManager::TriggerManifestation(FVector CenterLocation) {
 
     ActiveProtesters = 0;
     for(AActor* Actor : NPCs) {
-        if(UCrowdAgentComponent* Crowd = Actor->FindComponentByClass<UCrowdAgentComponent>()) {
-            // Ponemos a los civiles en estado de protesta y los mandamos al centro
-            Crowd->CurrentState = ECrowdState::FollowingProtest;
+        if(UAlsasuaCrowdAgentComponent* Crowd = Actor->FindComponentByClass<UAlsasuaCrowdAgentComponent>()) {
+            Crowd->CurrentState = ECrowdAgentState::Following;
             ActiveProtesters++;
         }
     }

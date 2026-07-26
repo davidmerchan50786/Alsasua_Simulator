@@ -11,14 +11,17 @@ float UEvidenceCaptureComponent::CalculateStability(float StaminaRatio) {
 FCameraResultV2 UEvidenceCaptureComponent::CaptureEvidenceV2(float CurrentStamina, float MaxStamina, float CurrentZoom) {
     FCameraResultV2 Result;
 
-    float StaminaRatio = CurrentStamina / MaxStamina;
+    UWorld* W = GetWorld();
+    if (!W) return Result;
+
+    float StaminaRatio = (MaxStamina > 0.f) ? CurrentStamina / MaxStamina : 1.f;
     Result.StabilityScore = CalculateStability(StaminaRatio);
 
     float ZoomBonus = FMath::Clamp(CurrentZoom / 2.f, 1.0f, 3.0f);
 
     float RawImpact = 20.f * ZoomBonus * (Result.StabilityScore / 100.f);
 
-    if (USocialMediaSubsystem* SocialSS = GetWorld()->GetSubsystem<USocialMediaSubsystem>()) {
+    if (USocialMediaSubsystem* SocialSS = W->GetSubsystem<USocialMediaSubsystem>()) {
         FEvidencePost Post;
         Post.Description = "Acci�n grabada en directo en Altsasu";
         Post.ImpactValue = RawImpact;

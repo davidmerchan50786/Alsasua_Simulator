@@ -1,0 +1,173 @@
+[
+  {
+    "nombre": "Jasokundeko Andre Mariaren eliza",
+    "tipo": "iglesia",
+    "x": 1890.1,
+    "z": 8553.3,
+    "barrio": "Herriko",
+    "lat": 42.8956769,
+    "lon": -2.1681735
+  },
+  {
+    "nombre": "San Martin Toursko eliza",
+    "tipo": "iglesia",
+    "x": 1859.1,
+    "z": 8574.2,
+    "barrio": "Zelai",
+    "lat": 42.8938,
+    "lon": -2.172
+  },
+  {
+    "nombre": "Iñigo Aritza Ikastola",
+    "tipo": "ikastola",
+    "x": 1918.6,
+    "z": 8448.7,
+    "barrio": "SanPedro",
+    "lat": 42.905072,
+    "lon": -2.1646526
+  },
+  {
+    "nombre": "Bihotz santuaren ikastetxea",
+    "tipo": "colegio",
+    "x": 1797.9,
+    "z": 8580.8,
+    "barrio": "Ferroviario",
+    "lat": 42.8932059,
+    "lon": -2.1795557
+  },
+  {
+    "nombre": "Zelandi Ikastetxe Publikoa",
+    "tipo": "escuela_publica",
+    "x": 1849.6,
+    "z": 8530.6,
+    "barrio": "Zelai",
+    "lat": 42.8977201,
+    "lon": -2.1731706
+  },
+  {
+    "nombre": "Altsasuko Korazonistak",
+    "tipo": "colegio",
+    "x": 1801.2,
+    "z": 8580.1,
+    "barrio": "Ferroviario",
+    "lat": 42.8932704,
+    "lon": -2.179154
+  },
+  {
+    "nombre": "Fronton Burunda",
+    "tipo": "fronton",
+    "x": 1874.5,
+    "z": 8564.2,
+    "barrio": "Herriko",
+    "lat": 42.8947,
+    "lon": -2.1701
+  },
+  {
+    "nombre": "Frontón de Zelai",
+    "tipo": "fronton",
+    "x": 1883.4,
+    "z": 8527.5,
+    "barrio": "Zelai",
+    "lat": 42.898,
+    "lon": -2.169
+  },
+  {
+    "nombre": "Polideportivo Municipal",
+    "tipo": "polideportivo",
+    "x": 1915.8,
+    "z": 8482.9,
+    "barrio": "SanPedro",
+    "lat": 42.902,
+    "lon": -2.165
+  },
+  {
+    "nombre": "Altsasuko Udala",
+    "tipo": "ayuntamiento",
+    "x": 1887.5,
+    "z": 8560.9,
+    "barrio": "Herriko",
+    "lat": 42.895,
+    "lon": -2.1685
+  },
+  {
+    "nombre": "Epaitegia",
+    "tipo": "juzgado",
+    "x": 1867.2,
+    "z": 8549.7,
+    "barrio": "Herriko",
+    "lat": 42.896,
+    "lon": -2.171
+  },
+  {
+    "nombre": "Altsasuko osasun zentroa",
+    "tipo": "centro_salud",
+    "x": 1907.7,
+    "z": 8516.3,
+    "barrio": "Zelai",
+    "lat": 42.899,
+    "lon": -2.166
+  },
+  {
+    "nombre": "Gure Etxea",
+    "tipo": "casa_cultura",
+    "x": 1883.4,
+    "z": 8555.3,
+    "barrio": "Herriko",
+    "lat": 42.8955,
+    "lon": -2.169
+  },
+  {
+    "nombre": "Altsasuko Liburutegia",
+    "tipo": "biblioteca",
+    "x": 1895.6,
+    "z": 8544.2,
+    "barrio": "Herriko",
+    "lat": 42.8965,
+    "lon": -2.1675
+  },
+  {
+    "nombre": "Altsasuko geltokia",
+    "tipo": "estacion_tren",
+    "x": 1806.5,
+    "z": 8583.1,
+    "barrio": "Ferroviario",
+    "lat": 42.893,
+    "lon": -2.1785
+  },
+  {
+    "nombre": "Parke Txikia",
+    "tipo": "parque",
+    "x": 1875.3,
+    "z": 8538.6,
+    "barrio": "Zelai",
+    "lat": 42.897,
+    "lon": -2.17
+  },
+  {
+    "nombre": "Arroyo park",
+    "tipo": "parque",
+    "x": 1859.1,
+    "z": 8555.3,
+    "barrio": "Errota",
+    "lat": 42.8955,
+    "lon": -2.172
+  },
+  {
+    "nombre": "Herriko plaza merkatua",
+    "tipo": "mercado",
+    "x": 1889.1,
+    "z": 8557.5,
+    "barrio": "Herriko",
+    "lat": 42.8953,
+    "lon": -2.1683
+  },
+  {
+    "nombre": "Gaztetxea",
+    "tipo": "gaztetxe",
+    "x": 1863.2,
+    "z": 8572.0,
+    "barrio": "Harrobieta",
+    "lat": 42.894,
+    "lon": -2.1715
+  }
+]

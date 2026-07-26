@@ -1,0 +1,42 @@
+{
+    "_comment": "Clima real de Alsasua/Altsasu basado en datos de AEMET (estación Pamplona, 1981-2010)",
+    "_source": "Agencia Estatal de Meteorología + Wikipedia",
+    "_coordinates": {"lat": 42.8952, "lon": -2.16889, "elevation_m": 532},
+    "clima": "Oceánico húmedo (Cfb Köppen)",
+    "datos_mensuales": [
+        {"mes": 1,  "nombre": "Enero",      "temp_media": 5.2,  "temp_max": 9.1,  "temp_min": 1.4,  "precipitacion_mm": 62,  "humedad": 82, "dias_lluvia": 14, "nieve_dias": 2},
+        {"mes": 2,  "nombre": "Febrero",     "temp_media": 6.3,  "temp_max": 10.9, "temp_min": 1.6,  "precipitacion_mm": 55,  "humedad": 78, "dias_lluvia": 12, "nieve_dias": 1},
+        {"mes": 3,  "nombre": "Marzo",       "temp_media": 9.1,  "temp_max": 14.6, "temp_min": 3.7,  "precipitacion_mm": 59,  "humedad": 74, "dias_lluvia": 11, "nieve_dias": 1},
+        {"mes": 4,  "nombre": "Abril",       "temp_media": 10.9, "temp_max": 16.4, "temp_min": 5.3,  "precipitacion_mm": 79,  "humedad": 72, "dias_lluvia": 13, "nieve_dias": 0},
+        {"mes": 5,  "nombre": "Mayo",        "temp_media": 14.7, "temp_max": 20.8, "temp_min": 8.6,  "precipitacion_mm": 65,  "humedad": 70, "dias_lluvia": 11, "nieve_dias": 0},
+        {"mes": 6,  "nombre": "Junio",       "temp_media": 18.6, "temp_max": 25.2, "temp_min": 11.9, "precipitacion_mm": 51,  "humedad": 66, "dias_lluvia": 8,  "nieve_dias": 0},
+        {"mes": 7,  "nombre": "Julio",       "temp_media": 21.2, "temp_max": 28.2, "temp_min": 14.2, "precipitacion_mm": 38,  "humedad": 62, "dias_lluvia": 6,  "nieve_dias": 0},
+        {"mes": 8,  "nombre": "Agosto",      "temp_media": 21.4, "temp_max": 28.3, "temp_min": 14.5, "precipitacion_mm": 43,  "humedad": 63, "dias_lluvia": 7,  "nieve_dias": 0},
+        {"mes": 9,  "nombre": "Septiembre",  "temp_media": 18.2, "temp_max": 24.5, "temp_min": 12.0, "precipitacion_mm": 49,  "humedad": 70, "dias_lluvia": 8,  "nieve_dias": 0},
+        {"mes": 10, "nombre": "Octubre",     "temp_media": 14.1, "temp_max": 19.3, "temp_min": 8.9,  "precipitacion_mm": 73,  "humedad": 78, "dias_lluvia": 12, "nieve_dias": 0},
+        {"mes": 11, "nombre": "Noviembre",   "temp_media": 9.0,  "temp_max": 13.1, "temp_min": 4.8,  "precipitacion_mm": 80,  "humedad": 82, "dias_lluvia": 13, "nieve_dias": 1},
+        {"mes": 12, "nombre": "Diciembre",   "temp_media": 6.0,  "temp_max": 9.7,  "temp_min": 2.2,  "precipitacion_mm": 77,  "humedad": 84, "dias_lluvia": 14, "nieve_dias": 2}
+    ],
+    "resumen_anual": {
+        "temp_media_anual": 12.9,
+        "precipitacion_anual_mm": 734,
+        "dias_lluvia_anuales": 129,
+        "nieve_dias_anuales": 7,
+        "horas_sol_anuales": 2050,
+        "viento_dominante": "Norte (Cierzo)",
+        "viento_frecuente": "Sur-Suroeste (Boira)"
+    },
+    "configuracion_juego": {
+        "probabilidad_lluvia_diaria": 0.35,
+        "probabilidad_niebla_manana": 0.20,
+        "probabilidad_nieve_invierno": 0.08,
+        "intensidad_lluvia_min_mm_h": 0.5,
+        "intensidad_lluvia_max_mm_h": 15.0,
+        "duracion_tormenta_min": 15,
+        "duracion_tormenta_max": 120,
+        "niebla_radio_m": 800,
+        "niebla_densidad": 0.6,
+        "temperatura_exterior_min": -5,
+        "temperatura_exterior_max": 38
+    }
+}

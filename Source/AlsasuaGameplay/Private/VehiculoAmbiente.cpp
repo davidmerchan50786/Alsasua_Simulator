@@ -2,6 +2,7 @@
 #include "VehiculoAmbiente.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
+#include "GeoDataAlsasua.h"
 #include "Engine/World.h"
 #include "Engine/OverlapResult.h"
 #include "CollisionQueryParams.h"
@@ -54,7 +55,7 @@ float AVehiculoAmbiente::AlturaSuelo(const FVector2D& XY) const
 	FHitResult Hit;
 	FCollisionQueryParams Q(SCENE_QUERY_STAT(AlturaVehiculo), true);
 	Q.AddIgnoredActor(this);
-	if (W->LineTraceSingleByChannel(Hit, FVector(XY.X, XY.Y, 500000.f), FVector(XY.X, XY.Y, -500000.f), ECC_Visibility, Q))
+	if (W->LineTraceSingleByChannel(Hit, FVector(XY.X, XY.Y, UAlsasuaGeoData::TraceUp), FVector(XY.X, XY.Y, UAlsasuaGeoData::TraceDown), ECC_Visibility, Q))
 		return Hit.Location.Z;
 	return 0.f;
 }

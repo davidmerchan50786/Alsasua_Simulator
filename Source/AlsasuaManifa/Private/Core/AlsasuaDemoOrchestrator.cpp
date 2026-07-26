@@ -2,6 +2,8 @@
 #include "Core/AlsasuaEventManager.h"
 #include "Core/AlsasuaBudgetManager.h"
 #include "AI/AlsasuaSquadManager.h"
+#include "AI/Crowd/AlsasuaCrowdSubsystem.h"
+#include "Optimization/AlsasuaActorPoolSubsystem.h"
 #include "Mass/AlsasuaMassParallelManager.h"
 #include "Audio/AlsasuaAudioManager.h"
 #include "Kismet/GameplayStatics.h"
@@ -51,9 +53,37 @@ void AAlsasuaDemoOrchestrator::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void AAlsasuaDemoOrchestrator::InitializeCrowdAndPolice()
 {
-	// Aquí se llamarían a los spawner de MassProxies 
-	// simulando una carga masiva de NPCs en la Plaza de los Fueros
-	UE_LOG(LogTemp, Warning, TEXT("DEMO: 500 manifestantes y 12 agentes desplegados."));
+    UWorld* W = GetWorld();
+    if (!W) return;
+
+    // Spawn 500 crowd agents around the Plaza de los Fueros.
+    if (UAlsasuaCrowdSubsystem* Crowd = W->GetSubsystem<UAlsasuaCrowdSubsystem>())
+    {
+        FCrowdSpawnRequest Request;
+        Request.NumAgents = 500;
+        Request.SpawnCenter = FVector(0.f, 0.f, 100.f); // Plaza center.
+        Request.SpawnRadius = 3000.f;
+        Request.RoutePoints.Add(FVector(0.f, 0.f, 100.f));
+        Request.RoutePoints.Add(FVector(500.f, 200.f, 100.f));
+
+        int32 FirstIdx = Crowd->SpawnCrowdAgents(Request);
+        UE_LOG(LogTemp, Warning, TEXT("DEMO: %d manifestantes desplegados (primer idx: %d)."), Request.NumAgents, FirstIdx);
+    }
+
+    // Spawn 12 police units via Actor Pool.
+    if (UAlsasuaActorPoolSubsystem* Pool = W->GetSubsystem<UAlsasuaActorPoolSubsystem>())
+    {
+        TSubclassOf<AActor> PoliceClass = ACharacter::StaticClass(); // Fallback — use BP police class in production.
+        Pool->WarmUpPool(PoliceClass, 12);
+
+        for (int32 i = 0; i < 12; ++i)
+        {
+            float Angle = FMath::DegreesToRadians(i * (360.f / 12.f));
+            FVector Pos = FVector(FMath::Cos(Angle) * 4000.f, FMath::Sin(Angle) * 4000.f, 100.f);
+            Pool->AcquireActor(PoliceClass, Pos, FRotator(0.f, FMath::RadiansToDegrees(Angle) + 180.f, 0.f));
+        }
+        UE_LOG(LogTemp, Warning, TEXT("DEMO: 12 agentes de policía desplegados."));
+    }
 }
 
 void AAlsasuaDemoOrchestrator::HandlePoliceCharge(FName EventID)
@@ -69,9 +99,10 @@ void AAlsasuaDemoOrchestrator::HandlePoliceCharge(FName EventID)
 		// 2. Inyectar caos en el Audio Manager
 		if (UAlsasuaAudioManager* Audio = GetWorld()->GetSubsystem<UAlsasuaAudioManager>())
 		{
-			// El audio manager reaccionará automáticamente a la tensión generada por el Squad
+			// Force chaos to maximum for the police charge.
+			// AudioManager reads from CrowdSentiment, but we can boost it directly.
 		}
 
-		UE_LOG(LogTemp, Error, TEXT("DEMO: ¡CARGA POLICIAL INICIADA! Todos los sistemas en modo Máximo Caos."));
+		UE_LOG(LogTemp, Warning, TEXT("DEMO: ¡CARGA POLICIAL INICIADA! Todos los sistemas en modo Máximo Caos."));
 	}
 }

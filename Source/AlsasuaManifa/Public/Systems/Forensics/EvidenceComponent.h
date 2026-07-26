@@ -22,7 +22,10 @@ public:
     FName EvidenceTag = "GenericEvidence";
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Forensics")
-    float TimeToDecay = 600.f; // segundos antes de que la evidencia empiece a degradarse
+    float TimeToDecay = 600.f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Forensics")
+    float ContaminationThreshold = 50.f;
 
     UPROPERTY(BlueprintAssignable)
     FOnEvidenceCollected OnEvidenceCollected;
@@ -41,6 +44,7 @@ protected:
 
 private:
     EForensicState ForensicState = EForensicState::Pristine;
+    float ContaminationLevel = 0.f;
     float SpawnTime = 0.f;
 
     void UpdateDecay();

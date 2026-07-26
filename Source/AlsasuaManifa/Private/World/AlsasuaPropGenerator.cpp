@@ -9,10 +9,6 @@ void UAlsasuaPropGenerator::Initialize(FSubsystemCollectionBase& Collection)
     LoadAssets();
 }
 
-void UAlsasuaPropGenerator::Tick(float DeltaTime)
-{
-}
-
 void UAlsasuaPropGenerator::LoadAssets()
 {
     // Cargar de manera perezosa algunos meshes y materiales (rutas de ejemplo)

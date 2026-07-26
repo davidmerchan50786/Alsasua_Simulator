@@ -20,7 +20,10 @@ void UPhotoCameraComponent::AdjustZoom(float AxisValue)
 
 void UPhotoCameraComponent::TakePhoto()
 {
-    APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+    UWorld* W = GetWorld();
+    if (!W) return;
+
+    APlayerController* PC = UGameplayStatics::GetPlayerController(W, 0);
     if (!PC) return;
 
     FVector CameraLocation;
@@ -32,13 +35,13 @@ void UPhotoCameraComponent::TakePhoto()
     FCollisionQueryParams Params;
     Params.AddIgnoredActor(GetOwner());
 
-    if (GetWorld()->LineTraceSingleByChannel(Hit, CameraLocation, End, ECC_Visibility, Params))
+    if (W->LineTraceSingleByChannel(Hit, CameraLocation, End, ECC_Visibility, Params))
     {
         AActor* HitActor = Hit.GetActor();
         FEvidenceItem Evidence;
         if (IsTargetValidEvidence(HitActor, Evidence))
         {
-            if (UEvidenceSubsystem* ES = GetWorld()->GetSubsystem<UEvidenceSubsystem>())
+            if (UEvidenceSubsystem* ES = W->GetSubsystem<UEvidenceSubsystem>())
             {
                 ES->CollectEvidence(Evidence);
                 OnPhotoTaken.Broadcast(Evidence);

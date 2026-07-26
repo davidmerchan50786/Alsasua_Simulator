@@ -5,11 +5,14 @@
 #include "Kismet/GameplayStatics.h"
 
 void ULegacySubsystem::TriggerMissionEnd() {
+    UWorld* W = GetWorld();
+    if (!W) return;
+
     FEndGameCinematicData Data;
-    UKarmaSubsystem* Karma = GetWorld()->GetSubsystem<UKarmaSubsystem>();
+    UKarmaSubsystem* Karma = W->GetSubsystem<UKarmaSubsystem>();
 
     float FinalSupport = 0.f;
-    APawn* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+    APawn* Player = UGameplayStatics::GetPlayerPawn(W, 0);
     if (AAlsasuaCharacter* Char = Cast<AAlsasuaCharacter>(Player)) {
         if (const UAlsasuaAttributeSet* Attr = Char->GetAttributeSet()) {
             FinalSupport = Attr->GetPopularSupport();

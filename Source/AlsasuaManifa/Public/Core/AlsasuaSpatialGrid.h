@@ -9,10 +9,13 @@ struct FGridCell
 {
 	GENERATED_BODY()
 
-	// Lista de IDs de actores o proxies en esta celda específica
 	TArray<AActor*> RegisteredActors;
 };
 
+/**
+ * Spatial hash grid para queries de proximidad O(1).
+ * Cada actor se asocia a una celda; al moverse, se migra automáticamente.
+ */
 UCLASS()
 class ALSASUAMANIFA_API UAlsasuaSpatialGrid : public UWorldSubsystem
 {
@@ -21,19 +24,27 @@ class ALSASUAMANIFA_API UAlsasuaSpatialGrid : public UWorldSubsystem
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
-	// Tamaño de cada celda (ej: 10 metros = 1000 unidades Unreal)
+	/** Tamaño de cada celda (cm). */
 	UPROPERTY(EditAnywhere, Category = "Optimization")
 	float CellSize = 1000.f;
 
-	// Registra o actualiza la posición de un actor en la cuadrícula
+	/** Registra o actualiza la posición de un actor en la cuadrícula. */
 	void UpdateActorInGrid(AActor* Actor);
 
-	// Obtiene todos los actores cercanos a una posición consultando solo celdas adyacentes
-	void GetNearbyActors(FVector Location, float Radius, TArray<AActor*>& OutActors);
+	/** Elimina un actor de la cuadrícula. */
+	void RemoveActorFromGrid(AActor* Actor);
+
+	/** Obtiene todos los actores cercanos a una posición. */
+	void GetNearbyActors(FVector Location, float Radius, TArray<AActor*>& OutActors) const;
+
+	/** Limpia toda la cuadrícula. */
+	void ClearGrid();
 
 private:
-	// Mapa de coordenadas de celda (X,Y) a contenido de la misma
 	TMap<FIntPoint, FGridCell> Grid;
+
+	/** Mapa inverso: actor → celda en la que está registrado. */
+	TMap<TWeakObjectPtr<AActor>, FIntPoint> ActorToCell;
 
 	FIntPoint WorldToGrid(FVector Location) const;
 };

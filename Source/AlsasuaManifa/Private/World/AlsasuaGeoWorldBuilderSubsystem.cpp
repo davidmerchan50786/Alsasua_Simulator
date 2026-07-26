@@ -464,7 +464,9 @@ void UAlsasuaGeoWorldBuilderSubsystem::BuildWorld()
     }
 
     AActor* BuilderActor = GetWorld()->SpawnActor<AActor>(AActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator);
+#if WITH_EDITOR
     BuilderActor->SetActorLabel(TEXT("GeoWorldBuilder"));
+#endif
 
     BuildTerrainMesh(BuilderActor);
 
@@ -872,7 +874,49 @@ void UAlsasuaGeoWorldBuilderSubsystem::AddBoxToMeshData(
     const FColor& Color,
     int32& StartIndex)
 {
-    (void)Vertices; (void)Triangles; (void)Normals; (void)UVs; (void)Colors; (void)Center; (void)Extents; (void)Color; (void)StartIndex;
+    // 8 corners of the box.
+    const FVector V[8] = {
+        Center + FVector(-Extents.X, -Extents.Y, -Extents.Z),
+        Center + FVector( Extents.X, -Extents.Y, -Extents.Z),
+        Center + FVector( Extents.X,  Extents.Y, -Extents.Z),
+        Center + FVector(-Extents.X,  Extents.Y, -Extents.Z),
+        Center + FVector(-Extents.X, -Extents.Y,  Extents.Z),
+        Center + FVector( Extents.X, -Extents.Y,  Extents.Z),
+        Center + FVector( Extents.X,  Extents.Y,  Extents.Z),
+        Center + FVector(-Extents.X,  Extents.Y,  Extents.Z),
+    };
+
+    const FVector N[6] = {
+        FVector(0, 0, -1), FVector(0, 0, 1),
+        FVector(0, -1, 0), FVector(0, 1, 0),
+        FVector(-1, 0, 0), FVector(1, 0, 0),
+    };
+
+    const int32 FaceIndices[6][4] = {
+        {0, 3, 2, 1}, {4, 5, 6, 7},
+        {0, 1, 5, 4}, {2, 3, 7, 6},
+        {0, 4, 7, 3}, {1, 2, 6, 5},
+    };
+
+    const FVector2D UVCoords[4] = {
+        FVector2D(0, 0), FVector2D(1, 0), FVector2D(1, 1), FVector2D(0, 1)
+    };
+
+    for (int32 Face = 0; Face < 6; ++Face)
+    {
+        int32 Base = StartIndex;
+        for (int32 i = 0; i < 4; ++i)
+        {
+            Vertices.Add(V[FaceIndices[Face][i]]);
+            Normals.Add(N[Face]);
+            UVs.Add(UVCoords[i]);
+            Colors.Add(Color);
+        }
+
+        Triangles.Add(Base);     Triangles.Add(Base + 1); Triangles.Add(Base + 2);
+        Triangles.Add(Base);     Triangles.Add(Base + 2); Triangles.Add(Base + 3);
+        StartIndex += 4;
+    }
 }
 
 void UAlsasuaGeoWorldBuilderSubsystem::AddQuadToMeshData(
@@ -888,5 +932,15 @@ void UAlsasuaGeoWorldBuilderSubsystem::AddQuadToMeshData(
     const FColor& Color,
     int32& StartIndex)
 {
-    (void)Vertices; (void)Triangles; (void)Normals; (void)UVs; (void)Colors; (void)A; (void)B; (void)C; (void)D; (void)Color; (void)StartIndex;
+    FVector Normal = FVector::CrossProduct(B - A, D - A).GetSafeNormal();
+
+    int32 Base = StartIndex;
+    Vertices.Add(A); Vertices.Add(B); Vertices.Add(C); Vertices.Add(D);
+    Normals.Add(Normal); Normals.Add(Normal); Normals.Add(Normal); Normals.Add(Normal);
+    UVs.Add(FVector2D(0, 0)); UVs.Add(FVector2D(1, 0)); UVs.Add(FVector2D(1, 1)); UVs.Add(FVector2D(0, 1));
+    Colors.Add(Color); Colors.Add(Color); Colors.Add(Color); Colors.Add(Color);
+
+    Triangles.Add(Base);     Triangles.Add(Base + 1); Triangles.Add(Base + 2);
+    Triangles.Add(Base);     Triangles.Add(Base + 2); Triangles.Add(Base + 3);
+    StartIndex += 4;
 }

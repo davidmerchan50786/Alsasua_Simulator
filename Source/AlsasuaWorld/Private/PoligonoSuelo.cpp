@@ -2,6 +2,7 @@
 #include "PoligonoSuelo.h"
 #include "TrianguladorPoligono.h"
 #include "ProceduralMeshComponent.h"
+#include "GeoDataAlsasua.h"
 #include "Engine/World.h"
 #include "CollisionQueryParams.h"
 
@@ -22,7 +23,7 @@ float APoligonoSuelo::AlturaSuelo(const FVector2D& XY) const
 	FHitResult Hit;
 	FCollisionQueryParams Q(SCENE_QUERY_STAT(AlturaSueloPoli), true);
 	Q.AddIgnoredActor(this);
-	if (W->LineTraceSingleByChannel(Hit, FVector(XY.X, XY.Y, 500000.f), FVector(XY.X, XY.Y, -500000.f), ECC_Visibility, Q))
+	if (W->LineTraceSingleByChannel(Hit, FVector(XY.X, XY.Y, UAlsasuaGeoData::TraceUp), FVector(XY.X, XY.Y, UAlsasuaGeoData::TraceDown), ECC_Visibility, Q))
 		return Hit.Location.Z;
 	return 0.f;
 }

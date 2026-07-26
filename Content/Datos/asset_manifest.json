@@ -1,0 +1,5400 @@
+{
+ "meshes": [
+  {
+   "path": "Farolas\\StreetLamps2\\StreetLampRound1.fbx",
+   "size_bytes": 37836
+  },
+  {
+   "path": "Farolas\\StreetLamps2\\StreetLampRound2.fbx",
+   "size_bytes": 49692
+  },
+  {
+   "path": "Casas\\HousePack\\House7.FBX",
+   "size_bytes": 145696
+  },
+  {
+   "path": "Casas\\HousePack\\House2.FBX",
+   "size_bytes": 92480
+  },
+  {
+   "path": "Casas\\HousePack\\House4.FBX",
+   "size_bytes": 142512
+  },
+  {
+   "path": "Casas\\HousePack\\House6.FBX",
+   "size_bytes": 74304
+  },
+  {
+   "path": "Casas\\HousePack\\House1.FBX",
+   "size_bytes": 81424
+  },
+  {
+   "path": "Casas\\HousePack\\House9.FBX",
+   "size_bytes": 139312
+  },
+  {
+   "path": "Casas\\HousePack\\House8.FBX",
+   "size_bytes": 232640
+  },
+  {
+   "path": "Casas\\HousePack\\House3.FBX",
+   "size_bytes": 77296
+  },
+  {
+   "path": "Casas\\HousePack\\House10.FBX",
+   "size_bytes": 148016
+  },
+  {
+   "path": "Casas\\HousePack\\House5.FBX",
+   "size_bytes": 94592
+  },
+  {
+   "path": "Casas\\VillageHouses\\OldHouse.fbx",
+   "size_bytes": 259196
+  },
+  {
+   "path": "Casas\\VillageHouses\\Fence.fbx",
+   "size_bytes": 33644
+  },
+  {
+   "path": "Casas\\VillageHouses\\Well.fbx",
+   "size_bytes": 663836
+  },
+  {
+   "path": "Casas\\VillageHouses\\BigHouse.fbx",
+   "size_bytes": 344556
+  },
+  {
+   "path": "Naturaleza\\grass_07\\grass_07.obj",
+   "size_bytes": 4314
+  },
+  {
+   "path": "Naturaleza\\grass_07\\grass_07.FBX",
+   "size_bytes": 38896
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\01_d.obj",
+   "size_bytes": 786
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\01_s.obj",
+   "size_bytes": 547
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\01_t.obj",
+   "size_bytes": 1041
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\02_d.obj",
+   "size_bytes": 786
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\02_s.obj",
+   "size_bytes": 547
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\02_t.obj",
+   "size_bytes": 1041
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\03_d.obj",
+   "size_bytes": 786
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\03_s.obj",
+   "size_bytes": 547
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\03_t.obj",
+   "size_bytes": 1041
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\04_d.obj",
+   "size_bytes": 786
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\04_s.obj",
+   "size_bytes": 547
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\04_t.obj",
+   "size_bytes": 1041
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\05_d.obj",
+   "size_bytes": 786
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\05_s.obj",
+   "size_bytes": 547
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\05_t.obj",
+   "size_bytes": 1041
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\06_d.obj",
+   "size_bytes": 786
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\06_s.obj",
+   "size_bytes": 547
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\06_t.obj",
+   "size_bytes": 1041
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\07_d.obj",
+   "size_bytes": 786
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\07_s.obj",
+   "size_bytes": 547
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\07_t.obj",
+   "size_bytes": 1041
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\08_d.obj",
+   "size_bytes": 786
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\08_s.obj",
+   "size_bytes": 547
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\08_t.obj",
+   "size_bytes": 1041
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\09_d.obj",
+   "size_bytes": 1652
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\09_s.obj",
+   "size_bytes": 1024
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\09_t.obj",
+   "size_bytes": 2195
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\10_d.obj",
+   "size_bytes": 1652
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\10_s.obj",
+   "size_bytes": 1033
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\10_t.obj",
+   "size_bytes": 2195
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\11_d.obj",
+   "size_bytes": 1652
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\11_s.obj",
+   "size_bytes": 975
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\11_t.obj",
+   "size_bytes": 2195
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\12_d.obj",
+   "size_bytes": 1652
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\12_s.obj",
+   "size_bytes": 975
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\12_t.obj",
+   "size_bytes": 2195
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\13.obj",
+   "size_bytes": 20807
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\14.obj",
+   "size_bytes": 20807
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\15.obj",
+   "size_bytes": 11116
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\16.obj",
+   "size_bytes": 20688
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\01_d.FBX",
+   "size_bytes": 15280
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\01_s.FBX",
+   "size_bytes": 14672
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\01_t.FBX",
+   "size_bytes": 15888
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\02_d.FBX",
+   "size_bytes": 15280
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\02_s.FBX",
+   "size_bytes": 14672
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\02_t.FBX",
+   "size_bytes": 15888
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\03_d.FBX",
+   "size_bytes": 15280
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\03_s.FBX",
+   "size_bytes": 14672
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\03_t.FBX",
+   "size_bytes": 15888
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\04_d.FBX",
+   "size_bytes": 15280
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\04_s.FBX",
+   "size_bytes": 14672
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\04_t.FBX",
+   "size_bytes": 15888
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\05_d.FBX",
+   "size_bytes": 15280
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\05_s.FBX",
+   "size_bytes": 14672
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\05_t.FBX",
+   "size_bytes": 15888
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\06_d.FBX",
+   "size_bytes": 15280
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\06_s.FBX",
+   "size_bytes": 14672
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\06_t.FBX",
+   "size_bytes": 15888
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\07_d.FBX",
+   "size_bytes": 15280
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\07_s.FBX",
+   "size_bytes": 14672
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\07_t.FBX",
+   "size_bytes": 15888
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\08_d.FBX",
+   "size_bytes": 15280
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\08_s.FBX",
+   "size_bytes": 14672
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\08_t.FBX",
+   "size_bytes": 15888
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\09_d.FBX",
+   "size_bytes": 15984
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\09_s.FBX",
+   "size_bytes": 16384
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\09_t.FBX",
+   "size_bytes": 17136
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\10_d.FBX",
+   "size_bytes": 15984
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\10_s.FBX",
+   "size_bytes": 16480
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\10_t.FBX",
+   "size_bytes": 17136
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\11_d.FBX",
+   "size_bytes": 15984
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\11_s.FBX",
+   "size_bytes": 16384
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\11_t.FBX",
+   "size_bytes": 17136
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\12_d.FBX",
+   "size_bytes": 15984
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\12_s.FBX",
+   "size_bytes": 16384
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\12_t.FBX",
+   "size_bytes": 17136
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\13.FBX",
+   "size_bytes": 56384
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\14.FBX",
+   "size_bytes": 56384
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\15.FBX",
+   "size_bytes": 39104
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\16.FBX",
+   "size_bytes": 54640
+  },
+  {
+   "path": "Naturaleza\\Hedges\\Arch\\HedgeArch.obj",
+   "size_bytes": 567219
+  },
+  {
+   "path": "Naturaleza\\Hedges\\Arch\\HedgeArch.FBX",
+   "size_bytes": 434624
+  },
+  {
+   "path": "Naturaleza\\Hedges\\Long\\HedgeLong.obj",
+   "size_bytes": 129128
+  },
+  {
+   "path": "Naturaleza\\Hedges\\Long\\HedgeLong.FBX",
+   "size_bytes": 107472
+  },
+  {
+   "path": "Naturaleza\\Hedges\\LongRound\\HedgeLongRound.obj",
+   "size_bytes": 139694
+  },
+  {
+   "path": "Naturaleza\\Hedges\\LongRound\\HedgeLongRound.FBX",
+   "size_bytes": 113712
+  },
+  {
+   "path": "Naturaleza\\Hedges\\Small\\HedgeSmall.obj",
+   "size_bytes": 65973
+  },
+  {
+   "path": "Naturaleza\\Hedges\\Small\\HedgeSmall.FBX",
+   "size_bytes": 64576
+  },
+  {
+   "path": "Naturaleza\\Hedges\\SmallRound\\HedgeSmallRound.obj",
+   "size_bytes": 69111
+  },
+  {
+   "path": "Naturaleza\\Hedges\\SmallRound\\HedgeSmallRound.FBX",
+   "size_bytes": 70416
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_2\\01.obj",
+   "size_bytes": 3367
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_2\\02.obj",
+   "size_bytes": 5063
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_2\\03.obj",
+   "size_bytes": 8322
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_2\\04.obj",
+   "size_bytes": 938
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_2\\05.obj",
+   "size_bytes": 7138
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_2\\06.obj",
+   "size_bytes": 2428
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_2\\07.obj",
+   "size_bytes": 10512
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_2\\01.FBX",
+   "size_bytes": 21024
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_2\\02.FBX",
+   "size_bytes": 24608
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_2\\03.FBX",
+   "size_bytes": 30144
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_2\\04.FBX",
+   "size_bytes": 16176
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_2\\05.FBX",
+   "size_bytes": 21600
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_2\\06.FBX",
+   "size_bytes": 22336
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_2\\07.FBX",
+   "size_bytes": 34512
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\02\\tiny_weeds_03_02.obj",
+   "size_bytes": 14447
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\02\\tiny_weeds_03_02.FBX",
+   "size_bytes": 48080
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\03\\tiny_weeds_03_03.obj",
+   "size_bytes": 13302
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\03\\tiny_weeds_03_03.FBX",
+   "size_bytes": 42768
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\01\\tiny_weed_03_01.obj",
+   "size_bytes": 6167
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\01\\tiny_weed_03_01.FBX",
+   "size_bytes": 36688
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\ivy\\ivy_bend_left.obj",
+   "size_bytes": 3235
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\ivy\\ivy_bend_right.obj",
+   "size_bytes": 3232
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\ivy\\ivy_corner_horizontal.obj",
+   "size_bytes": 3934
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\ivy\\ivy_corner_vertical.obj",
+   "size_bytes": 4322
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\ivy\\ivy_default.obj",
+   "size_bytes": 3228
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\ivy\\ivy_bend_left.FBX",
+   "size_bytes": 21776
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\ivy\\ivy_bend_right.FBX",
+   "size_bytes": 21808
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\ivy\\ivy_corner_horizontal.FBX",
+   "size_bytes": 23568
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\ivy\\ivy_corner_vertical.FBX",
+   "size_bytes": 26544
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\ivy\\ivy_default.FBX",
+   "size_bytes": 21792
+  },
+  {
+   "path": "Naturaleza\\rocks\\02\\rock_02.obj",
+   "size_bytes": 40661
+  },
+  {
+   "path": "Naturaleza\\rocks\\02\\rock_02.fbx",
+   "size_bytes": 87920
+  },
+  {
+   "path": "Naturaleza\\rocks\\01\\rock_01.obj",
+   "size_bytes": 15866
+  },
+  {
+   "path": "Naturaleza\\rocks\\01\\rock_01.fbx",
+   "size_bytes": 43712
+  },
+  {
+   "path": "Naturaleza\\rocks\\03\\rock_03.obj",
+   "size_bytes": 40907
+  },
+  {
+   "path": "Naturaleza\\rocks\\03\\rock_03.fbx",
+   "size_bytes": 88112
+  },
+  {
+   "path": "Naturaleza\\rocks\\04\\rock_04.obj",
+   "size_bytes": 40071
+  },
+  {
+   "path": "Naturaleza\\rocks\\04\\rock_04.fbx",
+   "size_bytes": 87664
+  },
+  {
+   "path": "Naturaleza\\rocks\\05\\rock_05.obj",
+   "size_bytes": 40570
+  },
+  {
+   "path": "Naturaleza\\rocks\\05\\rock_05..fbx",
+   "size_bytes": 87968
+  },
+  {
+   "path": "Naturaleza\\Bushes\\bush_03.obj",
+   "size_bytes": 175777
+  },
+  {
+   "path": "Naturaleza\\Bushes\\bush_02.obj",
+   "size_bytes": 29607
+  },
+  {
+   "path": "Naturaleza\\Bushes\\bush_05.obj",
+   "size_bytes": 64163
+  },
+  {
+   "path": "Naturaleza\\Bushes\\bush_01.obj",
+   "size_bytes": 44977
+  },
+  {
+   "path": "Naturaleza\\Bushes\\bush_04.obj",
+   "size_bytes": 35454
+  },
+  {
+   "path": "Naturaleza\\Bushes\\Bush03.FBX",
+   "size_bytes": 325536
+  },
+  {
+   "path": "Naturaleza\\Bushes\\Bush02.FBX",
+   "size_bytes": 189824
+  },
+  {
+   "path": "Naturaleza\\Bushes\\Bush04.FBX",
+   "size_bytes": 154432
+  },
+  {
+   "path": "Naturaleza\\Bushes\\Bush01.FBX",
+   "size_bytes": 194496
+  },
+  {
+   "path": "Naturaleza\\Bushes\\Bush05.FBX",
+   "size_bytes": 269424
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Meadow_08.fbx",
+   "size_bytes": 93340
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Forest_Mountain_Moss_02.fbx",
+   "size_bytes": 98540
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Small_Fence_01.fbx",
+   "size_bytes": 29964
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Cemetery_Pebbles_03.fbx",
+   "size_bytes": 37420
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Bridge_15_Middle.fbx",
+   "size_bytes": 33836
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Rock_Moss_Grown_09.fbx",
+   "size_bytes": 39500
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Meadow_Path_05.fbx",
+   "size_bytes": 39900
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Lake_Ground_04.fbx",
+   "size_bytes": 93148
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Mushroom_Fantasy_Orange_09.fbx",
+   "size_bytes": 44028
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Hyacinth_04.fbx",
+   "size_bytes": 99388
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Daffodil_03.fbx",
+   "size_bytes": 55772
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Sunflower_04.fbx",
+   "size_bytes": 87148
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Meadow_07.fbx",
+   "size_bytes": 76460
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Mushroom_Fantasy_Purple_08.fbx",
+   "size_bytes": 36524
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Mushroom_Fantasy_Purple_05.fbx",
+   "size_bytes": 45516
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Bridge_15_Right.fbx",
+   "size_bytes": 34172
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Mushroom_Fantasy_Orange_10.fbx",
+   "size_bytes": 46604
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Rock_Pile_Forest_Moss_10.fbx",
+   "size_bytes": 40940
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Rock_Moss_Grown_11.fbx",
+   "size_bytes": 34396
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Floor_Tile_05.fbx",
+   "size_bytes": 20428
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Tree_10.fbx",
+   "size_bytes": 84252
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Grass_15.fbx",
+   "size_bytes": 41116
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Rock_Pile_Forest_Moss_05.fbx",
+   "size_bytes": 43580
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Grass_11.fbx",
+   "size_bytes": 36924
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Floor_Tile_06.fbx",
+   "size_bytes": 20428
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Bridge_15_Left.fbx",
+   "size_bytes": 36508
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Floor_Tile_15.fbx",
+   "size_bytes": 20620
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Tree_02.fbx",
+   "size_bytes": 89436
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Floor_Tile_16.fbx",
+   "size_bytes": 20156
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Cemetery_Pebbles_09.fbx",
+   "size_bytes": 36572
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Birch_Tree_05.fbx",
+   "size_bytes": 81228
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Forest_Mountain_Moss_01.fbx",
+   "size_bytes": 94556
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Birch_Tree_06.fbx",
+   "size_bytes": 97932
+  },
+  {
+   "path": "Naturaleza\\ForestPack\\PP_Small_Fence_04.fbx",
+   "size_bytes": 25404
+  },
+  {
+   "path": "Naturaleza\\StarterKit2\\LowPolySphere.fbx",
+   "size_bytes": 19120
+  },
+  {
+   "path": "Pavimentos\\asphalt_02_4k\\asphalt_02_4k.blend",
+   "size_bytes": 273263
+  },
+  {
+   "path": "Pavimentos\\asphalt_02_4k\\asphalt_02_4k.fbx",
+   "size_bytes": 56806844
+  },
+  {
+   "path": "Arboles\\Roble\\models\\oak.obj",
+   "size_bytes": 42048
+  },
+  {
+   "path": "Arboles\\Roble\\models\\oak_leafless.obj",
+   "size_bytes": 29414
+  },
+  {
+   "path": "Animals\\Chicken\\chickenV2.blend",
+   "size_bytes": 11252724
+  },
+  {
+   "path": "Animals\\Chicken\\chickenV2.fbx",
+   "size_bytes": 3219788
+  },
+  {
+   "path": "Animals\\Rooster\\rooster.blend",
+   "size_bytes": 13602488
+  },
+  {
+   "path": "Animals\\Rooster\\rooster.fbx",
+   "size_bytes": 3360188
+  },
+  {
+   "path": "Animals\\Rabbit\\rabbit.fbx",
+   "size_bytes": 2449484
+  },
+  {
+   "path": "Animals\\Wolf\\wolf.obj",
+   "size_bytes": 536727
+  },
+  {
+   "path": "Village\\Modular Village\\Canopy_Beam.obj",
+   "size_bytes": 2164
+  },
+  {
+   "path": "Village\\Modular Village\\Canopy_Beam_Short.obj",
+   "size_bytes": 2174
+  },
+  {
+   "path": "Village\\Modular Village\\Canopy_Corner.obj",
+   "size_bytes": 14359
+  },
+  {
+   "path": "Village\\Modular Village\\Canopy_Full.obj",
+   "size_bytes": 20018
+  },
+  {
+   "path": "Village\\Modular Village\\Canopy_Ramp_Corner.obj",
+   "size_bytes": 14813
+  },
+  {
+   "path": "Village\\Modular Village\\Canopy_Ramp_Full.obj",
+   "size_bytes": 20544
+  },
+  {
+   "path": "Village\\Modular Village\\Canopy_Ramp_Mid.obj",
+   "size_bytes": 8996
+  },
+  {
+   "path": "Village\\Modular Village\\Canopy_Side.obj",
+   "size_bytes": 8690
+  },
+  {
+   "path": "Village\\Modular Village\\Canopy_Sides_Opposite.obj",
+   "size_bytes": 15448
+  },
+  {
+   "path": "Village\\Modular Village\\Canopy_Top.obj",
+   "size_bytes": 2167
+  },
+  {
+   "path": "Village\\Modular Village\\Cobblestone_Dirt_Transition_1.obj",
+   "size_bytes": 71872
+  },
+  {
+   "path": "Village\\Modular Village\\Cobblestone_Dirt_Transition_2.obj",
+   "size_bytes": 64770
+  },
+  {
+   "path": "Village\\Modular Village\\Cobblestone_Dirt_Transition_3.obj",
+   "size_bytes": 67293
+  },
+  {
+   "path": "Village\\Modular Village\\Cobblestone_Dirt_Transition_4.obj",
+   "size_bytes": 64099
+  },
+  {
+   "path": "Village\\Modular Village\\Cobblestone_Floor_1.obj",
+   "size_bytes": 203443
+  },
+  {
+   "path": "Village\\Modular Village\\Dirt_Fading.obj",
+   "size_bytes": 2161
+  },
+  {
+   "path": "Village\\Modular Village\\Dirt_Fading_from_Gathered.obj",
+   "size_bytes": 2161
+  },
+  {
+   "path": "Village\\Modular Village\\Dirt_Gathered_Corner.obj",
+   "size_bytes": 5933
+  },
+  {
+   "path": "Village\\Modular Village\\Dirt_Gathered_Straight.obj",
+   "size_bytes": 2720
+  },
+  {
+   "path": "Village\\Modular Village\\Kit_Window_Upper_Convex.obj",
+   "size_bytes": 90960
+  },
+  {
+   "path": "Village\\Modular Village\\Kit_Window_Upper_Straight.obj",
+   "size_bytes": 77530
+  },
+  {
+   "path": "Village\\Modular Village\\Prop_Barrel_1.obj",
+   "size_bytes": 66861
+  },
+  {
+   "path": "Village\\Modular Village\\Prop_Barrel_1_Open.obj",
+   "size_bytes": 100748
+  },
+  {
+   "path": "Village\\Modular Village\\Prop_Barrel_2.obj",
+   "size_bytes": 72583
+  },
+  {
+   "path": "Village\\Modular Village\\Prop_Broom.obj",
+   "size_bytes": 38171
+  },
+  {
+   "path": "Village\\Modular Village\\Prop_Crate_1.obj",
+   "size_bytes": 63797
+  },
+  {
+   "path": "Village\\Modular Village\\Prop_Crate_1_Open.obj",
+   "size_bytes": 72377
+  },
+  {
+   "path": "Village\\Modular Village\\Prop_Ladder_1.obj",
+   "size_bytes": 52350
+  },
+  {
+   "path": "Village\\Modular Village\\Prop_Lamp_Street.obj",
+   "size_bytes": 71777
+  },
+  {
+   "path": "Village\\Modular Village\\Prop_Well_1.obj",
+   "size_bytes": 222021
+  },
+  {
+   "path": "Village\\Modular Village\\Prop_Well_Cobblestone.obj",
+   "size_bytes": 42716
+  },
+  {
+   "path": "Village\\Modular Village\\Prop_Well_Dirt.obj",
+   "size_bytes": 8495
+  },
+  {
+   "path": "Village\\Modular Village\\Prop_Well_Grass.obj",
+   "size_bytes": 8483
+  },
+  {
+   "path": "Village\\Modular Village\\Prop_Well_Inside.obj",
+   "size_bytes": 10806
+  },
+  {
+   "path": "Village\\Modular Village\\Roof_Accent_Rake_Concave.obj",
+   "size_bytes": 5545
+  },
+  {
+   "path": "Village\\Modular Village\\Roof_Accent_Rake_Convex.obj",
+   "size_bytes": 5541
+  },
+  {
+   "path": "Village\\Modular Village\\Roof_Accent_Rake_Eave.obj",
+   "size_bytes": 2174
+  },
+  {
+   "path": "Village\\Modular Village\\Roof_Accent_Rake_Straight.obj",
+   "size_bytes": 2160
+  },
+  {
+   "path": "Village\\Modular Village\\Roof_Accent_Ridge.obj",
+   "size_bytes": 2172
+  },
+  {
+   "path": "Village\\Modular Village\\Roof_Accent_Ridge_End.obj",
+   "size_bytes": 3896
+  },
+  {
+   "path": "Village\\Modular Village\\Roof_Concave_Corner_Inner.obj",
+   "size_bytes": 17097
+  },
+  {
+   "path": "Village\\Modular Village\\Roof_Concave_Corner_Outer.obj",
+   "size_bytes": 16039
+  },
+  {
+   "path": "Village\\Modular Village\\Roof_Concave_Corner_Outer_Eave.obj",
+   "size_bytes": 38527
+  },
+  {
+   "path": "Village\\Modular Village\\Roof_Concave_Side.obj",
+   "size_bytes": 15139
+  },
+  {
+   "path": "Village\\Modular Village\\Roof_Concave_Side_Eave.obj",
+   "size_bytes": 20182
+  },
+  {
+   "path": "Village\\Modular Village\\Roof_Concave_Side_Eave_Edge.obj",
+   "size_bytes": 29459
+  },
+  {
+   "path": "Village\\Modular Village\\Roof_Concave_Side_Edge.obj",
+   "size_bytes": 24537
+  },
+  {
+   "path": "Village\\Modular Village\\Roof_Convex_Corner_Inner.obj",
+   "size_bytes": 16857
+  },
+  {
+   "path": "Village\\Modular Village\\Roof_Convex_Corner_Outer.obj",
+   "size_bytes": 14927
+  },
+  {
+   "path": "Village\\Modular Village\\Roof_Convex_Corner_Outer_Eave.obj",
+   "size_bytes": 35578
+  },
+  {
+   "path": "Village\\Modular Village\\Roof_Convex_Side.obj",
+   "size_bytes": 15186
+  },
+  {
+   "path": "Village\\Modular Village\\Roof_Convex_Side_Eave.obj",
+   "size_bytes": 20288
+  },
+  {
+   "path": "Village\\Modular Village\\Roof_Convex_Side_Eave_Edge.obj",
+   "size_bytes": 29542
+  },
+  {
+   "path": "Village\\Modular Village\\Roof_Convex_Side_Edge.obj",
+   "size_bytes": 24428
+  },
+  {
+   "path": "Village\\Modular Village\\Roof_Prop_Chimney_Pipe.obj",
+   "size_bytes": 37776
+  },
+  {
+   "path": "Village\\Modular Village\\Roof_Prop_Chimney_Stone.obj",
+   "size_bytes": 16009
+  },
+  {
+   "path": "Village\\Modular Village\\Roof_Straight_Corner_Inner.obj",
+   "size_bytes": 17380
+  },
+  {
+   "path": "Village\\Modular Village\\Roof_Straight_Corner_Outer.obj",
+   "size_bytes": 14368
+  },
+  {
+   "path": "Village\\Modular Village\\Roof_Straight_Corner_Outer_Eave.obj",
+   "size_bytes": 29877
+  },
+  {
+   "path": "Village\\Modular Village\\Roof_Straight_Side.obj",
+   "size_bytes": 15159
+  },
+  {
+   "path": "Village\\Modular Village\\Roof_Straight_Side_Eave.obj",
+   "size_bytes": 20264
+  },
+  {
+   "path": "Village\\Modular Village\\Roof_Straight_Side_Eave_Edge.obj",
+   "size_bytes": 25553
+  },
+  {
+   "path": "Village\\Modular Village\\Roof_Straight_Side_Edge.obj",
+   "size_bytes": 20764
+  },
+  {
+   "path": "Village\\Modular Village\\Stone_Arch.obj",
+   "size_bytes": 6692
+  },
+  {
+   "path": "Village\\Modular Village\\Stone_Arch_Outer.obj",
+   "size_bytes": 221950
+  },
+  {
+   "path": "Village\\Modular Village\\Stone_Curb_1.obj",
+   "size_bytes": 55092
+  },
+  {
+   "path": "Village\\Modular Village\\Stone_Curb_2.obj",
+   "size_bytes": 47147
+  },
+  {
+   "path": "Village\\Modular Village\\Stone_Curb_3.obj",
+   "size_bytes": 55108
+  },
+  {
+   "path": "Village\\Modular Village\\Stone_Curb_4.obj",
+   "size_bytes": 54888
+  },
+  {
+   "path": "Village\\Modular Village\\Stone_Doorway_Narrow_Tall_1.obj",
+   "size_bytes": 16625
+  },
+  {
+   "path": "Village\\Modular Village\\Stone_Doorway_Narrow_Tall_2.obj",
+   "size_bytes": 21191
+  },
+  {
+   "path": "Village\\Modular Village\\Stone_Doorway_Wide_Tall_1.obj",
+   "size_bytes": 144559
+  },
+  {
+   "path": "Village\\Modular Village\\Stone_Doorway_Wide_Tall_2.obj",
+   "size_bytes": 149297
+  },
+  {
+   "path": "Village\\Modular Village\\Stone_Floor_1.obj",
+   "size_bytes": 65144
+  },
+  {
+   "path": "Village\\Modular Village\\Stone_Floor_2.obj",
+   "size_bytes": 56689
+  },
+  {
+   "path": "Village\\Modular Village\\Stone_Pillar.obj",
+   "size_bytes": 15953
+  },
+  {
+   "path": "Village\\Modular Village\\Stone_Pillar_Base.obj",
+   "size_bytes": 8259
+  },
+  {
+   "path": "Village\\Modular Village\\Stone_Stairs_Railing.obj",
+   "size_bytes": 42429
+  },
+  {
+   "path": "Village\\Modular Village\\Stone_Steps.obj",
+   "size_bytes": 9492
+  },
+  {
+   "path": "Village\\Modular Village\\Stone_Steps_Side_1.obj",
+   "size_bytes": 56474
+  },
+  {
+   "path": "Village\\Modular Village\\Stone_Steps_Side_2.obj",
+   "size_bytes": 61335
+  },
+  {
+   "path": "Village\\Modular Village\\Stone_Wall_1.obj",
+   "size_bytes": 16333
+  },
+  {
+   "path": "Village\\Modular Village\\Stone_Wall_2.obj",
+   "size_bytes": 20307
+  },
+  {
+   "path": "Village\\Modular Village\\Stone_Wall_3.obj",
+   "size_bytes": 20250
+  },
+  {
+   "path": "Village\\Modular Village\\Stone_Wall_4.obj",
+   "size_bytes": 25122
+  },
+  {
+   "path": "Village\\Modular Village\\Stone_Wall_5.obj",
+   "size_bytes": 18342
+  },
+  {
+   "path": "Village\\Modular Village\\Stucco_Arch_Half.obj",
+   "size_bytes": 2717
+  },
+  {
+   "path": "Village\\Modular Village\\Stucco_Arch_Half_Outer.obj",
+   "size_bytes": 8867
+  },
+  {
+   "path": "Village\\Modular Village\\Stucco_Block.obj",
+   "size_bytes": 2145
+  },
+  {
+   "path": "Village\\Modular Village\\Stucco_Doorway_Narrow_Tall.obj",
+   "size_bytes": 9311
+  },
+  {
+   "path": "Village\\Modular Village\\Stucco_Doorway_Wide_Tall.obj",
+   "size_bytes": 11641
+  },
+  {
+   "path": "Village\\Modular Village\\Stucco_Prop_Support_Angled_Large.obj",
+   "size_bytes": 2714
+  },
+  {
+   "path": "Village\\Modular Village\\Stucco_Prop_Support_Angled_Low.obj",
+   "size_bytes": 2158
+  },
+  {
+   "path": "Village\\Modular Village\\Stucco_Prop_Support_Angled_Small.obj",
+   "size_bytes": 2157
+  },
+  {
+   "path": "Village\\Modular Village\\Stucco_Prop_Support_Beam_1.obj",
+   "size_bytes": 2164
+  },
+  {
+   "path": "Village\\Modular Village\\Stucco_Prop_Support_Beam_2.obj",
+   "size_bytes": 3321
+  },
+  {
+   "path": "Village\\Modular Village\\Stucco_Prop_Support_Beam_3.obj",
+   "size_bytes": 3307
+  },
+  {
+   "path": "Village\\Modular Village\\Stucco_Prop_Support_Pillar_1.obj",
+   "size_bytes": 2150
+  },
+  {
+   "path": "Village\\Modular Village\\Stucco_Prop_Support_Pillar_2.obj",
+   "size_bytes": 3300
+  },
+  {
+   "path": "Village\\Modular Village\\Stucco_Prop_Support_Pillar_3.obj",
+   "size_bytes": 3340
+  },
+  {
+   "path": "Village\\Modular Village\\Stucco_Window_Double_Narrow.obj",
+   "size_bytes": 32052
+  },
+  {
+   "path": "Village\\Modular Village\\Stucco_Window_Double_Narrow_Tall.obj",
+   "size_bytes": 32014
+  },
+  {
+   "path": "Village\\Modular Village\\Stucco_Window_Double_Wide.obj",
+   "size_bytes": 32865
+  },
+  {
+   "path": "Village\\Modular Village\\Stucco_Window_Double_Wide_Tall.obj",
+   "size_bytes": 32895
+  },
+  {
+   "path": "Village\\Modular Village\\Stucco_Window_Rounded_Narrow.obj",
+   "size_bytes": 26957
+  },
+  {
+   "path": "Village\\Modular Village\\Stucco_Window_Rounded_Narrow_Tall.obj",
+   "size_bytes": 26917
+  },
+  {
+   "path": "Village\\Modular Village\\Stucco_Window_Rounded_Wide.obj",
+   "size_bytes": 27159
+  },
+  {
+   "path": "Village\\Modular Village\\Stucco_Window_Rounded_Wide_Tall.obj",
+   "size_bytes": 27099
+  },
+  {
+   "path": "Village\\Modular Village\\Stucco_Window_Single_Narrow.obj",
+   "size_bytes": 21943
+  },
+  {
+   "path": "Village\\Modular Village\\Stucco_Window_Single_Narrow_Tall.obj",
+   "size_bytes": 21922
+  },
+  {
+   "path": "Village\\Modular Village\\Stucco_Window_Single_Wide.obj",
+   "size_bytes": 21913
+  },
+  {
+   "path": "Village\\Modular Village\\Stucco_Window_Single_Wide_Tall.obj",
+   "size_bytes": 21879
+  },
+  {
+   "path": "Village\\Modular Village\\Wall_Prop_Door_Ornate.obj",
+   "size_bytes": 68843
+  },
+  {
+   "path": "Village\\Modular Village\\Wall_Prop_Door_Simple.obj",
+   "size_bytes": 40587
+  },
+  {
+   "path": "Village\\Modular Village\\Wall_Prop_Lamp.obj",
+   "size_bytes": 67011
+  },
+  {
+   "path": "Village\\Modular Village\\Wall_Prop_Sign_1.obj",
+   "size_bytes": 110280
+  },
+  {
+   "path": "Village\\Modular Village\\Wall_Prop_Windmill_1.obj",
+   "size_bytes": 119784
+  },
+  {
+   "path": "Village\\Modular Village\\Waterwheel_1.obj",
+   "size_bytes": 241122
+  },
+  {
+   "path": "Village\\Modular Village\\Waterwheel_Flume_Curved.obj",
+   "size_bytes": 11823
+  },
+  {
+   "path": "Village\\Modular Village\\Waterwheel_Flume_End.obj",
+   "size_bytes": 8107
+  },
+  {
+   "path": "Village\\Modular Village\\Waterwheel_Flume_Ramp.obj",
+   "size_bytes": 6662
+  },
+  {
+   "path": "Village\\Modular Village\\Waterwheel_Flume_Ramp_Supported.obj",
+   "size_bytes": 8857
+  },
+  {
+   "path": "Village\\Modular Village\\Waterwheel_Flume_Straight.obj",
+   "size_bytes": 6643
+  },
+  {
+   "path": "Village\\Modular Village\\Waterwheel_Flume_Support_Brace.obj",
+   "size_bytes": 2178
+  },
+  {
+   "path": "Village\\Modular Village\\Waterwheel_Flume_Support_Brace_Double.obj",
+   "size_bytes": 4333
+  },
+  {
+   "path": "Village\\Modular Village\\Waterwheel_Flume_Support_Pillar.obj",
+   "size_bytes": 2176
+  },
+  {
+   "path": "Village\\Modular Village\\Wood_Baseboard.obj",
+   "size_bytes": 2174
+  },
+  {
+   "path": "Village\\Modular Village\\Wood_Floor_Corner.obj",
+   "size_bytes": 18228
+  },
+  {
+   "path": "Village\\Modular Village\\Wood_Floor_Straight_1.obj",
+   "size_bytes": 14202
+  },
+  {
+   "path": "Village\\Modular Village\\Wood_Floor_Straight_2.obj",
+   "size_bytes": 16299
+  },
+  {
+   "path": "Village\\Modular Village\\Wood_Floor_Straight_3.obj",
+   "size_bytes": 14315
+  },
+  {
+   "path": "Village\\Modular Village\\Wood_Floor_Straight_4.obj",
+   "size_bytes": 16274
+  },
+  {
+   "path": "Village\\Modular Village\\Wood_Post_Large.obj",
+   "size_bytes": 4951
+  },
+  {
+   "path": "Village\\Modular Village\\Wood_Post_Small.obj",
+   "size_bytes": 3533
+  },
+  {
+   "path": "Village\\Modular Village\\Wood_Railing_Corner.obj",
+   "size_bytes": 26414
+  },
+  {
+   "path": "Village\\Modular Village\\Wood_Railing_Stairs.obj",
+   "size_bytes": 23319
+  },
+  {
+   "path": "Village\\Modular Village\\Wood_Railing_Straight.obj",
+   "size_bytes": 14323
+  },
+  {
+   "path": "Village\\Modular Village\\Wood_Rope_Corner.obj",
+   "size_bytes": 30057
+  },
+  {
+   "path": "Village\\Modular Village\\Wood_Rope_Stairs.obj",
+   "size_bytes": 26633
+  },
+  {
+   "path": "Village\\Modular Village\\Wood_Rope_Straight.obj",
+   "size_bytes": 12989
+  },
+  {
+   "path": "Village\\Modular Village\\Wood_Steps.obj",
+   "size_bytes": 22299
+  },
+  {
+   "path": "Village\\Modular Village\\Wood_Steps_Stucco.obj",
+   "size_bytes": 21587
+  },
+  {
+   "path": "Locomotive\\locomotive00.blend",
+   "size_bytes": 1604188
+  },
+  {
+   "path": "Locomotive\\locomotive00.glb",
+   "size_bytes": 1805248
+  },
+  {
+   "path": "Locomotive\\locomotive00.fbx",
+   "size_bytes": 1076460
+  },
+  {
+   "path": "Containers\\container.blend",
+   "size_bytes": 1019428
+  },
+  {
+   "path": "Containers\\container.fbx",
+   "size_bytes": 115356
+  },
+  {
+   "path": "Fleurs\\fleur\\fleurOptonl.blend",
+   "size_bytes": 1773848
+  },
+  {
+   "path": "Fleurs\\fleur\\fleurOptonl.fbx",
+   "size_bytes": 418588
+  },
+  {
+   "path": "Shrooms\\shrooms.blend",
+   "size_bytes": 264732
+  },
+  {
+   "path": "Shrooms\\shrooms.fbx",
+   "size_bytes": 85516
+  },
+  {
+   "path": "DestroyedWalls\\destroyedWalls3.fbx",
+   "size_bytes": 4438784
+  },
+  {
+   "path": "DestroyedWalls\\destroyedWalls_UV1.obj",
+   "size_bytes": 2059507
+  },
+  {
+   "path": "DestroyedWalls\\destroyedWalls_UV2.obj",
+   "size_bytes": 2056261
+  },
+  {
+   "path": "HQBuildings\\scene.gltf",
+   "size_bytes": 10771
+  },
+  {
+   "path": "FPSWeapons\\FPSWeapons.blend",
+   "size_bytes": 12497084
+  },
+  {
+   "path": "FPSWeapons\\FPSWeapons.fbx",
+   "size_bytes": 322380
+  },
+  {
+   "path": "SmallArms\\mosin9130.blend",
+   "size_bytes": 195588
+  },
+  {
+   "path": "SmallArms\\ak47.blend",
+   "size_bytes": 202228
+  },
+  {
+   "path": "SmallArms\\dragunov.blend",
+   "size_bytes": 237768
+  },
+  {
+   "path": "SmallArms\\g3a3.blend",
+   "size_bytes": 155188
+  },
+  {
+   "path": "SmallArms\\l85.blend",
+   "size_bytes": 193244
+  },
+  {
+   "path": "SmallArms\\m4.blend",
+   "size_bytes": 211432
+  },
+  {
+   "path": "SmallArms\\m1911.blend",
+   "size_bytes": 216560
+  },
+  {
+   "path": "SmallArms\\ak47.fbx",
+   "size_bytes": 44220
+  },
+  {
+   "path": "SmallArms\\dragunov.fbx",
+   "size_bytes": 60060
+  },
+  {
+   "path": "SmallArms\\g3a3.fbx",
+   "size_bytes": 41788
+  },
+  {
+   "path": "SmallArms\\l85.fbx",
+   "size_bytes": 52892
+  },
+  {
+   "path": "SmallArms\\m1911.fbx",
+   "size_bytes": 50092
+  },
+  {
+   "path": "SmallArms\\m4.fbx",
+   "size_bytes": 50940
+  },
+  {
+   "path": "SmallArms\\mosin9130.fbx",
+   "size_bytes": 57516
+  },
+  {
+   "path": "Torches\\Obj\\torch1.obj",
+   "size_bytes": 632942
+  },
+  {
+   "path": "Torches\\Obj\\torch2.obj",
+   "size_bytes": 6784
+  },
+  {
+   "path": "Torches\\Obj\\torch3.obj",
+   "size_bytes": 7375
+  },
+  {
+   "path": "Torches\\Obj\\torch4.obj",
+   "size_bytes": 7171
+  },
+  {
+   "path": "Mundo\\cactus\\cactus.obj",
+   "size_bytes": 79462
+  },
+  {
+   "path": "Mundo\\cactus\\cactus.FBX",
+   "size_bytes": 66224
+  },
+  {
+   "path": "Mundo\\huge tree\\huge_tree.obj",
+   "size_bytes": 99273
+  },
+  {
+   "path": "Mundo\\huge tree\\huge_tree.FBX",
+   "size_bytes": 61904
+  },
+  {
+   "path": "Mundo\\pine\\snow_pine_tree.obj",
+   "size_bytes": 62046
+  },
+  {
+   "path": "Mundo\\pine\\snow_pine_tree.FBX",
+   "size_bytes": 45792
+  },
+  {
+   "path": "Mundo\\pumpkin\\pumpkin_plant.obj",
+   "size_bytes": 111124
+  },
+  {
+   "path": "Mundo\\pumpkin\\pumpkin_plant.FBX",
+   "size_bytes": 74688
+  },
+  {
+   "path": "Mundo\\vine\\vine.obj",
+   "size_bytes": 49593
+  },
+  {
+   "path": "Mundo\\vine\\vine.FBX",
+   "size_bytes": 41840
+  },
+  {
+   "path": "Characters\\Meshy_AI_Animation_Walking_frame_rate_60.fbx",
+   "size_bytes": 18084972
+  },
+  {
+   "path": "Characters\\Meshy_AI_Animation_Walking_withSkin.fbx",
+   "size_bytes": 20555212
+  },
+  {
+   "path": "Characters\\X Bot@Walking.fbx",
+   "size_bytes": 366208
+  },
+  {
+   "path": "Characters\\X Bot@Walk Crouching Forward.fbx",
+   "size_bytes": 343632
+  },
+  {
+   "path": "Characters\\X Bot@Crouching Idle.fbx",
+   "size_bytes": 516208
+  },
+  {
+   "path": "Characters\\X Bot@Dying.fbx",
+   "size_bytes": 563104
+  },
+  {
+   "path": "Characters\\X Bot@Rifle Aiming Idle.fbx",
+   "size_bytes": 597216
+  },
+  {
+   "path": "Characters\\X Bot@Shooting.fbx",
+   "size_bytes": 382112
+  },
+  {
+   "path": "Characters\\MeshyConfidence\\Meshy_AI_Casual_Confidence_0421161928_texture_fbx\\Meshy_AI_Casual_Confidence_0421161928_texture.fbx",
+   "size_bytes": 14514700
+  },
+  {
+   "path": "Characters\\MeshyOveralls\\Meshy_AI_Casual_Denim_Overalls_0421162223_texture_fbx\\Meshy_AI_Casual_Denim_Overalls_0421162223_texture.fbx",
+   "size_bytes": 44437437
+  },
+  {
+   "path": "Bamboo\\Bamboo 01.obj",
+   "size_bytes": 105137
+  },
+  {
+   "path": "Bamboo\\Bamboo 01.FBX",
+   "size_bytes": 206080
+  },
+  {
+   "path": "Cypress\\cypress\\cypress.blend",
+   "size_bytes": 997140
+  },
+  {
+   "path": "Cypress\\cypress\\cypress.glb",
+   "size_bytes": 2489156
+  },
+  {
+   "path": "Cypress\\cypress\\cypress.fbx",
+   "size_bytes": 2394220
+  },
+  {
+   "path": "OakTree\\models\\oak.obj",
+   "size_bytes": 42048
+  },
+  {
+   "path": "OakTree\\models\\oak_leafless.obj",
+   "size_bytes": 29414
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House7\\House7.FBX",
+   "size_bytes": 145696
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House2\\House2.FBX",
+   "size_bytes": 92480
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House4\\House4.FBX",
+   "size_bytes": 142512
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House6\\House6.FBX",
+   "size_bytes": 74304
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House1\\House1.FBX",
+   "size_bytes": 81424
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House9\\House9.FBX",
+   "size_bytes": 139312
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House8\\House8.FBX",
+   "size_bytes": 232640
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House3\\House3.FBX",
+   "size_bytes": 77296
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House10\\House10.FBX",
+   "size_bytes": 148016
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House5\\House5.FBX",
+   "size_bytes": 94592
+  },
+  {
+   "path": "ExtractedUnity\\VillagePack\\OldHouse\\OldHouse.fbx",
+   "size_bytes": 259196
+  },
+  {
+   "path": "ExtractedUnity\\VillagePack\\Fence\\Fence.fbx",
+   "size_bytes": 33644
+  },
+  {
+   "path": "ExtractedUnity\\VillagePack\\Well\\Well.fbx",
+   "size_bytes": 663836
+  },
+  {
+   "path": "ExtractedUnity\\VillagePack\\BigHouse\\BigHouse.fbx",
+   "size_bytes": 344556
+  },
+  {
+   "path": "ExtractedUnity\\SpaceZeta_StreetLamps2\\Meshes\\StreetLampRound1.fbx",
+   "size_bytes": 37836
+  },
+  {
+   "path": "ExtractedUnity\\SpaceZeta_StreetLamps2\\Meshes\\StreetLampRound2.fbx",
+   "size_bytes": 49692
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Meadow_08.fbx",
+   "size_bytes": 93340
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Forest_Mountain_Moss_02.fbx",
+   "size_bytes": 98540
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Small_Fence_01.fbx",
+   "size_bytes": 29964
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Cemetery_Pebbles_03.fbx",
+   "size_bytes": 37420
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Bridge_15_Middle.fbx",
+   "size_bytes": 33836
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Rock_Moss_Grown_09.fbx",
+   "size_bytes": 39500
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Meadow_Path_05.fbx",
+   "size_bytes": 39900
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Lake_Ground_04.fbx",
+   "size_bytes": 93148
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Mushroom_Fantasy_Orange_09.fbx",
+   "size_bytes": 44028
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Hyacinth_04.fbx",
+   "size_bytes": 99388
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Daffodil_03.fbx",
+   "size_bytes": 55772
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Sunflower_04.fbx",
+   "size_bytes": 87148
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Meadow_07.fbx",
+   "size_bytes": 76460
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Mushroom_Fantasy_Purple_08.fbx",
+   "size_bytes": 36524
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Mushroom_Fantasy_Purple_05.fbx",
+   "size_bytes": 45516
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Bridge_15_Right.fbx",
+   "size_bytes": 34172
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Mushroom_Fantasy_Orange_10.fbx",
+   "size_bytes": 46604
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Rock_Pile_Forest_Moss_10.fbx",
+   "size_bytes": 40940
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Rock_Moss_Grown_11.fbx",
+   "size_bytes": 34396
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Floor_Tile_05.fbx",
+   "size_bytes": 20428
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Tree_10.fbx",
+   "size_bytes": 84252
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Grass_15.fbx",
+   "size_bytes": 41116
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Rock_Pile_Forest_Moss_05.fbx",
+   "size_bytes": 43580
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Grass_11.fbx",
+   "size_bytes": 36924
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Floor_Tile_06.fbx",
+   "size_bytes": 20428
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Bridge_15_Left.fbx",
+   "size_bytes": 36508
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Floor_Tile_15.fbx",
+   "size_bytes": 20620
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Tree_02.fbx",
+   "size_bytes": 89436
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Floor_Tile_16.fbx",
+   "size_bytes": 20156
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Cemetery_Pebbles_09.fbx",
+   "size_bytes": 36572
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Birch_Tree_05.fbx",
+   "size_bytes": 81228
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Forest_Mountain_Moss_01.fbx",
+   "size_bytes": 94556
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Birch_Tree_06.fbx",
+   "size_bytes": 97932
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Meshes\\PP_Small_Fence_04.fbx",
+   "size_bytes": 25404
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Standard Assets\\Effects\\TessellationShaders\\Models\\LowPolySphere.fbx",
+   "size_bytes": 19120
+  },
+  {
+   "path": "ExtractedUnity\\YughuesFreeBushes2018\\Meshes\\Bush03.FBX",
+   "size_bytes": 325536
+  },
+  {
+   "path": "ExtractedUnity\\YughuesFreeBushes2018\\Meshes\\Bush02.FBX",
+   "size_bytes": 189824
+  },
+  {
+   "path": "ExtractedUnity\\YughuesFreeBushes2018\\Meshes\\Bush04.FBX",
+   "size_bytes": 154432
+  },
+  {
+   "path": "ExtractedUnity\\YughuesFreeBushes2018\\Meshes\\Bush01.FBX",
+   "size_bytes": 194496
+  },
+  {
+   "path": "ExtractedUnity\\YughuesFreeBushes2018\\Meshes\\Bush05.FBX",
+   "size_bytes": 269424
+  },
+  {
+   "path": "ExtractedUnity\\YughuesFreeBushes2018\\Meshes\\OLD\\bush_03.obj",
+   "size_bytes": 175777
+  },
+  {
+   "path": "ExtractedUnity\\YughuesFreeBushes2018\\Meshes\\OLD\\bush_02.obj",
+   "size_bytes": 29607
+  },
+  {
+   "path": "ExtractedUnity\\YughuesFreeBushes2018\\Meshes\\OLD\\bush_05.obj",
+   "size_bytes": 64163
+  },
+  {
+   "path": "ExtractedUnity\\YughuesFreeBushes2018\\Meshes\\OLD\\bush_01.obj",
+   "size_bytes": 44977
+  },
+  {
+   "path": "ExtractedUnity\\YughuesFreeBushes2018\\Meshes\\OLD\\bush_04.obj",
+   "size_bytes": 35454
+  },
+  {
+   "path": "MeshyAI\\Iglesia_Jasokundeko.glb",
+   "size_bytes": 45056100
+  },
+  {
+   "path": "MeshyAI\\Iglesia_Jasokundeko.fbx",
+   "size_bytes": 60429132
+  },
+  {
+   "path": "MeshyAI\\Farola_Moderna.glb",
+   "size_bytes": 7490532
+  },
+  {
+   "path": "MeshyAI\\Farola_Moderna.fbx",
+   "size_bytes": 14834156
+  },
+  {
+   "path": "MeshyAI\\Farola_Clasica.glb",
+   "size_bytes": 18031900
+  },
+  {
+   "path": "MeshyAI\\Farola_Clasica.fbx",
+   "size_bytes": 28122252
+  },
+  {
+   "path": "MeshyAI\\Banco_Parque.glb",
+   "size_bytes": 15329036
+  },
+  {
+   "path": "MeshyAI\\Banco_Parque.fbx",
+   "size_bytes": 25034972
+  },
+  {
+   "path": "MeshyAI\\Edificio_Herriko_Tradicional.glb",
+   "size_bytes": 36577084
+  },
+  {
+   "path": "MeshyAI\\Edificio_Herriko_Tradicional.fbx",
+   "size_bytes": 51135100
+  },
+  {
+   "path": "MeshyAI\\Nave_Industrial_Ferroviario.glb",
+   "size_bytes": 41456832
+  },
+  {
+   "path": "MeshyAI\\Nave_Industrial_Ferroviario.fbx",
+   "size_bytes": 55907020
+  },
+  {
+   "path": "MeshyAI\\Estacion_Tren_Altsasu.glb",
+   "size_bytes": 30160760
+  },
+  {
+   "path": "MeshyAI\\Estacion_Tren_Altsasu.fbx",
+   "size_bytes": 42665452
+  },
+  {
+   "path": "MeshyAI\\Edificio_Moderno_Intxostia.glb",
+   "size_bytes": 38213620
+  },
+  {
+   "path": "MeshyAI\\Edificio_Moderno_Intxostia.fbx",
+   "size_bytes": 52355820
+  },
+  {
+   "path": "MeshyAI\\Casa_Chorro_Errota.glb",
+   "size_bytes": 44736184
+  },
+  {
+   "path": "MeshyAI\\Casa_Chorro_Errota.fbx",
+   "size_bytes": 61764780
+  },
+  {
+   "path": "MeshyAI\\Ayuntamiento_Altsasu.glb",
+   "size_bytes": 43061832
+  },
+  {
+   "path": "MeshyAI\\Ayuntamiento_Altsasu.fbx",
+   "size_bytes": 59245420
+  },
+  {
+   "path": "MeshyAI\\Fronton_Pelota.glb",
+   "size_bytes": 40458800
+  },
+  {
+   "path": "MeshyAI\\Fronton_Pelota.fbx",
+   "size_bytes": 53862860
+  },
+  {
+   "path": "MeshyAI\\Senal_Calle.glb",
+   "size_bytes": 11826500
+  },
+  {
+   "path": "MeshyAI\\Senal_Calle.fbx",
+   "size_bytes": 20624908
+  },
+  {
+   "path": "MeshyAI\\Stop_Senal.glb",
+   "size_bytes": 6957308
+  },
+  {
+   "path": "MeshyAI\\Stop_Senal.fbx",
+   "size_bytes": 12361180
+  },
+  {
+   "path": "MeshyAI\\Parada_Autobus.glb",
+   "size_bytes": 15962240
+  },
+  {
+   "path": "MeshyAI\\Parada_Autobus.fbx",
+   "size_bytes": 24857948
+  },
+  {
+   "path": "MeshyAI\\Contenedor_Reciclaje.glb",
+   "size_bytes": 40009856
+  },
+  {
+   "path": "MeshyAI\\Contenedor_Reciclaje.fbx",
+   "size_bytes": 54385980
+  },
+  {
+   "path": "MeshyAI\\Fuente_Bebida.glb",
+   "size_bytes": 11589344
+  },
+  {
+   "path": "MeshyAI\\Fuente_Bebida.fbx",
+   "size_bytes": 18683692
+  },
+  {
+   "path": "MeshyAI\\Barandilla_Puente.glb",
+   "size_bytes": 13329992
+  },
+  {
+   "path": "MeshyAI\\Barandilla_Puente.fbx",
+   "size_bytes": 23516588
+  },
+  {
+   "path": "MeshyAI\\Buzon_Correos.glb",
+   "size_bytes": 11374912
+  },
+  {
+   "path": "MeshyAI\\Buzon_Correos.fbx",
+   "size_bytes": 19473484
+  },
+  {
+   "path": "MeshyAI\\Fuente_Agua.glb",
+   "size_bytes": 22035548
+  },
+  {
+   "path": "MeshyAI\\Fuente_Agua.fbx",
+   "size_bytes": 33778892
+  },
+  {
+   "path": "MeshyAI\\Papelera_Urbana.glb",
+   "size_bytes": 15983340
+  },
+  {
+   "path": "MeshyAI\\Papelera_Urbana.fbx",
+   "size_bytes": 25173900
+  },
+  {
+   "path": "MeshyAI\\Semaforo_Urbano.glb",
+   "size_bytes": 20619884
+  },
+  {
+   "path": "MeshyAI\\Semaforo_Urbano.fbx",
+   "size_bytes": 31502588
+  },
+  {
+   "path": "MeshyAI\\Coche_Sedan.glb",
+   "size_bytes": 18419212
+  },
+  {
+   "path": "MeshyAI\\Coche_Sedan.fbx",
+   "size_bytes": 27016332
+  },
+  {
+   "path": "MeshyAI\\Coche_Policia.glb",
+   "size_bytes": 17479324
+  },
+  {
+   "path": "MeshyAI\\Coche_Policia.fbx",
+   "size_bytes": 26253084
+  },
+  {
+   "path": "MeshyAI\\Roca_Grande.glb",
+   "size_bytes": 24655264
+  },
+  {
+   "path": "MeshyAI\\Roca_Grande.fbx",
+   "size_bytes": 37306188
+  },
+  {
+   "path": "MeshyAI\\Furgoneta_Secundaria.glb",
+   "size_bytes": 37290648
+  },
+  {
+   "path": "MeshyAI\\Furgoneta_Secundaria.fbx",
+   "size_bytes": 49888364
+  },
+  {
+   "path": "MeshyAI\\Arbol_Abedul.glb",
+   "size_bytes": 53071396
+  },
+  {
+   "path": "MeshyAI\\Arbol_Abedul.fbx",
+   "size_bytes": 69885340
+  },
+  {
+   "path": "MeshyAI\\Autobus_Urbano.glb",
+   "size_bytes": 42395964
+  },
+  {
+   "path": "MeshyAI\\Autobus_Urbano.fbx",
+   "size_bytes": 55146092
+  },
+  {
+   "path": "MeshyAI\\Arbol_Roble.glb",
+   "size_bytes": 84918204
+  },
+  {
+   "path": "MeshyAI\\Arbol_Roble.fbx",
+   "size_bytes": 82511164
+  },
+  {
+   "path": "MeshyAI\\Arbol_Haya.glb",
+   "size_bytes": 79804196
+  },
+  {
+   "path": "MeshyAI\\Arbol_Haya.fbx",
+   "size_bytes": 78360284
+  },
+  {
+   "path": "MeshyAI\\Hierba_Larga.glb",
+   "size_bytes": 105309848
+  },
+  {
+   "path": "MeshyAI\\Hierba_Larga.fbx",
+   "size_bytes": 97997628
+  },
+  {
+   "path": "MeshyAI\\Seto_Verde.glb",
+   "size_bytes": 95484788
+  },
+  {
+   "path": "MeshyAI\\Seto_Verde.fbx",
+   "size_bytes": 95044572
+  },
+  {
+   "path": "MeshyAI\\Antena_TV.glb",
+   "size_bytes": 19430852
+  },
+  {
+   "path": "MeshyAI\\Antena_TV.fbx",
+   "size_bytes": 30526060
+  },
+  {
+   "path": "MeshyAI\\Tronco_Caido.glb",
+   "size_bytes": 17691604
+  },
+  {
+   "path": "MeshyAI\\Tronco_Caido.fbx",
+   "size_bytes": 28453180
+  },
+  {
+   "path": "MeshyAI\\Taberna_Tradicional.glb",
+   "size_bytes": 35353196
+  },
+  {
+   "path": "MeshyAI\\Taberna_Tradicional.fbx",
+   "size_bytes": 50028172
+  },
+  {
+   "path": "MeshyAI\\Harategia_Front.glb",
+   "size_bytes": 39344244
+  },
+  {
+   "path": "MeshyAI\\Harategia_Front.fbx",
+   "size_bytes": 53411372
+  },
+  {
+   "path": "MeshyAI\\Persiana_Española.glb",
+   "size_bytes": 27231012
+  },
+  {
+   "path": "MeshyAI\\Persiana_Española.fbx",
+   "size_bytes": 40470380
+  },
+  {
+   "path": "MeshyAI\\Chimenea_Piedra.glb",
+   "size_bytes": 24898484
+  },
+  {
+   "path": "MeshyAI\\Chimenea_Piedra.fbx",
+   "size_bytes": 37472604
+  },
+  {
+   "path": "MeshyAI\\Piedra_Muro.glb",
+   "size_bytes": 30882236
+  },
+  {
+   "path": "MeshyAI\\Piedra_Muro.fbx",
+   "size_bytes": 44792268
+  },
+  {
+   "path": "MeshyAI\\Ventana_Basca.glb",
+   "size_bytes": 46699068
+  },
+  {
+   "path": "MeshyAI\\Ventana_Basca.fbx",
+   "size_bytes": 60873980
+  },
+  {
+   "path": "MeshyAI\\Balcon_Hierro.glb",
+   "size_bytes": 35390376
+  },
+  {
+   "path": "MeshyAI\\Balcon_Hierro.fbx",
+   "size_bytes": 48203180
+  },
+  {
+   "path": "MeshyAI\\Okindegia_Front.glb",
+   "size_bytes": 47081036
+  },
+  {
+   "path": "MeshyAI\\Okindegia_Front.fbx",
+   "size_bytes": 63649676
+  },
+  {
+   "path": "MeshyAI\\Placa_Solar.glb",
+   "size_bytes": 17198764
+  },
+  {
+   "path": "MeshyAI\\Placa_Solar.fbx",
+   "size_bytes": 24846268
+  },
+  {
+   "path": "MeshyAI\\Deposito_Agua.glb",
+   "size_bytes": 26592472
+  },
+  {
+   "path": "MeshyAI\\Deposito_Agua.fbx",
+   "size_bytes": 39611964
+  }
+ ],
+ "textures": [
+  {
+   "path": "Naturaleza\\grass_02\\preview.jpg",
+   "size_bytes": 289832
+  },
+  {
+   "path": "Naturaleza\\grass_02\\grass_06\\diffus.tga",
+   "size_bytes": 1048620
+  },
+  {
+   "path": "Naturaleza\\grass_02\\grass_06\\normal.tga",
+   "size_bytes": 786476
+  },
+  {
+   "path": "Naturaleza\\grass_02\\grass_06\\opacity.tga",
+   "size_bytes": 3145772
+  },
+  {
+   "path": "Naturaleza\\grass_02\\grass_06\\specular.tga",
+   "size_bytes": 786476
+  },
+  {
+   "path": "Naturaleza\\grass_02\\grass_05\\diffus.tga",
+   "size_bytes": 1048620
+  },
+  {
+   "path": "Naturaleza\\grass_02\\grass_05\\normal.tga",
+   "size_bytes": 786476
+  },
+  {
+   "path": "Naturaleza\\grass_02\\grass_05\\opacity.tga",
+   "size_bytes": 3145772
+  },
+  {
+   "path": "Naturaleza\\grass_02\\grass_05\\specular.tga",
+   "size_bytes": 786476
+  },
+  {
+   "path": "Naturaleza\\grass_02\\grass_04\\diffus.tga",
+   "size_bytes": 1048620
+  },
+  {
+   "path": "Naturaleza\\grass_02\\grass_04\\normal.tga",
+   "size_bytes": 786476
+  },
+  {
+   "path": "Naturaleza\\grass_02\\grass_04\\opacity.tga",
+   "size_bytes": 3145772
+  },
+  {
+   "path": "Naturaleza\\grass_02\\grass_04\\specular.tga",
+   "size_bytes": 786476
+  },
+  {
+   "path": "Naturaleza\\grass_07\\preview.jpg",
+   "size_bytes": 711522
+  },
+  {
+   "path": "Naturaleza\\grass_07\\diffus.tga",
+   "size_bytes": 1048620
+  },
+  {
+   "path": "Naturaleza\\grass_07\\normal.tga",
+   "size_bytes": 786476
+  },
+  {
+   "path": "Naturaleza\\grass_07\\opacity.tga",
+   "size_bytes": 3145772
+  },
+  {
+   "path": "Naturaleza\\grass_07\\specular.tga",
+   "size_bytes": 786476
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\diffuse.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "Naturaleza\\multi_stylized_grass\\preview.jpg",
+   "size_bytes": 735352
+  },
+  {
+   "path": "Naturaleza\\Hedges\\Preview.jpg",
+   "size_bytes": 972933
+  },
+  {
+   "path": "Naturaleza\\Hedges\\Arch\\diffuse.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "Naturaleza\\Hedges\\Arch\\normal.tga",
+   "size_bytes": 3145772
+  },
+  {
+   "path": "Naturaleza\\Hedges\\Long\\diffuse.tga",
+   "size_bytes": 1048620
+  },
+  {
+   "path": "Naturaleza\\Hedges\\Long\\normal.tga",
+   "size_bytes": 786476
+  },
+  {
+   "path": "Naturaleza\\Hedges\\LongRound\\diffuse.tga",
+   "size_bytes": 1048620
+  },
+  {
+   "path": "Naturaleza\\Hedges\\LongRound\\normal.tga",
+   "size_bytes": 786476
+  },
+  {
+   "path": "Naturaleza\\Hedges\\Small\\diffuse.tga",
+   "size_bytes": 1048620
+  },
+  {
+   "path": "Naturaleza\\Hedges\\Small\\normal.tga",
+   "size_bytes": 786476
+  },
+  {
+   "path": "Naturaleza\\Hedges\\SmallRound\\diffuse.tga",
+   "size_bytes": 1048620
+  },
+  {
+   "path": "Naturaleza\\Hedges\\SmallRound\\normal.tga",
+   "size_bytes": 786476
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_2\\01-preview.jpg",
+   "size_bytes": 189175
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_2\\02-preview.jpg",
+   "size_bytes": 244721
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_2\\03-preview.jpg",
+   "size_bytes": 211102
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_2\\04-preview.jpg",
+   "size_bytes": 128741
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_2\\05-preview.jpg",
+   "size_bytes": 199081
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_2\\06-preview.jpg",
+   "size_bytes": 114966
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_2\\07-preview.jpg",
+   "size_bytes": 195249
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_2\\preview.jpg",
+   "size_bytes": 523821
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_2\\01-02-03-diffuse.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_2\\01-02-03-normal.tga",
+   "size_bytes": 3145772
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_2\\04-diffuse.tga",
+   "size_bytes": 2097196
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_2\\05-diffuse.tga",
+   "size_bytes": 1048620
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_2\\05-normal.tga",
+   "size_bytes": 786476
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_2\\06-07-diffuse.tga",
+   "size_bytes": 1048620
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\preview.jpg",
+   "size_bytes": 802516
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\02\\preview.jpg",
+   "size_bytes": 300537
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\02\\diffuse.tga",
+   "size_bytes": 1048620
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\02\\normal.tga",
+   "size_bytes": 786476
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\02\\specular.tga",
+   "size_bytes": 786476
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\02\\translucency.tga",
+   "size_bytes": 786476
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\03\\preview.jpg",
+   "size_bytes": 216992
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\03\\diffuse.tga",
+   "size_bytes": 1048620
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\03\\normal.tga",
+   "size_bytes": 786476
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\03\\specular.tga",
+   "size_bytes": 786476
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\03\\translucency.tga",
+   "size_bytes": 786476
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\01\\preview.jpg",
+   "size_bytes": 221280
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\01\\diffuse.tga",
+   "size_bytes": 2097196
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\01\\normal.tga",
+   "size_bytes": 1572908
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\01\\specular.tga",
+   "size_bytes": 1572908
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\01\\translucency.tga",
+   "size_bytes": 1572908
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\ivy\\preview.jpg",
+   "size_bytes": 236406
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\ivy\\diffuse.tga",
+   "size_bytes": 2097196
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\ivy\\normal.tga",
+   "size_bytes": 1572908
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\ivy\\specular.tga",
+   "size_bytes": 1572908
+  },
+  {
+   "path": "Naturaleza\\tiny_weeds_3\\ivy\\translucency.tga",
+   "size_bytes": 1572908
+  },
+  {
+   "path": "Naturaleza\\rocks\\preview.jpg",
+   "size_bytes": 454165
+  },
+  {
+   "path": "Naturaleza\\rocks\\02\\preview.jpg",
+   "size_bytes": 340480
+  },
+  {
+   "path": "Naturaleza\\rocks\\02\\diffuse.tga",
+   "size_bytes": 12582956
+  },
+  {
+   "path": "Naturaleza\\rocks\\02\\normal.tga",
+   "size_bytes": 16777260
+  },
+  {
+   "path": "Naturaleza\\rocks\\02\\specular.tga",
+   "size_bytes": 16777260
+  },
+  {
+   "path": "Naturaleza\\rocks\\01\\preview.jpg",
+   "size_bytes": 219342
+  },
+  {
+   "path": "Naturaleza\\rocks\\01\\diffuse.tga",
+   "size_bytes": 12582956
+  },
+  {
+   "path": "Naturaleza\\rocks\\01\\normal.tga",
+   "size_bytes": 16777260
+  },
+  {
+   "path": "Naturaleza\\rocks\\01\\specular.tga",
+   "size_bytes": 16777260
+  },
+  {
+   "path": "Naturaleza\\rocks\\03\\preview.jpg",
+   "size_bytes": 262337
+  },
+  {
+   "path": "Naturaleza\\rocks\\03\\diffuse.tga",
+   "size_bytes": 16777260
+  },
+  {
+   "path": "Naturaleza\\rocks\\03\\normal.tga",
+   "size_bytes": 16777260
+  },
+  {
+   "path": "Naturaleza\\rocks\\03\\specular.tga",
+   "size_bytes": 16777260
+  },
+  {
+   "path": "Naturaleza\\rocks\\04\\preview.jpg",
+   "size_bytes": 276918
+  },
+  {
+   "path": "Naturaleza\\rocks\\04\\diffuse.tga",
+   "size_bytes": 12582956
+  },
+  {
+   "path": "Naturaleza\\rocks\\04\\normal.tga",
+   "size_bytes": 16777260
+  },
+  {
+   "path": "Naturaleza\\rocks\\04\\specular.tga",
+   "size_bytes": 16777260
+  },
+  {
+   "path": "Naturaleza\\rocks\\05\\preview.jpg",
+   "size_bytes": 284386
+  },
+  {
+   "path": "Naturaleza\\rocks\\05\\diffuse.tga",
+   "size_bytes": 12582956
+  },
+  {
+   "path": "Naturaleza\\rocks\\05\\normal.tga",
+   "size_bytes": 16777260
+  },
+  {
+   "path": "Naturaleza\\rocks\\05\\specular.tga",
+   "size_bytes": 16777260
+  },
+  {
+   "path": "Pavimentos\\t_ground_cobblestone_3.png",
+   "size_bytes": 49167
+  },
+  {
+   "path": "Pavimentos\\pebbled-asphalt1\\pebbled-asphalt1-unity\\pebbled_asphalt_albedo.png",
+   "size_bytes": 10181801
+  },
+  {
+   "path": "Pavimentos\\pebbled-asphalt1\\pebbled-asphalt1-unity\\pebbled_asphalt_ao.png",
+   "size_bytes": 2240468
+  },
+  {
+   "path": "Pavimentos\\pebbled-asphalt1\\pebbled-asphalt1-unity\\pebbled_asphalt_Height.png",
+   "size_bytes": 1913705
+  },
+  {
+   "path": "Pavimentos\\pebbled-asphalt1\\pebbled-asphalt1-unity\\pebbled_asphalt_Metallic.psd",
+   "size_bytes": 3501808
+  },
+  {
+   "path": "Pavimentos\\pebbled-asphalt1\\pebbled-asphalt1-unity\\pebbled_asphalt_Normal-ogl.png",
+   "size_bytes": 12183917
+  },
+  {
+   "path": "Pavimentos\\pebbled-asphalt1\\pebbled-asphalt1-unity\\pebbled_asphalt_preview.jpg",
+   "size_bytes": 320462
+  },
+  {
+   "path": "Pavimentos\\asphalt_02_4k\\textures\\asphalt_02_disp_4k.png",
+   "size_bytes": 31908854
+  },
+  {
+   "path": "Pavimentos\\asphalt_02_4k\\textures\\asphalt_02_rough_4k.jpg",
+   "size_bytes": 8506335
+  },
+  {
+   "path": "Pavimentos\\asphalt_02_4k\\textures\\asphalt_02_diff_4k.jpg",
+   "size_bytes": 11654128
+  },
+  {
+   "path": "Muros\\wall_cobblestone_1024px.png",
+   "size_bytes": 1413299
+  },
+  {
+   "path": "Muros\\wall_bricks_old_1024.png",
+   "size_bytes": 875318
+  },
+  {
+   "path": "Muros\\brick7.png",
+   "size_bytes": 42394
+  },
+  {
+   "path": "Muros\\cobblestone_wall\\wall_cobblestone_1024px.png",
+   "size_bytes": 1413299
+  },
+  {
+   "path": "Muros\\cobblestone_wall\\Wall_cobblestone_32px.png",
+   "size_bytes": 2370
+  },
+  {
+   "path": "Muros\\cobblestone_wall\\Wall_cobblestone_64px.png",
+   "size_bytes": 7148
+  },
+  {
+   "path": "Muros\\cobblestone_wall\\Wall_cobblestone_cracks_1024px.png",
+   "size_bytes": 1435378
+  },
+  {
+   "path": "Muros\\cobblestone_wall\\Wall_cobblestone_cracks_32px.png",
+   "size_bytes": 2404
+  },
+  {
+   "path": "Muros\\cobblestone_wall\\Wall_cobblestone_cracks_64px.png",
+   "size_bytes": 7765
+  },
+  {
+   "path": "Arboles\\Roble\\preview.png",
+   "size_bytes": 116147
+  },
+  {
+   "path": "Arboles\\Roble\\models\\oakbark.jpg",
+   "size_bytes": 81536
+  },
+  {
+   "path": "Arboles\\Roble\\models\\oakbark_burnt.jpg",
+   "size_bytes": 69972
+  },
+  {
+   "path": "Arboles\\Roble\\models\\oakleaf_dark.tga",
+   "size_bytes": 129555
+  },
+  {
+   "path": "Arboles\\Roble\\models\\oakleaf_fall.tga",
+   "size_bytes": 129521
+  },
+  {
+   "path": "Arboles\\Roble\\models\\oakleaf_light.tga",
+   "size_bytes": 129549
+  },
+  {
+   "path": "Animals\\Chicken\\textures\\ChickenNorm.png",
+   "size_bytes": 1213667
+  },
+  {
+   "path": "Animals\\Chicken\\textures\\UV-Texture.png",
+   "size_bytes": 1221426
+  },
+  {
+   "path": "Animals\\Rooster\\textures\\Rooster-UV.png",
+   "size_bytes": 1280175
+  },
+  {
+   "path": "Animals\\Rooster\\textures\\Rooster-UV_norskin.png",
+   "size_bytes": 1561109
+  },
+  {
+   "path": "Animals\\Rooster\\textures\\image_AO.png",
+   "size_bytes": 747898
+  },
+  {
+   "path": "Animals\\Rooster\\textures\\image_h.png",
+   "size_bytes": 302093
+  },
+  {
+   "path": "Animals\\Rabbit\\texture\\Fur-skin.png",
+   "size_bytes": 1649777
+  },
+  {
+   "path": "Animals\\Rabbit\\texture\\rabbit-NORM.png",
+   "size_bytes": 520664
+  },
+  {
+   "path": "Animals\\Rabbit\\texture\\rabbit-skinn.png",
+   "size_bytes": 1659183
+  },
+  {
+   "path": "Animals\\Wolf\\Pelt.png",
+   "size_bytes": 662051
+  },
+  {
+   "path": "Locomotive\\locomotive00.png",
+   "size_bytes": 665134
+  },
+  {
+   "path": "Locomotive\\locomotive00_locomotive00.png",
+   "size_bytes": 665134
+  },
+  {
+   "path": "Locomotive\\locomotive00_uv.png",
+   "size_bytes": 65430
+  },
+  {
+   "path": "Containers\\textures\\container.png",
+   "size_bytes": 2819736
+  },
+  {
+   "path": "Containers\\textures\\container_ao.png",
+   "size_bytes": 1831804
+  },
+  {
+   "path": "Containers\\textures\\container_norm.png",
+   "size_bytes": 90684
+  },
+  {
+   "path": "Containers\\textures\\container_painted.png",
+   "size_bytes": 2160253
+  },
+  {
+   "path": "Containers\\textures\\container_painted_base.png",
+   "size_bytes": 1977729
+  },
+  {
+   "path": "Containers\\textures\\container_painted_corners.png",
+   "size_bytes": 515290
+  },
+  {
+   "path": "Containers\\textures\\container_w_noise_norm.png",
+   "size_bytes": 5690388
+  },
+  {
+   "path": "Containers\\textures\\dev\\container_highpoly_tex.png",
+   "size_bytes": 2400432
+  },
+  {
+   "path": "Containers\\textures\\dev\\container_paint_highpoly.png",
+   "size_bytes": 400506
+  },
+  {
+   "path": "Containers\\textures\\dev\\grunge_04.png",
+   "size_bytes": 12728406
+  },
+  {
+   "path": "Shrooms\\shroom_color.png",
+   "size_bytes": 65458
+  },
+  {
+   "path": "Shrooms\\shroom_color2.png",
+   "size_bytes": 69126
+  },
+  {
+   "path": "DestroyedWalls\\detail.bmp",
+   "size_bytes": 263224
+  },
+  {
+   "path": "DestroyedWalls\\wall.bmp",
+   "size_bytes": 786488
+  },
+  {
+   "path": "HQBuildings\\textures\\buildingtx_baseColor.jpeg",
+   "size_bytes": 9949539
+  },
+  {
+   "path": "HQBuildings\\textures\\buildingtx_metallicRoughness.png",
+   "size_bytes": 13189120
+  },
+  {
+   "path": "HQBuildings\\textures\\buildingtx_normal.png",
+   "size_bytes": 15693458
+  },
+  {
+   "path": "HQBuildings\\textures\\detailingtx_baseColor.jpeg",
+   "size_bytes": 8890738
+  },
+  {
+   "path": "HQBuildings\\textures\\detailingtx_metallicRoughness.png",
+   "size_bytes": 12483031
+  },
+  {
+   "path": "HQBuildings\\textures\\detailingtx_normal.png",
+   "size_bytes": 22293986
+  },
+  {
+   "path": "HQBuildings\\textures\\propstx_baseColor.jpeg",
+   "size_bytes": 12869887
+  },
+  {
+   "path": "HQBuildings\\textures\\propstx_metallicRoughness.png",
+   "size_bytes": 19640944
+  },
+  {
+   "path": "HQBuildings\\textures\\propstx_normal.png",
+   "size_bytes": 13700082
+  },
+  {
+   "path": "Torches\\Obj\\torch1-diff.clean.png",
+   "size_bytes": 1634226
+  },
+  {
+   "path": "Torches\\Obj\\torch1-diff.png",
+   "size_bytes": 1586081
+  },
+  {
+   "path": "Torches\\Obj\\torch1-norm.png",
+   "size_bytes": 1632570
+  },
+  {
+   "path": "Torches\\Obj\\torch2-diff.png",
+   "size_bytes": 900027
+  },
+  {
+   "path": "Torches\\Obj\\torch2-normal.png",
+   "size_bytes": 1063593
+  },
+  {
+   "path": "Torches\\Obj\\torch3&4-diff.png",
+   "size_bytes": 1195589
+  },
+  {
+   "path": "Torches\\Obj\\torch3&4-normal.png",
+   "size_bytes": 1388812
+  },
+  {
+   "path": "Mundo\\preview.jpg",
+   "size_bytes": 700194
+  },
+  {
+   "path": "Mundo\\cactus\\preview.jpg",
+   "size_bytes": 119076
+  },
+  {
+   "path": "Mundo\\cactus\\diffuse.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "Mundo\\cactus\\normal.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "Mundo\\cactus\\specular.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "Mundo\\huge tree\\preview.jpg",
+   "size_bytes": 311994
+  },
+  {
+   "path": "Mundo\\huge tree\\diffuse.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "Mundo\\huge tree\\normal.tga",
+   "size_bytes": 3145772
+  },
+  {
+   "path": "Mundo\\huge tree\\specular.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "Mundo\\huge tree\\translucency.tga",
+   "size_bytes": 3145772
+  },
+  {
+   "path": "Mundo\\pine\\preview_full.jpg",
+   "size_bytes": 226894
+  },
+  {
+   "path": "Mundo\\pine\\preview_half.jpg",
+   "size_bytes": 241520
+  },
+  {
+   "path": "Mundo\\pine\\preview_none.jpg",
+   "size_bytes": 214998
+  },
+  {
+   "path": "Mundo\\pine\\diffuse_full.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "Mundo\\pine\\diffuse_half.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "Mundo\\pine\\diffuse_none.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "Mundo\\pine\\normal_full.tga",
+   "size_bytes": 3145772
+  },
+  {
+   "path": "Mundo\\pine\\normal_half.tga",
+   "size_bytes": 3145772
+  },
+  {
+   "path": "Mundo\\pine\\normal_none.tga",
+   "size_bytes": 3145772
+  },
+  {
+   "path": "Mundo\\pine\\specular_full.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "Mundo\\pine\\specular_half.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "Mundo\\pine\\specular_none.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "Mundo\\pine\\translucency_half.tga",
+   "size_bytes": 3145772
+  },
+  {
+   "path": "Mundo\\pine\\translucency_none.tga",
+   "size_bytes": 3145772
+  },
+  {
+   "path": "Mundo\\pumpkin\\preview.jpg",
+   "size_bytes": 316731
+  },
+  {
+   "path": "Mundo\\pumpkin\\diffuse.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "Mundo\\pumpkin\\normal.tga",
+   "size_bytes": 3145772
+  },
+  {
+   "path": "Mundo\\pumpkin\\specular.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "Mundo\\pumpkin\\translucency.tga",
+   "size_bytes": 3145772
+  },
+  {
+   "path": "Mundo\\vine\\preview.jpg",
+   "size_bytes": 294761
+  },
+  {
+   "path": "Mundo\\vine\\diffuse.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "Mundo\\vine\\normal.tga",
+   "size_bytes": 3145772
+  },
+  {
+   "path": "Mundo\\vine\\specular.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "Mundo\\vine\\translucency.tga",
+   "size_bytes": 3145772
+  },
+  {
+   "path": "Characters\\MeshyConfidence\\Meshy_AI_Casual_Confidence_0421161928_texture_fbx\\Meshy_AI_Casual_Confidence_0421161928_texture.png",
+   "size_bytes": 7608916
+  },
+  {
+   "path": "Characters\\MeshyConfidence\\Meshy_AI_Casual_Confidence_0421161928_texture_fbx\\Meshy_AI_Casual_Confidence_0421161928_texture_emission.png",
+   "size_bytes": 21853
+  },
+  {
+   "path": "Characters\\MeshyConfidence\\Meshy_AI_Casual_Confidence_0421161928_texture_fbx\\Meshy_AI_Casual_Confidence_0421161928_texture_metallic.png",
+   "size_bytes": 894841
+  },
+  {
+   "path": "Characters\\MeshyConfidence\\Meshy_AI_Casual_Confidence_0421161928_texture_fbx\\Meshy_AI_Casual_Confidence_0421161928_texture_normal.png",
+   "size_bytes": 7507409
+  },
+  {
+   "path": "Characters\\MeshyConfidence\\Meshy_AI_Casual_Confidence_0421161928_texture_fbx\\Meshy_AI_Casual_Confidence_0421161928_texture_roughness.png",
+   "size_bytes": 427493
+  },
+  {
+   "path": "Bamboo\\preview.jpg",
+   "size_bytes": 702135
+  },
+  {
+   "path": "Bamboo\\diffuse.tga",
+   "size_bytes": 1048620
+  },
+  {
+   "path": "Bamboo\\normal.tga",
+   "size_bytes": 786476
+  },
+  {
+   "path": "Bamboo\\specular.tga",
+   "size_bytes": 786476
+  },
+  {
+   "path": "Cypress\\cypress\\bark_albedo.png",
+   "size_bytes": 539175
+  },
+  {
+   "path": "Cypress\\cypress\\bark_normal.png",
+   "size_bytes": 1378399
+  },
+  {
+   "path": "Cypress\\cypress\\bark_roughness.png",
+   "size_bytes": 189710
+  },
+  {
+   "path": "Cypress\\cypress\\branch_cypress.png",
+   "size_bytes": 245343
+  },
+  {
+   "path": "OakTree\\preview.png",
+   "size_bytes": 116147
+  },
+  {
+   "path": "OakTree\\models\\oakbark.jpg",
+   "size_bytes": 81536
+  },
+  {
+   "path": "OakTree\\models\\oakbark_burnt.jpg",
+   "size_bytes": 69972
+  },
+  {
+   "path": "OakTree\\models\\oakleaf_dark.tga",
+   "size_bytes": 129555
+  },
+  {
+   "path": "OakTree\\models\\oakleaf_fall.tga",
+   "size_bytes": 129521
+  },
+  {
+   "path": "OakTree\\models\\oakleaf_light.tga",
+   "size_bytes": 129549
+  },
+  {
+   "path": "BrickWalls\\Wall_bricks_old_1024.png",
+   "size_bytes": 875318
+  },
+  {
+   "path": "BrickWalls\\Wall_bricks_old_32.png",
+   "size_bytes": 1945
+  },
+  {
+   "path": "BrickWalls\\Wall_bricks_old_64.png",
+   "size_bytes": 5705
+  },
+  {
+   "path": "CobblestoneWalls\\wall_cobblestone_1024px.png",
+   "size_bytes": 1413299
+  },
+  {
+   "path": "CobblestoneWalls\\Wall_cobblestone_32px.png",
+   "size_bytes": 2370
+  },
+  {
+   "path": "CobblestoneWalls\\Wall_cobblestone_64px.png",
+   "size_bytes": 7148
+  },
+  {
+   "path": "CobblestoneWalls\\Wall_cobblestone_cracks_1024px.png",
+   "size_bytes": 1435378
+  },
+  {
+   "path": "CobblestoneWalls\\Wall_cobblestone_cracks_32px.png",
+   "size_bytes": 2404
+  },
+  {
+   "path": "CobblestoneWalls\\Wall_cobblestone_cracks_64px.png",
+   "size_bytes": 7765
+  },
+  {
+   "path": "Dirt\\swdirt\\swdirtnm.png",
+   "size_bytes": 1423876
+  },
+  {
+   "path": "Dirt\\swdirt\\swdirttex.png",
+   "size_bytes": 10666655
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House7\\Textures\\map9.bmp",
+   "size_bytes": 40904
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House7\\Textures\\map10.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House7\\Textures\\map5.bmp",
+   "size_bytes": 196662
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House7\\Textures\\map7.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House7\\Textures\\map13.bmp",
+   "size_bytes": 37912
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House7\\Textures\\map15.bmp",
+   "size_bytes": 79928
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House7\\Textures\\map1.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House7\\Textures\\map14.bmp",
+   "size_bytes": 94712
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House7\\Textures\\map3.bmp",
+   "size_bytes": 196662
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House7\\Textures\\map4.bmp",
+   "size_bytes": 636020
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House7\\Textures\\map2.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House2\\Textures\\map4.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House2\\Textures\\map6.bmp",
+   "size_bytes": 40904
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House2\\Textures\\map3.bmp",
+   "size_bytes": 636020
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House2\\Textures\\map10.bmp",
+   "size_bytes": 24630
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House2\\Textures\\map5.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House2\\Textures\\map2.bmp",
+   "size_bytes": 196662
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House2\\Textures\\map8.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House2\\Textures\\map9.bmp",
+   "size_bytes": 98358
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House2\\Textures\\map1.bmp",
+   "size_bytes": 196662
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House4\\Textures\\map14.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House4\\Textures\\map3.bmp",
+   "size_bytes": 98358
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House4\\Textures\\map13.bmp",
+   "size_bytes": 196662
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House4\\Textures\\map5.bmp",
+   "size_bytes": 242480
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House4\\Textures\\map15.bmp",
+   "size_bytes": 636020
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House4\\Textures\\map6.bmp",
+   "size_bytes": 40904
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House4\\Textures\\map11.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House4\\Textures\\map7.bmp",
+   "size_bytes": 446936
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House4\\Textures\\map8.bmp",
+   "size_bytes": 196662
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House4\\Textures\\map4.bmp",
+   "size_bytes": 103096
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House4\\Textures\\map2.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House4\\Textures\\map1.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House6\\Textures\\map2.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House6\\Textures\\map5.bmp",
+   "size_bytes": 40904
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House6\\Textures\\11.bmp",
+   "size_bytes": 242480
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House6\\Textures\\13.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House6\\Textures\\map9.bmp",
+   "size_bytes": 103096
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House6\\Textures\\map12.bmp",
+   "size_bytes": 242480
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House6\\Textures\\map1.bmp",
+   "size_bytes": 636020
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House6\\Textures\\map10.bmp",
+   "size_bytes": 98358
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House6\\Textures\\12.bmp",
+   "size_bytes": 196662
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House6\\Textures\\map4.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House6\\Textures\\map6.bmp",
+   "size_bytes": 196662
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House6\\Textures\\map11.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House6\\Textures\\map13.bmp",
+   "size_bytes": 196662
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House1\\Textures\\map9.bmp",
+   "size_bytes": 98358
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House1\\Textures\\map2.bmp",
+   "size_bytes": 24630
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House1\\Textures\\map6.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House1\\Textures\\map8.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House1\\Textures\\map5.bmp",
+   "size_bytes": 40904
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House1\\Textures\\map10.bmp",
+   "size_bytes": 98358
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House1\\Textures\\map7.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House1\\Textures\\map1.bmp",
+   "size_bytes": 636020
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House1\\Textures\\map4.bmp",
+   "size_bytes": 196662
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House9\\Textures\\map6.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House9\\Textures\\map4.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House9\\Textures\\map2.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House9\\Textures\\map7.bmp",
+   "size_bytes": 40904
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House9\\Textures\\map3.bmp",
+   "size_bytes": 98358
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House9\\Textures\\map1.bmp",
+   "size_bytes": 196662
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House9\\Textures\\map12.bmp",
+   "size_bytes": 37912
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House9\\Textures\\map17.bmp",
+   "size_bytes": 196662
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House9\\Textures\\map9.bmp",
+   "size_bytes": 103096
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House9\\Textures\\map10.bmp",
+   "size_bytes": 636020
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House8\\Textures\\map18.bmp",
+   "size_bytes": 98358
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House8\\Textures\\map1.bmp",
+   "size_bytes": 196662
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House8\\Textures\\map2.bmp",
+   "size_bytes": 636020
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House8\\Textures\\11.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House8\\Textures\\map15.bmp",
+   "size_bytes": 103096
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House8\\Textures\\10.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House8\\Textures\\12.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House8\\Textures\\map5.bmp",
+   "size_bytes": 40904
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House8\\Textures\\map3.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House8\\Textures\\map4.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House8\\Textures\\map6.bmp",
+   "size_bytes": 196662
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House8\\Textures\\map11.bmp",
+   "size_bytes": 37912
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House3\\Textures\\map2.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House3\\Textures\\map6.bmp",
+   "size_bytes": 196662
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House3\\Textures\\map4.bmp",
+   "size_bytes": 98358
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House3\\Textures\\map10.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House3\\Textures\\map1.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House3\\Textures\\map8.bmp",
+   "size_bytes": 196662
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House3\\Textures\\map5.bmp",
+   "size_bytes": 24630
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House3\\Textures\\map3.bmp",
+   "size_bytes": 40904
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House3\\Textures\\map7.bmp",
+   "size_bytes": 636020
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House10\\Textures\\map4.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House10\\Textures\\map2.bmp",
+   "size_bytes": 196662
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House10\\Textures\\map5.bmp",
+   "size_bytes": 12344
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House10\\Textures\\map8.bmp",
+   "size_bytes": 196662
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House10\\Textures\\map10.bmp",
+   "size_bytes": 159800
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House10\\Textures\\map9.bmp",
+   "size_bytes": 12342
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House10\\Textures\\map7.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House10\\Textures\\map6.bmp",
+   "size_bytes": 40904
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House10\\Textures\\map12.bmp",
+   "size_bytes": 196662
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House10\\Textures\\map13.bmp",
+   "size_bytes": 636020
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House10\\Textures\\map3.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House10\\Textures\\map1.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House5\\Textures\\map1.bmp",
+   "size_bytes": 636020
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House5\\Textures\\map13.bmp",
+   "size_bytes": 196662
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House5\\Textures\\map4.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House5\\Textures\\map3.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House5\\Textures\\map6.bmp",
+   "size_bytes": 196662
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House5\\Textures\\map12.bmp",
+   "size_bytes": 242480
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House5\\Textures\\map2.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House5\\Textures\\map5.bmp",
+   "size_bytes": 40904
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House5\\Textures\\map9.bmp",
+   "size_bytes": 103096
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Models\\House5\\Textures\\map10.bmp",
+   "size_bytes": 98358
+  },
+  {
+   "path": "ExtractedUnity\\HousePack\\Scene\\Grid.psd",
+   "size_bytes": 22258
+  },
+  {
+   "path": "ExtractedUnity\\VillagePack\\OldHouse\\VHWallsWood.png",
+   "size_bytes": 167703
+  },
+  {
+   "path": "ExtractedUnity\\VillagePack\\OldHouse\\VhRoofBeamBump.png",
+   "size_bytes": 273237
+  },
+  {
+   "path": "ExtractedUnity\\VillagePack\\OldHouse\\VHFloorbump.png",
+   "size_bytes": 541433
+  },
+  {
+   "path": "ExtractedUnity\\VillagePack\\OldHouse\\VHWallsWoodBump.png",
+   "size_bytes": 193818
+  },
+  {
+   "path": "ExtractedUnity\\VillagePack\\OldHouse\\VHWallsWoodReflection.png",
+   "size_bytes": 226405
+  },
+  {
+   "path": "ExtractedUnity\\VillagePack\\OldHouse\\VHFloorReflection.png",
+   "size_bytes": 525440
+  },
+  {
+   "path": "ExtractedUnity\\VillagePack\\OldHouse\\VHFloor.png",
+   "size_bytes": 638358
+  },
+  {
+   "path": "ExtractedUnity\\VillagePack\\OldHouse\\VHDecorationWoodReflection.png",
+   "size_bytes": 416330
+  },
+  {
+   "path": "ExtractedUnity\\VillagePack\\OldHouse\\VHRoof.png",
+   "size_bytes": 305165
+  },
+  {
+   "path": "ExtractedUnity\\VillagePack\\OldHouse\\VhRoofBeam.png",
+   "size_bytes": 447972
+  },
+  {
+   "path": "ExtractedUnity\\VillagePack\\OldHouse\\VhRoofBeamReflection.png",
+   "size_bytes": 362137
+  },
+  {
+   "path": "ExtractedUnity\\VillagePack\\OldHouse\\VHDecorationWoodBump.png",
+   "size_bytes": 410955
+  },
+  {
+   "path": "ExtractedUnity\\VillagePack\\OldHouse\\VHFrameWoodBump.png",
+   "size_bytes": 355742
+  },
+  {
+   "path": "ExtractedUnity\\VillagePack\\OldHouse\\VHFrameWoodReflection.png",
+   "size_bytes": 390041
+  },
+  {
+   "path": "ExtractedUnity\\VillagePack\\OldHouse\\VHRoofBump.png",
+   "size_bytes": 318578
+  },
+  {
+   "path": "ExtractedUnity\\VillagePack\\OldHouse\\VHFrameWood.png",
+   "size_bytes": 241764
+  },
+  {
+   "path": "ExtractedUnity\\VillagePack\\OldHouse\\VHRoofReflection.png",
+   "size_bytes": 378074
+  },
+  {
+   "path": "ExtractedUnity\\VillagePack\\OldHouse\\VHDecorationWood.png",
+   "size_bytes": 351914
+  },
+  {
+   "path": "ExtractedUnity\\VillagePack\\Well\\Rope.png",
+   "size_bytes": 827515
+  },
+  {
+   "path": "ExtractedUnity\\VillagePack\\Well\\WellStick.png",
+   "size_bytes": 360350
+  },
+  {
+   "path": "ExtractedUnity\\VillagePack\\Well\\Metal.png",
+   "size_bytes": 452492
+  },
+  {
+   "path": "ExtractedUnity\\Standard Assets\\Environment\\TerrainAssets\\SurfaceTextures\\MudRockyAlbedoSpecular.bmp",
+   "size_bytes": 4194360
+  },
+  {
+   "path": "ExtractedUnity\\SpaceZeta_StreetLamps2\\Materials\\T_StreetLampRound1B_emission.png",
+   "size_bytes": 161568
+  },
+  {
+   "path": "ExtractedUnity\\SpaceZeta_StreetLamps2\\Materials\\T_StreetLampRound2B_roughness.png",
+   "size_bytes": 1509086
+  },
+  {
+   "path": "ExtractedUnity\\SpaceZeta_StreetLamps2\\Materials\\T_StreetLampRound2B_emission.png",
+   "size_bytes": 91885
+  },
+  {
+   "path": "ExtractedUnity\\SpaceZeta_StreetLamps2\\Materials\\T_StreetLampRound2A_roughness.png",
+   "size_bytes": 1635446
+  },
+  {
+   "path": "ExtractedUnity\\SpaceZeta_StreetLamps2\\Materials\\T_StreetLampRound2A_metallic.png",
+   "size_bytes": 4166
+  },
+  {
+   "path": "ExtractedUnity\\SpaceZeta_StreetLamps2\\Materials\\T_StreetLampRound1A_metallic.png",
+   "size_bytes": 4593
+  },
+  {
+   "path": "ExtractedUnity\\SpaceZeta_StreetLamps2\\Materials\\T_StreetLampRound2B_normal.png",
+   "size_bytes": 2879799
+  },
+  {
+   "path": "ExtractedUnity\\SpaceZeta_StreetLamps2\\Materials\\T_StreetLampRound1B_roughness.png",
+   "size_bytes": 1518103
+  },
+  {
+   "path": "ExtractedUnity\\SpaceZeta_StreetLamps2\\Materials\\T_StreetLampRound2A_normal.png",
+   "size_bytes": 4093528
+  },
+  {
+   "path": "ExtractedUnity\\SpaceZeta_StreetLamps2\\Materials\\T_StreetLampRound1B_basecolor.png",
+   "size_bytes": 2712460
+  },
+  {
+   "path": "ExtractedUnity\\SpaceZeta_StreetLamps2\\Materials\\T_StreetLampRound1A_roughness.png",
+   "size_bytes": 1609423
+  },
+  {
+   "path": "ExtractedUnity\\SpaceZeta_StreetLamps2\\Materials\\T_StreetLampRound1A_normal.png",
+   "size_bytes": 4110057
+  },
+  {
+   "path": "ExtractedUnity\\SpaceZeta_StreetLamps2\\Materials\\T_StreetLampRound2A_basecolor.png",
+   "size_bytes": 2660312
+  },
+  {
+   "path": "ExtractedUnity\\SpaceZeta_StreetLamps2\\Materials\\T_StreetLampRound1A_emission.png",
+   "size_bytes": 161568
+  },
+  {
+   "path": "ExtractedUnity\\SpaceZeta_StreetLamps2\\Materials\\T_StreetLampRound1B_metallic.png",
+   "size_bytes": 1363654
+  },
+  {
+   "path": "ExtractedUnity\\SpaceZeta_StreetLamps2\\Materials\\T_StreetLampRound2A_emission.png",
+   "size_bytes": 91885
+  },
+  {
+   "path": "ExtractedUnity\\SpaceZeta_StreetLamps2\\Materials\\T_StreetLampRound2B_basecolor.png",
+   "size_bytes": 3568046
+  },
+  {
+   "path": "ExtractedUnity\\SpaceZeta_StreetLamps2\\Materials\\T_StreetLampRound1B_normal.png",
+   "size_bytes": 1705020
+  },
+  {
+   "path": "ExtractedUnity\\SpaceZeta_StreetLamps2\\Materials\\T_StreetLampRound2B_metallic.png",
+   "size_bytes": 442120
+  },
+  {
+   "path": "ExtractedUnity\\SpaceZeta_StreetLamps2\\Materials\\T_StreetLampRound1A_basecolor.png",
+   "size_bytes": 2492456
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Terrain\\Terrain_Textures\\PP_Pebbles_Light_Brown.png",
+   "size_bytes": 220379
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Terrain\\Terrain_Textures\\PP_Ground_Normal.png",
+   "size_bytes": 283236
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Terrain\\Terrain_Textures\\PP_Ground_Dark_Brown.png",
+   "size_bytes": 160314
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Terrain\\Terrain_Textures\\PP_Pebbles_Green_Ground.png",
+   "size_bytes": 198674
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Terrain\\Terrain_Textures\\PP_Flatstone_Brown.png",
+   "size_bytes": 639865
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Terrain\\Terrain_Textures\\PP_Flatstone_Normal.png",
+   "size_bytes": 1042791
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Terrain\\Terrain_Textures\\PP_Ground_Mid_Brown.png",
+   "size_bytes": 146893
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Terrain\\Terrain_Textures\\PP_Ground_Green.png",
+   "size_bytes": 120971
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Terrain\\Terrain_Textures\\PP_Flatstone_Grey.png",
+   "size_bytes": 694421
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Terrain\\Terrain_Textures\\PP_Pebbles_Mid_Brown.png",
+   "size_bytes": 215784
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Terrain\\Terrain_Textures\\PP_Pebbles_Normal.png",
+   "size_bytes": 386910
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Terrain\\Terrain_Textures\\PP_Pebbles_Dark_Brown_Ground.png",
+   "size_bytes": 225275
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Terrain\\Terrain_Textures\\PP_Ground_Light_Brown.png",
+   "size_bytes": 145170
+  },
+  {
+   "path": "ExtractedUnity\\Pure Poly\\Free Low Poly Nature Pack\\Textures\\PP_Color_Palette.png",
+   "size_bytes": 5034
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Standard Assets\\Effects\\ImageEffects\\Textures\\MotionBlurJitter.png",
+   "size_bytes": 14549
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Standard Assets\\Effects\\ImageEffects\\Textures\\NoiseEffectScratch.png",
+   "size_bytes": 2996
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Standard Assets\\Effects\\ImageEffects\\Textures\\NoiseAndGrain.png",
+   "size_bytes": 5734
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Standard Assets\\Effects\\ImageEffects\\Textures\\VignetteMask.png",
+   "size_bytes": 6381
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Standard Assets\\Effects\\ImageEffects\\Textures\\RandomVectors.png",
+   "size_bytes": 14549
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Standard Assets\\Effects\\ImageEffects\\Textures\\Neutral3D16.png",
+   "size_bytes": 2848
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Standard Assets\\Effects\\ImageEffects\\Textures\\HexShape.psd",
+   "size_bytes": 478144
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Standard Assets\\Effects\\ImageEffects\\Textures\\color correction ramp.png",
+   "size_bytes": 77
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Standard Assets\\Effects\\ImageEffects\\Textures\\Noise.png",
+   "size_bytes": 14549
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Standard Assets\\Effects\\ImageEffects\\Textures\\grayscale ramp.png",
+   "size_bytes": 77
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Standard Assets\\Effects\\ImageEffects\\Textures\\ContrastEnhanced3D16.png",
+   "size_bytes": 2935
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Standard Assets\\Effects\\ImageEffects\\Textures\\SphereShape.psd",
+   "size_bytes": 492716
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Standard Assets\\Effects\\ImageEffects\\Textures\\NoiseEffectGrain.png",
+   "size_bytes": 128100
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Standard Assets\\Effects\\Projectors\\Textures\\Falloff.psd",
+   "size_bytes": 22526
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Standard Assets\\Effects\\Projectors\\Textures\\Grid.psd",
+   "size_bytes": 23702
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Standard Assets\\Effects\\Projectors\\Textures\\Shadow.psd",
+   "size_bytes": 124452
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Standard Assets\\Effects\\Projectors\\Textures\\Light.psd",
+   "size_bytes": 142962
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Standard Assets\\Effects\\ToonShading\\Textures\\UtilToonGradient.png",
+   "size_bytes": 185
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Standard Assets\\Effects\\ToonShading\\Textures\\ToonLit.psd",
+   "size_bytes": 32503
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Standard Assets\\Effects\\TessellationShaders\\Textures\\CliffHeight.png",
+   "size_bytes": 173397
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Standard Assets\\Effects\\TessellationShaders\\Textures\\CliffNormals.png",
+   "size_bytes": 552190
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Standard Assets\\Effects\\LightFlares\\Textures\\Flare50mm.psd",
+   "size_bytes": 330753
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Standard Assets\\Effects\\LightFlares\\Textures\\FlareStar.psd",
+   "size_bytes": 45349
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Standard Assets\\Effects\\LightCookies\\Textures\\LightHardCookie.psd",
+   "size_bytes": 31756
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Standard Assets\\Effects\\LightCookies\\Textures\\FlashlightCookie.tif",
+   "size_bytes": 87648
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Standard Assets\\Effects\\LightCookies\\Textures\\FlashlightIrregularCookie.tif",
+   "size_bytes": 70356
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Standard Assets\\Effects\\LightCookies\\Textures\\LightSquareCookie.psd",
+   "size_bytes": 312446
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Standard Assets\\Effects\\LightCookies\\Textures\\LightSoftCookie.tif",
+   "size_bytes": 41796
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Standard Assets\\Effects\\GlassRefraction\\Textures\\GlassStainedAlbedo.tif",
+   "size_bytes": 377814
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Standard Assets\\Effects\\GlassRefraction\\Textures\\GlassStainedNormals.tif",
+   "size_bytes": 636536
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Textures\\bark01.tga",
+   "size_bytes": 692235
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Textures\\grass01.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Textures\\ground02.tga",
+   "size_bytes": 12582956
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Textures\\sky.tga",
+   "size_bytes": 12582956
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Textures\\ground03.tga",
+   "size_bytes": 12582956
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Textures\\sky.psd",
+   "size_bytes": 11597753
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Textures\\ground01.psd",
+   "size_bytes": 20617030
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Textures\\ground03.psd",
+   "size_bytes": 22723506
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Textures\\branch01.tga",
+   "size_bytes": 7885317
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Textures\\bush01.tga",
+   "size_bytes": 16777260
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Textures\\bark02.tga",
+   "size_bytes": 602790
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Textures\\grass02.tga",
+   "size_bytes": 2365628
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Textures\\ground01.tga",
+   "size_bytes": 12582956
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\bush04_Textures\\normal_specular.png",
+   "size_bytes": 21934
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\bush04_Textures\\diffuse.png",
+   "size_bytes": 367008
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\bush04_Textures\\shadow.png",
+   "size_bytes": 154769
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\bush04_Textures\\translucency_gloss.png",
+   "size_bytes": 21924
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\tree04_Textures\\diffuse.png",
+   "size_bytes": 473147
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\tree04_Textures\\normal_specular.png",
+   "size_bytes": 21934
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\tree04_Textures\\shadow.png",
+   "size_bytes": 140632
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\tree04_Textures\\translucency_gloss.png",
+   "size_bytes": 21924
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\bush03_Textures\\normal_specular.png",
+   "size_bytes": 21934
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\bush03_Textures\\translucency_gloss.png",
+   "size_bytes": 21924
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\bush03_Textures\\shadow.png",
+   "size_bytes": 154769
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\bush03_Textures\\diffuse.png",
+   "size_bytes": 375553
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\tree02_Textures\\shadow.png",
+   "size_bytes": 140632
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\tree02_Textures\\normal_specular.png",
+   "size_bytes": 21934
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\tree02_Textures\\translucency_gloss.png",
+   "size_bytes": 21924
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\tree02_Textures\\diffuse.png",
+   "size_bytes": 473147
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\bush06_Textures\\normal_specular.png",
+   "size_bytes": 21934
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\bush06_Textures\\translucency_gloss.png",
+   "size_bytes": 21924
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\bush06_Textures\\diffuse.png",
+   "size_bytes": 367008
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\bush06_Textures\\shadow.png",
+   "size_bytes": 154769
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\bush02_Textures\\diffuse.png",
+   "size_bytes": 388248
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\bush02_Textures\\translucency_gloss.png",
+   "size_bytes": 21924
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\bush02_Textures\\normal_specular.png",
+   "size_bytes": 21934
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\bush02_Textures\\shadow.png",
+   "size_bytes": 154769
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\bush01_Textures\\shadow.png",
+   "size_bytes": 154769
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\bush01_Textures\\normal_specular.png",
+   "size_bytes": 21934
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\bush01_Textures\\translucency_gloss.png",
+   "size_bytes": 21924
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\bush01_Textures\\diffuse.png",
+   "size_bytes": 364485
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\tree03_Textures\\normal_specular.png",
+   "size_bytes": 21934
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\tree03_Textures\\translucency_gloss.png",
+   "size_bytes": 21924
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\tree03_Textures\\diffuse.png",
+   "size_bytes": 473147
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\tree03_Textures\\shadow.png",
+   "size_bytes": 140632
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\bush05_Textures\\translucency_gloss.png",
+   "size_bytes": 21924
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\bush05_Textures\\diffuse.png",
+   "size_bytes": 377938
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\bush05_Textures\\normal_specular.png",
+   "size_bytes": 21934
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\bush05_Textures\\shadow.png",
+   "size_bytes": 154769
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\tree01_Textures\\translucency_gloss.png",
+   "size_bytes": 21924
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\tree01_Textures\\normal_specular.png",
+   "size_bytes": 21934
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\tree01_Textures\\diffuse.png",
+   "size_bytes": 473147
+  },
+  {
+   "path": "ExtractedUnity\\NatureStarterKit2\\Nature\\tree01_Textures\\shadow.png",
+   "size_bytes": 140632
+  },
+  {
+   "path": "ExtractedUnity\\YughuesFreeBushes2018\\Textures\\T_Bush01_s.tga",
+   "size_bytes": 65580
+  },
+  {
+   "path": "ExtractedUnity\\YughuesFreeBushes2018\\Textures\\T_Bush05_ao.tga",
+   "size_bytes": 49196
+  },
+  {
+   "path": "ExtractedUnity\\YughuesFreeBushes2018\\Textures\\T_Bush02_n.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "ExtractedUnity\\YughuesFreeBushes2018\\Textures\\T_Bush03_n.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "ExtractedUnity\\YughuesFreeBushes2018\\Textures\\T_Bush01_n.tga",
+   "size_bytes": 3145772
+  },
+  {
+   "path": "ExtractedUnity\\YughuesFreeBushes2018\\Textures\\T_Bush03_ao.tga",
+   "size_bytes": 49196
+  },
+  {
+   "path": "ExtractedUnity\\YughuesFreeBushes2018\\Textures\\T_Bush01_ao.tga",
+   "size_bytes": 49196
+  },
+  {
+   "path": "ExtractedUnity\\YughuesFreeBushes2018\\Textures\\T_Bush02_s.tga",
+   "size_bytes": 65580
+  },
+  {
+   "path": "ExtractedUnity\\YughuesFreeBushes2018\\Textures\\T_Bush03_d.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "ExtractedUnity\\YughuesFreeBushes2018\\Textures\\T_Bush03_s.tga",
+   "size_bytes": 65580
+  },
+  {
+   "path": "ExtractedUnity\\YughuesFreeBushes2018\\Textures\\T_Bush04_ao.tga",
+   "size_bytes": 49196
+  },
+  {
+   "path": "ExtractedUnity\\YughuesFreeBushes2018\\Textures\\T_Bush04_s.tga",
+   "size_bytes": 65580
+  },
+  {
+   "path": "ExtractedUnity\\YughuesFreeBushes2018\\Textures\\T_Bush02_ao.tga",
+   "size_bytes": 49196
+  },
+  {
+   "path": "ExtractedUnity\\YughuesFreeBushes2018\\Textures\\T_Bush01_d.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "ExtractedUnity\\YughuesFreeBushes2018\\Textures\\T_Bush02_d.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "ExtractedUnity\\YughuesFreeBushes2018\\Textures\\T_Bush05_s.tga",
+   "size_bytes": 65580
+  },
+  {
+   "path": "ExtractedUnity\\YughuesFreeBushes2018\\Textures\\T_Bush04_d.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "ExtractedUnity\\YughuesFreeBushes2018\\Textures\\T_Bush05_d.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "ExtractedUnity\\YughuesFreeBushes2018\\Textures\\T_Bush05_n.tga",
+   "size_bytes": 3145772
+  },
+  {
+   "path": "ExtractedUnity\\YughuesFreeBushes2018\\Textures\\T_Bush04_n.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "TexturasUnity\\Textures_map9.bmp",
+   "size_bytes": 40904
+  },
+  {
+   "path": "TexturasUnity\\Textures_map10.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "TexturasUnity\\Textures_map5.bmp",
+   "size_bytes": 196662
+  },
+  {
+   "path": "TexturasUnity\\Textures_map7.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "TexturasUnity\\Textures_map13.bmp",
+   "size_bytes": 37912
+  },
+  {
+   "path": "TexturasUnity\\Textures_map15.bmp",
+   "size_bytes": 79928
+  },
+  {
+   "path": "TexturasUnity\\Textures_map1.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "TexturasUnity\\Textures_map14.bmp",
+   "size_bytes": 94712
+  },
+  {
+   "path": "TexturasUnity\\Textures_map3.bmp",
+   "size_bytes": 196662
+  },
+  {
+   "path": "TexturasUnity\\Textures_map4.bmp",
+   "size_bytes": 636020
+  },
+  {
+   "path": "TexturasUnity\\Textures_map2.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "TexturasUnity\\Textures_map6.bmp",
+   "size_bytes": 40904
+  },
+  {
+   "path": "TexturasUnity\\Textures_map8.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "TexturasUnity\\Textures_map11.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "TexturasUnity\\Textures_11.bmp",
+   "size_bytes": 242480
+  },
+  {
+   "path": "TexturasUnity\\Textures_13.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "TexturasUnity\\Textures_map12.bmp",
+   "size_bytes": 242480
+  },
+  {
+   "path": "TexturasUnity\\Textures_12.bmp",
+   "size_bytes": 196662
+  },
+  {
+   "path": "TexturasUnity\\Textures_map17.bmp",
+   "size_bytes": 196662
+  },
+  {
+   "path": "TexturasUnity\\Textures_map18.bmp",
+   "size_bytes": 98358
+  },
+  {
+   "path": "TexturasUnity\\Textures_10.bmp",
+   "size_bytes": 49206
+  },
+  {
+   "path": "TexturasUnity\\Scene_Grid.psd",
+   "size_bytes": 22258
+  },
+  {
+   "path": "TexturasUnity\\OldHouse_VHWallsWood.png",
+   "size_bytes": 167703
+  },
+  {
+   "path": "TexturasUnity\\OldHouse_VhRoofBeamBump.png",
+   "size_bytes": 273237
+  },
+  {
+   "path": "TexturasUnity\\OldHouse_VHFloorbump.png",
+   "size_bytes": 541433
+  },
+  {
+   "path": "TexturasUnity\\OldHouse_VHWallsWoodBump.png",
+   "size_bytes": 193818
+  },
+  {
+   "path": "TexturasUnity\\OldHouse_VHWallsWoodReflection.png",
+   "size_bytes": 226405
+  },
+  {
+   "path": "TexturasUnity\\OldHouse_VHFloorReflection.png",
+   "size_bytes": 525440
+  },
+  {
+   "path": "TexturasUnity\\OldHouse_VHFloor.png",
+   "size_bytes": 638358
+  },
+  {
+   "path": "TexturasUnity\\OldHouse_VHDecorationWoodReflection.png",
+   "size_bytes": 416330
+  },
+  {
+   "path": "TexturasUnity\\OldHouse_VHRoof.png",
+   "size_bytes": 305165
+  },
+  {
+   "path": "TexturasUnity\\OldHouse_VhRoofBeam.png",
+   "size_bytes": 447972
+  },
+  {
+   "path": "TexturasUnity\\OldHouse_VhRoofBeamReflection.png",
+   "size_bytes": 362137
+  },
+  {
+   "path": "TexturasUnity\\OldHouse_VHDecorationWoodBump.png",
+   "size_bytes": 410955
+  },
+  {
+   "path": "TexturasUnity\\OldHouse_VHFrameWoodBump.png",
+   "size_bytes": 355742
+  },
+  {
+   "path": "TexturasUnity\\OldHouse_VHFrameWoodReflection.png",
+   "size_bytes": 390041
+  },
+  {
+   "path": "TexturasUnity\\OldHouse_VHRoofBump.png",
+   "size_bytes": 318578
+  },
+  {
+   "path": "TexturasUnity\\OldHouse_VHFrameWood.png",
+   "size_bytes": 241764
+  },
+  {
+   "path": "TexturasUnity\\OldHouse_VHRoofReflection.png",
+   "size_bytes": 378074
+  },
+  {
+   "path": "TexturasUnity\\OldHouse_VHDecorationWood.png",
+   "size_bytes": 351914
+  },
+  {
+   "path": "TexturasUnity\\Well_Rope.png",
+   "size_bytes": 827515
+  },
+  {
+   "path": "TexturasUnity\\Well_WellStick.png",
+   "size_bytes": 360350
+  },
+  {
+   "path": "TexturasUnity\\Well_Metal.png",
+   "size_bytes": 452492
+  },
+  {
+   "path": "TexturasUnity\\SurfaceTextures_MudRockyAlbedoSpecular.bmp",
+   "size_bytes": 4194360
+  },
+  {
+   "path": "TexturasUnity\\Materials_T_StreetLampRound1B_emission.png",
+   "size_bytes": 161568
+  },
+  {
+   "path": "TexturasUnity\\Materials_T_StreetLampRound2B_roughness.png",
+   "size_bytes": 1509086
+  },
+  {
+   "path": "TexturasUnity\\Materials_T_StreetLampRound2B_emission.png",
+   "size_bytes": 91885
+  },
+  {
+   "path": "TexturasUnity\\Materials_T_StreetLampRound2A_roughness.png",
+   "size_bytes": 1635446
+  },
+  {
+   "path": "TexturasUnity\\Materials_T_StreetLampRound2A_metallic.png",
+   "size_bytes": 4166
+  },
+  {
+   "path": "TexturasUnity\\Materials_T_StreetLampRound1A_metallic.png",
+   "size_bytes": 4593
+  },
+  {
+   "path": "TexturasUnity\\Materials_T_StreetLampRound2B_normal.png",
+   "size_bytes": 2879799
+  },
+  {
+   "path": "TexturasUnity\\Materials_T_StreetLampRound1B_roughness.png",
+   "size_bytes": 1518103
+  },
+  {
+   "path": "TexturasUnity\\Materials_T_StreetLampRound2A_normal.png",
+   "size_bytes": 4093528
+  },
+  {
+   "path": "TexturasUnity\\Materials_T_StreetLampRound1B_basecolor.png",
+   "size_bytes": 2712460
+  },
+  {
+   "path": "TexturasUnity\\Materials_T_StreetLampRound1A_roughness.png",
+   "size_bytes": 1609423
+  },
+  {
+   "path": "TexturasUnity\\Materials_T_StreetLampRound1A_normal.png",
+   "size_bytes": 4110057
+  },
+  {
+   "path": "TexturasUnity\\Materials_T_StreetLampRound2A_basecolor.png",
+   "size_bytes": 2660312
+  },
+  {
+   "path": "TexturasUnity\\Materials_T_StreetLampRound1A_emission.png",
+   "size_bytes": 161568
+  },
+  {
+   "path": "TexturasUnity\\Materials_T_StreetLampRound1B_metallic.png",
+   "size_bytes": 1363654
+  },
+  {
+   "path": "TexturasUnity\\Materials_T_StreetLampRound2A_emission.png",
+   "size_bytes": 91885
+  },
+  {
+   "path": "TexturasUnity\\Materials_T_StreetLampRound2B_basecolor.png",
+   "size_bytes": 3568046
+  },
+  {
+   "path": "TexturasUnity\\Materials_T_StreetLampRound1B_normal.png",
+   "size_bytes": 1705020
+  },
+  {
+   "path": "TexturasUnity\\Materials_T_StreetLampRound2B_metallic.png",
+   "size_bytes": 442120
+  },
+  {
+   "path": "TexturasUnity\\Materials_T_StreetLampRound1A_basecolor.png",
+   "size_bytes": 2492456
+  },
+  {
+   "path": "TexturasUnity\\Terrain_Textures_PP_Pebbles_Light_Brown.png",
+   "size_bytes": 220379
+  },
+  {
+   "path": "TexturasUnity\\Terrain_Textures_PP_Ground_Normal.png",
+   "size_bytes": 283236
+  },
+  {
+   "path": "TexturasUnity\\Terrain_Textures_PP_Ground_Dark_Brown.png",
+   "size_bytes": 160314
+  },
+  {
+   "path": "TexturasUnity\\Terrain_Textures_PP_Pebbles_Green_Ground.png",
+   "size_bytes": 198674
+  },
+  {
+   "path": "TexturasUnity\\Terrain_Textures_PP_Flatstone_Brown.png",
+   "size_bytes": 639865
+  },
+  {
+   "path": "TexturasUnity\\Terrain_Textures_PP_Flatstone_Normal.png",
+   "size_bytes": 1042791
+  },
+  {
+   "path": "TexturasUnity\\Terrain_Textures_PP_Ground_Mid_Brown.png",
+   "size_bytes": 146893
+  },
+  {
+   "path": "TexturasUnity\\Terrain_Textures_PP_Ground_Green.png",
+   "size_bytes": 120971
+  },
+  {
+   "path": "TexturasUnity\\Terrain_Textures_PP_Flatstone_Grey.png",
+   "size_bytes": 694421
+  },
+  {
+   "path": "TexturasUnity\\Terrain_Textures_PP_Pebbles_Mid_Brown.png",
+   "size_bytes": 215784
+  },
+  {
+   "path": "TexturasUnity\\Terrain_Textures_PP_Pebbles_Normal.png",
+   "size_bytes": 386910
+  },
+  {
+   "path": "TexturasUnity\\Terrain_Textures_PP_Pebbles_Dark_Brown_Ground.png",
+   "size_bytes": 225275
+  },
+  {
+   "path": "TexturasUnity\\Terrain_Textures_PP_Ground_Light_Brown.png",
+   "size_bytes": 145170
+  },
+  {
+   "path": "TexturasUnity\\Textures_PP_Color_Palette.png",
+   "size_bytes": 5034
+  },
+  {
+   "path": "TexturasUnity\\Textures_MotionBlurJitter.png",
+   "size_bytes": 14549
+  },
+  {
+   "path": "TexturasUnity\\Textures_NoiseEffectScratch.png",
+   "size_bytes": 2996
+  },
+  {
+   "path": "TexturasUnity\\Textures_NoiseAndGrain.png",
+   "size_bytes": 5734
+  },
+  {
+   "path": "TexturasUnity\\Textures_VignetteMask.png",
+   "size_bytes": 6381
+  },
+  {
+   "path": "TexturasUnity\\Textures_RandomVectors.png",
+   "size_bytes": 14549
+  },
+  {
+   "path": "TexturasUnity\\Textures_Neutral3D16.png",
+   "size_bytes": 2848
+  },
+  {
+   "path": "TexturasUnity\\Textures_HexShape.psd",
+   "size_bytes": 478144
+  },
+  {
+   "path": "TexturasUnity\\Textures_color correction ramp.png",
+   "size_bytes": 77
+  },
+  {
+   "path": "TexturasUnity\\Textures_Noise.png",
+   "size_bytes": 14549
+  },
+  {
+   "path": "TexturasUnity\\Textures_grayscale ramp.png",
+   "size_bytes": 77
+  },
+  {
+   "path": "TexturasUnity\\Textures_ContrastEnhanced3D16.png",
+   "size_bytes": 2935
+  },
+  {
+   "path": "TexturasUnity\\Textures_SphereShape.psd",
+   "size_bytes": 492716
+  },
+  {
+   "path": "TexturasUnity\\Textures_NoiseEffectGrain.png",
+   "size_bytes": 128100
+  },
+  {
+   "path": "TexturasUnity\\Textures_Falloff.psd",
+   "size_bytes": 22526
+  },
+  {
+   "path": "TexturasUnity\\Textures_Grid.psd",
+   "size_bytes": 23702
+  },
+  {
+   "path": "TexturasUnity\\Textures_Shadow.psd",
+   "size_bytes": 124452
+  },
+  {
+   "path": "TexturasUnity\\Textures_Light.psd",
+   "size_bytes": 142962
+  },
+  {
+   "path": "TexturasUnity\\Textures_UtilToonGradient.png",
+   "size_bytes": 185
+  },
+  {
+   "path": "TexturasUnity\\Textures_ToonLit.psd",
+   "size_bytes": 32503
+  },
+  {
+   "path": "TexturasUnity\\Textures_CliffHeight.png",
+   "size_bytes": 173397
+  },
+  {
+   "path": "TexturasUnity\\Textures_CliffNormals.png",
+   "size_bytes": 552190
+  },
+  {
+   "path": "TexturasUnity\\Textures_Flare50mm.psd",
+   "size_bytes": 330753
+  },
+  {
+   "path": "TexturasUnity\\Textures_FlareStar.psd",
+   "size_bytes": 45349
+  },
+  {
+   "path": "TexturasUnity\\Textures_LightHardCookie.psd",
+   "size_bytes": 31756
+  },
+  {
+   "path": "TexturasUnity\\Textures_FlashlightCookie.tif",
+   "size_bytes": 87648
+  },
+  {
+   "path": "TexturasUnity\\Textures_FlashlightIrregularCookie.tif",
+   "size_bytes": 70356
+  },
+  {
+   "path": "TexturasUnity\\Textures_LightSquareCookie.psd",
+   "size_bytes": 312446
+  },
+  {
+   "path": "TexturasUnity\\Textures_LightSoftCookie.tif",
+   "size_bytes": 41796
+  },
+  {
+   "path": "TexturasUnity\\Textures_GlassStainedAlbedo.tif",
+   "size_bytes": 377814
+  },
+  {
+   "path": "TexturasUnity\\Textures_GlassStainedNormals.tif",
+   "size_bytes": 636536
+  },
+  {
+   "path": "TexturasUnity\\Textures_bark01.tga",
+   "size_bytes": 692235
+  },
+  {
+   "path": "TexturasUnity\\Textures_grass01.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "TexturasUnity\\Textures_ground02.tga",
+   "size_bytes": 12582956
+  },
+  {
+   "path": "TexturasUnity\\Textures_sky.tga",
+   "size_bytes": 12582956
+  },
+  {
+   "path": "TexturasUnity\\Textures_ground03.tga",
+   "size_bytes": 12582956
+  },
+  {
+   "path": "TexturasUnity\\Textures_sky.psd",
+   "size_bytes": 11597753
+  },
+  {
+   "path": "TexturasUnity\\Textures_ground01.psd",
+   "size_bytes": 20617030
+  },
+  {
+   "path": "TexturasUnity\\Textures_ground03.psd",
+   "size_bytes": 22723506
+  },
+  {
+   "path": "TexturasUnity\\Textures_branch01.tga",
+   "size_bytes": 7885317
+  },
+  {
+   "path": "TexturasUnity\\Textures_bush01.tga",
+   "size_bytes": 16777260
+  },
+  {
+   "path": "TexturasUnity\\Textures_bark02.tga",
+   "size_bytes": 602790
+  },
+  {
+   "path": "TexturasUnity\\Textures_grass02.tga",
+   "size_bytes": 2365628
+  },
+  {
+   "path": "TexturasUnity\\Textures_ground01.tga",
+   "size_bytes": 12582956
+  },
+  {
+   "path": "TexturasUnity\\bush04_Textures_normal_specular.png",
+   "size_bytes": 21934
+  },
+  {
+   "path": "TexturasUnity\\bush04_Textures_diffuse.png",
+   "size_bytes": 367008
+  },
+  {
+   "path": "TexturasUnity\\bush04_Textures_shadow.png",
+   "size_bytes": 154769
+  },
+  {
+   "path": "TexturasUnity\\bush04_Textures_translucency_gloss.png",
+   "size_bytes": 21924
+  },
+  {
+   "path": "TexturasUnity\\tree04_Textures_diffuse.png",
+   "size_bytes": 473147
+  },
+  {
+   "path": "TexturasUnity\\tree04_Textures_normal_specular.png",
+   "size_bytes": 21934
+  },
+  {
+   "path": "TexturasUnity\\tree04_Textures_shadow.png",
+   "size_bytes": 140632
+  },
+  {
+   "path": "TexturasUnity\\tree04_Textures_translucency_gloss.png",
+   "size_bytes": 21924
+  },
+  {
+   "path": "TexturasUnity\\bush03_Textures_normal_specular.png",
+   "size_bytes": 21934
+  },
+  {
+   "path": "TexturasUnity\\bush03_Textures_translucency_gloss.png",
+   "size_bytes": 21924
+  },
+  {
+   "path": "TexturasUnity\\bush03_Textures_shadow.png",
+   "size_bytes": 154769
+  },
+  {
+   "path": "TexturasUnity\\bush03_Textures_diffuse.png",
+   "size_bytes": 375553
+  },
+  {
+   "path": "TexturasUnity\\tree02_Textures_shadow.png",
+   "size_bytes": 140632
+  },
+  {
+   "path": "TexturasUnity\\tree02_Textures_normal_specular.png",
+   "size_bytes": 21934
+  },
+  {
+   "path": "TexturasUnity\\tree02_Textures_translucency_gloss.png",
+   "size_bytes": 21924
+  },
+  {
+   "path": "TexturasUnity\\tree02_Textures_diffuse.png",
+   "size_bytes": 473147
+  },
+  {
+   "path": "TexturasUnity\\bush06_Textures_normal_specular.png",
+   "size_bytes": 21934
+  },
+  {
+   "path": "TexturasUnity\\bush06_Textures_translucency_gloss.png",
+   "size_bytes": 21924
+  },
+  {
+   "path": "TexturasUnity\\bush06_Textures_diffuse.png",
+   "size_bytes": 367008
+  },
+  {
+   "path": "TexturasUnity\\bush06_Textures_shadow.png",
+   "size_bytes": 154769
+  },
+  {
+   "path": "TexturasUnity\\bush02_Textures_diffuse.png",
+   "size_bytes": 388248
+  },
+  {
+   "path": "TexturasUnity\\bush02_Textures_translucency_gloss.png",
+   "size_bytes": 21924
+  },
+  {
+   "path": "TexturasUnity\\bush02_Textures_normal_specular.png",
+   "size_bytes": 21934
+  },
+  {
+   "path": "TexturasUnity\\bush02_Textures_shadow.png",
+   "size_bytes": 154769
+  },
+  {
+   "path": "TexturasUnity\\bush01_Textures_shadow.png",
+   "size_bytes": 154769
+  },
+  {
+   "path": "TexturasUnity\\bush01_Textures_normal_specular.png",
+   "size_bytes": 21934
+  },
+  {
+   "path": "TexturasUnity\\bush01_Textures_translucency_gloss.png",
+   "size_bytes": 21924
+  },
+  {
+   "path": "TexturasUnity\\bush01_Textures_diffuse.png",
+   "size_bytes": 364485
+  },
+  {
+   "path": "TexturasUnity\\tree03_Textures_normal_specular.png",
+   "size_bytes": 21934
+  },
+  {
+   "path": "TexturasUnity\\tree03_Textures_translucency_gloss.png",
+   "size_bytes": 21924
+  },
+  {
+   "path": "TexturasUnity\\tree03_Textures_diffuse.png",
+   "size_bytes": 473147
+  },
+  {
+   "path": "TexturasUnity\\tree03_Textures_shadow.png",
+   "size_bytes": 140632
+  },
+  {
+   "path": "TexturasUnity\\bush05_Textures_translucency_gloss.png",
+   "size_bytes": 21924
+  },
+  {
+   "path": "TexturasUnity\\bush05_Textures_diffuse.png",
+   "size_bytes": 377938
+  },
+  {
+   "path": "TexturasUnity\\bush05_Textures_normal_specular.png",
+   "size_bytes": 21934
+  },
+  {
+   "path": "TexturasUnity\\bush05_Textures_shadow.png",
+   "size_bytes": 154769
+  },
+  {
+   "path": "TexturasUnity\\tree01_Textures_translucency_gloss.png",
+   "size_bytes": 21924
+  },
+  {
+   "path": "TexturasUnity\\tree01_Textures_normal_specular.png",
+   "size_bytes": 21934
+  },
+  {
+   "path": "TexturasUnity\\tree01_Textures_diffuse.png",
+   "size_bytes": 473147
+  },
+  {
+   "path": "TexturasUnity\\tree01_Textures_shadow.png",
+   "size_bytes": 140632
+  },
+  {
+   "path": "TexturasUnity\\Textures_T_Bush01_s.tga",
+   "size_bytes": 65580
+  },
+  {
+   "path": "TexturasUnity\\Textures_T_Bush05_ao.tga",
+   "size_bytes": 49196
+  },
+  {
+   "path": "TexturasUnity\\Textures_T_Bush02_n.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "TexturasUnity\\Textures_T_Bush03_n.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "TexturasUnity\\Textures_T_Bush01_n.tga",
+   "size_bytes": 3145772
+  },
+  {
+   "path": "TexturasUnity\\Textures_T_Bush03_ao.tga",
+   "size_bytes": 49196
+  },
+  {
+   "path": "TexturasUnity\\Textures_T_Bush01_ao.tga",
+   "size_bytes": 49196
+  },
+  {
+   "path": "TexturasUnity\\Textures_T_Bush02_s.tga",
+   "size_bytes": 65580
+  },
+  {
+   "path": "TexturasUnity\\Textures_T_Bush03_d.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "TexturasUnity\\Textures_T_Bush03_s.tga",
+   "size_bytes": 65580
+  },
+  {
+   "path": "TexturasUnity\\Textures_T_Bush04_ao.tga",
+   "size_bytes": 49196
+  },
+  {
+   "path": "TexturasUnity\\Textures_T_Bush04_s.tga",
+   "size_bytes": 65580
+  },
+  {
+   "path": "TexturasUnity\\Textures_T_Bush02_ao.tga",
+   "size_bytes": 49196
+  },
+  {
+   "path": "TexturasUnity\\Textures_T_Bush01_d.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "TexturasUnity\\Textures_T_Bush02_d.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "TexturasUnity\\Textures_T_Bush05_s.tga",
+   "size_bytes": 65580
+  },
+  {
+   "path": "TexturasUnity\\Textures_T_Bush04_d.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "TexturasUnity\\Textures_T_Bush05_d.tga",
+   "size_bytes": 4194348
+  },
+  {
+   "path": "TexturasUnity\\Textures_T_Bush05_n.tga",
+   "size_bytes": 3145772
+  },
+  {
+   "path": "TexturasUnity\\Textures_T_Bush04_n.tga",
+   "size_bytes": 4194348
+  }
+ ],
+ "sounds": [
+  {
+   "path": "Sonido\\ExtractedSounds\\Ambiance_Sea_Loop_Stereo.wav",
+   "size_bytes": 8639212
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Ambiance_Fire_Big_Loop_Mono.wav",
+   "size_bytes": 1400870
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Ambiance_Firecamp_Small_Loop_Mono.wav",
+   "size_bytes": 1400870
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Ambiance_Night_Loop_Stereo.wav",
+   "size_bytes": 8600376
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Ambiance_Cicadas_Loop_Stereo.wav",
+   "size_bytes": 8626306
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Ambiance_Rain_Strong_Loop_Stereo.wav",
+   "size_bytes": 8626126
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Ambiance_Firecamp_Medium_Loop_Mono.wav",
+   "size_bytes": 1441514
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Ambiance_Wind_Calm_Loop_Stereo.wav",
+   "size_bytes": 8598166
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Ambiance_Wind_Forest_Loop_Stereo.wav",
+   "size_bytes": 8617462
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Ambiance_Waterfall_Calm_Loop_Stereo.wav",
+   "size_bytes": 8629560
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Ambiance_Waterfall_Strong_Loop_Stereo.wav",
+   "size_bytes": 8615950
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Ambiance_River_Moderate_Loop_Stereo.wav",
+   "size_bytes": 5929846
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Ambiance_Cave_Dark_Loop_Stereo.wav",
+   "size_bytes": 8640262
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Ambiance_Forest_Birds_Loop_Stereo.wav",
+   "size_bytes": 8372242
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Ambiance_Cave_Deep_Loop_Stereo.wav",
+   "size_bytes": 8641408
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Ambiance_Cave_Drips_Loop_Stereo.wav",
+   "size_bytes": 8640424
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Ambiance_Rain_Calm_Loop_Stereo.wav",
+   "size_bytes": 8640784
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Ambiance_Stream_Calm_Loop_Stereo.wav",
+   "size_bytes": 4897912
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Ice - Walking on ice - IV.wav",
+   "size_bytes": 12384990
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Water Stream - VII.wav",
+   "size_bytes": 20736990
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Crowd - Cheering - Soft cheering - I.wav",
+   "size_bytes": 12384044
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Thunder - Lightning - Ambience - Field recording.wav",
+   "size_bytes": 212318542
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Wind - Autumn wind with leaves rustling.wav",
+   "size_bytes": 28859288
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Water Stream - V.wav",
+   "size_bytes": 16128990
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Rain - Distant thunder.wav",
+   "size_bytes": 13972706
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Water Stream - X.wav",
+   "size_bytes": 24192990
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Crowd - Cheering - Strong cheering - II.wav",
+   "size_bytes": 8064044
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Water Stream - II.wav",
+   "size_bytes": 23616990
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\City Ambience - Traffic - Street - Cars and tram.wav",
+   "size_bytes": 184600920
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Water Stream - III.wav",
+   "size_bytes": 20736990
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Crowd - Cheering - Strong cheering - I.wav",
+   "size_bytes": 14400114
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Crowd - School excursion.wav",
+   "size_bytes": 30334328
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\City Ambience - Park - Spring - With birds, cars, and planes.wav",
+   "size_bytes": 177734514
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Crowd - Cheering - Strong cheering and strong rhythmic cheering.wav",
+   "size_bytes": 23040044
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Crowd - Mall ambience.wav",
+   "size_bytes": 33907958
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Rain - Falling on a metal roof.wav",
+   "size_bytes": 22567010
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Fireworks - New Year's Eve.wav",
+   "size_bytes": 201120668
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Thunder - Lightning - I - Without rain, wind, background noise.wav",
+   "size_bytes": 9670790
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\City Ambience - Traffic - Bridge - Tram, train, cars, pedestrians.wav",
+   "size_bytes": 187590756
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Crowd - Cheering - Soft cheering and chatter.wav",
+   "size_bytes": 22176044
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Ice - Walking on ice - II.wav",
+   "size_bytes": 33408990
+  },
+  {
+   "path": "Sonido\\ExtractedSounds\\Crowd - Cheering - Strong cheering and soft rhythmic cheering.wav",
+   "size_bytes": 17280044
+  },
+  {
+   "path": "ExtractedUnity\\Nature - Essentials\\Ambiance_Sea_Loop_Stereo.wav",
+   "size_bytes": 8639212
+  },
+  {
+   "path": "ExtractedUnity\\Nature - Essentials\\Ambiance_Fire_Big_Loop_Mono.wav",
+   "size_bytes": 1400870
+  },
+  {
+   "path": "ExtractedUnity\\Nature - Essentials\\Ambiance_Firecamp_Small_Loop_Mono.wav",
+   "size_bytes": 1400870
+  },
+  {
+   "path": "ExtractedUnity\\Nature - Essentials\\Ambiance_Night_Loop_Stereo.wav",
+   "size_bytes": 8600376
+  },
+  {
+   "path": "ExtractedUnity\\Nature - Essentials\\Ambiance_Cicadas_Loop_Stereo.wav",
+   "size_bytes": 8626306
+  },
+  {
+   "path": "ExtractedUnity\\Nature - Essentials\\Ambiance_Rain_Strong_Loop_Stereo.wav",
+   "size_bytes": 8626126
+  },
+  {
+   "path": "ExtractedUnity\\Nature - Essentials\\Ambiance_Firecamp_Medium_Loop_Mono.wav",
+   "size_bytes": 1441514
+  },
+  {
+   "path": "ExtractedUnity\\Nature - Essentials\\Ambiance_Wind_Calm_Loop_Stereo.wav",
+   "size_bytes": 8598166
+  },
+  {
+   "path": "ExtractedUnity\\Nature - Essentials\\Ambiance_Wind_Forest_Loop_Stereo.wav",
+   "size_bytes": 8617462
+  },
+  {
+   "path": "ExtractedUnity\\Nature - Essentials\\Ambiance_Waterfall_Calm_Loop_Stereo.wav",
+   "size_bytes": 8629560
+  },
+  {
+   "path": "ExtractedUnity\\Nature - Essentials\\Ambiance_Waterfall_Strong_Loop_Stereo.wav",
+   "size_bytes": 8615950
+  },
+  {
+   "path": "ExtractedUnity\\Nature - Essentials\\Ambiance_River_Moderate_Loop_Stereo.wav",
+   "size_bytes": 5929846
+  },
+  {
+   "path": "ExtractedUnity\\Nature - Essentials\\Ambiance_Cave_Dark_Loop_Stereo.wav",
+   "size_bytes": 8640262
+  },
+  {
+   "path": "ExtractedUnity\\Nature - Essentials\\Ambiance_Forest_Birds_Loop_Stereo.wav",
+   "size_bytes": 8372242
+  },
+  {
+   "path": "ExtractedUnity\\Nature - Essentials\\Ambiance_Cave_Deep_Loop_Stereo.wav",
+   "size_bytes": 8641408
+  },
+  {
+   "path": "ExtractedUnity\\Nature - Essentials\\Ambiance_Cave_Drips_Loop_Stereo.wav",
+   "size_bytes": 8640424
+  },
+  {
+   "path": "ExtractedUnity\\Nature - Essentials\\Ambiance_Rain_Calm_Loop_Stereo.wav",
+   "size_bytes": 8640784
+  },
+  {
+   "path": "ExtractedUnity\\Nature - Essentials\\Ambiance_Stream_Calm_Loop_Stereo.wav",
+   "size_bytes": 4897912
+  },
+  {
+   "path": "ExtractedUnity\\Gregor Quendel - Free General Ambience Sounds\\Ice - Walking on ice - IV.wav",
+   "size_bytes": 12384990
+  },
+  {
+   "path": "ExtractedUnity\\Gregor Quendel - Free General Ambience Sounds\\Water Stream - VII.wav",
+   "size_bytes": 20736990
+  },
+  {
+   "path": "ExtractedUnity\\Gregor Quendel - Free General Ambience Sounds\\Crowd - Cheering - Soft cheering - I.wav",
+   "size_bytes": 12384044
+  },
+  {
+   "path": "ExtractedUnity\\Gregor Quendel - Free General Ambience Sounds\\Thunder - Lightning - Ambience - Field recording.wav",
+   "size_bytes": 212318542
+  },
+  {
+   "path": "ExtractedUnity\\Gregor Quendel - Free General Ambience Sounds\\Wind - Autumn wind with leaves rustling.wav",
+   "size_bytes": 28859288
+  },
+  {
+   "path": "ExtractedUnity\\Gregor Quendel - Free General Ambience Sounds\\Water Stream - V.wav",
+   "size_bytes": 16128990
+  },
+  {
+   "path": "ExtractedUnity\\Gregor Quendel - Free General Ambience Sounds\\Rain - Distant thunder.wav",
+   "size_bytes": 13972706
+  },
+  {
+   "path": "ExtractedUnity\\Gregor Quendel - Free General Ambience Sounds\\Water Stream - X.wav",
+   "size_bytes": 24192990
+  },
+  {
+   "path": "ExtractedUnity\\Gregor Quendel - Free General Ambience Sounds\\Crowd - Cheering - Strong cheering - II.wav",
+   "size_bytes": 8064044
+  },
+  {
+   "path": "ExtractedUnity\\Gregor Quendel - Free General Ambience Sounds\\Water Stream - II.wav",
+   "size_bytes": 23616990
+  },
+  {
+   "path": "ExtractedUnity\\Gregor Quendel - Free General Ambience Sounds\\City Ambience - Traffic - Street - Cars and tram.wav",
+   "size_bytes": 184600920
+  },
+  {
+   "path": "ExtractedUnity\\Gregor Quendel - Free General Ambience Sounds\\Water Stream - III.wav",
+   "size_bytes": 20736990
+  },
+  {
+   "path": "ExtractedUnity\\Gregor Quendel - Free General Ambience Sounds\\Crowd - Cheering - Strong cheering - I.wav",
+   "size_bytes": 14400114
+  },
+  {
+   "path": "ExtractedUnity\\Gregor Quendel - Free General Ambience Sounds\\Crowd - School excursion.wav",
+   "size_bytes": 30334328
+  },
+  {
+   "path": "ExtractedUnity\\Gregor Quendel - Free General Ambience Sounds\\City Ambience - Park - Spring - With birds, cars, and planes.wav",
+   "size_bytes": 177734514
+  },
+  {
+   "path": "ExtractedUnity\\Gregor Quendel - Free General Ambience Sounds\\Crowd - Cheering - Strong cheering and strong rhythmic cheering.wav",
+   "size_bytes": 23040044
+  },
+  {
+   "path": "ExtractedUnity\\Gregor Quendel - Free General Ambience Sounds\\Crowd - Mall ambience.wav",
+   "size_bytes": 33907958
+  },
+  {
+   "path": "ExtractedUnity\\Gregor Quendel - Free General Ambience Sounds\\Rain - Falling on a metal roof.wav",
+   "size_bytes": 22567010
+  },
+  {
+   "path": "ExtractedUnity\\Gregor Quendel - Free General Ambience Sounds\\Fireworks - New Year's Eve.wav",
+   "size_bytes": 201120668
+  },
+  {
+   "path": "ExtractedUnity\\Gregor Quendel - Free General Ambience Sounds\\Thunder - Lightning - I - Without rain, wind, background noise.wav",
+   "size_bytes": 9670790
+  },
+  {
+   "path": "ExtractedUnity\\Gregor Quendel - Free General Ambience Sounds\\City Ambience - Traffic - Bridge - Tram, train, cars, pedestrians.wav",
+   "size_bytes": 187590756
+  },
+  {
+   "path": "ExtractedUnity\\Gregor Quendel - Free General Ambience Sounds\\Crowd - Cheering - Soft cheering and chatter.wav",
+   "size_bytes": 22176044
+  },
+  {
+   "path": "ExtractedUnity\\Gregor Quendel - Free General Ambience Sounds\\Ice - Walking on ice - II.wav",
+   "size_bytes": 33408990
+  },
+  {
+   "path": "ExtractedUnity\\Gregor Quendel - Free General Ambience Sounds\\Crowd - Cheering - Strong cheering and soft rhythmic cheering.wav",
+   "size_bytes": 17280044
+  }
+ ],
+ "total_meshes": 552,
+ "total_textures": 667,
+ "total_sounds": 84,
+ "total_files": 1303,
+ "directories": {
+  "Animals": {
+   "meshes": 6,
+   "textures": 10,
+   "sounds": 0,
+   "total_size_mb": 43.1
+  },
+  "Arboles": {
+   "meshes": 2,
+   "textures": 6,
+   "sounds": 0,
+   "total_size_mb": 0.7
+  },
+  "Bamboo": {
+   "meshes": 2,
+   "textures": 4,
+   "sounds": 0,
+   "total_size_mb": 3.5
+  },
+  "BrickWalls": {
+   "meshes": 0,
+   "textures": 3,
+   "sounds": 0,
+   "total_size_mb": 0.8
+  },
+  "Casas": {
+   "meshes": 14,
+   "textures": 0,
+   "sounds": 0,
+   "total_size_mb": 2.4
+  },
+  "Characters": {
+   "meshes": 10,
+   "textures": 5,
+   "sounds": 0,
+   "total_size_mb": 111.4
+  },
+  "CobblestoneWalls": {
+   "meshes": 0,
+   "textures": 6,
+   "sounds": 0,
+   "total_size_mb": 2.7
+  },
+  "Containers": {
+   "meshes": 2,
+   "textures": 10,
+   "sounds": 0,
+   "total_size_mb": 30.3
+  },
+  "Cypress": {
+   "meshes": 3,
+   "textures": 4,
+   "sounds": 0,
+   "total_size_mb": 7.9
+  },
+  "DestroyedWalls": {
+   "meshes": 3,
+   "textures": 2,
+   "sounds": 0,
+   "total_size_mb": 9.2
+  },
+  "Dirt": {
+   "meshes": 0,
+   "textures": 2,
+   "sounds": 0,
+   "total_size_mb": 11.5
+  },
+  "ExtractedUnity": {
+   "meshes": 61,
+   "textures": 267,
+   "sounds": 42,
+   "total_size_mb": 1657.8
+  },
+  "FPSWeapons": {
+   "meshes": 2,
+   "textures": 0,
+   "sounds": 0,
+   "total_size_mb": 12.2
+  },
+  "Farolas": {
+   "meshes": 2,
+   "textures": 0,
+   "sounds": 0,
+   "total_size_mb": 0.1
+  },
+  "Fleurs": {
+   "meshes": 2,
+   "textures": 0,
+   "sounds": 0,
+   "total_size_mb": 2.1
+  },
+  "HQBuildings": {
+   "meshes": 1,
+   "textures": 9,
+   "sounds": 0,
+   "total_size_mb": 122.8
+  },
+  "Locomotive": {
+   "meshes": 3,
+   "textures": 3,
+   "sounds": 0,
+   "total_size_mb": 5.6
+  },
+  "MeshyAI": {
+   "meshes": 86,
+   "textures": 0,
+   "sounds": 0,
+   "total_size_mb": 3212.3
+  },
+  "Mundo": {
+   "meshes": 10,
+   "textures": 34,
+   "sounds": 0,
+   "total_size_mb": 96.0
+  },
+  "Muros": {
+   "meshes": 0,
+   "textures": 9,
+   "sounds": 0,
+   "total_size_mb": 5.0
+  },
+  "Naturaleza": {
+   "meshes": 177,
+   "textures": 87,
+   "sounds": 0,
+   "total_size_mb": 309.8
+  },
+  "OakTree": {
+   "meshes": 2,
+   "textures": 6,
+   "sounds": 0,
+   "total_size_mb": 0.7
+  },
+  "Pavimentos": {
+   "meshes": 2,
+   "textures": 10,
+   "sounds": 0,
+   "total_size_mb": 133.1
+  },
+  "Shrooms": {
+   "meshes": 2,
+   "textures": 2,
+   "sounds": 0,
+   "total_size_mb": 0.5
+  },
+  "SmallArms": {
+   "meshes": 14,
+   "textures": 0,
+   "sounds": 0,
+   "total_size_mb": 1.7
+  },
+  "Sonido": {
+   "meshes": 0,
+   "textures": 0,
+   "sounds": 42,
+   "total_size_mb": 1409.7
+  },
+  "TexturasUnity": {
+   "meshes": 0,
+   "textures": 181,
+   "sounds": 0,
+   "total_size_mb": 229.7
+  },
+  "Torches": {
+   "meshes": 4,
+   "textures": 7,
+   "sounds": 0,
+   "total_size_mb": 9.6
+  },
+  "Village": {
+   "meshes": 142,
+   "textures": 0,
+   "sounds": 0,
+   "total_size_mb": 4.5
+  }
+ }
+}

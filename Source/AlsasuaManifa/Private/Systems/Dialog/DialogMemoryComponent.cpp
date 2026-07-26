@@ -6,7 +6,8 @@ void UDialogMemoryComponent::AddMemory(FGameplayTag Tag, float Value, float Dura
     FDialogMemoryEntry Entry;
     Entry.MemoryTag = Tag;
     Entry.Value = Value;
-    Entry.ExpirationTime = (Duration > 0) ? GetWorld()->GetTimeSeconds() + Duration : -1.f;
+    UWorld* W = GetWorld();
+    Entry.ExpirationTime = (Duration > 0 && W) ? W->GetTimeSeconds() + Duration : -1.f;
     MemoryBank.Add(Tag, Entry);
 }
 

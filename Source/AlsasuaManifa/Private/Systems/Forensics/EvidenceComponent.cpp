@@ -5,12 +5,16 @@ UEvidenceComponent::UEvidenceComponent() { PrimaryComponentTick.bCanEverTick = f
 
 void UEvidenceComponent::BeginPlay() {
     Super::BeginPlay();
-    SpawnTime = GetWorld()->GetTimeSeconds();
-    GetWorld()->GetTimerManager().SetTimer(TimerHandle_Decay, this, &UEvidenceComponent::UpdateDecay, 10.f, true);
+    UWorld* W = GetWorld();
+    if (!W) return;
+    SpawnTime = W->GetTimeSeconds();
+    W->GetTimerManager().SetTimer(TimerHandle_Decay, this, &UEvidenceComponent::UpdateDecay, 10.f, true);
 }
 
 void UEvidenceComponent::UpdateDecay() {
-    float Age = GetWorld()->GetTimeSeconds() - SpawnTime;
+    UWorld* W = GetWorld();
+    if (!W) return;
+    float Age = W->GetTimeSeconds() - SpawnTime;
     if(ForensicState == EForensicState::Pristine && Age > TimeToDecay) {
         ForensicState = EForensicState::Contaminated;
     }
@@ -23,6 +27,11 @@ void UEvidenceComponent::CollectEvidence(AActor* Collector) {
 }
 
 void UEvidenceComponent::ContaminateEvidence(float Amount) {
-    // Amount could reduce quality; for now, instantly set to contaminated
-    ForensicState = EForensicState::Contaminated;
+    if(ForensicState == EForensicState::Collected) return;
+
+    ContaminationLevel = FMath::Clamp(ContaminationLevel + Amount, 0.f, 100.f);
+
+    if(ContaminationLevel >= ContaminationThreshold) {
+        ForensicState = EForensicState::Contaminated;
+    }
 }

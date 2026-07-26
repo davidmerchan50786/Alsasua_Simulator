@@ -1,6 +1,7 @@
 #include "AlsasuaTrafficAgent.h"
 #include "Components/SplineComponent.h"
-#include "Kismet/KismetSystemLibrary.h"
+#include "Engine/World.h"
+#include "CollisionQueryParams.h"
 
 AAlsasuaTrafficAgent::AAlsasuaTrafficAgent()
 {
@@ -11,6 +12,12 @@ AAlsasuaTrafficAgent::AAlsasuaTrafficAgent()
 void AAlsasuaTrafficAgent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (!RouteSpline)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("TrafficAgent %s: sin RouteSpline asignado"), *GetName());
+		PrimaryActorTick.bCanEverTick = false;
+	}
 }
 
 void AAlsasuaTrafficAgent::Tick(float DeltaTime)
@@ -19,42 +26,41 @@ void AAlsasuaTrafficAgent::Tick(float DeltaTime)
 
 	if (!RouteSpline) return;
 
-	// Si hay obstáculos (manifestantes, otros coches), frenar
 	if (ScanForObstacles())
 	{
-		return; 
+		return;
 	}
 
 	DistanceAlongSpline += Speed * DeltaTime;
 
-	// Si llega al final de la ruta, volver al inicio (bucle)
 	if (DistanceAlongSpline > RouteSpline->GetSplineLength())
 	{
 		DistanceAlongSpline = 0.0f;
 	}
 
-	FVector NewLocation = RouteSpline->GetLocationAtDistanceAlongSpline(DistanceAlongSpline, ESplineCoordinateSpace::World);
-	FRotator NewRotation = RouteSpline->GetRotationAtDistanceAlongSpline(DistanceAlongSpline, ESplineCoordinateSpace::World);
+	const FVector NewLocation = RouteSpline->GetLocationAtDistanceAlongSpline(
+		DistanceAlongSpline, ESplineCoordinateSpace::World);
+	const FRotator NewRotation = RouteSpline->GetRotationAtDistanceAlongSpline(
+		DistanceAlongSpline, ESplineCoordinateSpace::World);
 
 	SetActorLocationAndRotation(NewLocation, NewRotation);
 }
 
 bool AAlsasuaTrafficAgent::ScanForObstacles()
 {
-	FVector Start = GetActorLocation() + GetActorForwardVector() * 100.f;
-	FVector End = Start + GetActorForwardVector() * 400.f; // Detectar 4 metros delante
+	if (!GetWorld()) return false;
+
+	const FVector Start = GetActorLocation() + GetActorForwardVector() * 100.f;
+	const FVector End = Start + GetActorForwardVector() * 400.f;
 
 	FHitResult Hit;
-	TArray<AActor*> ActorsToIgnore;
-	ActorsToIgnore.Add(this);
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
 
-	// Raycast para detectar colisión con la multitud o el jugador
-	bool bHit = UKismetSystemLibrary::SphereTraceSingle(
-		this, Start, End, 100.f, 
-		UEngineTypes::ConvertToTraceType(ECC_WorldDynamic), 
-		false, ActorsToIgnore, 
-		EDrawDebugTrace::None, Hit, true
+	return GetWorld()->SweepSingleByChannel(
+		Hit, Start, End, FQuat::Identity,
+		ECC_WorldDynamic,
+		FCollisionShape::MakeSphere(100.f),
+		Params
 	);
-
-	return bHit;
 }

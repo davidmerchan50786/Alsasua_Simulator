@@ -10,12 +10,30 @@ void UAlsasuaDialogueComponent::BeginPlay()
 {
     Super::BeginPlay();
 
-    // Diálogos de ejemplo
-    DialogueByMood.FindOrAdd(0).Lines.Add("¡Altsasu, Altsasu!");
-    DialogueByMood.FindOrAdd(0).Lines.Add("¡No pasarán!");
-
-    DialogueByMood.FindOrAdd(1).Lines.Add("¡Esto va a explotar!");
-    DialogueByMood.FindOrAdd(1).Lines.Add("¡Salgan ya!");
+    DialogueByMood.FindOrAdd(0).Lines = {
+        TEXT("¡Altsasu, Altsasu!"),
+        TEXT("¡No pasarán!"),
+        TEXT("¡El pueblo unido jamás será vencido!"),
+        TEXT("¡Justice pour ALSASUA!")
+    };
+    DialogueByMood.FindOrAdd(1).Lines = {
+        TEXT("¡Esto va a explotar!"),
+        TEXT("¡Salgan ya!"),
+        TEXT("¡Ya basta de represión!"),
+        TEXT("¡Tenemos que movernos!")
+    };
+    DialogueByMood.FindOrAdd(2).Lines = {
+        TEXT("¡Vamos a torcerles el brazo!"),
+        TEXT("¡Que se enteren de una vez!"),
+        TEXT("¡Esto no para hasta conseguirlo!"),
+        TEXT("¡Nadie nos calla!")
+    };
+    DialogueByMood.FindOrAdd(3).Lines = {
+        TEXT("¡Corred! ¡Viene la policía!"),
+        TEXT("¡Auxilio!"),
+        TEXT("¡Me están pillando!"),
+        TEXT("¡Salid por la calle de atrás!")
+    };
 }
 
 void UAlsasuaDialogueComponent::Speak()

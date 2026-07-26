@@ -1,0 +1,297 @@
+{
+  "description": "Maps each of the 51 systems to the data files and UE5 assets they load at runtime",
+  "systems_asset_map": {
+    "1_TerrenoGenerado": {
+      "data_files": ["Datos/alsasua_landscape_4033.r16"],
+      "ue5_assets": [],
+      "notes": "Loads heightmap R16 directly"
+    },
+    "2_AguaNivel": {
+      "data_files": [],
+      "ue5_assets": ["/Game/EngineBasicShapes/Cube"],
+      "notes": "Flat water plane at river level"
+    },
+    "3_CargadorArboles": {
+      "data_files": ["Datos/trees_unity.json"],
+      "ue5_assets": [],
+      "notes": "2783 tree positions from LIDAR"
+    },
+    "4_CargadorVias": {
+      "data_files": ["Datos/railways_unity.json"],
+      "ue5_assets": [],
+      "notes": "Railway tracks"
+    },
+    "5_CargadorCalles": {
+      "data_files": ["Datos/roads_unity.json"],
+      "ue5_assets": [],
+      "notes": "489 roads with points"
+    },
+    "6_CargadorEdificios": {
+      "data_files": ["Datos/buildings_final.json"],
+      "ue5_assets": [],
+      "notes": "1030 buildings with LIDAR vertices, materials, barrios"
+    },
+    "7_HerrikoPlazaGenerator": {
+      "data_files": [],
+      "ue5_assets": [],
+      "notes": "Plaza with mobiliario"
+    },
+    "8_CargadorPuentes": {
+      "data_files": ["Datos/waterways_unity.json"],
+      "ue5_assets": [],
+      "notes": "Bridge positions from river crossings"
+    },
+    "9_CargadorPOI": {
+      "data_files": ["Datos/poi_data.json"],
+      "ue5_assets": [],
+      "notes": "47 POIs (25 original + 22 Nominatim + 19 landmarks)"
+    },
+    "10_Rios": {
+      "data_files": ["Datos/waterways_unity.json"],
+      "ue5_assets": [],
+      "notes": "River Arakil flat pts[] triples"
+    },
+    "11_MobiliarioUrbano": {
+      "data_files": ["Datos/street_furniture.json"],
+      "ue5_assets": [],
+      "notes": "151 street furniture items (farolas, bancos, fuentes, etc.)"
+    },
+    "12_Vegetacion": {
+      "data_files": ["Datos/greenspaces_unity.json"],
+      "ue5_assets": [],
+      "notes": "Green spaces from OSM"
+    },
+    "13_Atmosfera": {
+      "data_files": [],
+      "ue5_assets": [],
+      "notes": "Sky, sun, fog - day/night cycle"
+    },
+    "14_ZonePostProcess": {
+      "data_files": [],
+      "ue5_assets": [],
+      "notes": "Post-process by barrio"
+    },
+    "15_LODConfig": {
+      "data_files": [],
+      "ue5_assets": [],
+      "notes": "Nanite + HLOD global settings"
+    },
+    "16_VisualEffects": {
+      "data_files": [],
+      "ue5_assets": [],
+      "notes": "MPC global driver"
+    },
+    "17_BarroStyleSystem": {
+      "data_files": [],
+      "ue5_assets": [],
+      "notes": "Materials per barrio on buildings"
+    },
+    "18_StreetLightController": {
+      "data_files": [],
+      "ue5_assets": [],
+      "notes": "Auto farolas on/off based on day/night"
+    },
+    "19_BuildingEmissive": {
+      "data_files": [],
+      "ue5_assets": [],
+      "notes": "Night window emissive on buildings"
+    },
+    "20_InteriorLight": {
+      "data_files": [],
+      "ue5_assets": [],
+      "notes": "Interior lights in buildings"
+    },
+    "21_FacadeGenerator": {
+      "data_files": ["Datos/building_facons.json", "Datos/buildings_final.json"],
+      "ue5_assets": [],
+      "notes": "1030 fachadas with ventanas, balcones, tiendas"
+    },
+    "22_SignPlacer": {
+      "data_files": ["Datos/signage_data.json"],
+      "ue5_assets": [],
+      "notes": "118 bilingual signs with x/z coordinates"
+    },
+    "23_TreePlacer": {
+      "data_files": ["Datos/trees_unity.json"],
+      "ue5_assets": [
+        "/Game/AssetsImportados/Arboles/Roble/models/oak",
+        "/Game/AssetsImportados/Arboles/Roble/models/oak_leafless"
+      ],
+      "notes": "2783 LIDAR trees with 9 species"
+    },
+    "24_FarolaPlacer": {
+      "data_files": ["Datos/street_furniture.json"],
+      "ue5_assets": [],
+      "notes": "Farolas from street_furniture.json with x/z"
+    },
+    "25_FoliagePainter": {
+      "data_files": ["Datos/greenspaces_unity.json"],
+      "ue5_assets": [
+        "/Game/AssetsImportados/Naturaleza/grass_07",
+        "/Game/AssetsImportados/Naturaleza/multi_stylized_grass",
+        "/Game/AssetsImportados/Naturaleza/Hedges",
+        "/Game/AssetsImportados/Naturaleza/rocks"
+      ],
+      "notes": "8 foliage types in green spaces"
+    },
+    "26_RoadSurfaceSystem": {
+      "data_files": ["Datos/roads_unity.json"],
+      "ue5_assets": [
+        "/Game/AssetsImportados/Pavimentos/asphalt_02_4k",
+        "/Game/AssetsImportados/Pavimentos/cobblestone_3",
+        "/Game/AssetsImportados/Pavimentos/pebbled-asphalt1"
+      ],
+      "notes": "Material per road type"
+    },
+    "27_TrafficSystem": {
+      "data_files": ["Datos/roads_unity.json", "Datos/signage_data.json"],
+      "ue5_assets": ["/Game/EngineBasicShapes/Cube"],
+      "notes": "Parked cars + traffic signs"
+    },
+    "28_NightLightingSystem": {
+      "data_files": [],
+      "ue5_assets": [],
+      "notes": "Sunset/sunrise toggle, tick-based"
+    },
+    "29_WeatherSystem": {
+      "data_files": ["Datos/weather_alsasua.json"],
+      "ue5_assets": [],
+      "notes": "8 weather states with real seasonal data, 12-month climate"
+    },
+    "30_AmbientAudioSystem": {
+      "data_files": [],
+      "ue5_assets": [],
+      "notes": "Volume calculations only, needs sound assets"
+    },
+    "31_CollisionSystem": {
+      "data_files": ["Datos/buildings_final.json", "Datos/roads_unity.json"],
+      "ue5_assets": [],
+      "notes": "Auto-collision on buildings + roads"
+    },
+    "32_ArakilWaterSystem": {
+      "data_files": ["Datos/waterways_unity.json"],
+      "ue5_assets": [],
+      "notes": "Procedural water mesh from real river points"
+    },
+    "33_ShopFrontSystem": {
+      "data_files": ["Datos/signage_data.json"],
+      "ue5_assets": [],
+      "notes": "40 real shop fronts with colors"
+    },
+    "34_TerrainLayersSystem": {
+      "data_files": [],
+      "ue5_assets": [],
+      "notes": "8 terrain layers per barrio"
+    },
+    "35_NPCPedestrianSystem": {
+      "data_files": ["Datos/roads_unity.json"],
+      "ue5_assets": [
+        "/Game/AssetsImportados/Characters/MeshyConfidence/.../Meshy_AI_Casual_Confidence_0421161928_texture",
+        "/Game/AssetsImportados/Characters/MeshyOveralls/.../Meshy_AI_Casual_Denim_Overalls_0421162223_texture",
+        "/Game/AssetsImportados/Characters/Meshy_AI_Animation_Walking_withSkin",
+        "/Game/AssetsImportados/Characters/X Bot@Walking"
+      ],
+      "notes": "50 NPCs with character meshes + walking animations"
+    },
+    "36_DynamicTrafficSystem": {
+      "data_files": ["Datos/roads_unity.json"],
+      "ue5_assets": [
+        "/Game/EngineBasicShapes/Cube",
+        "/Game/Materiales/M_Vehiculo_Base"
+      ],
+      "notes": "25 moving vehicles on real road paths"
+    },
+    "37_SidewalkSystem": {
+      "data_files": ["Datos/roads_unity.json"],
+      "ue5_assets": [],
+      "notes": "Sidewalks along both sides of roads"
+    },
+    "38_FountainSystem": {
+      "data_files": [],
+      "ue5_assets": [],
+      "notes": "8 real fountain locations"
+    },
+    "39_DetailDressingSystem": {
+      "data_files": [],
+      "ue5_assets": [],
+      "notes": "130 items: macetas, buzones, papeleiras, bancos, vallas"
+    },
+    "40_BuildingInteriorSystem": {
+      "data_files": ["Datos/buildings_final.json"],
+      "ue5_assets": [],
+      "notes": "Interior point lights per building"
+    },
+    "41_ParkingSystem": {
+      "data_files": [],
+      "ue5_assets": ["/Game/EngineBasicShapes/Cube"],
+      "notes": "80 street parking + 20 garajes"
+    },
+    "42_RoadMarkingsSystem": {
+      "data_files": ["Datos/roads_unity.json"],
+      "ue5_assets": [],
+      "notes": "Crosswalks, center lines, stop lines"
+    },
+    "43_StreetArtSystem": {
+      "data_files": [],
+      "ue5_assets": [],
+      "notes": "8 murales + 15 grafis vascos"
+    },
+    "44_ContainerSystem": {
+      "data_files": [],
+      "ue5_assets": [],
+      "notes": "40 waste containers in 8 barrios"
+    },
+    "45_GuardrailSystem": {
+      "data_files": ["Datos/roads_unity.json"],
+      "ue5_assets": [],
+      "notes": "Guardrails on bridges and dangerous roads"
+    },
+    "46_TrafficLightSystem": {
+      "data_files": [],
+      "ue5_assets": [],
+      "notes": "12 traffic lights at intersections"
+    },
+    "47_AwningShutterSystem": {
+      "data_files": ["Datos/buildings_final.json"],
+      "ue5_assets": [],
+      "notes": "Awnings + shutters per building"
+    },
+    "48_RooftopDetailSystem": {
+      "data_files": ["Datos/buildings_final.json"],
+      "ue5_assets": [],
+      "notes": "Antennas, chimneys, tanks, solar panels"
+    },
+    "49_DoorEntranceSystem": {
+      "data_files": ["Datos/buildings_final.json"],
+      "ue5_assets": [],
+      "notes": "Doors per building, longest face"
+    },
+    "50_OverheadCableSystem": {
+      "data_files": ["Datos/roads_unity.json"],
+      "ue5_assets": [],
+      "notes": "30 cables with posts"
+    },
+    "51_PaintedStreetSignSystem": {
+      "data_files": ["Datos/roads_unity.json"],
+      "ue5_assets": [],
+      "notes": "40 bilingual signs painted on walls"
+    }
+  },
+  "data_files_inventory": {
+    "Datos/buildings_final.json": {"items": 1030, "type": "buildings"},
+    "Datos/building_facons.json": {"items": 1030, "type": "facades"},
+    "Datos/roads_unity.json": {"items": 489, "type": "roads"},
+    "Datos/trees_unity.json": {"items": 2783, "type": "trees"},
+    "Datos/signage_data.json": {"items": 118, "type": "signs"},
+    "Datos/street_furniture.json": {"items": 151, "type": "furniture"},
+    "Datos/poi_data.json": {"items": 47, "type": "POIs"},
+    "Datos/waterways_unity.json": {"type": "rivers"},
+    "Datos/greenspaces_unity.json": {"type": "green_spaces"},
+    "Datos/railways_unity.json": {"type": "railways"},
+    "Datos/nighborhoods.json": {"items": 8, "type": "barrios"},
+    "Datos/landmarks_real.json": {"items": 19, "type": "landmarks"},
+    "Datos/weather_alsasua.json": {"items": 12, "type": "climate_months"},
+    "Datos/transport_alsasua.json": {"items": 4, "type": "bus_routes"},
+    "Datos/meshy_prompts.json": {"items": 43, "type": "3d_asset_prompts"}
+  }
+}

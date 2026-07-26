@@ -32,8 +32,8 @@ class ALSASUAMANIFA_API UAlsasuaCommandQueue : public UWorldSubsystem, public FT
 
 public:
     virtual void Tick(float DeltaTime) override;
-    virtual bool IsAllowedToTick() const { return true; }
-    virtual TStatId GetStatId() const { return TStatId(); }
+    virtual bool IsAllowedToTick() const override { return true; }
+    virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(AlsasuaCommandQueue, STATGROUP_AlsasuaCrowd); }
 
     // Encola un comando para ser procesado cuando haya presupuesto
     void EnqueueCommand(FAlsasuaDeferredCommand NewCommand);

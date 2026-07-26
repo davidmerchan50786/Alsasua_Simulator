@@ -27,6 +27,11 @@ public:
     void FollowPlayer(APawn* PlayerPawn);
 
 protected:
+    virtual void BeginPlay() override;
+
     UPROPERTY()
     APawn* TargetPlayer;
+
+private:
+    UPROPERTY() class USoundBase* SGracias = nullptr;
 };

@@ -79,8 +79,21 @@ bool UMisionesSubsystem::IniciarMision(FName Id)
 			{
 				if (!bSuscritoManifa) { Mf->OnEstado.AddDynamic(this, &UMisionesSubsystem::OnManifestacionEstado); bSuscritoManifa = true; }
 				const TArray<FVector>& R = Actual->RutaManifestacion;
-				const FVector Punto = R.Num() > 0 ? R[0] : (GI->GetWorld() && GI->GetWorld()->GetFirstPlayerController() && GI->GetWorld()->GetFirstPlayerController()->GetPawn()
-					? GI->GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation() : FVector::ZeroVector);
+				FVector Punto = FVector::ZeroVector;
+				if (R.Num() > 0)
+				{
+					Punto = R[0];
+				}
+				else if (UWorld* GIWorld = GI->GetWorld())
+				{
+					if (APlayerController* PC = GIWorld->GetFirstPlayerController())
+					{
+						if (APawn* Pawn = PC->GetPawn())
+						{
+							Punto = Pawn->GetActorLocation();
+						}
+					}
+				}
 				Mf->Convocar(Punto, R);
 			}
 

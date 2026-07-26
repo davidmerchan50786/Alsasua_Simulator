@@ -11,4 +11,6 @@ public:
     ANPCCharacter();
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|NPC")
     float Morale = 50.0f;
+protected:
+    virtual void BeginPlay() override;
 };

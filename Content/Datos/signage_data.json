@@ -1,0 +1,1191 @@
+[
+ {
+  "tipo": "señal_calle",
+  "texto": "Calle Mayor",
+  "barrio": "Herriko",
+  "ancho_via": 6,
+  "material": "metal_blanco",
+  "altura_m": 2.5,
+  "bilingue": true,
+  "x": 1892.5954962466178,
+  "z": 8537.925805094828
+ },
+ {
+  "tipo": "señal_calle",
+  "texto": "Calle Navarra",
+  "barrio": "Herriko",
+  "ancho_via": 6,
+  "material": "metal_blanco",
+  "altura_m": 2.5,
+  "bilingue": true,
+  "x": 1892.734749609234,
+  "z": 8538.127766014115
+ },
+ {
+  "tipo": "señal_calle",
+  "texto": "Avenida Pamplona",
+  "barrio": "SanPedro",
+  "ancho_via": 10,
+  "material": "metal_blanco",
+  "altura_m": 2.5,
+  "bilingue": true,
+  "x": 1889.9391432929294,
+  "z": 8539.56326512995
+ },
+ {
+  "tipo": "señal_calle",
+  "texto": "Avenida Félix Arano",
+  "barrio": "SanPedro",
+  "ancho_via": 8,
+  "material": "metal_blanco",
+  "altura_m": 2.5,
+  "bilingue": true,
+  "x": 1888.4343696771462,
+  "z": 8537.952715469097
+ },
+ {
+  "tipo": "señal_calle",
+  "texto": "Avenida Vitoria",
+  "barrio": "SanPedro",
+  "ancho_via": 8,
+  "material": "metal_blanco",
+  "altura_m": 2.5,
+  "bilingue": true,
+  "x": 1891.732254064006,
+  "z": 8538.056079588803
+ },
+ {
+  "tipo": "señal_calle",
+  "texto": "Calle Álava",
+  "barrio": "Herriko",
+  "ancho_via": 5,
+  "material": "metal_blanco",
+  "altura_m": 2.5,
+  "bilingue": true,
+  "x": 1890.3181037064123,
+  "z": 8539.972124206517
+ },
+ {
+  "tipo": "señal_calle",
+  "texto": "Calle Alzania",
+  "barrio": "Errota",
+  "ancho_via": 5,
+  "material": "metal_blanco",
+  "altura_m": 2.5,
+  "bilingue": true,
+  "x": 1892.0632752072038,
+  "z": 8540.350145005323
+ },
+ {
+  "tipo": "señal_calle",
+  "texto": "Calle Amaya",
+  "barrio": "Herriko",
+  "ancho_via": 4,
+  "material": "metal_blanco",
+  "altura_m": 2.5,
+  "bilingue": true,
+  "x": 1887.035599081093,
+  "z": 8542.129992597687
+ },
+ {
+  "tipo": "señal_calle",
+  "texto": "Calle Andía",
+  "barrio": "Herriko",
+  "ancho_via": 5,
+  "material": "metal_blanco",
+  "altura_m": 2.5,
+  "bilingue": true,
+  "x": 1888.0517153642636,
+  "z": 8541.29898727546
+ },
+ {
+  "tipo": "señal_calle",
+  "texto": "Calle Celai",
+  "barrio": "Zelai",
+  "ancho_via": 4,
+  "material": "metal_blanco",
+  "altura_m": 2.5,
+  "bilingue": true,
+  "x": 1892.7764904166193,
+  "z": 8541.596799237555
+ },
+ {
+  "tipo": "señal_calle",
+  "texto": "Calle Celandi",
+  "barrio": "Zelai",
+  "ancho_via": 4,
+  "material": "metal_blanco",
+  "altura_m": 2.5,
+  "bilingue": true,
+  "x": 1890.102686613361,
+  "z": 8540.024630765804
+ },
+ {
+  "tipo": "señal_calle",
+  "texto": "Calle García Ximénez",
+  "barrio": "SanPedro",
+  "ancho_via": 5,
+  "material": "metal_blanco",
+  "altura_m": 2.5,
+  "bilingue": true,
+  "x": 1890.3642829407074,
+  "z": 8542.695910084522
+ },
+ {
+  "tipo": "señal_calle",
+  "texto": "Calle Guipúzcoa",
+  "barrio": "SanPedro",
+  "ancho_via": 5,
+  "material": "metal_blanco",
+  "altura_m": 2.5,
+  "bilingue": true,
+  "x": 1890.9701582205837,
+  "z": 8539.688116134992
+ },
+ {
+  "tipo": "señal_calle",
+  "texto": "Calle Venta Abajo",
+  "barrio": "Errota",
+  "ancho_via": 4,
+  "material": "metal_blanco",
+  "altura_m": 2.5,
+  "bilingue": true,
+  "x": 1887.0204345820034,
+  "z": 8540.831825332476
+ },
+ {
+  "tipo": "señal_calle",
+  "texto": "Calle del Ferial",
+  "barrio": "Ferroviario",
+  "ancho_via": 6,
+  "material": "metal_blanco",
+  "altura_m": 2.5,
+  "bilingue": true,
+  "x": 1887.1759959280914,
+  "z": 8542.268163932893
+ },
+ {
+  "tipo": "señal_calle",
+  "texto": "Calle José María Ezkurra",
+  "barrio": "SanPedro",
+  "ancho_via": 5,
+  "material": "metal_blanco",
+  "altura_m": 2.5,
+  "bilingue": true,
+  "x": 1889.2236861129911,
+  "z": 8541.155786050465
+ },
+ {
+  "tipo": "señal_calle",
+  "texto": "Calle Santa Cruz",
+  "barrio": "Herriko",
+  "ancho_via": 5,
+  "material": "metal_blanco",
+  "altura_m": 2.5,
+  "bilingue": true,
+  "x": 1887.768561702348,
+  "z": 8540.362033621264
+ },
+ {
+  "tipo": "señal_calle",
+  "texto": "Camino San Pedro",
+  "barrio": "SanPedro",
+  "ancho_via": 3,
+  "material": "metal_blanco",
+  "altura_m": 2.5,
+  "bilingue": true,
+  "x": 1889.003117308787,
+  "z": 8539.463063281599
+ },
+ {
+  "tipo": "señal_calle",
+  "texto": "Cuesta Zubelzu",
+  "barrio": "Herriko",
+  "ancho_via": 4,
+  "material": "metal_blanco",
+  "altura_m": 2.5,
+  "bilingue": true,
+  "x": 1890.2158090837934,
+  "z": 8540.653170810376
+ },
+ {
+  "tipo": "calle",
+  "texto": "Foruen Plaza",
+  "idioma": "eu",
+  "x": 1893.2191602156706,
+  "z": 8572.444489538502
+ },
+ {
+  "tipo": "calle",
+  "texto": "Plaza de los Fueros",
+  "idioma": "es",
+  "x": 1894.0329524882918,
+  "z": 8574.464105071373
+ },
+ {
+  "tipo": "calle",
+  "texto": "Calle Mayor",
+  "idioma": "es",
+  "x": 1895.1299263623896,
+  "z": 8577.770213359483
+ },
+ {
+  "tipo": "calle",
+  "texto": "Kale Nagusia",
+  "idioma": "eu",
+  "x": 1892.4250031849224,
+  "z": 8576.96462267328
+ },
+ {
+  "tipo": "calle",
+  "texto": "Calle San Juan",
+  "idioma": "es",
+  "x": 1895.104178631783,
+  "z": 8573.559782674844
+ },
+ {
+  "tipo": "calle",
+  "texto": "Donibaneko Kalea",
+  "idioma": "eu",
+  "x": 1894.4833594081895,
+  "z": 8573.703872951648
+ },
+ {
+  "tipo": "calle",
+  "texto": "Calle Navarra",
+  "idioma": "es",
+  "x": 1893.752745862391,
+  "z": 8572.608223241965
+ },
+ {
+  "tipo": "calle",
+  "texto": "Nafarroa Kalea",
+  "idioma": "eu",
+  "x": 1894.544746367144,
+  "z": 8572.950967216027
+ },
+ {
+  "tipo": "calle",
+  "texto": "Avenida Pamplona",
+  "idioma": "es",
+  "x": 1892.2209965133293,
+  "z": 8575.629803244803
+ },
+ {
+  "tipo": "calle",
+  "texto": "Iruñeko Etorbidea",
+  "idioma": "eu",
+  "x": 1897.0704964880242,
+  "z": 8573.713824664761
+ },
+ {
+  "tipo": "calle",
+  "texto": "Avenida Félix Arano",
+  "idioma": "es",
+  "x": 1895.195819003043,
+  "z": 8575.945091423497
+ },
+ {
+  "tipo": "calle",
+  "texto": "Calle Zelai",
+  "idioma": "es",
+  "x": 1897.2010565267558,
+  "z": 8577.920084539339
+ },
+ {
+  "tipo": "calle",
+  "texto": "Zelai Kalea",
+  "idioma": "eu",
+  "x": 1896.2508819331526,
+  "z": 8574.440709401231
+ },
+ {
+  "tipo": "calle",
+  "texto": "Calle Burunda",
+  "idioma": "es",
+  "x": 1893.7089029453862,
+  "z": 8572.49473484957
+ },
+ {
+  "tipo": "calle",
+  "texto": "Burunda Kalea",
+  "idioma": "eu",
+  "x": 1894.4829874933318,
+  "z": 8576.22522075865
+ },
+ {
+  "tipo": "calle",
+  "texto": "Calle García Ximénez",
+  "idioma": "es",
+  "x": 1892.8682820878114,
+  "z": 8577.481957021553
+ },
+ {
+  "tipo": "calle",
+  "texto": "Calle Aralar",
+  "idioma": "es",
+  "x": 1896.3858314189936,
+  "z": 8572.965259414332
+ },
+ {
+  "tipo": "calle",
+  "texto": "Aralar Kalea",
+  "idioma": "eu",
+  "x": 1892.9903714681652,
+  "z": 8576.469790841411
+ },
+ {
+  "tipo": "calle",
+  "texto": "Calle Urbasa",
+  "idioma": "es",
+  "x": 1892.8750802786835,
+  "z": 8576.3544256506
+ },
+ {
+  "tipo": "calle",
+  "texto": "Urbasa Kalea",
+  "idioma": "eu",
+  "x": 1895.0051785226149,
+  "z": 8576.074041059934
+ },
+ {
+  "tipo": "señal_transito",
+  "texto": "30 ZONA",
+  "descripcion": "Zona de velocidad limitada a 30 km/h",
+  "x": 1896.9746193203719,
+  "z": 8572.148487122675
+ },
+ {
+  "tipo": "señal_transito",
+  "texto": "STOP",
+  "descripcion": "Señal de stop",
+  "x": 1892.1265178837327,
+  "z": 8574.946648282174
+ },
+ {
+  "tipo": "señal_transito",
+  "texto": "CEDA_EL_PASO",
+  "descripcion": "Ceda el paso",
+  "x": 1895.9310884036324,
+  "z": 8577.69733063265
+ },
+ {
+  "tipo": "señal_transito",
+  "texto": "PROHIBIDO_PASAR",
+  "descripcion": "Prohibido el paso",
+  "x": 1897.314183084345,
+  "z": 8575.26379013844
+ },
+ {
+  "tipo": "señal_transito",
+  "texto": "APARCAMIENTO",
+  "descripcion": "Zona de aparcamiento",
+  "x": 1892.939521400854,
+  "z": 8576.225311415265
+ },
+ {
+  "tipo": "señal_transito",
+  "texto": "SENTIDO_UNICO",
+  "descripcion": "Sentido único",
+  "x": 1892.8457917256464,
+  "z": 8575.916122749817
+ },
+ {
+  "tipo": "señal_informativa",
+  "texto": "ALTSASU ALSASUA",
+  "descripcion": "Señal de entrada al municipio",
+  "x": 1895.359320591564,
+  "z": 8572.118750548236
+ },
+ {
+  "tipo": "señal_informativa",
+  "texto": "PAMPLONA 36 km",
+  "descripcion": "Distancia a Pamplona",
+  "x": 1896.575175594058,
+  "z": 8577.323376408549
+ },
+ {
+  "tipo": "señal_informativa",
+  "texto": "VITORIA-GASTEIZ 31 km",
+  "descripcion": "Distancia a Vitoria",
+  "x": 1897.3434421068139,
+  "z": 8577.811314005636
+ },
+ {
+  "tipo": "señal_informativa",
+  "texto": "DONOSTIA-SAN SEBASTIÁN 71 km",
+  "descripcion": "Distancia a San Sebastián",
+  "x": 1893.2026609827062,
+  "z": 8576.839752088867
+ },
+ {
+  "tipo": "señal_informativa",
+  "texto": "DONOSTIA 71 km",
+  "descripcion": "Distancia a Donostia",
+  "x": 1894.9659478749215,
+  "z": 8577.36472606809
+ },
+ {
+  "tipo": "señal_informativa",
+  "texto": "GASTEIZ 31 km",
+  "descripcion": "Distancia a Gasteiz",
+  "x": 1897.7677771328404,
+  "z": 8573.170511016364
+ },
+ {
+  "tipo": "señal_turistica",
+  "texto": "KULTUR ETXEA IORTIA",
+  "descripcion": "Centro Cultural IORTIA",
+  "x": 1897.3065564562628,
+  "z": 8577.989028498625
+ },
+ {
+  "tipo": "señal_turistica",
+  "texto": "FRONTON BURUNDA",
+  "descripcion": "Frontón Burunda",
+  "x": 1894.3022061481643,
+  "z": 8573.72264557624
+ },
+ {
+  "tipo": "señal_turistica",
+  "texto": "UDALA AYUNTAMIENTO",
+  "descripcion": "Ayuntamiento",
+  "x": 1893.7519730074268,
+  "z": 8577.004252655363
+ },
+ {
+  "tipo": "señal_turistica",
+  "texto": "ELIZA PARROKIALA",
+  "descripcion": "Iglesia parroquial",
+  "x": 1894.60398265571,
+  "z": 8572.804366970196
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Herriko Harategia",
+  "barrio": "Herriko",
+  "tipo_negocio": "carniceria",
+  "material": "metal",
+  "ancho_m": 1.7,
+  "alto_m": 0.6,
+  "con_luz": false,
+  "x": 1890.5885563524882,
+  "z": 8572.532255849512
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Amaia Okindegia",
+  "barrio": "Herriko",
+  "tipo_negocio": "panaderia",
+  "material": "metal",
+  "ancho_m": 1.7,
+  "alto_m": 0.4,
+  "con_luz": false,
+  "x": 1891.9233698190562,
+  "z": 8572.89339265751
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Zelai Fruitak",
+  "barrio": "Zelai",
+  "tipo_negocio": "fruteria",
+  "material": "metal",
+  "ancho_m": 2.9,
+  "alto_m": 1.0,
+  "con_luz": true,
+  "x": 1893.506331613828,
+  "z": 8578.834733409461
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "San Pedro Farmazia",
+  "barrio": "SanPedro",
+  "tipo_negocio": "farmacia",
+  "material": "luminoso",
+  "ancho_m": 2.5,
+  "alto_m": 0.8,
+  "con_luz": false,
+  "x": 1888.6769404882475,
+  "z": 8567.516135297985
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Taberna Arroskila",
+  "barrio": "Herriko",
+  "tipo_negocio": "bar",
+  "material": "madera",
+  "ancho_m": 1.1,
+  "alto_m": 0.5,
+  "con_luz": true,
+  "x": 1890.7151617286365,
+  "z": 8571.127182089198
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Jai Alai Taberna",
+  "barrio": "Herriko",
+  "tipo_negocio": "bar",
+  "material": "madera",
+  "ancho_m": 1.8,
+  "alto_m": 0.6,
+  "con_luz": true,
+  "x": 1891.7674766739635,
+  "z": 8572.909787671822
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Café Etxea",
+  "barrio": "Herriko",
+  "tipo_negocio": "cafe",
+  "material": "metal",
+  "ancho_m": 2.1,
+  "alto_m": 0.7,
+  "con_luz": true,
+  "x": 1892.1397709277694,
+  "z": 8572.673310096448
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Pintxos Bar Gurea",
+  "barrio": "Herriko",
+  "tipo_negocio": "bar",
+  "material": "pintado",
+  "ancho_m": 2.2,
+  "alto_m": 0.4,
+  "con_luz": true,
+  "x": 1892.4460959524433,
+  "z": 8572.577268112895
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Alsasua Atezaindegia",
+  "barrio": "SanPedro",
+  "tipo_negocio": "supermercado",
+  "material": "pintado",
+  "ancho_m": 1.8,
+  "alto_m": 0.9,
+  "con_luz": true,
+  "x": 1887.2499396068088,
+  "z": 8568.918360380332
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Eroski Zentroa",
+  "barrio": "Intxostia",
+  "tipo_negocio": "supermercado",
+  "material": "pintado",
+  "ancho_m": 1.1,
+  "alto_m": 0.8,
+  "con_luz": true,
+  "x": 1897.979414121041,
+  "z": 8574.994803483067
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Taberna Burunda",
+  "barrio": "Harrobieta",
+  "tipo_negocio": "bar",
+  "material": "metal",
+  "ancho_m": 2.1,
+  "alto_m": 0.8,
+  "con_luz": true,
+  "x": 1892.174092751069,
+  "z": 8576.770676275331
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Irizar Taberna",
+  "barrio": "Herriko",
+  "tipo_negocio": "bar",
+  "material": "metal",
+  "ancho_m": 1.7,
+  "alto_m": 0.7,
+  "con_luz": true,
+  "x": 1891.2653191962872,
+  "z": 8572.91409724
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Txapela Taberna",
+  "barrio": "Herriko",
+  "tipo_negocio": "bar",
+  "material": "metal",
+  "ancho_m": 1.8,
+  "alto_m": 1.0,
+  "con_luz": false,
+  "x": 1890.8834663511523,
+  "z": 8572.832168613168
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Hotel Sakana",
+  "barrio": "SanPedro",
+  "tipo_negocio": "hotel",
+  "material": "luminoso",
+  "ancho_m": 1.7,
+  "alto_m": 0.7,
+  "con_luz": true,
+  "x": 1888.769322954654,
+  "z": 8567.641425234866
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Pensión Etxanobe",
+  "barrio": "SanPedro",
+  "tipo_negocio": "pension",
+  "material": "pintado",
+  "ancho_m": 2.5,
+  "alto_m": 0.4,
+  "con_luz": true,
+  "x": 1887.9454974503244,
+  "z": 8567.89237007814
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Kutxabank",
+  "barrio": "Herriko",
+  "tipo_negocio": "banco",
+  "material": "luminoso",
+  "ancho_m": 2.4,
+  "alto_m": 0.5,
+  "con_luz": true,
+  "x": 1891.069257481312,
+  "z": 8572.926335389151
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "CaixaBank",
+  "barrio": "SanPedro",
+  "tipo_negocio": "banco",
+  "material": "metal",
+  "ancho_m": 2.3,
+  "alto_m": 0.7,
+  "con_luz": true,
+  "x": 1888.9973190490293,
+  "z": 8567.21848452392
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Euskaltel",
+  "barrio": "SanPedro",
+  "tipo_negocio": "telecomunicaciones",
+  "material": "madera",
+  "ancho_m": 1.3,
+  "alto_m": 0.4,
+  "con_luz": true,
+  "x": 1887.754507211762,
+  "z": 8568.596746923837
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Correos",
+  "barrio": "SanPedro",
+  "tipo_negocio": "oficina_postal",
+  "material": "luminoso",
+  "ancho_m": 1.1,
+  "alto_m": 0.8,
+  "con_luz": true,
+  "x": 1887.7114285917824,
+  "z": 8567.818348912548
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Herreko Liburutegia",
+  "barrio": "Herriko",
+  "tipo_negocio": "biblioteca",
+  "material": "metal",
+  "ancho_m": 2.3,
+  "alto_m": 0.5,
+  "con_luz": false,
+  "x": 1891.7019348585814,
+  "z": 8571.323039517389
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Udal Auzitegia",
+  "barrio": "Herriko",
+  "tipo_negocio": "juzgado",
+  "material": "madera",
+  "ancho_m": 2.6,
+  "alto_m": 0.8,
+  "con_luz": false,
+  "x": 1891.9715573961653,
+  "z": 8571.09297847087
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Osakidetza Zentroa",
+  "barrio": "SanPedro",
+  "tipo_negocio": "centro_salud",
+  "material": "metal",
+  "ancho_m": 1.1,
+  "alto_m": 0.6,
+  "con_luz": true,
+  "x": 1888.3542547790273,
+  "z": 8568.803926681516
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Polizia etxea",
+  "barrio": "SanPedro",
+  "tipo_negocio": "policia",
+  "material": "pintado",
+  "ancho_m": 1.2,
+  "alto_m": 0.8,
+  "con_luz": true,
+  "x": 1887.7694352459039,
+  "z": 8567.107961322397
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Suhiltzaileak",
+  "barrio": "SanPedro",
+  "tipo_negocio": "bomberos",
+  "material": "metal",
+  "ancho_m": 2.4,
+  "alto_m": 0.7,
+  "con_luz": false,
+  "x": 1888.5701073557836,
+  "z": 8568.263236992285
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Taxi Geltokia",
+  "barrio": "SanPedro",
+  "tipo_negocio": "taxi",
+  "material": "luminoso",
+  "ancho_m": 2.9,
+  "alto_m": 0.5,
+  "con_luz": false,
+  "x": 1887.3186326371622,
+  "z": 8568.716339627694
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Autobus Geltokia",
+  "barrio": "SanPedro",
+  "tipo_negocio": "autobuses",
+  "material": "madera",
+  "ancho_m": 2.2,
+  "alto_m": 0.9,
+  "con_luz": true,
+  "x": 1887.1783537150206,
+  "z": 8568.955583556464
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Gasolinera Petronor",
+  "barrio": "Ferroviario",
+  "tipo_negocio": "gasolinera",
+  "material": "pintado",
+  "ancho_m": 1.7,
+  "alto_m": 1.0,
+  "con_luz": true,
+  "x": 1896.5121297836015,
+  "z": 8572.841916334773
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Taller Mecánico Aranaz",
+  "barrio": "Ferroviario",
+  "tipo_negocio": "taller",
+  "material": "metal",
+  "ancho_m": 2.5,
+  "alto_m": 0.9,
+  "con_luz": false,
+  "x": 1893.57912517568,
+  "z": 8577.970047955336
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Constructora Burunda",
+  "barrio": "Ferroviario",
+  "tipo_negocio": "construccion",
+  "material": "luminoso",
+  "ancho_m": 2.2,
+  "alto_m": 0.5,
+  "con_luz": false,
+  "x": 1892.94299815965,
+  "z": 8577.606242253822
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Irati Kiroldegia",
+  "barrio": "Zelai",
+  "tipo_negocio": "deportes",
+  "material": "luminoso",
+  "ancho_m": 2.2,
+  "alto_m": 0.9,
+  "con_luz": true,
+  "x": 1894.4980048548246,
+  "z": 8577.450855342016
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Zelai Udal Kiroldegia",
+  "barrio": "Zelai",
+  "tipo_negocio": "deportes",
+  "material": "madera",
+  "ancho_m": 2.7,
+  "alto_m": 0.9,
+  "con_luz": false,
+  "x": 1893.1390301481017,
+  "z": 8578.598040234892
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Musika Eskola",
+  "barrio": "Herriko",
+  "tipo_negocio": "musica",
+  "material": "metal",
+  "ancho_m": 1.8,
+  "alto_m": 0.5,
+  "con_luz": true,
+  "x": 1892.1808253751701,
+  "z": 8571.47192119921
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Dantza Taldea",
+  "barrio": "Herriko",
+  "tipo_negocio": "danza",
+  "material": "madera",
+  "ancho_m": 1.5,
+  "alto_m": 0.5,
+  "con_luz": true,
+  "x": 1891.1080738851897,
+  "z": 8571.67563534066
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Gaztetxea",
+  "barrio": "Intxostia",
+  "tipo_negocio": "centro_juventud",
+  "material": "luminoso",
+  "ancho_m": 2.5,
+  "alto_m": 0.5,
+  "con_luz": false,
+  "x": 1896.585717998387,
+  "z": 8574.00130369425
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Lagun Onak Elkartea",
+  "barrio": "Herriko",
+  "tipo_negocio": "asociacion",
+  "material": "pintado",
+  "ancho_m": 2.1,
+  "alto_m": 0.6,
+  "con_luz": true,
+  "x": 1891.1690601183006,
+  "z": 8572.293449952247
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Altsasu Kuboa",
+  "barrio": "Herriko",
+  "tipo_negocio": "restaurante",
+  "material": "metal",
+  "ancho_m": 1.4,
+  "alto_m": 0.8,
+  "con_luz": false,
+  "x": 1892.4553100552357,
+  "z": 8571.720655829036
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Mesón Navarro",
+  "barrio": "SanPedro",
+  "tipo_negocio": "restaurante",
+  "material": "pintado",
+  "ancho_m": 1.5,
+  "alto_m": 0.4,
+  "con_luz": true,
+  "x": 1888.5385174285707,
+  "z": 8567.903063350244
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Pizzería Italiana",
+  "barrio": "SanPedro",
+  "tipo_negocio": "restaurante",
+  "material": "madera",
+  "ancho_m": 1.2,
+  "alto_m": 0.6,
+  "con_luz": false,
+  "x": 1888.5737502997058,
+  "z": 8568.04757670377
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Sushi Bar Alsasua",
+  "barrio": "Intxostia",
+  "tipo_negocio": "restaurante",
+  "material": "metal",
+  "ancho_m": 1.5,
+  "alto_m": 0.6,
+  "con_luz": true,
+  "x": 1897.085464156935,
+  "z": 8575.93260342645
+ },
+ {
+  "tipo": "señal_comercio",
+  "texto": "Kebab Erburua",
+  "barrio": "Herriko",
+  "tipo_negocio": "restaurante",
+  "material": "luminoso",
+  "ancho_m": 2.1,
+  "alto_m": 0.5,
+  "con_luz": true,
+  "x": 1891.58664116857,
+  "z": 8572.365043275204
+ },
+ {
+  "nombre": "Iruabide",
+  "tipo": "señal_comercio",
+  "x": 42726.5,
+  "z": 49023.7,
+  "calle": "Avenida Pamplona",
+  "fuente": "nominatim_real"
+ },
+ {
+  "nombre": "El Padrino",
+  "tipo": "señal_comercio",
+  "x": 50436.0,
+  "z": 55101.8,
+  "calle": "Kale Nagusia",
+  "fuente": "nominatim_real"
+ },
+ {
+  "nombre": "Ogi Berri",
+  "tipo": "señal_comercio",
+  "x": -4448.5,
+  "z": 5553.2,
+  "calle": "Kale Nagusia",
+  "fuente": "nominatim_real"
+ },
+ {
+  "nombre": "Fortxo",
+  "tipo": "señal_comercio",
+  "x": -11129.5,
+  "z": 4373.2,
+  "calle": "Intxostia",
+  "fuente": "nominatim_real"
+ },
+ {
+  "nombre": "La Vitoriana",
+  "tipo": "señal_comercio",
+  "x": -25061.0,
+  "z": 6555.1,
+  "calle": "Intxostia",
+  "fuente": "nominatim_real"
+ },
+ {
+  "nombre": "Eva Arguelles",
+  "tipo": "señal_comercio",
+  "x": -2349.0,
+  "z": 7111.7,
+  "calle": "Kale Nagusia",
+  "fuente": "nominatim_real"
+ },
+ {
+  "nombre": "Intxostia Farmacia",
+  "tipo": "señal_comercio",
+  "x": -14028.0,
+  "z": 11887.3,
+  "calle": "Intxostia",
+  "fuente": "nominatim_real"
+ },
+ {
+  "nombre": "Banco de Vasconia",
+  "tipo": "señal_comercio",
+  "x": 8828.5,
+  "z": 14102.6,
+  "calle": "Kale Nagusia",
+  "fuente": "nominatim_real"
+ },
+ {
+  "nombre": "Banco Guipuzcoano",
+  "tipo": "señal_comercio",
+  "x": 2853.0,
+  "z": 18622.2,
+  "calle": "Kale Nagusia",
+  "fuente": "nominatim_real"
+ },
+ {
+  "nombre": "Laboral Kutxa",
+  "tipo": "señal_comercio",
+  "x": -2527.5,
+  "z": 20692.7,
+  "calle": "Kale Nagusia",
+  "fuente": "nominatim_real"
+ },
+ {
+  "nombre": "Izelai",
+  "tipo": "señal_comercio",
+  "x": 51294.5,
+  "z": 55057.2,
+  "calle": "Avenida Pamplona",
+  "fuente": "nominatim_real"
+ },
+ {
+  "nombre": "Eroski",
+  "tipo": "señal_comercio",
+  "x": -24160.0,
+  "z": -8473.1,
+  "calle": "Intxostia",
+  "fuente": "nominatim_real"
+ },
+ {
+  "nombre": "Bakea",
+  "tipo": "señal_comercio",
+  "x": -41661.5,
+  "z": 32014.0,
+  "calle": "Zelai",
+  "fuente": "nominatim_real"
+ },
+ {
+  "nombre": "BM",
+  "tipo": "señal_comercio",
+  "x": 51940.5,
+  "z": 58597.2,
+  "calle": "Avenida Pamplona",
+  "fuente": "nominatim_real"
+ },
+ {
+  "nombre": "Txioka Ikastola",
+  "tipo": "señal_informativa",
+  "x": 44443.5,
+  "z": 3282.3,
+  "calle": "Herriko",
+  "fuente": "nominatim_real"
+ },
+ {
+  "nombre": "Zelandi Ikastetxe",
+  "tipo": "señal_informativa",
+  "x": -33535.5,
+  "z": -16143.0,
+  "calle": "Zelai",
+  "fuente": "nominatim_real"
+ },
+ {
+  "nombre": "CIP FP Sakana",
+  "tipo": "señal_informativa",
+  "x": -38176.5,
+  "z": -41869.1,
+  "calle": "Ferroviario",
+  "fuente": "nominatim_real"
+ },
+ {
+  "nombre": "Altsasu BHI",
+  "tipo": "señal_informativa",
+  "x": 19105.0,
+  "z": -98030.0,
+  "calle": "Monte",
+  "fuente": "nominatim_real"
+ },
+ {
+  "nombre": "Udaltzaingoa",
+  "tipo": "señal_informativa",
+  "x": 4272.5,
+  "z": 15716.7,
+  "calle": "Kale Nagusia",
+  "fuente": "nominatim_real"
+ },
+ {
+  "nombre": "Foruzaingoa",
+  "tipo": "señal_informativa",
+  "x": 41154.0,
+  "z": 56949.7,
+  "calle": "Avenida Pamplona",
+  "fuente": "nominatim_real"
+ },
+ {
+  "nombre": "Guardia Civil",
+  "tipo": "señal_informativa",
+  "x": -118773.5,
+  "z": -12213.4,
+  "calle": "Errota",
+  "fuente": "nominatim_real"
+ },
+ {
+  "nombre": "Moeve Gasolinera",
+  "tipo": "señal_comercio",
+  "x": 1603.5,
+  "z": 69751.5,
+  "calle": "Herriko",
+  "fuente": "nominatim_real"
+ },
+ {
+  "nombre": "IDS Alsasua",
+  "tipo": "señal_comercio",
+  "x": -123185.0,
+  "z": -215862.3,
+  "calle": "Errota",
+  "fuente": "nominatim_real"
+ },
+ {
+  "nombre": "Zubeztia Parking",
+  "tipo": "señal_informativa",
+  "x": 13911.5,
+  "z": 5274.9,
+  "calle": "Foruen Plaza",
+  "fuente": "nominatim_real"
+ },
+ {
+  "nombre": "Ferialeku Parking",
+  "tipo": "señal_informativa",
+  "x": 16920.5,
+  "z": 20180.7,
+  "calle": "Kale Nagusia",
+  "fuente": "nominatim_real"
+ },
+ {
+  "nombre": "Beheko Benta Parking",
+  "tipo": "señal_informativa",
+  "x": 12458.0,
+  "z": 34329.4,
+  "calle": "Zelai",
+  "fuente": "nominatim_real"
+ },
+ {
+  "nombre": "Jasokundeko eliza",
+  "tipo": "señal_informativa",
+  "x": 8947.5,
+  "z": 6599.6,
+  "calle": "Foruen Plaza",
+  "fuente": "nominatim_real"
+ },
+ {
+  "nombre": "Otadiko Kristoaren baseliza",
+  "tipo": "señal_informativa",
+  "x": 39819.5,
+  "z": 1044.8,
+  "calle": "Herriko",
+  "fuente": "nominatim_real"
+ },
+ {
+  "nombre": "San Joan baseliza",
+  "tipo": "señal_informativa",
+  "x": -58024.0,
+  "z": -6024.1,
+  "calle": "Monte",
+  "fuente": "nominatim_real"
+ },
+ {
+  "nombre": "Iortia Fontaine",
+  "tipo": "señal_informativa",
+  "x": 1986.0,
+  "z": 21171.4,
+  "calle": "Kale Nagusia",
+  "fuente": "nominatim_real"
+ },
+ {
+  "nombre": "Auzobide Fontaine",
+  "tipo": "señal_informativa",
+  "x": 1161.5,
+  "z": 27461.0,
+  "calle": "Kale Nagusia",
+  "fuente": "nominatim_real"
+ }
+]

@@ -132,6 +132,10 @@ protected:
 	float VelCorrer  = 650.f;
 	bool bCorriendo = false;
 
+	// ── Sensibilidad del ratón ────────────────────────────────────────────
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Input|Sensitivity")
+	float Sensitivity = 1.0f;
+
 private:
 	// ── Cámara ─────────────────────────────────────────────────────────────
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))

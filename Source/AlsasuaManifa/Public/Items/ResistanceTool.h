@@ -14,6 +14,8 @@ UCLASS()
 class ALSASUAMANIFA_API AResistanceTool : public AActor {
     GENERATED_BODY()
 public:
+    AResistanceTool();
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AAA|Tool")
     EToolType ToolType = EToolType::Slingshot;
 
@@ -22,4 +24,15 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AAA|Tool")
     float EffectRadius = 1000.f;
+
+protected:
+    virtual void BeginPlay() override;
+
+private:
+    UPROPERTY() class UNiagaraSystem* NSSlingshot = nullptr;
+    UPROPERTY() class USoundBase* SSlingshot = nullptr;
+    UPROPERTY() class UNiagaraSystem* NSSmoke = nullptr;
+    UPROPERTY() class USoundBase* SSmoke = nullptr;
+    UPROPERTY() class UNiagaraSystem* NSRally = nullptr;
+    UPROPERTY() class USoundBase* SMega = nullptr;
 };

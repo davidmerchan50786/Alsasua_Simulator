@@ -1,35 +1,282 @@
 #include "Systems/Disguise/DisguiseComponent.h"
+#include "Engine/World.h"
 
-UDisguiseComponent::UDisguiseComponent() { PrimaryComponentTick.bCanEverTick = true; }
+UDisguiseComponent::UDisguiseComponent()
+{
+	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.TickInterval = 0.1f; // 10Hz, no cada frame.
 
-void UDisguiseComponent::EquipDisguise(EDisguiseType Type, bool bConsumable, float InitialDurability) {
-    CurrentDisguise = Type;
-    bIsConsumable = bConsumable;
-    Durability = InitialDurability;
+	MomotxorroConfig.DetectionMultiplier = 0.3f;
+	MomotxorroConfig.MaxDurability = 100.f;
+	MomotxorroConfig.WalkDrainPerSecond = 0.5f;
+	MomotxorroConfig.SprintDrainPerSecond = 3.5f;
+	MomotxorroConfig.JumpCost = 2.0f;
+	MomotxorroConfig.AttackCost = 20.f;
+	MomotxorroConfig.NearGuardDrainPerSecond = 5.0f;
+	MomotxorroConfig.NearGuardRadius = 350.f;
+	MomotxorroConfig.NoiseReduction = 0.3f;
 
-    // Aquí se podrían activar efectos visuales (Mesh/Material) en el Character
+	CasualConfig.DetectionMultiplier = 0.7f;
+	CasualConfig.MaxDurability = 120.f;
+	CasualConfig.WalkDrainPerSecond = 0.2f;
+	CasualConfig.SprintDrainPerSecond = 1.8f;
+	CasualConfig.JumpCost = 1.0f;
+	CasualConfig.AttackCost = 12.f;
+	CasualConfig.NearGuardDrainPerSecond = 3.0f;
+	CasualConfig.NearGuardRadius = 350.f;
+	CasualConfig.NoiseReduction = 0.5f;
+
+	PressConfig.DetectionMultiplier = 0.5f;
+	PressConfig.MaxDurability = 80.f;
+	PressConfig.WalkDrainPerSecond = 0.3f;
+	PressConfig.SprintDrainPerSecond = 2.0f;
+	PressConfig.JumpCost = 1.5f;
+	PressConfig.AttackCost = 25.f;
+	PressConfig.NearGuardDrainPerSecond = 4.5f;
+	PressConfig.NearGuardRadius = 500.f;
+	PressConfig.NoiseReduction = 0.6f;
 }
 
-void UDisguiseComponent::UseDisguise(float Amount) {
-    if(CurrentDisguise == EDisguiseType::None) return;
-
-    Durability -= Amount;
-    if(Durability <= 0.f) {
-        EDisguiseType BrokenType = CurrentDisguise;
-        CurrentDisguise = EDisguiseType::None;
-        OnDisguiseBroken.Broadcast(BrokenType);
-    }
+void UDisguiseComponent::BeginPlay()
+{
+	Super::BeginPlay();
 }
 
-float UDisguiseComponent::GetDetectionMultiplier() const {
-    if(CurrentDisguise == EDisguiseType::Momotxorro) return 0.3f; // 70% menos detección
-    if(CurrentDisguise == EDisguiseType::None) return 1.0f;
-    return 0.7f;
+// ═══════════════════════════════════════════════════════════════════════════
+//  Tick: drenaje pasivo de durabilidad y chequeo de rotura.
+// ═══════════════════════════════════════════════════════════════════════════
+void UDisguiseComponent::TickComponent(float DeltaTime, ELevelTick TickType,
+	FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if (CurrentDisguise == EDisguiseType::None)
+	{
+		return;
+	}
+
+	TickPassiveDrain(DeltaTime);
+	TickDurabilityCheck();
 }
 
-void UDisguiseComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
-    Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+// ═══════════════════════════════════════════════════════════════════════════
+//  EquipDisguise
+// ═══════════════════════════════════════════════════════════════════════════
+void UDisguiseComponent::EquipDisguise(EDisguiseType Type, bool bConsumableIn, float InitialDurability)
+{
+	if (Type == EDisguiseType::None)
+	{
+		UnequipDisguise();
+		return;
+	}
 
-    // Degradar ligeramente si corremos en presencia de policía (simulación)
-    // Esto se conectaría con los sensores de IA en el sistema final
+	const EDisguiseType OldType = CurrentDisguise;
+	CurrentDisguise = Type;
+	bIsConsumable = bConsumableIn;
+	bIsSprinting = false;
+	bNearGuard = false;
+
+	const FDisguiseTypeInfo& Cfg = GetConfigForType(Type);
+	Durability = (InitialDurability > 0.f) ? FMath::Min(InitialDurability, Cfg.MaxDurability) : Cfg.MaxDurability;
+
+	OnDisguiseChanged.Broadcast(Type, OldType);
+	OnDurabilityChanged.Broadcast(Durability);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  UnequipDisguise
+// ═══════════════════════════════════════════════════════════════════════════
+void UDisguiseComponent::UnequipDisguise()
+{
+	if (CurrentDisguise == EDisguiseType::None)
+	{
+		return;
+	}
+
+	const EDisguiseType OldType = CurrentDisguise;
+	CurrentDisguise = EDisguiseType::None;
+	Durability = 0.f;
+	bIsSprinting = false;
+	bNearGuard = false;
+
+	OnDisguiseChanged.Broadcast(EDisguiseType::None, OldType);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  UseDisguise: consumo directo de durabilidad.
+// ═══════════════════════════════════════════════════════════════════════════
+void UDisguiseComponent::UseDisguise(float Amount)
+{
+	if (CurrentDisguise == EDisguiseType::None)
+	{
+		return;
+	}
+
+	Durability = FMath::Max(0.f, Durability - Amount);
+	OnDurabilityChanged.Broadcast(Durability);
+
+	if (Durability <= 0.f)
+	{
+		BreakDisguise();
+	}
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  Notificaciones de acción
+// ═══════════════════════════════════════════════════════════════════════════
+void UDisguiseComponent::NotifySprint(bool bIsSprintingIn)
+{
+	bIsSprinting = bIsSprintingIn;
+}
+
+void UDisguiseComponent::NotifyJump()
+{
+	if (CurrentDisguise == EDisguiseType::None) return;
+
+	const FDisguiseTypeInfo& Cfg = GetConfigForType(CurrentDisguise);
+	UseDisguise(Cfg.JumpCost);
+}
+
+void UDisguiseComponent::NotifyAttack()
+{
+	if (CurrentDisguise == EDisguiseType::None) return;
+
+	const FDisguiseTypeInfo& Cfg = GetConfigForType(CurrentDisguise);
+	UseDisguise(Cfg.AttackCost);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  UpdateNearbyGuards: actualiza proximidad a guardias.
+// ═══════════════════════════════════════════════════════════════════════════
+void UDisguiseComponent::UpdateNearbyGuards(const FVector& PlayerLocation, const TArray<FVector>& GuardLocations)
+{
+	if (CurrentDisguise == EDisguiseType::None)
+	{
+		bNearGuard = false;
+		return;
+	}
+
+	const FDisguiseTypeInfo& Cfg = GetConfigForType(CurrentDisguise);
+	const float RadiusSq = Cfg.NearGuardRadius * Cfg.NearGuardRadius;
+
+	bNearGuard = false;
+	for (const FVector& GuardLoc : GuardLocations)
+	{
+		if (FVector::DistSquared(PlayerLocation, GuardLoc) < RadiusSq)
+		{
+			bNearGuard = true;
+			break;
+		}
+	}
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  Queries
+// ═══════════════════════════════════════════════════════════════════════════
+float UDisguiseComponent::GetEffectiveDetectionMultiplier() const
+{
+	if (CurrentDisguise == EDisguiseType::None)
+	{
+		return 1.0f;
+	}
+
+	const FDisguiseTypeInfo& Cfg = GetConfigForType(CurrentDisguise);
+	const float BaseMult = Cfg.DetectionMultiplier;
+
+	// Degradar según durabilidad: a menor durabilidad, peor disimulo.
+	const float DurabilityFactor = GetDurabilityPercent();
+
+	// Interpolar entre 1.0 (sin disfraz) y BaseMult (disfraz perfecto).
+	return FMath::Lerp(1.0f, BaseMult, DurabilityFactor);
+}
+
+float UDisguiseComponent::GetNoiseReduction() const
+{
+	if (CurrentDisguise == EDisguiseType::None)
+	{
+		return 1.0f;
+	}
+
+	const FDisguiseTypeInfo& Cfg = GetConfigForType(CurrentDisguise);
+	return FMath::Lerp(1.0f, Cfg.NoiseReduction, GetDurabilityPercent());
+}
+
+float UDisguiseComponent::GetMaxDurability() const
+{
+	if (CurrentDisguise == EDisguiseType::None) return 0.f;
+	return GetConfigForType(CurrentDisguise).MaxDurability;
+}
+
+float UDisguiseComponent::GetDurabilityPercent() const
+{
+	const float Max = GetMaxDurability();
+	if (Max <= 0.f) return 0.f;
+	return FMath::Clamp(Durability / Max, 0.f, 1.f);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  Config lookup
+// ═══════════════════════════════════════════════════════════════════════════
+const FDisguiseTypeInfo& UDisguiseComponent::GetConfigForType(EDisguiseType Type) const
+{
+	switch (Type)
+	{
+	case EDisguiseType::Momotxorro:       return MomotxorroConfig;
+	case EDisguiseType::Casual_Infiltrator: return CasualConfig;
+	case EDisguiseType::Press_Press:       return PressConfig;
+	default:                               return CasualConfig;
+	}
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  Tick helpers
+// ═══════════════════════════════════════════════════════════════════════════
+void UDisguiseComponent::TickPassiveDrain(float DeltaTime)
+{
+	if (CurrentDisguise == EDisguiseType::None) return;
+
+	const FDisguiseTypeInfo& Cfg = GetConfigForType(CurrentDisguise);
+
+	// Drenaje base por caminar.
+	float DrainRate = Cfg.WalkDrainPerSecond;
+
+	// Drenaje extra por sprint.
+	if (bIsSprinting)
+	{
+		DrainRate += Cfg.SprintDrainPerSecond;
+	}
+
+	// Drenaje extra por proximidad a guardias.
+	if (bNearGuard)
+	{
+		DrainRate += Cfg.NearGuardDrainPerSecond;
+	}
+
+	if (DrainRate > 0.f)
+	{
+		UseDisguise(DrainRate * DeltaTime);
+	}
+}
+
+void UDisguiseComponent::TickDurabilityCheck()
+{
+	if (CurrentDisguise == EDisguiseType::None) return;
+
+	// Broadcast warn at low durability for HUD flashing etc.
+	if (Durability <= GetMaxDurability() * 0.25f && Durability > 0.f)
+	{
+		OnDurabilityChanged.Broadcast(Durability);
+	}
+}
+
+void UDisguiseComponent::BreakDisguise()
+{
+	const EDisguiseType BrokenType = CurrentDisguise;
+	CurrentDisguise = EDisguiseType::None;
+	Durability = 0.f;
+	bIsSprinting = false;
+	bNearGuard = false;
+
+	OnDisguiseBroken.Broadcast(BrokenType);
+	OnDisguiseChanged.Broadcast(EDisguiseType::None, BrokenType);
 }

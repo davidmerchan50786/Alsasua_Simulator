@@ -50,6 +50,11 @@ void UEconomiaCriminalSubsystem::Extorsionar(ANegocioActor* N)
 
 void UEconomiaCriminalSubsystem::Trapichear()
 {
+	if (bCooldownActive) {
+		UE_LOG(LogAlsasuaCrimen, Log, TEXT("Trapicheo en cooldown tras redada."));
+		return;
+	}
+
 	UEconomiaSubsystem* Eco = Sub<UEconomiaSubsystem>(this);
 	if (!Eco) return;
 
@@ -60,7 +65,13 @@ void UEconomiaCriminalSubsystem::Trapichear()
 		Ap->RestarApoyo(3.f, TEXT("trafico"));
 	}
 	if (UWantedSubsystem* W = Sub<UWantedSubsystem>(this)) W->AumentarBusqueda(bRedada ? 3 : 2);
-	if (bRedada) { UE_LOG(LogAlsasuaCrimen, Log, TEXT("Redada: pierdes el alijo")); return; }
+	if (bRedada) {
+		UE_LOG(LogAlsasuaCrimen, Log, TEXT("Redada: pierdes el alijo y quedas sin trapicheo por un periodo."));
+		// Apply cooldown: prevent further Trapichear calls for some time.
+		bCooldownActive = true;
+		CooldownTimer = REDADA_COOLDOWN;
+		return;
+	}
 
 	UDiaNocheSubsystem* Dn = Sub<UDiaNocheSubsystem>(this);
 	const int32 Ganancia = FMath::RoundToInt(FMath::RandRange(150, 400) * (Dn ? Dn->FactorTrapicheo() : 1.f));
@@ -69,6 +80,15 @@ void UEconomiaCriminalSubsystem::Trapichear()
 
 void UEconomiaCriminalSubsystem::Tick(float DeltaTime)
 {
+	if (bCooldownActive) {
+		CooldownTimer -= DeltaTime;
+		if (CooldownTimer <= 0.f) {
+			bCooldownActive = false;
+			UE_LOG(LogAlsasuaCrimen, Log, TEXT("Cooldown de redada finalizado. Trapicheo disponible."));
+		}
+		return;
+	}
+
 	Acumulado += DeltaTime;
 	if (Acumulado < PERIODO) return;
 	Acumulado = 0.f;

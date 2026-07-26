@@ -18,10 +18,14 @@ void ACheckpointActor::BeginPlay()
 {
     Super::BeginPlay();
 
-    if (UStateOfAlarmSubsystem* SAS = GetWorld()->GetSubsystem<UStateOfAlarmSubsystem>())
+    UWorld* W = GetWorld();
+    if (W)
     {
-        SAS->OnAlarmLevelChanged.AddDynamic(this, &ACheckpointActor::HandleAlarmChanged);
-        HandleAlarmChanged(SAS->CurrentLevel);
+        if (UStateOfAlarmSubsystem* SAS = W->GetSubsystem<UStateOfAlarmSubsystem>())
+        {
+            SAS->OnAlarmLevelChanged.AddDynamic(this, &ACheckpointActor::HandleAlarmChanged);
+            HandleAlarmChanged(SAS->CurrentLevel);
+        }
     }
 }
 
@@ -42,7 +46,9 @@ void ACheckpointActor::SetCheckpointActive(bool bActive)
         for (int32 i = 0; i < MaxGuards; i++)
         {
             FVector SpawnLoc = GetActorLocation() + GetActorRightVector() * (i * 200.f - 200.f);
-            AActor* Guard = GetWorld()->SpawnActor<AActor>(GuardClass, SpawnLoc, GetActorRotation());
+            UWorld* W = GetWorld();
+            if (!W) continue;
+            AActor* Guard = W->SpawnActor<AActor>(GuardClass, SpawnLoc, GetActorRotation());
             if (Guard) SpawnedGuards.Add(Guard);
         }
     }

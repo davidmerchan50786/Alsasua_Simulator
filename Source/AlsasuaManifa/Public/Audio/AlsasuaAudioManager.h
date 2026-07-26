@@ -13,8 +13,8 @@ class ALSASUAMANIFA_API UAlsasuaAudioManager : public UWorldSubsystem, public FT
 
 public:
 	virtual void Tick(float DeltaTime) override;
-	virtual bool IsAllowedToTick() const { return true; }
-	virtual TStatId GetStatId() const { return TStatId(); }
+	virtual bool IsAllowedToTick() const override { return true; }
+	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(AlsasuaAudioManager, STATGROUP_AlsasuaCrowd); }
 
 	// Parámetros de control para Audio Gameplay (Metasounds/FMOD)
 	UFUNCTION(BlueprintCallable, Category = "AAA|Audio")
@@ -26,7 +26,4 @@ public:
 private:
 	float CurrentIntensity = 0.0f;
 	float CurrentChaos = 0.0f;
-
-	// Filtro de paso bajo (LFP) para evitar cambios bruscos en el audio
-	void SmoothAudioParameters(float DeltaTime);
 };

@@ -10,6 +10,10 @@
 #include "GameFramework/PlayerController.h"
 #include "AlsasuaPlayerController.generated.h"
 
+class UAlsasuaMinimapWidget;
+class UAlsasuaPauseMenuWidget;
+class UAlsasuaSettingsWidget;
+
 UCLASS()
 class ALSASUAMANIFA_API AAlsasuaPlayerController : public APlayerController
 {
@@ -34,10 +38,57 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Juego")
     void TogglePause();
 
+    // --- UI Widgets ---
+    UFUNCTION(BlueprintCallable, Category = "Alsasua|UI")
+    void ShowMinimap(bool bShow);
+
+    UFUNCTION(BlueprintCallable, Category = "Alsasua|UI")
+    void ToggleMinimap();
+
+    UFUNCTION(BlueprintCallable, Category = "Alsasua|UI")
+    void OpenSettings();
+
+    UFUNCTION(BlueprintCallable, Category = "Alsasua|UI")
+    void SetWaypointOnMinimap(const FVector& WorldPos);
+
+    UFUNCTION(BlueprintPure, Category = "Alsasua|UI")
+    UAlsasuaMinimapWidget* GetMinimapWidget() const { return MinimapWidget; }
+
+    UFUNCTION(BlueprintPure, Category = "Alsasua|UI")
+    UAlsasuaPauseMenuWidget* GetPauseMenuWidget() const { return PauseMenuWidget; }
+
+    UFUNCTION(BlueprintPure, Category = "Alsasua|UI")
+    UAlsasuaSettingsWidget* GetSettingsWidget() const { return SettingsWidget; }
+
 protected:
     virtual void BeginPlay() override;
+    virtual void SetupInputComponent() override;
 
     /** true mientras el juego está en pausa (control interno de TogglePause). */
     UPROPERTY(BlueprintReadOnly, Category = "Juego")
     bool bJuegoEnPausa = false;
+
+private:
+    void CreateUIWidgets();
+    void OnPausePressed();
+    void OnMinimapTogglePressed();
+    void OnSettingsPressed();
+
+    UPROPERTY()
+    TObjectPtr<UAlsasuaMinimapWidget> MinimapWidget;
+
+    UPROPERTY()
+    TObjectPtr<UAlsasuaPauseMenuWidget> PauseMenuWidget;
+
+    UPROPERTY()
+    TObjectPtr<UAlsasuaSettingsWidget> SettingsWidget;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Alsasua|UI|Widgets")
+    TSubclassOf<UAlsasuaMinimapWidget> MinimapWidgetClass;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Alsasua|UI|Widgets")
+    TSubclassOf<UAlsasuaPauseMenuWidget> PauseMenuWidgetClass;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Alsasua|UI|Widgets")
+    TSubclassOf<UAlsasuaSettingsWidget> SettingsWidgetClass;
 };

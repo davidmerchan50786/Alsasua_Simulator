@@ -4,8 +4,11 @@
 
 void UAlsasuaAudioManager::Tick(float DeltaTime)
 {
-	UAlsasuaCrowdSentiment* Sentiment = GetWorld()->GetSubsystem<UAlsasuaCrowdSentiment>();
-	UAlsasuaMassParallelManager* Mass = GetWorld()->GetSubsystem<UAlsasuaMassParallelManager>();
+	UWorld* W = GetWorld();
+	if (!W) return;
+
+	UAlsasuaCrowdSentiment* Sentiment = W->GetSubsystem<UAlsasuaCrowdSentiment>();
+	UAlsasuaMassParallelManager* Mass = W->GetSubsystem<UAlsasuaMassParallelManager>();
 
 	if (!Sentiment || !Mass) return;
 
@@ -18,9 +21,4 @@ void UAlsasuaAudioManager::Tick(float DeltaTime)
 	// Aplicamos suavizado (Interpolación) para que el sonido no "salte"
 	CurrentIntensity = FMath::FInterpTo(CurrentIntensity, TargetIntensity, DeltaTime, 0.5f);
 	CurrentChaos = FMath::FInterpTo(CurrentChaos, TargetChaos, DeltaTime, 0.2f);
-}
-
-void UAlsasuaAudioManager::SmoothAudioParameters(float DeltaTime)
-{
-    // Lógica interna para alimentar los Audio Parameters globales de Unreal (MetaSounds)
 }

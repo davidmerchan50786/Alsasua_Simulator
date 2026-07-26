@@ -26,6 +26,9 @@ public class AlsasuaManifa : ModuleRules
 			"AIModule",
 			"NavigationSystem",
 			"MotionTrajectory",
+			"Landscape",
+			"Niagara",
+			"ProceduralMeshComponent",
 			"AlsasuaCore"
 		});
 

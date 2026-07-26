@@ -13,7 +13,13 @@ public:
     float RequiredPayment = 1000.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AAA|Criminal")
-    float DueFrequencySeconds = 300.f; // 5 minutos entre cobros
+    float DueFrequencySeconds = 300.f;
+
+    UPROPERTY(BlueprintReadOnly, Category="AAA|Criminal")
+    float RemainingDebt = 1000.f;
+
+    UPROPERTY(BlueprintReadOnly, Category="AAA|Criminal")
+    float PaidAmount = 0.f;
 
     UFUNCTION(BlueprintCallable, Category="AAA|Criminal")
     void ProcessPayment(float Amount);

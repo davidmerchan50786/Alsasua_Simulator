@@ -1,7 +1,6 @@
 // ApoyoPopularSubsystem.cpp
 #include "ApoyoPopularSubsystem.h"
-
-DEFINE_LOG_CATEGORY_STATIC(LogAlsasua, Log, All);
+#include "AlsasuaCore.h"
 
 void UApoyoPopularSubsystem::SumarApoyo(float Cantidad, const FString& Razon)
 {

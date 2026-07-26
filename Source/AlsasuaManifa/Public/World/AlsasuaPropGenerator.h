@@ -11,7 +11,6 @@ class ALSASUAMANIFA_API UAlsasuaPropGenerator : public UWorldSubsystem
 
 public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
-    virtual void Tick(float DeltaTime);
 
     UFUNCTION(BlueprintCallable, Category = "AAA|Props")
     void AssignPropToActor(AActor* Actor);

@@ -35,5 +35,6 @@ void UAlsasuaAsyncProcessor::ScheduleVisibilityCheck(FVector ObserverLoc, const 
 
 void UAlsasuaAsyncProcessor::OnVisibilityComplete(TArray<int32> Results)
 {
-	// Aquí se notificaría a los sistemas de renderizado o IA
+    LatestVisibleIndices = Results;
+    OnVisibilityUpdated.Broadcast(Results);
 }

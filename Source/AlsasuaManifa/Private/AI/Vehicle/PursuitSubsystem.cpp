@@ -12,11 +12,14 @@ void UPursuitSubsystem::RequestBackup(FVector Location, AActor* Target)
 
     if (PatrolVehicleClass)
     {
+        UWorld* W = GetWorld();
+        if (!W) return;
+
         FActorSpawnParameters Params;
         // Spawnear a una distancia prudente detrás o en calles laterales
         FVector SpawnPos = Location + FVector(FMath::RandRange(-2000.f, 2000.f), FMath::RandRange(-2000.f, 2000.f), 100.f);
 
-        AActor* NewPatrol = GetWorld()->SpawnActor<AActor>(PatrolVehicleClass, SpawnPos, FRotator::ZeroRotator, Params);
+        AActor* NewPatrol = W->SpawnActor<AActor>(PatrolVehicleClass, SpawnPos, FRotator::ZeroRotator, Params);
         if (NewPatrol)
         {
             RegisterPatrolAction(true);

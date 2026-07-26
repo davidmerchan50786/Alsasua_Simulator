@@ -3,6 +3,9 @@
 #include "TimerManager.h"
 #include "GameFramework/Actor.h"
 #include "Inventory/AlsasuaInventoryComponent.h"
+#include "AlsasuaCharacter.h"
+#include "AlsasuaAttributeSet.h"
+#include "GAS/AlsasuaAbilitySystemComponent.h"
 
 UDetentionMinigameComponent::UDetentionMinigameComponent()
 {
@@ -131,8 +134,19 @@ void UDetentionMinigameComponent::ApplyStress(float Delta)
 {
     StressLevel = FMath::Clamp(StressLevel + Delta, 0.f, 100.f);
 
-    // Apply GAS effect placeholder: designers can hook GameplayEffects here
-    // If the owner has AbilitySystemComponent, apply a stress effect that reduces stamina/aim
+    if (AActor* Owner = GetOwner())
+    {
+        if (AAlsasuaCharacter* Character = Cast<AAlsasuaCharacter>(Owner))
+        {
+            if (UAlsasuaAttributeSet* Attr = Character->GetAttributeSet())
+            {
+                // Stress drains Stamina proportionally.
+                float StaminaDrain = Delta * 0.5f;
+                float NewStamina = FMath::Max(0.f, Attr->GetStamina() - StaminaDrain);
+                Attr->SetStamina(NewStamina);
+            }
+        }
+    }
 }
 
 void UDetentionMinigameComponent::FinishMinigame(bool bEscaped)

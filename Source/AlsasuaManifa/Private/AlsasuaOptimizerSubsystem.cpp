@@ -1,6 +1,5 @@
 #include "AlsasuaOptimizerSubsystem.h"
 #include "AlsasuaCharacter.h"
-#include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 
 void UAlsasuaOptimizerSubsystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -11,12 +10,31 @@ void UAlsasuaOptimizerSubsystem::Initialize(FSubsystemCollectionBase& Collection
 void UAlsasuaOptimizerSubsystem::Tick(float DeltaTime)
 {
 	OptimizationTickTimer += DeltaTime;
-	if (OptimizationTickTimer >= 0.5f) // Optimizar 2 veces por segundo (ahorro de CPU)
+	NPCRefreshTimer += DeltaTime;
+
+	if (OptimizationTickTimer >= 0.5f)
 	{
 		OptimizationTickTimer = 0.0f;
+
 		AAlsasuaCharacter* Player = Cast<AAlsasuaCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 		if (Player)
 		{
+			// Refrescar cache de NPCs cada NPCRefreshInterval segundos.
+			if (NPCRefreshTimer >= NPCRefreshInterval || CachedNPCs.Num() == 0)
+			{
+				NPCRefreshTimer = 0.0f;
+				CachedNPCs.Empty();
+				TArray<AActor*> TempActors;
+				UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACharacter::StaticClass(), TempActors);
+				for (AActor* Actor : TempActors)
+				{
+					if (ACharacter* Char = Cast<ACharacter>(Actor))
+					{
+						CachedNPCs.Add(Char);
+					}
+				}
+			}
+
 			OptimizeCrowd(Player);
 		}
 	}
@@ -24,29 +42,35 @@ void UAlsasuaOptimizerSubsystem::Tick(float DeltaTime)
 
 void UAlsasuaOptimizerSubsystem::OptimizeCrowd(AAlsasuaCharacter* Player)
 {
-	TArray<AActor*> AllNPCs;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACharacter::StaticClass(), AllNPCs);
-
 	FVector PlayerLoc = Player->GetActorLocation();
 
-	for (AActor* Actor : AllNPCs)
+	for (int32 i = CachedNPCs.Num() - 1; i >= 0; --i)
 	{
-		if (Actor == Player) continue;
-
-		float Dist = FVector::Dist(PlayerLoc, Actor->GetActorLocation());
-		ACharacter* NPC = Cast<ACharacter>(Actor);
-
-		if (Dist > AICullDistance)
+		ACharacter* NPC = CachedNPCs[i];
+		if (!IsValid(NPC) || NPC == Player)
 		{
-			// Si está muy lejos, desactivamos cerebro y colisiones complejas
+			CachedNPCs.RemoveAtSwap(i);
+			continue;
+		}
+
+		const float Dist = FVector::DistSquared(PlayerLoc, NPC->GetActorLocation());
+		const float CullDistSq = AICullDistance * AICullDistance;
+
+		if (Dist > CullDistSq)
+		{
 			NPC->SetActorTickEnabled(false);
-			if (NPC->GetController()) NPC->GetController()->SetActorTickEnabled(false);
+			if (NPC->GetController())
+			{
+				NPC->GetController()->SetActorTickEnabled(false);
+			}
 		}
 		else
 		{
-			// Reactivar si se acerca
 			NPC->SetActorTickEnabled(true);
-			if (NPC->GetController()) NPC->GetController()->SetActorTickEnabled(true);
+			if (NPC->GetController())
+			{
+				NPC->GetController()->SetActorTickEnabled(true);
+			}
 		}
 	}
 }

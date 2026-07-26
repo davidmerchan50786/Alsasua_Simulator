@@ -6,19 +6,23 @@ UAlsasuaNoiseComponent::UAlsasuaNoiseComponent() { PrimaryComponentTick.bCanEver
 
 void UAlsasuaNoiseComponent::EmitNoise(float Intensity, float Radius)
 {
-	TArray<AActor*> Controllers;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AAlsasuaAIController::StaticClass(), Controllers);
+	UWorld* World = GetWorld();
+	AActor* Owner = GetOwner();
+	if (!World || !Owner) return;
 
+	TArray<AActor*> Controllers;
+	UGameplayStatics::GetAllActorsOfClass(World, AAlsasuaAIController::StaticClass(), Controllers);
+
+	const FVector NoiseLocation = Owner->GetActorLocation();
 	for (AActor* ControllerActor : Controllers)
 	{
 		AAlsasuaAIController* AIController = Cast<AAlsasuaAIController>(ControllerActor);
 		if (AIController && AIController->GetPawn())
 		{
-			float Distance = FVector::Dist(GetOwner()->GetActorLocation(), AIController->GetPawn()->GetActorLocation());
+			float Distance = FVector::Dist(NoiseLocation, AIController->GetPawn()->GetActorLocation());
 			if (Distance <= Radius)
 			{
-				// Notificar a la IA del ruido (Lógica simplificada de percepción auditiva)
-				AIController->HandleNoiseEvent(GetOwner()->GetActorLocation(), Intensity);
+				AIController->HandleNoiseEvent(NoiseLocation, Intensity);
 			}
 		}
 	}

@@ -92,8 +92,11 @@ bool AAlsasuaPoliciaController::VeJugador(APawn*& OutJugador) const
 	// línea de visión
 	FHitResult Hit;
 	FCollisionQueryParams Q; Q.AddIgnoredActor(Yo); Q.AddIgnoredActor(OutJugador);
-	if (GetWorld()->LineTraceSingleByChannel(Hit, Ojo, OutJugador->GetActorLocation() + FVector(0,0,80), ECC_Visibility, Q))
-		return false;   // algo bloquea
+	if (UWorld* W = GetWorld())
+	{
+		if (W->LineTraceSingleByChannel(Hit, Ojo, OutJugador->GetActorLocation() + FVector(0,0,80), ECC_Visibility, Q))
+			return false;   // algo bloquea
+	}
 	return true;
 }
 

@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Systems/Disguise/DisguiseComponent.h"
 #include "SafehouseActor.generated.h"
 
 UCLASS()
@@ -21,11 +22,19 @@ public:
     UFUNCTION(BlueprintCallable, Category="AAA|Safehouse")
     void EnterSafehouse(AActor* PlayerActor);
 
+    /**
+     * Cambiar el disfraz del jugador.
+     * @param PlayerActor    Actor del jugador (debe tener UDisguiseComponent).
+     * @param NewOutfitId    Nombre del outfit ("Momotxorro", "Casual", "Press").
+     */
     UFUNCTION(BlueprintCallable, Category="AAA|Safehouse")
     void ChangeDisguise(AActor* PlayerActor, FName NewOutfitId);
 
     UFUNCTION(BlueprintCallable, Category="AAA|Safehouse")
     void DepositEvidence();
+
+    UPROPERTY(BlueprintReadOnly, Category="AAA|Safehouse")
+    TArray<int32> EvidenceDeposited;
 
 protected:
     virtual void BeginPlay() override;
@@ -33,4 +42,6 @@ protected:
 private:
     UPROPERTY(VisibleAnywhere)
     class UBoxComponent* InteractionZone;
+
+    static EDisguiseType ParseOutfitName(FName OutfitId);
 };

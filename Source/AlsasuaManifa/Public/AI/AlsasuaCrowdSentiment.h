@@ -22,8 +22,8 @@ class ALSASUAMANIFA_API UAlsasuaCrowdSentiment : public UWorldSubsystem, public 
 
 public:
 	virtual void Tick(float DeltaTime) override;
-	virtual bool IsAllowedToTick() const { return true; }
-	virtual TStatId GetStatId() const { return TStatId(); }
+	virtual bool IsAllowedToTick() const override { return true; }
+	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(AlsasuaCrowdSentiment, STATGROUP_AlsasuaCrowd); }
 
 	UPROPERTY(BlueprintReadOnly, Category = "AAA|Social")
 	float PopularSupport = 0.0f;

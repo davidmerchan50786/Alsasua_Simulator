@@ -12,8 +12,13 @@ void AAlsasuaDebugHUD::DrawHUD()
 
 void AAlsasuaDebugHUD::DrawTelemetry()
 {
-	UAlsasuaBudgetManager* Budget = GetWorld()->GetSubsystem<UAlsasuaBudgetManager>();
-	UAlsasuaCrowdSentiment* Sentiment = GetWorld()->GetSubsystem<UAlsasuaCrowdSentiment>();
+	if (!Canvas) return;
+
+	UWorld* W = GetWorld();
+	if (!W) return;
+
+	UAlsasuaBudgetManager* Budget = W->GetSubsystem<UAlsasuaBudgetManager>();
+	UAlsasuaCrowdSentiment* Sentiment = W->GetSubsystem<UAlsasuaCrowdSentiment>();
 
 	float YStart = 50.f;
 

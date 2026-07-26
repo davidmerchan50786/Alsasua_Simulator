@@ -1,0 +1,136 @@
+{
+  "source": "altsasu.net, nbus.navarra.es, pamplona.es, laburundesa.com",
+  "location": "Alsasua/Altsasu, Navarra",
+  "transport": {
+    "bus_station": {
+      "name": "Estación de Autobuses de Alsasua/Altsasu",
+      "address": "Avenida de Pamplona s/n, 31800 Alsasua",
+      "phone": "948 56 23 91",
+      "operator": "La Burundesa S.A.U.",
+      "lat": 42.8955,
+      "lon": -2.1690
+    },
+    "train_station": {
+      "name": "Renfe Alsasua/Altsasu",
+      "address": "Barrio Estación s/n, 31800 Alsasua",
+      "phone": "948 98 65 30",
+      "operator": "Renfe",
+      "lat": 42.8985,
+      "lon": -2.1720,
+      "lines": [
+        {
+          "line": "C-7",
+          "destinations": ["Pamplona", "San Sebastián"],
+          "type": "cercanías"
+        }
+      ]
+    },
+    "taxi": {
+      "name": "Parada de Taxi Alsasua",
+      "address": "Calle García Ximénez s/n, 31800 Alsasua",
+      "phone": "948 46 70 69"
+    }
+  },
+  "bus_routes": [
+    {
+      "id": "burundesa_pamplona",
+      "operator": "La Burundesa",
+      "name_eu": "Iruñea - Altsasu",
+      "name_es": "Pamplona - Alsasua",
+      "stops": [
+        {"name": "Pamplona Estación", "lat": 42.8272, "lon": -1.6630},
+        {"name": "Cizur Menor", "lat": 42.7900, "lon": -1.6720},
+        {"name": "Guenduláin", "lat": 42.8100, "lon": -1.6500},
+        {"name": "Alzórriz", "lat": 42.8400, "lon": -1.6300},
+        {"name": "Ezcabarte", "lat": 42.8600, "lon": -1.6200},
+        {"name": "Olaia", "lat": 42.8750, "lon": -1.6150},
+        {"name": "Altsasu/Alsasua", "lat": 42.8955, "lon": -2.1690}
+      ],
+      "frequency_minutes": 60,
+      "first_bus": "07:00",
+      "last_bus": "21:30"
+    },
+    {
+      "id": "burundesa_vitoria",
+      "operator": "La Burundesa",
+      "name_eu": "Gasteiz - Altsasu",
+      "name_es": "Vitoria - Alsasua",
+      "stops": [
+        {"name": "Vitoria/Gasteiz", "lat": 42.8460, "lon": -2.6810},
+        {"name": "Agurain/Salvatierra", "lat": 42.8510, "lon": -2.3950},
+        {"name": "Zalduendo", "lat": 42.8600, "lon": -2.3100},
+        {"name": "Araya", "lat": 42.8700, "lon": -2.2500},
+        {"name": "Altsasu/Alsasua", "lat": 42.8955, "lon": -2.1690}
+      ],
+      "frequency_minutes": 120,
+      "first_bus": "08:00",
+      "last_bus": "20:00"
+    },
+    {
+      "id": "alsa_san_sebastian",
+      "operator": "ALSA",
+      "name_eu": "Donostia - Iruñea (Altsasutik)",
+      "name_es": "San Sebastián - Pamplona (por Alsasua)",
+      "stops": [
+        {"name": "San Sebastián/Donostia", "lat": 43.3183, "lon": -1.9812},
+        {"name": "Tolosa", "lat": 43.1393, "lon": -2.0768},
+        {"name": "Beasain", "lat": 43.0488, "lon": -2.1976},
+        {"name": "Zumarraga", "lat": 43.0868, "lon": -2.2310},
+        {"name": "Altsasu/Alsasua", "lat": 42.8955, "lon": -2.1690},
+        {"name": "Pamplona/Iruña", "lat": 42.8125, "lon": -1.6458}
+      ],
+      "frequency_minutes": 90,
+      "first_bus": "06:30",
+      "last_bus": "22:00"
+    },
+    {
+      "id": "alsa_madrid",
+      "operator": "ALSA",
+      "name_es": "Madrid - Irún (ALSA - Mad-Iru)",
+      "stops": [
+        {"name": "Madrid Estación Sur", "lat": 40.4072, "lon": -3.6934},
+        {"name": "Vitoria/Gasteiz", "lat": 42.8460, "lon": -2.6810},
+        {"name": "Altsasu/Alsasua", "lat": 42.8955, "lon": -2.1690},
+        {"name": "San Sebastián/Donostia", "lat": 43.3183, "lon": -1.9812},
+        {"name": "Irún", "lat": 43.3375, "lon": -1.7913}
+      ],
+      "frequency_minutes": 240,
+      "first_bus": "08:00",
+      "last_bus": "23:30"
+    }
+  ],
+  "bus_stop_points": [
+    {
+      "id": "stop_alsasua_sur",
+      "name": "Alsasua/Altsasu (Surbound)",
+      "direction": "sur",
+      "lat": 42.8950,
+      "lon": -2.1688,
+      "routes": ["burundesa_pamplona", "alsa_san_sebastian", "alsa_madrid"]
+    },
+    {
+      "id": "stop_alsasua_norte",
+      "name": "Alsasua/Altsasu (Northbound)",
+      "direction": "norte",
+      "lat": 42.8958,
+      "lon": -2.1692,
+      "routes": ["burundesa_vitoria", "alsa_san_sebastian"]
+    },
+    {
+      "id": "stop_centro",
+      "name": "Centro / Foruen Plaza",
+      "direction": "centro",
+      "lat": 42.8945,
+      "lon": -2.1665,
+      "routes": ["burundesa_pamplona", "burundesa_vitoria"]
+    },
+    {
+      "id": "stop_estacion_tren",
+      "name": "Estación de Tren",
+      "direction": "ferroviario",
+      "lat": 42.8985,
+      "lon": -2.1720,
+      "routes": ["burundesa_pamplona"]
+    }
+  ]
+}

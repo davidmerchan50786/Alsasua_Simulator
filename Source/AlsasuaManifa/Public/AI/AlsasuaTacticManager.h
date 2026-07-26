@@ -16,7 +16,7 @@ class ALSASUAMANIFA_API UAlsasuaTacticManager : public UWorldSubsystem
     GENERATED_BODY()
 
 public:
-    void Tick(float DeltaTime);
+    virtual void Tick(float DeltaTime) override;
 
     // Delegado para que los Agentes se suscriban una sola vez (AAA Performance)
     UPROPERTY(BlueprintAssignable, Category = "AAA|Tactics")
@@ -27,4 +27,6 @@ public:
 
 private:
     EAlsasuaTactic CurrentTactic = EAlsasuaTactic::March;
+    float AccumulatedTime = 0.f;
+    float EvaluationInterval = 2.f;
 };

@@ -15,6 +15,12 @@ struct FEvidencePhoto {
 
     UPROPERTY(BlueprintReadOnly)
     FDateTime Timestamp;
+
+    UPROPERTY(BlueprintReadOnly)
+    FVector CaptureLocation;
+
+    UPROPERTY(BlueprintReadOnly)
+    FRotator CaptureDirection;
 };
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -28,4 +34,9 @@ public:
 
     UPROPERTY(EditAnywhere, Category="AAA|Media")
     float ZoomSpeed = 10.f;
+
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPhotoCaptured, const FEvidencePhoto&, Photo);
+
+    UPROPERTY(BlueprintAssignable, Category="AAA|Media")
+    FOnPhotoCaptured OnPhotoCaptured;
 };

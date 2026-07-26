@@ -28,7 +28,7 @@ class ALSASUAMANIFA_API UAlsasuaEventManager : public UWorldSubsystem
     GENERATED_BODY()
 
 public:
-    virtual void Tick(float DeltaTime);
+    virtual void Tick(float DeltaTime) override;
 
     // Registra un nuevo evento en el timeline
     UFUNCTION(BlueprintCallable, Category = "AAA|Narrative")

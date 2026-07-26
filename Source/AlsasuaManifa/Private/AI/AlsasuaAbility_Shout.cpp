@@ -26,8 +26,15 @@ void UAlsasuaAbility_Shout::ActivateAbility(const FGameplayAbilitySpecHandle Han
             return;
         }
 
+        UWorld* W = GetWorld();
+        if (!W)
+        {
+            EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+            return;
+        }
+
         FVector Origin = Player->GetActorLocation();
-        UAlsasuaCrowdSentiment* Sentiment = GetWorld()->GetSubsystem<UAlsasuaCrowdSentiment>();
+        UAlsasuaCrowdSentiment* Sentiment = W->GetSubsystem<UAlsasuaCrowdSentiment>();
 
         if (Sentiment)
         {

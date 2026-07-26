@@ -7,6 +7,8 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "ProgresionSubsystem.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNivelCambiado, int32, NuevoNivel);
+
 UCLASS()
 class ALSASUAGAMEPLAY_API UProgresionSubsystem : public UGameInstanceSubsystem
 {
@@ -17,6 +19,8 @@ public:
 	virtual void Deinitialize() override;
 
 	UPROPERTY(BlueprintReadOnly, Category="Progresion") int32 Nivel = 0;
+
+	UPROPERTY(BlueprintAssignable, Category="Progresion") FOnNivelCambiado OnNivelCambiado;
 
 	UFUNCTION(BlueprintPure, Category="Progresion") float MultiplicadorIngresos() const { return 1.f + Nivel * 0.15f; }
 	UFUNCTION(BlueprintPure, Category="Progresion") float DescuentoTienda() const { return FMath::Min(0.30f, Nivel * 0.06f); }

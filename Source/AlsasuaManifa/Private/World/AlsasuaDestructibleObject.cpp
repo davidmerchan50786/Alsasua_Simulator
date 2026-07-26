@@ -31,15 +31,28 @@ void AAlsasuaDestructibleObject::ApplySysteimcDamage(float DamageAmount)
     Integrity -= DamageAmount;
     if (Integrity <= 0)
     {
-        // Disparamos la fractura física de Chaos
-        // GeometryComponent->NotifyPhysicalDamage(); // Pseudocódigo para disparo de Chaos
+        if (GeometryComponent)
+        {
+            GeometryComponent->SetSimulatePhysics(true);
+            GeometryComponent->AddRadialImpulse(
+                GetActorLocation(),
+                500.f,
+                5000.f,
+                ERadialImpulseFalloff::RIF_Linear,
+                true
+            );
+        }
+
+        OnObjectDestroyed.Broadcast(this);
         UE_LOG(LogTemp, Warning, TEXT("%s destruido por impacto sistémico."), *GetName());
     }
 }
 
 void AAlsasuaDestructibleObject::CheckCrowdPressure()
 {
-    UAlsasuaCrowdSentiment* Sentiment = GetWorld()->GetSubsystem<UAlsasuaCrowdSentiment>();
+    UWorld* W = GetWorld();
+    if (!W) return;
+    UAlsasuaCrowdSentiment* Sentiment = W->GetSubsystem<UAlsasuaCrowdSentiment>();
     if (Sentiment)
     {
         float LocalTension = (uint8)Sentiment->GetMoodAtLocation(GetActorLocation());

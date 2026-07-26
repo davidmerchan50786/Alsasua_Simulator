@@ -6,8 +6,11 @@ void UAlsasuaCommandQueue::Tick(float DeltaTime)
 {
     if (CommandBuffer.Num() == 0) return;
 
-    UAlsasuaBudgetManager* Budget = GetWorld()->GetSubsystem<UAlsasuaBudgetManager>();
-    UAlsasuaActorPoolSubsystem* Pool = GetWorld()->GetSubsystem<UAlsasuaActorPoolSubsystem>();
+    UWorld* W = GetWorld();
+    if (!W) return;
+
+    UAlsasuaBudgetManager* Budget = W->GetSubsystem<UAlsasuaBudgetManager>();
+    UAlsasuaActorPoolSubsystem* Pool = W->GetSubsystem<UAlsasuaActorPoolSubsystem>();
 
     int32 ProcessedCount = 0;
     while (CommandBuffer.Num() > 0 && ProcessedCount < MaxCommandsPerFrame)
@@ -24,8 +27,7 @@ void UAlsasuaCommandQueue::Tick(float DeltaTime)
                 if (Pool) Pool->AcquireActor(Cmd.Location, FRotator::ZeroRotator);
                 break;
             case EAlsasuaCommandType::ReleaseActor:
-                // Cast seguro para el pool
-                // if (Pool) Pool->ReleaseActor(Cast<AAlsasuaCharacter>(Cmd.TargetActor));
+                if (Pool && Cmd.TargetActor) Pool->ReleaseActor(Cmd.TargetActor);
                 break;
         }
         ProcessedCount++;

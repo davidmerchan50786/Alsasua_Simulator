@@ -1,5 +1,7 @@
 #include "Items/MegaphoneTool.h"
 #include "AI/AlsasuaCrowdAgentComponent.h"
+#include "NPCGuardCharacter.h"
+#include "Character/Stealth/GuardDetectionComponent.h"
 #include "AlsasuaCharacter.h"
 #include "AlsasuaAttributeSet.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -14,11 +16,10 @@ bool AMegaphoneTool::UseMegaphone(float Intensity) {
     if (!Player) return false;
 
     const UAlsasuaAttributeSet* Attr = Player->GetAttributeSet();
-    if (Attr && Attr->GetPopularSupport() < 5.f) return false; // Requiere apoyo mínimo para ser escuchado
+    if (Attr && Attr->GetPopularSupport() < 5.f) return false;
 
     ApplyAudioInfluence(Intensity);
 
-    // Activar Cooldown
     bIsOnCooldown = true;
     GetWorldTimerManager().SetTimer(CooldownTimerHandle, this, &AMegaphoneTool::ResetCooldown, CooldownTime, false);
 
@@ -34,13 +35,15 @@ void AMegaphoneTool::ApplyAudioInfluence(float Intensity) {
     UKismetSystemLibrary::SphereOverlapActors(GetWorld(), GetActorLocation(), InfluenceRadius, ObjectTypes, nullptr, TArray<AActor*>(), OverlappingActors);
 
     for (AActor* Actor : OverlappingActors) {
-        // 1. Aumentar moral de manifestantes
+        // 1. Aumentar moral de manifestantes.
         if (UAlsasuaCrowdAgentComponent* Crowd = Actor->FindComponentByClass<UAlsasuaCrowdAgentComponent>()) {
             Crowd->Morale += 10.f * Intensity;
         }
 
-        // 2. Aquí iría la lógica para reducir la agresividad de la Guardia Civil (NPCGuardCharacter)
-        // Ejemplo: if(ANPCGuardCharacter* Guard = Cast<ANPCGuardCharacter>(Actor)) Guard->ReduceAggression(Intensity);
+        // 2. Reducir agresividad de la Guardia Civil.
+        if (ANPCGuardCharacter* Guard = Cast<ANPCGuardCharacter>(Actor)) {
+            Guard->ReduceAggression(15.f * Intensity);
+        }
     }
 }
 

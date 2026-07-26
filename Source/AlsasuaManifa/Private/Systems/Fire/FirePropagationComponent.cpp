@@ -21,6 +21,9 @@ void UFirePropagationComponent::TickComponent(float DeltaTime, ELevelTick TickTy
     SpreadTimer += DeltaTime;
     if (SpreadTimer >= 1.0f) {
         SpreadTimer = 0.f;
-        UGameplayStatics::ApplyRadialDamage(GetWorld(), DamagePerSecond, GetOwner()->GetActorLocation(), SpreadRadius, nullptr, TArray<AActor*>(), GetOwner());
+        UWorld* W = GetWorld();
+        AActor* Owner = GetOwner();
+        if (!W || !Owner) return;
+        UGameplayStatics::ApplyRadialDamage(W, DamagePerSecond, Owner->GetActorLocation(), SpreadRadius, nullptr, TArray<AActor*>(), Owner);
     }
 }

@@ -7,5 +7,7 @@ UAlsasuaRoadComponent::UAlsasuaRoadComponent() {
 }
 
 void UAlsasuaRoadComponent::SetupRVTMasking() {
-    // RuntimeVirtualTexture no disponible en 5.4; stub para compatibilidad futura
+    // RuntimeVirtualTexture support requires RVT streaming plugin.
+    // Intended for future implementation when the world streaming system is stable.
+    UE_LOG(LogTemp, Verbose, TEXT("AlsasuaRoadComponent: RVT masking not yet active."));
 }

@@ -1,0 +1,55 @@
+{
+    "StartNodeID": 0,
+    "Nodes": [
+        {
+            "ID": 0,
+            "Type": "NPC_Statement",
+            "DialogueText": "Alto ahí. Identifícate. ¿Qué haces en esta zona?",
+            "Options": [
+                {
+                    "OptionText": "Soy un ciudadano normal.",
+                    "TargetNodeID": 1,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                },
+                {
+                    "OptionText": "[INTIMIDACIÓN] No me busques líos, guardia.",
+                    "TargetNodeID": 2,
+                    "bRequiresSkillCheck": true,
+                    "DifficultyClass": 12
+                }
+            ]
+        },
+        {
+            "ID": 1,
+            "Type": "NPC_Statement",
+            "DialogueText": "Ciudadano normal... hmm. La zona está cerrada por orden superior. No puedes pasar.",
+            "Options": [
+                {
+                    "OptionText": "Entendido, me voy.",
+                    "TargetNodeID": 3,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                }
+            ]
+        },
+        {
+            "ID": 2,
+            "Type": "NPC_Statement",
+            "DialogueText": "Tranquilo, tranquilo. No hace falta amenazar. Mira, puedes pasar por el callejón de atrás. No me hagas quedar mal.",
+            "Options": [
+                {
+                    "OptionText": "Sabias decisiones.",
+                    "TargetNodeID": 3,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                }
+            ]
+        },
+        {
+            "ID": 3,
+            "Type": "End_Conversation",
+            "DialogueText": "El guardia vuelve a su patrulla."
+        }
+    ]
+}
