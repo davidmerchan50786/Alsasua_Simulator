@@ -400,7 +400,6 @@ void UVegetationSpawnerSubsystem::SpawnInstances(UVegetationType* Vegetation, co
 		HISM->SetStaticMesh(Prefab.Mesh);
 		HISM->SetMobility(EComponentMobility::Static);
 		HISM->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		HISM->bDisallowMeshPaintPerInstance = true;
 		HISM->bUseDefaultCollision = false;
 		HISM->SetCanEverAffectNavigation(false);
 		HISM->RegisterComponentWithWorld(GetWorld());

@@ -15,7 +15,7 @@ namespace AlsasuaTests
 
     IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFactionReputationTest,
         "Alsasua.FactionSubsystem.Reputation",
-        EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+        EAutomationTestFlags_ApplicationContextMask | EAutomationTestFlags::ProductFilter)
 
     bool FFactionReputationTest::RunTest(const FString& Parameters)
     {
@@ -27,7 +27,7 @@ namespace AlsasuaTests
 
     IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDialogInstanceBasicTest,
         "Alsasua.Dialog.InstanceBasic",
-        EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+        EAutomationTestFlags_ApplicationContextMask | EAutomationTestFlags::ProductFilter)
 
     bool FDialogInstanceBasicTest::RunTest(const FString& Parameters)
     {
@@ -73,7 +73,7 @@ namespace AlsasuaTests
 
     IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMisionDataTest,
         "Alsasua.Mision.DataStructure",
-        EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+        EAutomationTestFlags_ApplicationContextMask | EAutomationTestFlags::ProductFilter)
 
     bool FMisionDataTest::RunTest(const FString& Parameters)
     {
@@ -109,7 +109,7 @@ namespace AlsasuaTests
 
     IMPLEMENT_SIMPLE_AUTOMATION_TEST(FApoyoPopularDecayTest,
         "Alsasua.Economy.ClampLogic",
-        EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+        EAutomationTestFlags_ApplicationContextMask | EAutomationTestFlags::ProductFilter)
 
     bool FApoyoPopularDecayTest::RunTest(const FString& Parameters)
     {
@@ -131,7 +131,7 @@ namespace AlsasuaTests
 
     IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDialogAssetFindNodeTest,
         "Alsasua.Dialog.FindNodeByID",
-        EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::ProductFilter)
+        EAutomationTestFlags_ApplicationContextMask | EAutomationTestFlags::ProductFilter)
 
     bool FDialogAssetFindNodeTest::RunTest(const FString& Parameters)
     {

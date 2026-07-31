@@ -1,0 +1,32 @@
+{
+ "box_full": [
+  564351.0,
+  4746302.0,
+  571551.0,
+  4753502.0
+ ],
+ "box_town": [
+  566576.0,
+  4748527.0,
+  569326.0,
+  4751277.0
+ ],
+ "tiles": {},
+ "full": {
+  "file": "F:\\Epic Games\\UE_5.7\\altsasu_gtavii\\UnrealProject\\Content\\Terreno\\alsasua_satelite_pnoa_8192.png",
+  "size": [
+   8192,
+   8192
+  ]
+ },
+ "town": {
+  "file": "F:\\Epic Games\\UE_5.7\\altsasu_gtavii\\UnrealProject\\Content\\Textures\\ortofoto_pnoa_plaza_8192.png",
+  "size": [
+   8192,
+   8192
+  ]
+ },
+ "verify_full": 0.9985350966453552,
+ "verify_town": 0.9994024038314819,
+ "seconds": 25.4
+}

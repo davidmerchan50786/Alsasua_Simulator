@@ -22,6 +22,11 @@ static UMaterialInterface* CargarMaterialSueloVias()
 {
 	return LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Edificio.M_Edificio"));
 }
+static UMaterialInterface* CargarMaterialAcera()
+{
+	UMaterialInterface* Adoquin = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Terreno_Acera.M_Terreno_Acera"));
+	return Adoquin ? Adoquin : CargarMaterialSueloVias();
+}
 
 void UCargadorVias::OnWorldBeginPlay(UWorld& InWorld)
 {
@@ -111,6 +116,11 @@ bool UCargadorVias::PasoPresupuesto(double PresupuestoMs)
 				{
 					static UMaterialInterface* MatAgua = CargarMaterialAgua();
 					if (MatAgua) C->Malla->SetMaterial(0, MatAgua);
+				}
+				else if (T.Tag == TEXT("Acera"))
+				{
+					static UMaterialInterface* MatAcera = CargarMaterialAcera();
+					if (MatAcera) C->Malla->SetMaterial(0, MatAcera);
 				}
 				else
 				{

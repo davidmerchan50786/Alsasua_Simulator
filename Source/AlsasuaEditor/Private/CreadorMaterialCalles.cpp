@@ -70,6 +70,8 @@ static void CrearMaterialConTextura(const FString& Nombre, const FString& TexPat
 	{
 		auto* wet = Cast<UMaterialExpressionCollectionParameter>(New(UMaterialExpressionCollectionParameter::StaticClass(), 160));
 		wet->Collection = MPC; wet->ParameterName = TEXT("Wetness");
+		for (const FCollectionScalarParameter& P : MPC->ScalarParameters)
+			if (P.ParameterName == TEXT("Wetness")) { wet->ParameterId = P.Id; break; }
 		auto* lr = Cast<UMaterialExpressionLinearInterpolate>(New(UMaterialExpressionLinearInterpolate::StaticClass(), 200));
 		ML::ConnectMaterialExpressions(Const(RoughnessDefault, 180), TEXT(""), lr, TEXT("A"));
 		ML::ConnectMaterialExpressions(Const(RoughnessDefault * 0.2f, 220), TEXT(""), lr, TEXT("B"));
@@ -87,14 +89,14 @@ static void CrearMaterialConTextura(const FString& Nombre, const FString& TexPat
 bool UCreadorMaterialCalles::CrearMaterialCalles()
 {
 	// Asphalt: tiling ~2m, rough 0.7
-	CrearMaterialConTextura(TEXT("M_Terreno_Calles"), TEXT("/Game/Textures/T_Asphalt_Color.Asphalt_Color"),
+	CrearMaterialConTextura(TEXT("M_Terreno_Calles"), TEXT("/Game/Textures/T_Asphalt_Color.T_Asphalt_Color"),
 		200.f, 200.f, 0.7f, TEXT("Calles"));
 
 	// Road detail normal
 	const FString RutaCalles = TEXT("/Game/Materiales/M_Terreno_Calles");
 	if (UMaterial* Mat = LoadObject<UMaterial>(nullptr, *(RutaCalles + TEXT(".M_Terreno_Calles"))))
 	{
-		if (UTexture2D* Nrm = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Textures/T_Asphalt_Normal.Asphalt_Normal")))
+		if (UTexture2D* Nrm = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Textures/T_Asphalt_Normal.T_Asphalt_Normal")))
 		{
 			auto* tex = Cast<UMaterialExpressionTextureSampleParameter2D>(
 				ML::CreateMaterialExpression(Mat, UMaterialExpressionTextureSampleParameter2D::StaticClass(), -800, 40));
@@ -114,13 +116,13 @@ bool UCreadorMaterialCalles::CrearMaterialCalles()
 bool UCreadorMaterialCalles::CrearMaterialAcera()
 {
 	// Cobblestone: tiling ~0.5m, rough 0.85
-	CrearMaterialConTextura(TEXT("M_Terreno_Acera"), TEXT("/Game/Textures/T_Cobblestone_Color.Cobblestone_Color"),
+	CrearMaterialConTextura(TEXT("M_Terreno_Acera"), TEXT("/Game/Textures/T_Cobblestone_Color.T_Cobblestone_Color"),
 		50.f, 50.f, 0.85f, TEXT("Acera"));
 
 	const FString RutaAcera = TEXT("/Game/Materiales/M_Terreno_Acera");
 	if (UMaterial* Mat = LoadObject<UMaterial>(nullptr, *(RutaAcera + TEXT(".M_Terreno_Acera"))))
 	{
-		if (UTexture2D* Nrm = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Textures/T_Cobblestone_Normal.Cobblestone_Normal")))
+		if (UTexture2D* Nrm = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Textures/T_Cobblestone_Normal.T_Cobblestone_Normal")))
 		{
 			auto* tex = Cast<UMaterialExpressionTextureSampleParameter2D>(
 				ML::CreateMaterialExpression(Mat, UMaterialExpressionTextureSampleParameter2D::StaticClass(), -800, 40));

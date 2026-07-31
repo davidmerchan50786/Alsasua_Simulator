@@ -500,6 +500,10 @@ UMaterialInterface* ATerrenoGenerado::CrearMaterialTerreno()
 		{
 			return Mat;
 		}
+		if (UMaterialInterface* Mat = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Terreno_Orto.M_Terreno_Orto")))
+		{
+			return Mat;
+		}
 		return LoadObject<UMaterialInterface>(nullptr, TEXT("/Engine/EngineMaterials/WorldGridMaterial.WorldGridMaterial"));
 	}
 

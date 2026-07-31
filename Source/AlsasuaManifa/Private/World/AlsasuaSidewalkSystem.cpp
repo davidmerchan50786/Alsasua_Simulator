@@ -97,6 +97,10 @@ int32 UAlsasuaSidewalkSystem::GenerarAceras()
                     SidewalkMat = LoadObject<UMaterialInterface>(nullptr,
                         TEXT("/Game/Materiales/M_Pavimento"));
 
+                if (!SidewalkMat)
+                    SidewalkMat = LoadObject<UMaterialInterface>(nullptr,
+                        TEXT("/Game/Materiales/M_Terreno_Acera.M_Terreno_Acera"));
+
                 if (SidewalkMat)
                     SidewalkActor->GetStaticMeshComponent()->SetMaterial(0, SidewalkMat);
 

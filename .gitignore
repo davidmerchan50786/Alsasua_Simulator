@@ -31,6 +31,9 @@ Content/Terreno/*.xyz
 Content/Terreno/T_Satelite_Alsasua.uasset
 Content/Terreno/alsasua_satelite.jpg
 
+# uassets de textura derivados (reimportables desde los PNG con ImportSatellite.py)
+Content/Textures/*.uasset
+
 # Python (Tools)
 __pycache__/
 *.pyc

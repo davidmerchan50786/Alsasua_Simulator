@@ -16,7 +16,7 @@
 #include "EditorAssetLibrary.h"
 #include "Modules/ModuleManager.h"
 
-// Crea (o reutiliza) /Game/Materiales/MPC_Clima con el escalar "Wetness".
+// Crea (o reutiliza) /Game/Materiales/MPC_Clima con el escalar "Wetness" y "Night".
 static UMaterialParameterCollection* AsegurarMPCClima(IAssetTools& AT)
 {
 	const FString Ruta = TEXT("/Game/Materiales/MPC_Clima");
@@ -27,12 +27,28 @@ static UMaterialParameterCollection* AsegurarMPCClima(IAssetTools& AT)
 		UObject* O = AT.CreateAsset(TEXT("MPC_Clima"), TEXT("/Game/Materiales"),
 			UMaterialParameterCollection::StaticClass(), nullptr);
 		MPC = Cast<UMaterialParameterCollection>(O);
-		if (MPC)
+	}
+	if (MPC)
+	{
+		auto TieneEscalar = [&](FName Nombre)
 		{
-			FCollectionScalarParameter Wet;  Wet.ParameterName  = TEXT("Wetness"); Wet.DefaultValue  = 0.f; Wet.Id  = FGuid::NewGuid();
-			FCollectionScalarParameter Night; Night.ParameterName = TEXT("Night");  Night.DefaultValue = 0.f; Night.Id = FGuid::NewGuid();
-			MPC->ScalarParameters.Add(Wet);
-			MPC->ScalarParameters.Add(Night);
+			for (const FCollectionScalarParameter& P : MPC->ScalarParameters)
+				if (P.ParameterName == Nombre) return true;
+			return false;
+		};
+		bool bCambio = false;
+		if (!TieneEscalar(TEXT("Wetness")))
+		{
+			FCollectionScalarParameter Wet; Wet.ParameterName = TEXT("Wetness"); Wet.DefaultValue = 0.f; Wet.Id = FGuid::NewGuid();
+			MPC->ScalarParameters.Add(Wet); bCambio = true;
+		}
+		if (!TieneEscalar(TEXT("Night")))
+		{
+			FCollectionScalarParameter Night; Night.ParameterName = TEXT("Night"); Night.DefaultValue = 0.f; Night.Id = FGuid::NewGuid();
+			MPC->ScalarParameters.Add(Night); bCambio = true;
+		}
+		if (bCambio)
+		{
 			MPC->PostEditChange();
 			UEditorAssetLibrary::SaveAsset(Ruta, false);
 		}
@@ -65,7 +81,12 @@ bool UCreadorMaterialEdificio::CrearMaterialEdificio()
 	// Wetness desde el MPC (0 seco .. 1 mojado).
 	UMaterialExpressionCollectionParameter* Wet = Cast<UMaterialExpressionCollectionParameter>(
 		ML::CreateMaterialExpression(Mat, UMaterialExpressionCollectionParameter::StaticClass(), -800, 250));
-	if (Wet && MPC) { Wet->Collection = MPC; Wet->ParameterName = TEXT("Wetness"); }
+	if (Wet && MPC)
+	{
+		Wet->Collection = MPC; Wet->ParameterName = TEXT("Wetness");
+		for (const FCollectionScalarParameter& P : MPC->ScalarParameters)
+			if (P.ParameterName == TEXT("Wetness")) { Wet->ParameterId = P.Id; break; }
+	}
 
 	// Factor de oscurecimiento: lerp(1.0 seco, 0.55 mojado, Wetness).
 	UMaterialExpressionConstant* Uno   = Cast<UMaterialExpressionConstant>(ML::CreateMaterialExpression(Mat, UMaterialExpressionConstant::StaticClass(), -600, 120)); Uno->R = 1.0f;

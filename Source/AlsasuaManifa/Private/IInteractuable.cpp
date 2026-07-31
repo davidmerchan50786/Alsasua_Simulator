@@ -1,1 +1,1 @@
-#include "CoreMinimal.h"
+#include "IInteractuable.h"

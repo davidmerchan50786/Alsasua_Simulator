@@ -12,10 +12,17 @@
 #include "ProceduralMeshComponent.h"
 #include "Materials/MaterialInterface.h"
 
-// Material vertex-color compartido por todas las superficies de suelo teñidas.
+// Materiales de suelo creados por las utilidades de editor UCreadorMaterialCalles.
+// Si no existen aún, se cae al vertex-color (ColorBase) sobre M_Edificio.
 static UMaterialInterface* CargarMaterialSueloCalles()
 {
-	return LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Edificio.M_Edificio"));
+	UMaterialInterface* Asfalto = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Terreno_Calles.M_Terreno_Calles"));
+	return Asfalto ? Asfalto : LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Edificio.M_Edificio"));
+}
+static UMaterialInterface* CargarMaterialSueloSendero()
+{
+	UMaterialInterface* Adoquin = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Terreno_Acera.M_Terreno_Acera"));
+	return Adoquin ? Adoquin : LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Edificio.M_Edificio"));
 }
 
 void UCargadorCalles::OnWorldBeginPlay(UWorld& InWorld)
@@ -72,7 +79,13 @@ void UCargadorCalles::ConstruirUna(const TSharedPtr<FJsonObject>& O)
 	else
 		C->ColorBase = FColor(42, 42, 46, 255);
 	C->Construir(XY, (float)(AnchoM * 100.0));
-	if (C->Malla) { static UMaterialInterface* Mat = CargarMaterialSueloCalles(); if (Mat) C->Malla->SetMaterial(0, Mat); }
+	if (C->Malla)
+	{
+		static UMaterialInterface* MatCalle = CargarMaterialSueloCalles();
+		static UMaterialInterface* MatSendero = CargarMaterialSueloSendero();
+		const bool bPeatonal = C->Tipo.Contains(TEXT("pedestrian")) || C->Tipo.Contains(TEXT("path")) || C->Tipo.Contains(TEXT("foot"));
+		if (UMaterialInterface* Mat = bPeatonal ? MatSendero : MatCalle) C->Malla->SetMaterial(0, Mat);
+	}
 	FEjeVial Eje; Eje.Puntos = XY; Eje.AnchoCm = (float)(AnchoM * 100.0);
 	EjesViarios.Add(MoveTemp(Eje));   // eje + ancho disponible para el tráfico
 	++Construidas;

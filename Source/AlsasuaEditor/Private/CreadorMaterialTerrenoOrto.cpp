@@ -24,10 +24,12 @@
 
 using ML = UMaterialEditingLibrary;
 
-// Mismos límites de la ortofoto en mundo Unreal (cm) que M_Tejado_Orto.
+// Límites del satélite PNOA completo (7200x7200 m) en mundo Unreal (cm).
+// world_cm = (UTM_m - 566033, UTM_m - 4741332)*100 ; textura SUR arriba
+// (v=0 en Ymin). u=(wX-Xmin)/rango, v=(wY-Ymin)/rango.
 namespace {
-static const float UXMIN_CM = 59630.f, RANGO_UX_CM = 275040.f;
-static const float UZMAX_CM = 1005060.f, RANGO_UZ_CM = 267170.f;
+static const float SAT_XMIN_CM = -168200.f, SAT_RANGO_CM = 720000.f;
+static const float SAT_YMIN_CM = 497000.f;
 }
 
 bool UCreadorMaterialTerrenoOrto::CrearMaterialTerrenoOrto()
@@ -57,13 +59,13 @@ bool UCreadorMaterialTerrenoOrto::CrearMaterialTerrenoOrto()
 	ML::ConnectMaterialExpressions(WP, TEXT(""), wX, TEXT(""));
 	ML::ConnectMaterialExpressions(WP, TEXT(""), wY, TEXT(""));
 
-	auto* u = Mul(Sub(wY, Const(UXMIN_CM, -160), -160), Const(1.f / RANGO_UX_CM, -160), -150);
-	auto* v = Mul(Sub(Const(UZMAX_CM, -240), wX, -240), Const(1.f / RANGO_UZ_CM, -240), -250);
+	auto* u = Mul(Sub(wX, Const(SAT_XMIN_CM, -160), -160), Const(1.f / SAT_RANGO_CM, -160), -150);
+	auto* v = Mul(Sub(wY, Const(SAT_YMIN_CM, -240), -240), Const(1.f / SAT_RANGO_CM, -240), -250);
 	auto* uv = Bin(UMaterialExpressionAppendVector::StaticClass(), u, v, -200);
 
 	auto* tex = Cast<UMaterialExpressionTextureSampleParameter2D>(New(UMaterialExpressionTextureSampleParameter2D::StaticClass(), 0));
 	tex->ParameterName = TEXT("Ortofoto");
-	if (UTexture2D* T = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Textures/T_Ortofoto.T_Ortofoto"))) tex->Texture = T;
+	if (UTexture2D* T = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Terreno/T_Satelite_Alsasua.T_Satelite_Alsasua"))) tex->Texture = T;
 	else tex->Texture = LoadObject<UTexture2D>(nullptr, TEXT("/Engine/EngineResources/DefaultTexture.DefaultTexture"));
 	ML::ConnectMaterialExpressions(uv, TEXT(""), tex, TEXT("UVs"));
 
@@ -102,17 +104,8 @@ bool UCreadorMaterialTerrenoOrto::CrearMaterialTerrenoOrto()
 	ML::ConnectMaterialProperty(Mul(base, factor, 60), TEXT(""), MP_BaseColor);
 
 	// Relieve de cerca: normal map tileado, fundido a plano (0,0,1) por distancia.
-	auto* dn = Cast<UMaterialExpressionTextureSampleParameter2D>(New(UMaterialExpressionTextureSampleParameter2D::StaticClass(), 660));
-	dn->ParameterName = TEXT("DetalleNormal");
-	dn->SamplerType = SAMPLERTYPE_Normal;
-	dn->Texture = LoadObject<UTexture2D>(nullptr, TEXT("/Engine/EngineResources/DefaultTexture.DefaultTexture"));
-	ML::ConnectMaterialExpressions(dUV, TEXT(""), dn, TEXT("UVs"));
-	auto* plano = Cast<UMaterialExpressionConstant3Vector>(New(UMaterialExpressionConstant3Vector::StaticClass(), 720)); plano->Constant = FLinearColor(0, 0, 1);
-	auto* nrm = Cast<UMaterialExpressionLinearInterpolate>(New(UMaterialExpressionLinearInterpolate::StaticClass(), 690));
-	ML::ConnectMaterialExpressions(plano, TEXT(""), nrm, TEXT("A"));
-	ML::ConnectMaterialExpressions(dn, TEXT("RGB"), nrm, TEXT("B"));
-	ML::ConnectMaterialExpressions(fade, TEXT(""), nrm, TEXT("Alpha"));
-	ML::ConnectMaterialProperty(nrm, TEXT(""), MP_Normal);
+	auto* plano = Cast<UMaterialExpressionConstant3Vector>(New(UMaterialExpressionConstant3Vector::StaticClass(), 660)); plano->Constant = FLinearColor(0, 0, 1);
+	ML::ConnectMaterialProperty(plano, TEXT(""), MP_Normal);
 
 	auto* rough = Const(0.85f, 300);
 	ML::ConnectMaterialProperty(rough, TEXT(""), MP_Roughness);

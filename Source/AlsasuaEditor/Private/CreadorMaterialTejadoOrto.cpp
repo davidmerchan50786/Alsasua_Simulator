@@ -23,14 +23,12 @@
 
 using ML = UMaterialEditingLibrary;
 
-// Límites de la ortofoto en mundo Unreal (cm), de orto_tiles_meta.json:
-//   Unity ux:[596.3, 3346.7]  uz:[7378.9, 10050.6]   (m, absoluto)
-//   Unreal.X = Unity.Z*100 ; Unreal.Y = Unity.X*100
-//   texU = (WPos.Y - ux_min*100) / (ancho_ux*100)
-//   texV = (uz_max*100 - WPos.X) / (ancho_uz*100)   (V=0 al norte/arriba)
+// Límites del orto PNOA urbano (2750x2750 m centrado en la plaza) en mundo Unreal (cm).
+// world_cm = (UTM_m - 566033, UTM_m - 4741332)*100 ; textura SUR arriba
+// (v=0 en Ymin). u=(wX-Xmin)/rango, v=(wY-Ymin)/rango.
 namespace {
-static const float UXMIN_CM = 59630.f, RANGO_UX_CM = 275040.f;
-static const float UZMAX_CM = 1005060.f, RANGO_UZ_CM = 267170.f;
+static const float TOWN_XMIN_CM = 54300.f, TOWN_RANGO_CM = 275000.f;
+static const float TOWN_YMIN_CM = 719500.f;
 }
 
 bool UCreadorMaterialTejadoOrto::CrearMaterialTejadoOrto()
@@ -60,9 +58,9 @@ bool UCreadorMaterialTejadoOrto::CrearMaterialTejadoOrto()
 	ML::ConnectMaterialExpressions(WP, TEXT(""), wX, TEXT(""));
 	ML::ConnectMaterialExpressions(WP, TEXT(""), wY, TEXT(""));
 
-	// texU = (WPos.Y - UXMIN) / RANGO_UX ; texV = (UZMAX - WPos.X) / RANGO_UZ
-	auto* u = Mul(Sub(wY, Const(UXMIN_CM, -160), -160), Const(1.f / RANGO_UX_CM, -160), -150);
-	auto* v = Mul(Sub(Const(UZMAX_CM, -240), wX, -240), Const(1.f / RANGO_UZ_CM, -240), -250);
+	// texU = (WPos.X - TOWN_XMIN) / RANGO ; texV = (WPos.Y - TOWN_YMIN) / RANGO
+	auto* u = Mul(Sub(wX, Const(TOWN_XMIN_CM, -160), -160), Const(1.f / TOWN_RANGO_CM, -160), -150);
+	auto* v = Mul(Sub(wY, Const(TOWN_YMIN_CM, -240), -240), Const(1.f / TOWN_RANGO_CM, -240), -250);
 	auto* uv = Bin(UMaterialExpressionAppendVector::StaticClass(), u, v, -200);   // float2(U,V)
 
 	// Muestra de la ortofoto (parámetro asignable).
@@ -95,17 +93,8 @@ bool UCreadorMaterialTejadoOrto::CrearMaterialTejadoOrto()
 	ML::ConnectMaterialProperty(Mul(tex, factor, 0), TEXT(""), MP_BaseColor);   // ortofoto * detalle
 
 	// Relieve de teja de cerca: normal map tileado, fundido a plano por distancia.
-	auto* dn = Cast<UMaterialExpressionTextureSampleParameter2D>(New(UMaterialExpressionTextureSampleParameter2D::StaticClass(), 600));
-	dn->ParameterName = TEXT("DetalleNormal");
-	dn->SamplerType = SAMPLERTYPE_Normal;
-	dn->Texture = LoadObject<UTexture2D>(nullptr, TEXT("/Engine/EngineResources/DefaultTexture.DefaultTexture"));
-	ML::ConnectMaterialExpressions(dUV, TEXT(""), dn, TEXT("UVs"));
-	auto* plano = Cast<UMaterialExpressionConstant3Vector>(New(UMaterialExpressionConstant3Vector::StaticClass(), 660)); plano->Constant = FLinearColor(0, 0, 1);
-	auto* nrm = Cast<UMaterialExpressionLinearInterpolate>(New(UMaterialExpressionLinearInterpolate::StaticClass(), 630));
-	ML::ConnectMaterialExpressions(plano, TEXT(""), nrm, TEXT("A"));
-	ML::ConnectMaterialExpressions(dn, TEXT("RGB"), nrm, TEXT("B"));
-	ML::ConnectMaterialExpressions(fade, TEXT(""), nrm, TEXT("Alpha"));
-	ML::ConnectMaterialProperty(nrm, TEXT(""), MP_Normal);
+	auto* plano = Cast<UMaterialExpressionConstant3Vector>(New(UMaterialExpressionConstant3Vector::StaticClass(), 600)); plano->Constant = FLinearColor(0, 0, 1);
+	ML::ConnectMaterialProperty(plano, TEXT(""), MP_Normal);
 
 	auto* rough = Const(0.7f, 200);
 	ML::ConnectMaterialProperty(rough, TEXT(""), MP_Roughness);

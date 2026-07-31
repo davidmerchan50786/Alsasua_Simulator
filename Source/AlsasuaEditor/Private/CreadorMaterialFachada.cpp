@@ -105,6 +105,8 @@ bool UCreadorMaterialFachada::CrearMaterialFachada()
 	{
 		auto* night = Cast<UMaterialExpressionCollectionParameter>(New(UMaterialExpressionCollectionParameter::StaticClass(), 160));
 		night->Collection = MPC; night->ParameterName = TEXT("Night");
+		for (const FCollectionScalarParameter& P : MPC->ScalarParameters)
+			if (P.ParameterName == TEXT("Night")) { night->ParameterId = P.Id; break; }
 		gate = Mul(gate, night, 140);
 	}
 	auto* emis = Mul(Mul(winCol, gate, 200), Const(3.f, 220), 210);
@@ -118,6 +120,8 @@ bool UCreadorMaterialFachada::CrearMaterialFachada()
 	{
 		auto* wet = Cast<UMaterialExpressionCollectionParameter>(New(UMaterialExpressionCollectionParameter::StaticClass(), -120));
 		wet->Collection = MPC; wet->ParameterName = TEXT("Wetness");
+		for (const FCollectionScalarParameter& P : MPC->ScalarParameters)
+			if (P.ParameterName == TEXT("Wetness")) { wet->ParameterId = P.Id; break; }
 		auto* lc = Cast<UMaterialExpressionLinearInterpolate>(New(UMaterialExpressionLinearInterpolate::StaticClass(), -160));
 		ML::ConnectMaterialExpressions(Const(1.0f, -160), TEXT(""), lc, TEXT("A"));
 		ML::ConnectMaterialExpressions(Const(0.55f, -140), TEXT(""), lc, TEXT("B"));
