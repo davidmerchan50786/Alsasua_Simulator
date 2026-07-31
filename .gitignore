@@ -17,6 +17,20 @@ Saved/
 # Conserva la estructura de Content aunque esté vacía
 !Content/
 
+# Content pesado (assets importados, mapa, lidar raw): fuera de git
+Content/AssetsImportados/
+Content/CitySample/
+Content/Materiales/
+Content/Road/
+Content/Maps/*.umap
+Content/Maps/*.uasset
+Content/__ExternalActors__/
+Content/__ExternalObjects__/
+Content/Terreno/*.raw
+Content/Terreno/*.xyz
+Content/Terreno/T_Satelite_Alsasua.uasset
+Content/Terreno/alsasua_satelite.jpg
+
 # Python (Tools)
 __pycache__/
 *.pyc
