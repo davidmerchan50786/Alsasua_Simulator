@@ -1,14 +1,14 @@
 #include "World/AlsasuaArakilWaterSystem.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
-#include "Engine/StaticMeshComponent.h"
-#include "Components/ProceduralMeshComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "GeoDataAlsasua.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Engine/StaticMeshActor.h"
 
 void UAlsasuaArakilWaterSystem::Initialize(FSubsystemCollectionBase& Collection)
 {

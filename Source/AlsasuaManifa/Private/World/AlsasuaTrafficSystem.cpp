@@ -58,10 +58,12 @@ void UAlsasuaTrafficSystem::GenerarCochesDesdeCalles()
         if (!Obj->TryGetArrayField(TEXT("points"), PointsArr) || !PointsArr || PointsArr->Num() == 0) continue;
         const TSharedPtr<FJsonObject>& FirstPt = (*PointsArr)[0]->AsObject();
         if (!FirstPt) continue;
-        const float X = FirstPt->GetNumberField(TEXT("x")) + UAlsasuaGeoData::OX;
-        const float Z = FirstPt->GetNumberField(TEXT("z")) + UAlsasuaGeoData::OZ;
+        const float RawX = FirstPt->GetNumberField(TEXT("x"));
+        const float RawZ = FirstPt->GetNumberField(TEXT("z"));
+        const float X = RawX + UAlsasuaGeoData::OX;
+        const float Z = RawZ + UAlsasuaGeoData::OZ;
 
-        FVector Loc = UAlsasuaGeoData::UnityaUnreal(FVector(X, Z, 0));
+        FVector Loc = UAlsasuaGeoData::RelLocalToUE5(FVector(RawX, 0.0f, RawZ));
 
         int32 NumCoches = (AnchoVia > 10.0f) ? 2 : 1;
         for (int32 i = 0; i < NumCoches; i++)

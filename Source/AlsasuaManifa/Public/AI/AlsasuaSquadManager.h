@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
+#include "Tickable.h"
 #include "AI/AlsasuaAIController.h"
 #include "AlsasuaSquadManager.generated.h"
 
@@ -15,12 +16,14 @@ enum class ESquadTactic : uint8
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaSquadManager : public UWorldSubsystem
+class ALSASUAMANIFA_API UAlsasuaSquadManager : public UWorldSubsystem, public FTickableGameObject
 {
     GENERATED_BODY()
 
 public:
     virtual void Tick(float DeltaTime) override;
+    virtual bool IsAllowedToTick() const override { return true; }
+    virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(AlsasuaSquadManager, STATGROUP_Game); }
 
     // Registra una unidad en el sistema táctico
     void RegisterUnit(AAlsasuaAIController* Unit);

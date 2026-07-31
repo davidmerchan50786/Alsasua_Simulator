@@ -5,7 +5,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/Character.h"
-#include "PostProcessVolume.h"
+#include "Engine/PostProcessVolume.h"
 
 UAlsasuaEnhancedPostProcessComponent::UAlsasuaEnhancedPostProcessComponent()
 {
@@ -87,9 +87,6 @@ void UAlsasuaEnhancedPostProcessComponent::UpdatePostProcess(float DeltaTime)
 
 		S.bOverride_BloomIntensity = true;
 		S.BloomIntensity = CurrentBloom;
-
-		S.bOverride_GrainIntensity = true;
-		S.GrainIntensity = CurrentGrain;
 
 		S.bOverride_MotionBlurAmount = true;
 		S.MotionBlurAmount = NormalMotionBlur;

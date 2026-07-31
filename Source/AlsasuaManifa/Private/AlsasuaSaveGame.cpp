@@ -1,6 +1,6 @@
 #include "Core/AlsasuaSaveGame.h"
 
-UAlsasuaSaveGame::UAlsasuaSaveGame()
+UDEPRECATED_AlsasuaSaveGame::UDEPRECATED_AlsasuaSaveGame()
 {
 	SaveSlotName = TEXT("AlsasuaDefaultSlot");
 	UserIndex = 0;

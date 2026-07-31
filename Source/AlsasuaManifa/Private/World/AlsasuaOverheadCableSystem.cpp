@@ -55,10 +55,10 @@ int32 UAlsasuaOverheadCableSystem::ColocarCables()
             const TSharedPtr<FJsonObject>& P1 = (*PointsArr)[FMath::Min(i + Step, PointsArr->Num() - 1)]->AsObject();
             if (!P0 || !P1) continue;
 
-            FVector Loc0 = UAlsasuaGeoData::UnityaUnreal(FVector(
-                P0->GetNumberField(TEXT("x")) + UAlsasuaGeoData::OX, 0.0f, P0->GetNumberField(TEXT("z")) + UAlsasuaGeoData::OZ));
-            FVector Loc1 = UAlsasuaGeoData::UnityaUnreal(FVector(
-                P1->GetNumberField(TEXT("x")) + UAlsasuaGeoData::OX, 0.0f, P1->GetNumberField(TEXT("z")) + UAlsasuaGeoData::OZ));
+            FVector Loc0 = UAlsasuaGeoData::RelLocalToUE5(FVector(
+                P0->GetNumberField(TEXT("x")), 0.0f, P0->GetNumberField(TEXT("z"))));
+            FVector Loc1 = UAlsasuaGeoData::RelLocalToUE5(FVector(
+                P1->GetNumberField(TEXT("x")), 0.0f, P1->GetNumberField(TEXT("z"))));
 
             Loc0.Z += AlturaCables;
             Loc1.Z += AlturaCables;

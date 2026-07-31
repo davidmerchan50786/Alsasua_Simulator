@@ -122,19 +122,19 @@ int32 UAlsasuaPauseMenuWidget::NativePaint(const FPaintArgs& Args, const FGeomet
 
 	FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
 		AllottedGeometry.ToPaintGeometry(FVector2D(0, 0), Size),
-		&FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")),
+		FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")),
 		ESlateDrawEffect::None, BackgroundColor);
 
 	FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
 		AllottedGeometry.ToPaintGeometry(FVector2D(PanelX, PanelY),
 			FVector2D(PanelWidth, PanelHeight)),
-		&FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")),
+		FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")),
 		ESlateDrawEffect::None, FLinearColor(0.08f, 0.08f, 0.12f, 0.95f));
 
 	FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
 		AllottedGeometry.ToPaintGeometry(FVector2D(PanelX, PanelY),
 			FVector2D(PanelWidth, 2.f)),
-		&FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")),
+		FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")),
 		ESlateDrawEffect::None, ButtonColor);
 
 	FSlateFontInfo TitleFont = FCoreStyle::GetDefaultFontStyle("Bold", 18);
@@ -164,7 +164,7 @@ int32 UAlsasuaPauseMenuWidget::NativePaint(const FPaintArgs& Args, const FGeomet
 		FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
 			AllottedGeometry.ToPaintGeometry(FVector2D(PanelX + 16.f, Y),
 				FVector2D(PanelWidth - 32.f, ItemHeight)),
-			&FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")),
+			FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")),
 			ESlateDrawEffect::None, Hovered);
 
 		FSlateDrawElement::MakeText(OutDrawElements, LayerId,

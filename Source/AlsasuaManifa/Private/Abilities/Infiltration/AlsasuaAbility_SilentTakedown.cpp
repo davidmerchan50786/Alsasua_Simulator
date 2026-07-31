@@ -1,5 +1,6 @@
 #include "Abilities/Infiltration/AlsasuaAbility_SilentTakedown.h"
 #include "GameFramework/Character.h"
+#include "Engine/OverlapResult.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "AlsasuaTypes.h"
@@ -83,7 +84,7 @@ void UAlsasuaAbility_SilentTakedown::ActivateAbility(const FGameplayAbilitySpecH
         IDamageable* Damageable = Cast<IDamageable>(BestTarget);
         if (Damageable)
         {
-            Damageable->Execute_RecibirDano(BestTarget, 100, Player->GetActorLocation(), ETipoDano::Impacto);
+            Damageable->RecibirDano(100, Player->GetActorLocation(), ETipoDano::Impacto);
         }
     }
 

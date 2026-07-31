@@ -55,10 +55,10 @@ int32 UAlsasuaGuardrailSystem::ColocarBarandillas()
             const TSharedPtr<FJsonObject>& P1 = (*PointsArr)[i + 1]->AsObject();
             if (!P0 || !P1) continue;
 
-            FVector Loc0 = UAlsasuaGeoData::UnityaUnreal(FVector(
-                P0->GetNumberField(TEXT("x")) + UAlsasuaGeoData::OX, 0.0f, P0->GetNumberField(TEXT("z")) + UAlsasuaGeoData::OZ));
-            FVector Loc1 = UAlsasuaGeoData::UnityaUnreal(FVector(
-                P1->GetNumberField(TEXT("x")) + UAlsasuaGeoData::OX, 0.0f, P1->GetNumberField(TEXT("z")) + UAlsasuaGeoData::OZ));
+            FVector Loc0 = UAlsasuaGeoData::RelLocalToUE5(FVector(
+                P0->GetNumberField(TEXT("x")), 0.0f, P0->GetNumberField(TEXT("z"))));
+            FVector Loc1 = UAlsasuaGeoData::RelLocalToUE5(FVector(
+                P1->GetNumberField(TEXT("x")), 0.0f, P1->GetNumberField(TEXT("z"))));
 
             FVector Centro = (Loc0 + Loc1) * 0.5f;
             FVector Direccion = (Loc1 - Loc0).GetSafeNormal();
@@ -83,10 +83,10 @@ int32 UAlsasuaGuardrailSystem::ColocarBarandillas()
                 GuardrailActor->SetMobility(EComponentMobility::Static);
                 GuardrailActor->SetActorScale3D(FVector(Largo / 100.0f, 0.15f, AlturaBarandilla / 100.0f));
 
-                UStaticMesh* CubeMesh = LoadObject<UStaticMesh>(nullptr,
-                    TEXT("/Game/EngineBasicShapes/Cube"));
-                if (CubeMesh)
-                    GuardrailActor->GetStaticMeshComponent()->SetStaticMesh(CubeMesh);
+                UStaticMesh* RailingMesh = LoadObject<UStaticMesh>(nullptr,
+                    TEXT("/Game/CitySample/Prop/Kit_Railing_A/Mesh/SM_Railing_A_Railing_N01"));
+                if (RailingMesh)
+                    GuardrailActor->GetStaticMeshComponent()->SetStaticMesh(RailingMesh);
 
                 UMaterialInterface* GRMat = LoadObject<UMaterialInterface>(nullptr,
                     TEXT("/Game/Materiales/M_Metal_Guardia"));

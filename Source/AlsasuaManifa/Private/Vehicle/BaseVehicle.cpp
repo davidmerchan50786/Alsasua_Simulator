@@ -4,6 +4,7 @@
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
+#include "Particles/ParticleSystem.h"
 
 ABaseVehicle::ABaseVehicle()
 {

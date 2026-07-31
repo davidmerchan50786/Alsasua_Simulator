@@ -1,138 +1,77 @@
-"""
-SetupLandscape.py — Importa el heightmap de Alsasua como Landscape.
-Ejecutar desde el editor: Window > Output Log > consola.
-
-Parámetros (del landscape_import.json):
-  Archivo:     Content/Terreno/alsasua_landscape_4033.r16
-  Resolución:  4033×4033
-  Scale XY:    178.5714 (7200m / 4032 quads × 100 cm)
-  Scale Z:     200
-  Location Z:  49567 cm
-  Section:     63 quads, 1 section per component (64×64 componentes)
-
-Centrado en Herriko Plaza (coordenadas reales de UGeoDataAlsasua).
-"""
 import unreal
-import json
 import os
+import struct
 
-TERRAIN_DIR = "/Game/Terreno"
 HEIGHTMAP_R16 = "Content/Terreno/alsasua_landscape_4033.r16"
-IMPORT_JSON = "Content/Terreno/landscape_import.json"
-
-# Herriko Plaza UTM (de UGeoDataAlsasua::HerrikoPlaza)
-HERRIKO_PLAZA_X = 606500.0
-HERRIKO_PLAZA_Y = 4749500.0
-
-# Medio WorldSize del landscape (7200m / 2 = 3600m = 360000 cm)
-HALF_WORLD = 360000.0
-
-
-def load_import_params():
-    """Carga los parámetros del JSON de importación."""
-    project_root = unreal.Paths.project_dir()
-    json_path = os.path.join(project_root, IMPORT_JSON)
-
-    if os.path.exists(json_path):
-        with open(json_path, "r") as f:
-            data = json.load(f)
-        params = data.get("import_landscape", {})
-        return {
-            "scale_x": params.get("ScaleX_cm", 178.5714),
-            "scale_y": params.get("ScaleY_cm", 178.5714),
-            "scale_z": params.get("ScaleZ", 200.0),
-            "location_z": params.get("LocationZ_cm", 49567.0),
-        }
-
-    # Fallback: valores hardcodeados
-    return {
-        "scale_x": 178.5714,
-        "scale_y": 178.5714,
-        "scale_z": 200.0,
-        "location_z": 49567.0,
-    }
-
-
-def ensure_folder():
-    """Crea la carpeta del terreno si no existe."""
-    if not unreal.EditorAssetLibrary.does_asset_exist(TERRAIN_DIR):
-        unreal.EditorAssetLibrary.make_directory(TERRAIN_DIR)
-        unreal.log("Creada carpeta /Game/Terreno")
-
-
-def import_landscape():
-    """Importa el heightmap como Landscape actor."""
-    unreal.log("=== SetupLandscape: Iniciando ===")
-
-    params = load_import_params()
-    unreal.log(f"Parámetros: ScaleXY={params['scale_x']}, ScaleZ={params['scale_z']}, LocZ={params['location_z']}")
-
-    # La ubicación X/Y del landscape se centra en Herriko Plaza
-    # restando la mitad del world size
-    location_x = HERRIKO_PLAZA_X - HALF_WORLD
-    location_y = HERRIKO_PLAZA_Y - HALF_WORLD
-    location_z = params["location_z"]
-
-    unreal.log(f"Ubicación Landscape: X={location_x}, Y={location_y}, Z={location_z}")
-
-    # Cargar el heightmap como textura
-    r16_path = unreal.Paths.convert_relative_path_to_full(
-        unreal.Paths.project_dir() + HEIGHTMAP_R16
-    )
-
-    if not os.path.exists(r16_path):
-        unreal.log_error(f"Heightmap no encontrado: {r16_path}")
-        return False
-
-    unreal.log(f"Heightmap: {r16_path} ({os.path.getsize(r16_path)} bytes)")
-
-    # Usar Landscape Mode para importar
-    # En UE 5.4, la forma más fiable es Landscape Tools > Import from File
-    # Esto se hace desde el editor manualmente, pero podemos preparar los datos:
-    #
-    # MÉTODO ALTERNATIVO: Crear un Landscape proxy con los datos correctos
-    try:
-        world = unreal.EditorLevelLibrary.get_editor_world()
-        if not world:
-            unreal.log_error("No se pudo obtener el mundo actual")
-            return False
-
-        # Landscape import info
-        landscape_class = unreal.EditorAssetLibrary.load_asset("/Engine/EngineMeshes/Landscape.Landscape")
-
-        unreal.log("------------------------------------------------------------")
-        unreal.log("IMPORTACIÓN MANUAL RECOMENDADA (Landscape Mode):")
-        unreal.log(f"  1. Abrir Landscape Mode (Shift+3)")
-        unreal.log(f"  2. Import from File")
-        unreal.log(f"  3. Archivo: {HEIGHTMAP_R16}")
-        unreal.log(f"  4. Section Size: 63 quads")
-        unreal.log(f"  5. Sections per Component: 1×1")
-        unreal.log(f"  6. Scale X/Y: {params['scale_x']}")
-        unreal.log(f"  7. Scale Z: {params['scale_z']}")
-        unreal.log(f"  8. Location X: {location_x}")
-        unreal.log(f"  9. Location Y: {location_y}")
-        unreal.log(f" 10. Location Z: {location_z}")
-        unreal.log("------------------------------------------------------------")
-
-        # Verificación de la cota de Herriko Plaza
-        # WorldZ = (altitudReal - 511.33) * 100
-        # Herriko Plaza = 531.94 m → WorldZ = (531.94 - 511.33) * 100 = 2061 cm
-        expected_z = (531.94 - 511.33) * 100
-        unreal.log(f"Verificación: Herriko Plaza WorldZ esperado ≈ {expected_z:.0f} cm")
-
-        return True
-
-    except Exception as e:
-        unreal.log_error(f"Error: {e}")
-        return False
-
+LANDSCAPE_PATH = "/Game/Terreno/Alsasua_Landscape"
 
 def run():
-    """Ejecuta la importación del landscape."""
-    ensure_folder()
-    import_landscape()
-    unreal.log("=== SetupLandscape: Guía de importación impresa ===")
+    unreal.log("=== SetupLandscape: Iniciando ===")
+    r16_path = os.path.join(unreal.Paths.project_dir(), HEIGHTMAP_R16)
+    if not os.path.exists(r16_path):
+        unreal.log_error(f"No existe: {r16_path}")
+        return
 
+    world = unreal.EditorLevelLibrary.get_editor_world()
+    if not world:
+        unreal.log_error("Sin mundo editor")
+        return
+
+    size = os.path.getsize(r16_path)
+    res = int(size ** 0.5 / 2)
+    unreal.log(f"Heightmap: {r16_path} ({size}B, {res}x{res})")
+
+    subsys = unreal.LandscapeSubsystem.get()
+    if not subsys:
+        unreal.log_warning("Sin LandscapeSubsystem, intento manual...")
+        ImportLandscapeManual(r16_path, res)
+        return
+
+    # Leer raw R16
+    with open(r16_path, "rb") as f:
+        raw = f.read()
+
+    heights = struct.unpack(f"{res*res}H", raw)
+    min_h, max_h = min(heights), max(heights)
+    unreal.log(f"Height range: {min_h} - {max_h} (raw)")
+
+    # Crear Landscape via EditorLevelLibrary
+    # Usamos CreateLandscape de la API
+    try:
+        scale = 178.5714  # cm/quad (7200m / 4032 quads)
+        loc_z = 53194.0
+        loc_x = 606500.0 - 360000.0  # HerrikoPlaza - half world
+        loc_y = 4749500.0 - 360000.0
+
+        asset_tools = unreal.AssetToolsHelpers.get_asset_tools()
+        landscape_path = "/Game/Terreno/Landscape_HM"
+        hm_asset = asset_tools.create_asset(
+            "Landscape_HM", "/Game/Terreno",
+            unreal.HeightmapImportFactory, unreal.HeightmapImportFactory()
+        )
+
+        unreal.EditorLevelLibrary.spawn_actor_from_class(
+            unreal.Landscape, unreal.Vector(loc_x, loc_y, loc_z)
+        )
+        unreal.log("Landscape creado. Asigna heightmap manualmente si no se ve.")
+        unreal.log(f"  X={loc_x:.0f} Y={loc_y:.0f} Z={loc_z:.0f} Scale={scale}")
+
+    except Exception as e:
+        unreal.log_warning(f"Auto-import falló: {e}")
+        ImportLandscapeManual(r16_path, res)
+
+def ImportLandscapeManual(r16_path, res):
+    scale = 178.5714
+    loc_z = 53194.0
+    loc_x = 606500.0 - 360000.0
+    loc_y = 4749500.0 - 360000.0
+    unreal.log("=" * 60)
+    unreal.log("IMPORTACIÓN MANUAL:")
+    unreal.log("Modo Paisaje: botón 'Modos' (arriba izq viewport) → Paisaje")
+    unreal.log(f"  Importar desde archivo → {r16_path}")
+    unreal.log(f"  Scale X/Y: {scale} | Scale Z: 200 | Loc Z: {loc_z}")
+    unreal.log(f"  Section Size: 63 quads | Sections: 1x1")
+    unreal.log("=" * 60)
 
 if __name__ == "__main__":
     run()

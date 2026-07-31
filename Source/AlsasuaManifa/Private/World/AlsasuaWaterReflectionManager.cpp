@@ -29,12 +29,6 @@ void UAlsasuaWaterReflectionManager::SetupReflections()
 		Reflection->SetRelativeLocation(FVector(0, 0, 5.f));
 		Reflection->SetRelativeRotation(FRotator(-90.f, 0, 0));
 
-		Reflection->PlanarReflectionNormal = FVector(0, 0, 1);
-		Reflection->CaptureScene = true;
-		Reflection->bUseClippingPlane = true;
-		Reflection->ClippingPlaneOffset = 10.f;
-		Reflection->RenderStage = EPlanarReflectionRenderStage::MainPass;
-
 		Reflection->RegisterComponent();
 	}
 }

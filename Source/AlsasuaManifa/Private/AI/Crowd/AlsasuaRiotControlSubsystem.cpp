@@ -264,11 +264,11 @@ void UAlsasuaRiotControlSubsystem::SpawnFlareEffects(FRiotInstance& Riot)
 // ─────────────────────────────────────────────────────────────────────────────
 void UAlsasuaRiotControlSubsystem::CleanupFlareEffects(FRiotInstance& Riot)
 {
-	if (Riot.FlareLight != nullptr)
+	if (Riot.FlareLight != nullptr && IsValid(Riot.FlareLight))
 	{
 		Riot.FlareLight->DestroyComponent();
-		Riot.FlareLight = nullptr;
 	}
+	Riot.FlareLight = nullptr;
 
 	if (Riot.FlareParticles != nullptr)
 	{
@@ -388,7 +388,7 @@ void UAlsasuaRiotControlSubsystem::TickRiot(FRiotInstance& Riot, float DeltaTime
 	}
 
 	// Oscilar la intensidad de la luz de bengala.
-	if (Riot.FlareLight != nullptr)
+	if (Riot.FlareLight != nullptr && IsValid(Riot.FlareLight))
 	{
 		const float FlickerIntensity = Config.FlareLightIntensity *
 			(0.7f + 0.3f * FMath::Sin(Riot.ElapsedTime * 8.f));
@@ -486,6 +486,12 @@ float UAlsasuaRiotControlSubsystem::GetModifiedProbability() const
 // ─────────────────────────────────────────────────────────────────────────────
 void UAlsasuaRiotControlSubsystem::InternalTick()
 {
+	UWorld* World = GetWorld();
+	if (!World || World->bIsTearingDown || World->GetNetMode() == NM_Client)
+	{
+		return;
+	}
+
 	const float DeltaTime = 1.f / 30.f; // Intervalo fijo del timer.
 
 	// ── 1. Cooldown post-disturbio ──────────────────────────────────────────
@@ -503,17 +509,22 @@ void UAlsasuaRiotControlSubsystem::InternalTick()
 	}
 
 	// ── 3. Actualizar disturbios activos ────────────────────────────────────
-	for (int32 i = ActiveRiots.Num() - 1; i >= 0; --i)
+	TArray<int32> RiotesAFinalizar;
+	for (int32 i = 0; i < ActiveRiots.Num(); ++i)
 	{
 		FRiotInstance& Riot = ActiveRiots[i];
-
 		TickRiot(Riot, DeltaTime);
 		TickRecruits(Riot, DeltaTime);
 
 		if (!Riot.bIsActive)
 		{
-			EndRiot(i);
+			RiotesAFinalizar.Add(i);
 		}
+	}
+	// Finalizar fuera del bucle para evitar que RemoveAt invalide referencias.
+	for (int32 i = RiotesAFinalizar.Num() - 1; i >= 0; --i)
+	{
+		EndRiot(RiotesAFinalizar[i]);
 	}
 
 	// ── 4. Sincronizar marcadores visuales ──────────────────────────────────

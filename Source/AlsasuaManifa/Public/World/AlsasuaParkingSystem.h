@@ -34,5 +34,7 @@ public:
 
 private:
     TArray<FParkingSpot> Plazas;
-    FVector ObtenerPuntoEnCalle(const FString& Barrio);
+    TArray<TPair<FVector, FVector>> SegmentosCalle;
+    void CargarCalles();
+    FVector ObtenerPuntoEnCalle(FVector& OutDir);
 };

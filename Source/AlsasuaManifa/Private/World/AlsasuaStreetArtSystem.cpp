@@ -53,32 +53,12 @@ int32 UAlsasuaStreetArtSystem::ColocarArteCallejero()
         FString Barrio;
         FVector Pos;
 
-        switch (i % 4)
         {
-        case 0:
-            Barrio = TEXT("Herriko");
-            Pos = UAlsasuaGeoData::UnityaUnreal(FVector(1891.0f + FMath::RandRange(-2.0f, 2.0f),
-                8568.0f + FMath::RandRange(-1.0f, 1.0f), 0));
-            break;
-        case 1:
-            Barrio = TEXT("Harrobieta");
-            Pos = UAlsasuaGeoData::UnityaUnreal(FVector(1889.0f + FMath::RandRange(-1.5f, 1.5f),
-                8569.5f + FMath::RandRange(-1.0f, 1.0f), 0));
-            break;
-        case 2:
-            Barrio = TEXT("Zelai");
-            Pos = UAlsasuaGeoData::UnityaUnreal(FVector(1893.5f + FMath::RandRange(-1.5f, 1.5f),
-                8573.0f + FMath::RandRange(-1.0f, 1.0f), 0));
-            break;
-        case 3:
-            Barrio = TEXT("Intxostia");
-            Pos = UAlsasuaGeoData::UnityaUnreal(FVector(1890.5f + FMath::RandRange(-2.0f, 2.0f),
-                8576.5f + FMath::RandRange(-1.5f, 1.5f), 0));
-            break;
-        default:
-            Barrio = TEXT("Herriko");
-            Pos = UAlsasuaGeoData::UnityaUnreal(FVector(1891.5f, 0.0f, 8568.5f));
-            break;
+            const TArray<FString> MuralBarrios = {
+                TEXT("Herriko"), TEXT("Harrobieta"), TEXT("Zelai"), TEXT("Intxostia")
+            };
+            Barrio = MuralBarrios[i % 4];
+            Pos = UAlsasuaGeoData::AbsLocalToUE5(UAlsasuaGeoData::BarrioCenter(Barrio));
         }
 
         Pos.Z += FMath::RandRange(150.0f, 300.0f);
@@ -133,22 +113,7 @@ int32 UAlsasuaStreetArtSystem::ColocarArteCallejero()
             TEXT("Errota"), TEXT("Ferroviario"), TEXT("SanPedro"), TEXT("Monte")
         };
         Barrio = Barrios[FMath::RandRange(0, Barrios.Num() - 1)];
-
-        if (Barrio == TEXT("Herriko"))
-            Pos = UAlsasuaGeoData::UnityaUnreal(FVector(1891.0f + FMath::RandRange(-2.0f, 2.0f),
-                8568.0f + FMath::RandRange(-1.5f, 1.5f), 0));
-        else if (Barrio == TEXT("Zelai"))
-            Pos = UAlsasuaGeoData::UnityaUnreal(FVector(1893.0f + FMath::RandRange(-2.0f, 2.0f),
-                8573.5f + FMath::RandRange(-1.5f, 1.5f), 0));
-        else if (Barrio == TEXT("Intxostia"))
-            Pos = UAlsasuaGeoData::UnityaUnreal(FVector(1890.0f + FMath::RandRange(-2.5f, 2.5f),
-                8577.0f + FMath::RandRange(-1.5f, 1.5f), 0));
-        else if (Barrio == TEXT("Harrobieta"))
-            Pos = UAlsasuaGeoData::UnityaUnreal(FVector(1889.5f + FMath::RandRange(-1.5f, 1.5f),
-                8569.0f + FMath::RandRange(-1.5f, 1.5f), 0));
-        else
-            Pos = UAlsasuaGeoData::UnityaUnreal(FVector(1891.5f + FMath::RandRange(-3.0f, 3.0f),
-                8572.0f + FMath::RandRange(-3.0f, 3.0f), 0));
+        Pos = UAlsasuaGeoData::AbsLocalToUE5(UAlsasuaGeoData::BarrioCenter(Barrio));
 
         Pos.Z += FMath::RandRange(50.0f, 180.0f);
         float Rot = FMath::RandRange(0.0f, 360.0f);

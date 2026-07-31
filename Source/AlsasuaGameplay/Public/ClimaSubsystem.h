@@ -49,6 +49,7 @@ private:
 	FCondicion Cur;
 	FCondicion Objetivo;
 	float TiempoCambio = 8.f;
+	float TiempoActualizacion = 0.f;
 
 	bool bInit = false;
 	UPROPERTY() AExponentialHeightFog* Niebla_ = nullptr;

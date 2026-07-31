@@ -25,8 +25,10 @@
 using ML = UMaterialEditingLibrary;
 
 // Mismos límites de la ortofoto en mundo Unreal (cm) que M_Tejado_Orto.
+namespace {
 static const float UXMIN_CM = 59630.f, RANGO_UX_CM = 275040.f;
 static const float UZMAX_CM = 1005060.f, RANGO_UZ_CM = 267170.f;
+}
 
 bool UCreadorMaterialTerrenoOrto::CrearMaterialTerrenoOrto()
 {

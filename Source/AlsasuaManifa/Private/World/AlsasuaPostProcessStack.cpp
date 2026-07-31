@@ -3,7 +3,7 @@
 #include "World/AlsasuaVisualEffectsManager.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
-#include "PostProcessVolume.h"
+#include "Engine/PostProcessVolume.h"
 
 UAlsasuaPostProcessStack::UAlsasuaPostProcessStack()
 {
@@ -63,8 +63,8 @@ void UAlsasuaPostProcessStack::UpdatePostProcess(float DeltaTime)
 
 		if (bEnableFilmGrain)
 		{
-			S.bOverride_GrainIntensity = true;
-			S.GrainIntensity = FMath::Lerp(GrainIntensity, GrainIntensity * 2.f, Rain);
+			S.bOverride_FilmGrainIntensity = true;
+			S.FilmGrainIntensity = FMath::Lerp(GrainIntensity, GrainIntensity * 2.f, Rain);
 		}
 
 		if (bEnableChromaticAberration)

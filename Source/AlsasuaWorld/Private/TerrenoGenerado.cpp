@@ -3,6 +3,9 @@
 #include "KismetProceduralMeshLibrary.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
+#include "Dom/JsonObject.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "Kismet/GameplayStatics.h"
@@ -17,6 +20,13 @@
 #include "Materials/MaterialExpressionOneMinus.h"
 #include "Materials/MaterialExpressionSubtract.h"
 #include "Materials/MaterialExpressionDivide.h"
+#include "Materials/MaterialExpressionTextureSample.h"
+#include "Materials/MaterialExpressionTextureCoordinate.h"
+#include "Materials/MaterialExpressionWorldPosition.h"
+#include "Materials/MaterialExpressionScalarParameter.h"
+#include "Materials/MaterialExpressionVectorParameter.h"
+#include "Materials/MaterialExpressionComponentMask.h"
+#include "Materials/MaterialExpressionAppendVector.h"
 #if WITH_EDITOR
 #include "MaterialEditingLibrary.h"
 #include "EditorAssetLibrary.h"
@@ -24,6 +34,8 @@
 #include "IAssetTools.h"
 #include "Factories/MaterialFactoryNew.h"
 #endif
+
+static constexpr int32 CHUNKS_POR_FRAME = 4;
 
 ATerrenoGenerado::ATerrenoGenerado()
 {
@@ -41,6 +53,7 @@ void ATerrenoGenerado::BeginPlay()
 		CargarRAW(Ruta);
 		if (AlturasRAW.Num() > 0)
 		{
+			if (bUsarLidar) CargarLidar();
 			GenerarDesdeRAW(Ruta, ResolucionRAW, EscalaXY, EscalaZ, LocZ, CentroMundo());
 		}
 	}
@@ -49,7 +62,14 @@ void ATerrenoGenerado::BeginPlay()
 void ATerrenoGenerado::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	ActualizarLODs();
+	if (ChunkIndexProgreso < ChunksInfo.Num())
+	{
+		GenerarSiguienteChunk();
+	}
+	else
+	{
+		ActualizarLODs();
+	}
 }
 
 void ATerrenoGenerado::CargarRAW(const FString& Ruta)
@@ -80,7 +100,192 @@ uint16 ATerrenoGenerado::LeerAltura(int32 PxX, int32 PxY) const
 
 float ATerrenoGenerado::AlturaWorld(int32 PxX, int32 PxY) const
 {
-	return (float)LeerAltura(PxX, PxY) / 64.0f * (float)EscalaZ + (float)LocZ;
+	const float AltoDTM = (float)LeerAltura(PxX, PxY) / 64.0f * (float)EscalaZ + (float)LocZ;
+
+	if (bLidarFusionado || !bLidarCargado) return AltoDTM;
+
+	const double WX = OriginWorld.X + PxX * EscalaXY;
+	const double WY = OriginWorld.Y + PxY * EscalaXY;
+
+	double DistBordeCm = 0.0;
+	if (!DentroLidar(WX, WY, DistBordeCm)) return AltoDTM;
+
+	const float AltoLidarCm = SampleLidarBicubic(WX, WY);
+
+	// Blend gaussiano: 0 en el borde del área LIDAR, 1 en el interior.
+	const double BlendCm = LidarBlendMetros * 100.0;
+	const double T = (BlendCm <= 0.0) ? 1.0 : (1.0 - FMath::Exp(-3.0 * FMath::Square(FMath::Clamp(DistBordeCm / BlendCm, 0.0, 1.0))));
+
+	return FMath::Lerp(AltoDTM, AltoLidarCm, (float)T);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  LIDAR 0.5m real (Assets/AlsasuaData/lidar_dtm_05m.raw del proyecto original)
+// ─────────────────────────────────────────────────────────────────────────────
+
+void ATerrenoGenerado::CargarLidar()
+{
+	const FString RutaMeta = FPaths::Combine(FPaths::ProjectContentDir(), RutaLidarMeta);
+	FString MetaTexto;
+	if (!FFileHelper::LoadFileToString(MetaTexto, *RutaMeta))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Terreno][LIDAR] No se encontro %s — se usa solo DTM ancho"), *RutaMeta);
+		return;
+	}
+
+	TSharedPtr<FJsonObject> Meta;
+	const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(MetaTexto);
+	if (!FJsonSerializer::Deserialize(Reader, Meta) || !Meta.IsValid())
+	{
+		UE_LOG(LogTemp, Error, TEXT("[Terreno][LIDAR] JSON invalido en %s"), *RutaMeta);
+		return;
+	}
+
+	LidarRes     = Meta->GetIntegerField(TEXT("heightmapResolution"));
+	LidarWidthM  = Meta->GetNumberField(TEXT("terrainWidth"));
+	LidarLengthM = Meta->HasField(TEXT("terrainLength")) ? Meta->GetNumberField(TEXT("terrainLength")) : LidarWidthM;
+	LidarZMinM   = Meta->GetNumberField(TEXT("z_min"));
+	LidarZMaxM   = Meta->GetNumberField(TEXT("z_max"));
+
+	const FString RutaRawLidar = FPaths::Combine(FPaths::ProjectContentDir(), RutaLidarRAW);
+	TArray<uint8> Bytes;
+	if (!FFileHelper::LoadFileToArray(Bytes, *RutaRawLidar))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Terreno][LIDAR] No se pudo leer %s"), *RutaRawLidar);
+		return;
+	}
+
+	const int32 Esperado = LidarRes * LidarRes * 2;
+	if (Bytes.Num() != Esperado)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[Terreno][LIDAR] Tamano %d != esperado %d (res %d)"), Bytes.Num(), Esperado, LidarRes);
+		return;
+	}
+
+	LidarRaw.SetNumUninitialized(LidarRes * LidarRes);
+	FMemory::Memcpy(LidarRaw.GetData(), Bytes.GetData(), Esperado);
+	bLidarCargado = true;
+
+	UE_LOG(LogTemp, Log, TEXT("[Terreno][LIDAR] Cargado: %dx%d @ 0.5m, area %.0fx%.0fm, Z %.1f-%.1fm"),
+		LidarRes, LidarRes, LidarWidthM, LidarLengthM, LidarZMinM, LidarZMaxM);
+}
+
+bool ATerrenoGenerado::DentroLidar(double WorldXcm, double WorldYcm, double& OutDistBordeCm) const
+{
+	if (!bLidarCargado) return false;
+
+	const FVector Centro = CentroMundo();
+	const double HalfXcm = LidarWidthM * 100.0 * 0.5;
+	const double HalfYcm = LidarLengthM * 100.0 * 0.5;
+	const double Dx = WorldXcm - Centro.X;
+	const double Dy = WorldYcm - Centro.Y;
+
+	if (FMath::Abs(Dx) > HalfXcm || FMath::Abs(Dy) > HalfYcm) return false;
+
+	OutDistBordeCm = FMath::Min(HalfXcm - FMath::Abs(Dx), HalfYcm - FMath::Abs(Dy));
+	return true;
+}
+
+float ATerrenoGenerado::SampleLidarBicubic(double WorldXcm, double WorldYcm) const
+{
+	const FVector Centro = CentroMundo();
+	const double WidthCm  = LidarWidthM * 100.0;
+	const double LengthCm = LidarLengthM * 100.0;
+	const double OriginXcm = Centro.X - WidthCm * 0.5;
+	const double OriginYcm = Centro.Y - LengthCm * 0.5;
+
+	const double Fx = (WorldXcm - OriginXcm) / WidthCm;
+	const double Fy = (WorldYcm - OriginYcm) / LengthCm;
+
+	const double Px = FMath::Clamp(Fx * (LidarRes - 1), 0.5, LidarRes - 1.5);
+	const double Py = FMath::Clamp(Fy * (LidarRes - 1), 0.5, LidarRes - 1.5);
+	const int32 Ix = (int32)Px;
+	const int32 Iy = (int32)Py;
+	const float Tx = (float)(Px - Ix);
+	const float Ty = (float)(Py - Iy);
+
+	auto GetH = [this](int32 R, int32 C) -> float
+	{
+		R = FMath::Clamp(R, 0, LidarRes - 1);
+		C = FMath::Clamp(C, 0, LidarRes - 1);
+		const uint16 Raw = LidarRaw[R * LidarRes + C];
+		return (float)Raw / 65535.f * (float)(LidarZMaxM - LidarZMinM) + (float)LidarZMinM; // metros reales
+	};
+
+	auto CatmullRom = [](float T, float P0, float P1, float P2, float P3) -> float
+	{
+		return 0.5f * (
+			(2.f * P1) +
+			(-P0 + P2) * T +
+			(2.f * P0 - 5.f * P1 + 4.f * P2 - P3) * T * T +
+			(-P0 + 3.f * P1 - 3.f * P2 + P3) * T * T * T);
+	};
+
+	const float R0 = CatmullRom(Tx, GetH(Iy - 1, Ix - 1), GetH(Iy - 1, Ix), GetH(Iy - 1, Ix + 1), GetH(Iy - 1, Ix + 2));
+	const float R1 = CatmullRom(Tx, GetH(Iy,     Ix - 1), GetH(Iy,     Ix), GetH(Iy,     Ix + 1), GetH(Iy,     Ix + 2));
+	const float R2 = CatmullRom(Tx, GetH(Iy + 1, Ix - 1), GetH(Iy + 1, Ix), GetH(Iy + 1, Ix + 1), GetH(Iy + 1, Ix + 2));
+	const float R3 = CatmullRom(Tx, GetH(Iy + 2, Ix - 1), GetH(Iy + 2, Ix), GetH(Iy + 2, Ix + 1), GetH(Iy + 2, Ix + 2));
+
+	const float AltMReal = CatmullRom(Ty, R0, R1, R2, R3);
+	return AltMReal * 100.f; // metros → cm (mismo espacio absoluto que AltoDTM)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Validación RMSE contra lidar_ground.xyz (puntos de control reales)
+// ─────────────────────────────────────────────────────────────────────────────
+
+void ATerrenoGenerado::ValidarTerrenoRMSE()
+{
+	const FString Ruta = FPaths::Combine(FPaths::ProjectContentDir(), RutaLidarGround);
+	FString Texto;
+	if (!FFileHelper::LoadFileToString(Texto, *Ruta))
+	{
+		UE_LOG(LogTemp, Error, TEXT("[Validacion] No se pudo leer %s"), *Ruta);
+		return;
+	}
+
+	TArray<FString> Lineas;
+	Texto.ParseIntoArrayLines(Lineas);
+
+	double SumSq = 0.0, SumAbs = 0.0;
+	float MaxErr = 0.f;
+	int32 Contados = 0;
+
+	for (const FString& Linea : Lineas)
+	{
+		TArray<FString> Tok;
+		Linea.ParseIntoArrayWS(Tok);
+		if (Tok.Num() < 3) continue;
+
+		const double X = FCString::Atod(*Tok[0]);
+		const double Y = FCString::Atod(*Tok[1]); // altura real (m)
+		const double Z = FCString::Atod(*Tok[2]);
+
+		// lidar_ground.xyz está en coords absolutas del mundo (m): X este, Z norte, Y altura.
+		const double WX = X * 100.0;
+		const double WY = Z * 100.0;
+		const float AltoTerreno = AlturaEnMundo((float)WX, (float)WY); // cm
+		const float AltoRealCm = (float)(Y * 100.0);
+
+		const float Delta = (AltoTerreno - AltoRealCm) / 100.f; // error en metros
+		SumSq += Delta * Delta;
+		SumAbs += FMath::Abs(Delta);
+		MaxErr = FMath::Max(MaxErr, FMath::Abs(Delta));
+		Contados++;
+	}
+
+	if (Contados == 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Validacion] Sin puntos validos en %s"), *Ruta);
+		return;
+	}
+
+	const double RMSE = FMath::Sqrt(SumSq / Contados);
+	const double MAE = SumAbs / Contados;
+	const FString Estado = RMSE < 0.3 ? TEXT("OK") : (RMSE < 0.6 ? TEXT("ADVERTENCIA") : TEXT("CRITICO"));
+
+	UE_LOG(LogTemp, Log, TEXT("[Validacion] RMSE=%.3fm MAE=%.3fm MAX=%.3fm (%d puntos) — Estado: %s"),
+		RMSE, MAE, MaxErr, Contados, *Estado);
 }
 
 FVector ATerrenoGenerado::CalcNormal(int32 PxX, int32 PxY) const
@@ -180,6 +385,28 @@ void ATerrenoGenerado::GenerarDesdeRAW(const FString& RutaR16, int32 Res,
 
 	OriginWorld = FVector(CentroXY.X - MitadMundo(), CentroXY.Y - MitadMundo(), 0.0);
 
+	// Funde el LIDAR en AlturasRAW una sola vez. BuildMeshData llama AlturaWorld
+	// ~18 veces por vértice; sin este cache serían 18 muestras bicúbicas+exp por vértice.
+	if (bUsarLidar && bLidarCargado && !bLidarFusionado)
+	{
+		const uint64 T0 = FPlatformTime::Cycles64();
+		TArray<uint16> Fusion;
+		Fusion.SetNumUninitialized(ResolucionRAW * ResolucionRAW);
+		for (int32 Py = 0; Py < ResolucionRAW; Py++)
+		{
+			for (int32 Px = 0; Px < ResolucionRAW; Px++)
+			{
+				const float AltoCm = AlturaWorld(Px, Py);
+				const int32 Raw = FMath::RoundToInt((AltoCm - (float)LocZ) / (float)EscalaZ * 64.0);
+				Fusion[Py * ResolucionRAW + Px] = (uint16)FMath::Clamp(Raw, 0, 65535);
+			}
+		}
+		AlturasRAW = MoveTemp(Fusion);
+		bLidarFusionado = true;
+		const double Ms = FPlatformTime::ToMilliseconds64(FPlatformTime::Cycles64() - T0);
+		UE_LOG(LogTemp, Log, TEXT("[Terreno][LIDAR] Blend precomputado en %.0f ms"), Ms);
+	}
+
 	const int32 PixelesPorChunk = SizeChunkPx;
 	NumChunksX = (Res - 1) / PixelesPorChunk;
 	NumChunksY = (Res - 1) / PixelesPorChunk;
@@ -266,6 +493,16 @@ void ATerrenoGenerado::BuildMeshData(const FInfoChunk& Info, int32 Step,
 UMaterialInterface* ATerrenoGenerado::CrearMaterialTerreno()
 {
 #if WITH_EDITOR
+	// -game / standalone sin editor: UEditorAssetLibrary no es utilizable.
+	if (!GEditor)
+	{
+		if (UMaterialInterface* Mat = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_TerrenoAlsasua.M_TerrenoAlsasua")))
+		{
+			return Mat;
+		}
+		return LoadObject<UMaterialInterface>(nullptr, TEXT("/Engine/EngineMaterials/WorldGridMaterial.WorldGridMaterial"));
+	}
+
 	const FString Carpeta = TEXT("/Game/Materiales");
 	const FString Nombre  = TEXT("M_TerrenoAlsasua");
 	const FString Ruta    = Carpeta / Nombre;
@@ -285,73 +522,217 @@ UMaterialInterface* ATerrenoGenerado::CrearMaterialTerreno()
 		return nullptr;
 	}
 
+	Mat->BlendMode = EBlendMode::BLEND_Opaque;
+	Mat->SetShadingModel(EMaterialShadingModel::MSM_DefaultLit);
+	Mat->TwoSided = false;
+
 	using ML = UMaterialEditingLibrary;
+
+	// ── World Position for tiling ──────────────────────────────────────
+	UMaterialExpressionWorldPosition* WP = Cast<UMaterialExpressionWorldPosition>(
+		ML::CreateMaterialExpression(Mat, UMaterialExpressionWorldPosition::StaticClass(), -1200, 400));
+
+	UMaterialExpressionScalarParameter* TileScale = Cast<UMaterialExpressionScalarParameter>(
+		ML::CreateMaterialExpression(Mat, UMaterialExpressionScalarParameter::StaticClass(), -1200, 500));
+	TileScale->ParameterName = TEXT("TilingScale");
+	TileScale->DefaultValue = 1.0f / FMath::Max(TextureTilingCm, 1.0f);
+
+	UMaterialExpressionMultiply* TileXY = Cast<UMaterialExpressionMultiply>(
+		ML::CreateMaterialExpression(Mat, UMaterialExpressionMultiply::StaticClass(), -900, 450));
+	ML::ConnectMaterialExpressions(WP, TEXT(""), TileXY, TEXT("A"));
+	ML::ConnectMaterialExpressions(TileScale, TEXT(""), TileXY, TEXT("B"));
 
 	// ── Vertex Color ────────────────────────────────────────────────────
 	UMaterialExpressionVertexColor* VC = Cast<UMaterialExpressionVertexColor>(
 		ML::CreateMaterialExpression(Mat, UMaterialExpressionVertexColor::StaticClass(), -800, 0));
 
-	// ── Colores base ────────────────────────────────────────────────────
-	UMaterialExpressionConstant4Vector* CWater = Cast<UMaterialExpressionConstant4Vector>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionConstant4Vector::StaticClass(), -800, -280));
-	CWater->Constant = FLinearColor(0.05f, 0.12f, 0.18f, 1.f);
+	// ── TEXTURE SAMPLES ─────────────────────────────────────────────────
 
-	UMaterialExpressionConstant4Vector* CGrass = Cast<UMaterialExpressionConstant4Vector>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionConstant4Vector::StaticClass(), -800, -140));
-	CGrass->Constant = FLinearColor(0.15f, 0.32f, 0.10f, 1.f);
+	auto SafeLoad = [](TSoftObjectPtr<UTexture>& Slot, const TCHAR* Fallback) -> UTexture*
+	{
+		if (Slot.IsValid()) return Slot.Get();
+		if (Slot.IsPending()) { UTexture* T = Slot.LoadSynchronous(); if (T) return T; }
+		return LoadObject<UTexture>(nullptr, Fallback);
+	};
 
-	UMaterialExpressionConstant4Vector* CRock = Cast<UMaterialExpressionConstant4Vector>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionConstant4Vector::StaticClass(), -800, 80));
-	CRock->Constant = FLinearColor(0.28f, 0.24f, 0.20f, 1.f);
+	// ── Ortofoto satelital real, draped sobre todo el terreno ───────────
+	const double SatExtentCm = (ResolucionRAW - 1) * EscalaXY;
+	const double SatOriginX = OriginWorld.X;
+	const double SatOriginY = OriginWorld.Y;
+
+	UMaterialExpressionComponentMask* WPMaskX = Cast<UMaterialExpressionComponentMask>(
+		ML::CreateMaterialExpression(Mat, UMaterialExpressionComponentMask::StaticClass(), -1200, 700));
+	WPMaskX->R = 1; WPMaskX->G = 0; WPMaskX->B = 0; WPMaskX->A = 0;
+	ML::ConnectMaterialExpressions(WP, TEXT(""), WPMaskX, TEXT(""));
+
+	UMaterialExpressionComponentMask* WPMaskY = Cast<UMaterialExpressionComponentMask>(
+		ML::CreateMaterialExpression(Mat, UMaterialExpressionComponentMask::StaticClass(), -1200, 760));
+	WPMaskY->R = 0; WPMaskY->G = 1; WPMaskY->B = 0; WPMaskY->A = 0;
+	ML::ConnectMaterialExpressions(WP, TEXT(""), WPMaskY, TEXT(""));
+
+	UMaterialExpressionConstant* SatOriginXExpr = Cast<UMaterialExpressionConstant>(
+		ML::CreateMaterialExpression(Mat, UMaterialExpressionConstant::StaticClass(), -1050, 700));
+	SatOriginXExpr->R = (float)SatOriginX;
+	UMaterialExpressionConstant* SatOriginYExpr = Cast<UMaterialExpressionConstant>(
+		ML::CreateMaterialExpression(Mat, UMaterialExpressionConstant::StaticClass(), -1050, 760));
+	SatOriginYExpr->R = (float)SatOriginY;
+
+	UMaterialExpressionSubtract* SubX = Cast<UMaterialExpressionSubtract>(
+		ML::CreateMaterialExpression(Mat, UMaterialExpressionSubtract::StaticClass(), -900, 700));
+	ML::ConnectMaterialExpressions(WPMaskX, TEXT(""), SubX, TEXT("A"));
+	ML::ConnectMaterialExpressions(SatOriginXExpr, TEXT(""), SubX, TEXT("B"));
+
+	UMaterialExpressionSubtract* SubY = Cast<UMaterialExpressionSubtract>(
+		ML::CreateMaterialExpression(Mat, UMaterialExpressionSubtract::StaticClass(), -900, 760));
+	ML::ConnectMaterialExpressions(WPMaskY, TEXT(""), SubY, TEXT("A"));
+	ML::ConnectMaterialExpressions(SatOriginYExpr, TEXT(""), SubY, TEXT("B"));
+
+	UMaterialExpressionScalarParameter* InvExtent = Cast<UMaterialExpressionScalarParameter>(
+		ML::CreateMaterialExpression(Mat, UMaterialExpressionScalarParameter::StaticClass(), -900, 820));
+	InvExtent->ParameterName = TEXT("SatInvExtent");
+	InvExtent->DefaultValue = 1.0f / FMath::Max((float)SatExtentCm, 1.0f);
+
+	UMaterialExpressionMultiply* MulU = Cast<UMaterialExpressionMultiply>(
+		ML::CreateMaterialExpression(Mat, UMaterialExpressionMultiply::StaticClass(), -750, 700));
+	ML::ConnectMaterialExpressions(SubX, TEXT(""), MulU, TEXT("A"));
+	ML::ConnectMaterialExpressions(InvExtent, TEXT(""), MulU, TEXT("B"));
+
+	UMaterialExpressionMultiply* MulV = Cast<UMaterialExpressionMultiply>(
+		ML::CreateMaterialExpression(Mat, UMaterialExpressionMultiply::StaticClass(), -750, 760));
+	ML::ConnectMaterialExpressions(SubY, TEXT(""), MulV, TEXT("A"));
+	ML::ConnectMaterialExpressions(InvExtent, TEXT(""), MulV, TEXT("B"));
+
+	UMaterialExpressionAppendVector* SatUV = Cast<UMaterialExpressionAppendVector>(
+		ML::CreateMaterialExpression(Mat, UMaterialExpressionAppendVector::StaticClass(), -600, 730));
+	ML::ConnectMaterialExpressions(MulU, TEXT(""), SatUV, TEXT("A"));
+	ML::ConnectMaterialExpressions(MulV, TEXT(""), SatUV, TEXT("B"));
+
+	UTexture* SatTex = SafeLoad(SatelliteImage, TEXT("/Game/Terreno/T_Satelite_Alsasua.T_Satelite_Alsasua"));
+	UMaterialExpressionTextureSample* SatSample = Cast<UMaterialExpressionTextureSample>(
+		ML::CreateMaterialExpression(Mat, UMaterialExpressionTextureSample::StaticClass(), -400, 730));
+	if (SatTex) { SatSample->Texture = SatTex; SatSample->SamplerType = SAMPLERTYPE_Color; }
+	ML::ConnectMaterialExpressions(SatUV, TEXT(""), SatSample, TEXT("UVs"));
+
+	UTexture* GrassTex = SafeLoad(GrassDiffuse,
+		TEXT("/Game/AssetsImportados/TexturasUnity/GrassPBR_Color.GrassPBR_Color"));
+	UMaterialExpressionTextureSample* GrassDiff = Cast<UMaterialExpressionTextureSample>(
+		ML::CreateMaterialExpression(Mat, UMaterialExpressionTextureSample::StaticClass(), -800, -350));
+	if (GrassTex) { GrassDiff->Texture = GrassTex; GrassDiff->SamplerType = SAMPLERTYPE_Color; }
+	ML::ConnectMaterialExpressions(TileXY, TEXT(""), GrassDiff, TEXT("UVs"));
+
+	UTexture* RockTex = SafeLoad(RockDiffuse,
+		TEXT("/Game/AssetsImportados/Naturaleza/rocks/01/diffuse"));
+	UMaterialExpressionTextureSample* RockDiff = Cast<UMaterialExpressionTextureSample>(
+		ML::CreateMaterialExpression(Mat, UMaterialExpressionTextureSample::StaticClass(), -800, -100));
+	if (RockTex) { RockDiff->Texture = RockTex; RockDiff->SamplerType = SAMPLERTYPE_Color; }
+	ML::ConnectMaterialExpressions(TileXY, TEXT(""), RockDiff, TEXT("UVs"));
+
+	UTexture* GroundTex = SafeLoad(GroundDiffuse,
+		TEXT("/Game/AssetsImportados/TexturasUnity/GroundPBR_Color.GroundPBR_Color"));
+	UMaterialExpressionTextureSample* GroundDiff = Cast<UMaterialExpressionTextureSample>(
+		ML::CreateMaterialExpression(Mat, UMaterialExpressionTextureSample::StaticClass(), -800, 100));
+	if (GroundTex) { GroundDiff->Texture = GroundTex; GroundDiff->SamplerType = SAMPLERTYPE_Color; }
+	ML::ConnectMaterialExpressions(TileXY, TEXT(""), GroundDiff, TEXT("UVs"));
 
 	UMaterialExpressionConstant4Vector* CSnow = Cast<UMaterialExpressionConstant4Vector>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionConstant4Vector::StaticClass(), -800, 280));
-	CSnow->Constant = FLinearColor(0.72f, 0.70f, 0.68f, 1.f);
+		ML::CreateMaterialExpression(Mat, UMaterialExpressionConstant4Vector::StaticClass(), -800, 300));
+	CSnow->Constant = FLinearColor(0.85f, 0.85f, 0.88f, 1.f);
 
-	// ── Blend por altura (VC.R): Water → Grass ─────────────────────────
+	UMaterialExpressionConstant4Vector* CWater = Cast<UMaterialExpressionConstant4Vector>(
+		ML::CreateMaterialExpression(Mat, UMaterialExpressionConstant4Vector::StaticClass(), -800, -500));
+	CWater->Constant = FLinearColor(0.05f, 0.12f, 0.18f, 1.f);
+
+	// ── NORMAL MAPS ─────────────────────────────────────────────────────
+	UTexture* GrassNormTex = SafeLoad(GrassNormal,
+		TEXT("/Game/AssetsImportados/TexturasUnity/GrassPBR_Normal.GrassPBR_Normal"));
+	UTexture* RockNormTex = SafeLoad(RockNormal,
+		TEXT("/Game/AssetsImportados/Naturaleza/rocks/01/normal"));
+	UTexture* GroundNormTex = SafeLoad(GroundNormal,
+		TEXT("/Game/AssetsImportados/TexturasUnity/GroundPBR_Normal.GroundPBR_Normal"));
+
+	UMaterialExpressionTextureSample* GrassNorm = Cast<UMaterialExpressionTextureSample>(
+		ML::CreateMaterialExpression(Mat, UMaterialExpressionTextureSample::StaticClass(), -400, -350));
+	if (GrassNormTex) { GrassNorm->Texture = GrassNormTex; GrassNorm->SamplerType = SAMPLERTYPE_LinearColor; }
+	ML::ConnectMaterialExpressions(TileXY, TEXT(""), GrassNorm, TEXT("UVs"));
+
+	UMaterialExpressionTextureSample* RockNorm = Cast<UMaterialExpressionTextureSample>(
+		ML::CreateMaterialExpression(Mat, UMaterialExpressionTextureSample::StaticClass(), -400, -100));
+	if (RockNormTex) { RockNorm->Texture = RockNormTex; RockNorm->SamplerType = SAMPLERTYPE_LinearColor; }
+	ML::ConnectMaterialExpressions(TileXY, TEXT(""), RockNorm, TEXT("UVs"));
+
+	UMaterialExpressionTextureSample* GroundNorm = Cast<UMaterialExpressionTextureSample>(
+		ML::CreateMaterialExpression(Mat, UMaterialExpressionTextureSample::StaticClass(), -400, 100));
+	if (GroundNormTex) { GroundNorm->Texture = GroundNormTex; GroundNorm->SamplerType = SAMPLERTYPE_LinearColor; }
+	ML::ConnectMaterialExpressions(TileXY, TEXT(""), GroundNorm, TEXT("UVs"));
+
+	// ── BLEND: Water → Grass (by VC.R height) ──────────────────────────
 	UMaterialExpressionLinearInterpolate* LerpH = Cast<UMaterialExpressionLinearInterpolate>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionLinearInterpolate::StaticClass(), -200, -200));
+		ML::CreateMaterialExpression(Mat, UMaterialExpressionLinearInterpolate::StaticClass(), 0, -350));
 	ML::ConnectMaterialExpressions(CWater, TEXT(""), LerpH, TEXT("A"));
-	ML::ConnectMaterialExpressions(CGrass, TEXT(""), LerpH, TEXT("B"));
+	ML::ConnectMaterialExpressions(GrassDiff, TEXT(""), LerpH, TEXT("B"));
 	ML::ConnectMaterialExpressions(VC, TEXT("R"), LerpH, TEXT("Alpha"));
 
-	// ── Blend por pendiente (VC.G): grass → rock ───────────────────────
+	// ── BLEND: grass+water → Rock (by VC.G slope) ──────────────────────
 	UMaterialExpressionLinearInterpolate* LerpS = Cast<UMaterialExpressionLinearInterpolate>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionLinearInterpolate::StaticClass(), 200, 80));
+		ML::CreateMaterialExpression(Mat, UMaterialExpressionLinearInterpolate::StaticClass(), 300, -100));
 	ML::ConnectMaterialExpressions(LerpH, TEXT(""), LerpS, TEXT("A"));
-	ML::ConnectMaterialExpressions(CRock, TEXT(""), LerpS, TEXT("B"));
+	ML::ConnectMaterialExpressions(RockDiff, TEXT(""), LerpS, TEXT("B"));
 	ML::ConnectMaterialExpressions(VC, TEXT("G"), LerpS, TEXT("Alpha"));
 
-	// ── Blend por altitud (VC.R > 0.6 → snow) ──────────────────────────
-	// Usamos LerpS como base y blend con snow por encima de 0.6
+	// ── BLEND: base → Snow (by VC.R > 0.6 altitude) ────────────────────
 	UMaterialExpressionLinearInterpolate* LerpA = Cast<UMaterialExpressionLinearInterpolate>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionLinearInterpolate::StaticClass(), 600, 200));
+		ML::CreateMaterialExpression(Mat, UMaterialExpressionLinearInterpolate::StaticClass(), 600, 0));
 	ML::ConnectMaterialExpressions(LerpS, TEXT(""), LerpA, TEXT("A"));
 	ML::ConnectMaterialExpressions(CSnow, TEXT(""), LerpA, TEXT("B"));
 	ML::ConnectMaterialExpressions(VC, TEXT("R"), LerpA, TEXT("Alpha"));
 
-	// ── Roughness por pendiente (plano = 0.8, pendiente = 0.6) ──────────
-	UMaterialExpressionConstant* RFlat = Cast<UMaterialExpressionConstant>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionConstant::StaticClass(), -400, 460));
-	RFlat->R = 0.8f;
-	UMaterialExpressionConstant* RSteep = Cast<UMaterialExpressionConstant>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionConstant::StaticClass(), -400, 540));
-	RSteep->R = 0.6f;
-	UMaterialExpressionLinearInterpolate* LerpR = Cast<UMaterialExpressionLinearInterpolate>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionLinearInterpolate::StaticClass(), -100, 500));
-	ML::ConnectMaterialExpressions(RFlat, TEXT(""), LerpR, TEXT("A"));
-	ML::ConnectMaterialExpressions(RSteep, TEXT(""), LerpR, TEXT("B"));
-	ML::ConnectMaterialExpressions(VC, TEXT("G"), LerpR, TEXT("Alpha"));
+	// ── NORMAL BLEND (same chain) ───────────────────────────────────────
+	UMaterialExpressionLinearInterpolate* NormH = Cast<UMaterialExpressionLinearInterpolate>(
+		ML::CreateMaterialExpression(Mat, UMaterialExpressionLinearInterpolate::StaticClass(), 0, 200));
+	ML::ConnectMaterialExpressions(GrassNorm, TEXT(""), NormH, TEXT("A"));
+	ML::ConnectMaterialExpressions(RockNorm, TEXT(""), NormH, TEXT("B"));
+	ML::ConnectMaterialExpressions(VC, TEXT("G"), NormH, TEXT("Alpha"));
+
+	// ── ROUGHNESS (grass=0.9, rock=0.7, snow=0.3) ──────────────────────
+	UMaterialExpressionConstant* RG = Cast<UMaterialExpressionConstant>(
+		ML::CreateMaterialExpression(Mat, UMaterialExpressionConstant::StaticClass(), -400, 600));
+	RG->R = 0.9f;
+	UMaterialExpressionConstant* RR = Cast<UMaterialExpressionConstant>(
+		ML::CreateMaterialExpression(Mat, UMaterialExpressionConstant::StaticClass(), -400, 660));
+	RR->R = 0.7f;
+	UMaterialExpressionConstant* RS = Cast<UMaterialExpressionConstant>(
+		ML::CreateMaterialExpression(Mat, UMaterialExpressionConstant::StaticClass(), -400, 720));
+	RS->R = 0.3f;
+
+	UMaterialExpressionLinearInterpolate* LerpRG = Cast<UMaterialExpressionLinearInterpolate>(
+		ML::CreateMaterialExpression(Mat, UMaterialExpressionLinearInterpolate::StaticClass(), -100, 620));
+	ML::ConnectMaterialExpressions(RG, TEXT(""), LerpRG, TEXT("A"));
+	ML::ConnectMaterialExpressions(RR, TEXT(""), LerpRG, TEXT("B"));
+	ML::ConnectMaterialExpressions(VC, TEXT("G"), LerpRG, TEXT("Alpha"));
+
+	UMaterialExpressionLinearInterpolate* LerpRRS = Cast<UMaterialExpressionLinearInterpolate>(
+		ML::CreateMaterialExpression(Mat, UMaterialExpressionLinearInterpolate::StaticClass(), 200, 660));
+	ML::ConnectMaterialExpressions(LerpRG, TEXT(""), LerpRRS, TEXT("A"));
+	ML::ConnectMaterialExpressions(RS, TEXT(""), LerpRRS, TEXT("B"));
+	ML::ConnectMaterialExpressions(VC, TEXT("R"), LerpRRS, TEXT("Alpha"));
+
+	// ── Satelite drapeado, agua se mantiene en zonas bajas (VC.R) ──────
+	UMaterialExpressionLinearInterpolate* LerpWaterSat = Cast<UMaterialExpressionLinearInterpolate>(
+		ML::CreateMaterialExpression(Mat, UMaterialExpressionLinearInterpolate::StaticClass(), -200, -500));
+	ML::ConnectMaterialExpressions(CWater, TEXT(""), LerpWaterSat, TEXT("A"));
+	ML::ConnectMaterialExpressions(SatSample, TEXT(""), LerpWaterSat, TEXT("B"));
+	ML::ConnectMaterialExpressions(VC, TEXT("R"), LerpWaterSat, TEXT("Alpha"));
 
 	// ── Connect outputs ─────────────────────────────────────────────────
-	ML::ConnectMaterialProperty(LerpA, TEXT(""), MP_BaseColor);
-	ML::ConnectMaterialProperty(LerpR, TEXT(""), MP_Roughness);
+	ML::ConnectMaterialProperty(LerpWaterSat, TEXT(""), MP_BaseColor);
+	ML::ConnectMaterialProperty(LerpRRS, TEXT(""), MP_Roughness);
+	ML::ConnectMaterialProperty(NormH, TEXT(""), MP_Normal);
 
 	Mat->PostEditChange();
 	ML::RecompileMaterial(Mat);
 	UEditorAssetLibrary::SaveAsset(Ruta, false);
 
-	UE_LOG(LogTemp, Log, TEXT("[Terreno] Material M_TerrenoAlsasua creado en %s"), *Ruta);
+	UE_LOG(LogTemp, Log, TEXT("[Terreno] Material M_TerrenoAlsasua (PBR) creado en %s"), *Ruta);
 	return Mat;
 #else
 	return LoadObject<UMaterialInterface>(nullptr, TEXT("/Engine/EngineMaterials/WorldGridMaterial.WorldGridMaterial"));
@@ -371,6 +752,7 @@ void ATerrenoGenerado::GenerarChunk(FInfoChunk& Info, int32 LODLevel, int32 Step
 
 	FString Name = FString::Printf(TEXT("Chunk_%d_%d_LOD%d"), Info.ChunkX, Info.ChunkY, LODLevel);
 	UProceduralMeshComponent* PMC = NewObject<UProceduralMeshComponent>(this, FName(*Name));
+	PMC->RegisterComponent();
 	PMC->SetupAttachment(RootComponent);
 	PMC->SetMobility(EComponentMobility::Static);
 	PMC->bUseAsyncCooking = true;
@@ -437,11 +819,27 @@ void ATerrenoGenerado::GenerarChunk(FInfoChunk& Info, int32 LODLevel, int32 Step
 
 void ATerrenoGenerado::GenerarTodosChunks()
 {
-	for (FInfoChunk& Info : ChunksInfo)
+	ChunkIndexProgreso = 0;
+	PrimaryActorTick.TickInterval = 0.0f;
+	UE_LOG(LogTemp, Log, TEXT("[Terreno] %d chunks encolados (generando %d/frame)"), ChunksInfo.Num(), CHUNKS_POR_FRAME);
+}
+
+void ATerrenoGenerado::GenerarSiguienteChunk()
+{
+	const int32 Inicio = ChunkIndexProgreso;
+	const int32 Fin = FMath::Min(ChunkIndexProgreso + CHUNKS_POR_FRAME, ChunksInfo.Num());
+	for (int32 i = Inicio; i < Fin; i++)
 	{
+		FInfoChunk& Info = ChunksInfo[i];
 		GenerarChunk(Info, 0, LOD0Step);
 		GenerarChunk(Info, 1, LOD1Step);
 		GenerarChunk(Info, 2, LOD2Step);
+	}
+	ChunkIndexProgreso = Fin;
+	if (ChunkIndexProgreso >= ChunksInfo.Num())
+	{
+		PrimaryActorTick.TickInterval = 0.1f;
+		UE_LOG(LogTemp, Log, TEXT("[Terreno] Todos los chunks generados (%d)"), ChunksInfo.Num());
 	}
 }
 

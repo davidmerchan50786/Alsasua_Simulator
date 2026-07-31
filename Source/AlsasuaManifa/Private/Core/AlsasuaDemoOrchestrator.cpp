@@ -1,4 +1,5 @@
 #include "Core/AlsasuaDemoOrchestrator.h"
+#include "GameFramework/Character.h"
 #include "Core/AlsasuaEventManager.h"
 #include "Core/AlsasuaBudgetManager.h"
 #include "AI/AlsasuaSquadManager.h"

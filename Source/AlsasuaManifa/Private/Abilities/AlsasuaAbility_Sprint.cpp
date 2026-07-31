@@ -35,7 +35,7 @@ void UAlsasuaAbility_Sprint::ActivateAbility(const FGameplayAbilitySpecHandle Ha
 			if (!WeakChar.IsValid()) { CancelAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true); return; }
 			UAlsasuaAbilitySystemComponent* ASC = Cast<UAlsasuaAbilitySystemComponent>(WeakChar->FindComponentByClass<UAlsasuaAbilitySystemComponent>());
 			if (!ASC) { CancelAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true); return; }
-			UAlsasuaAttributeSet* AS = ASC->GetSet<UAlsasuaAttributeSet>();
+			const UAlsasuaAttributeSet* AS = ASC->GetSet<UAlsasuaAttributeSet>();
 			if (!AS) { CancelAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true); return; }
 
 			ASC->ApplyModToAttribute(AS->GetStaminaAttribute(), EGameplayModOp::Additive, -StaminaDrainPerTick);

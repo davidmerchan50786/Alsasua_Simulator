@@ -89,3 +89,6 @@ void UProcessionDirectorSubsystem::TriggerBombFailure() {
 
     UpdateCityStateByOutcome();
 }
+
+void UProcessionDirectorSubsystem::UpdateCityStateByOutcome() {
+}

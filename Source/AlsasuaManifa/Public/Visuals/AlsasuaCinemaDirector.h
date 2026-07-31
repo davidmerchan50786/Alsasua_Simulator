@@ -16,7 +16,7 @@ public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
     virtual void Tick(float DeltaTime) override;
     virtual bool IsAllowedToTick() const override { return true; }
-    virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(AlsasuaCinemaDirector, STATGROUP_AlsasuaCrowd); }
+    virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(AlsasuaCinemaDirector, STATGROUP_Game); }
 
     // Registra un evento de interés visual para que la cámara lo "sienta"
     UFUNCTION(BlueprintCallable, Category = "AAA|Camera")

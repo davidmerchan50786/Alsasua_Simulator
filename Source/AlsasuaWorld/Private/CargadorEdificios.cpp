@@ -115,9 +115,7 @@ void UCargadorEdificios::ConstruirUno(const TSharedPtr<FJsonObject>& O)
 		const TSharedPtr<FJsonObject> Po = Pv->AsObject();
 		if (!Po.IsValid()) continue;
 		// buildings_final.json es RELATIVO a Herriko Plaza: sumar OX/OZ -> mundo Unity absoluto.
-		const double ux = Po->GetNumberField(TEXT("x")) + UAlsasuaGeoData::OX;
-		const double uz = Po->GetNumberField(TEXT("z")) + UAlsasuaGeoData::OZ;
-		const FVector M = UAlsasuaGeoData::UnityaUnreal(FVector(ux, 0.0, uz));
+		const FVector M = UAlsasuaGeoData::RelLocalToUE5(FVector(Po->GetNumberField(TEXT("x")), 0.0, Po->GetNumberField(TEXT("z"))));
 		MundoXY.Add(FVector2D(M.X, M.Y));
 		Centro += FVector2D(M.X, M.Y);
 	}

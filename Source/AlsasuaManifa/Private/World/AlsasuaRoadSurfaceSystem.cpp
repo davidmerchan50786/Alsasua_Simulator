@@ -131,8 +131,12 @@ int32 UAlsasuaRoadSurfaceSystem::AplicarSuperficiesEnMundo()
 
             FLinearColor* Color = MaterialColors.Find(Entry.Material);
             if (Color)
-                RoadActor->GetStaticMeshComponent()->SetVectorOverrideParameterValue(
-                    TEXT("Color"), *Color);
+            {
+                if (UMaterialInstanceDynamic* DynMat = RoadActor->GetStaticMeshComponent()->CreateDynamicMaterialInstance(0))
+                {
+                    DynMat->SetVectorParameterValue(FName(TEXT("Color")), *Color);
+                }
+            }
 
 #if WITH_EDITOR
             RoadActor->SetActorLabel(*FString::Printf(TEXT("Road_%s_%s"),

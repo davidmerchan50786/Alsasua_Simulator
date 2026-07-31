@@ -106,10 +106,19 @@ void UClimaSubsystem::Tick(float DeltaTime)
 	Cur.Niebla    = FMath::Lerp(Cur.Niebla,    Objetivo.Niebla,    a);
 	Cur.Nubosidad = FMath::Lerp(Cur.Nubosidad, Objetivo.Nubosidad, a);
 
-	AplicarNiebla();
+	// Setters globales de render (niebla + MPC) solo 4x/seg: los valores cambian
+	// lento, y un SetFogDensity/SetScalarParameterValue por frame invalida el
+	// cache de draw commands de los ~117k prims del pueblo.
+	TiempoActualizacion -= DeltaTime;
+	if (TiempoActualizacion <= 0.f)
+	{
+		TiempoActualizacion = 0.25f;
+		AplicarNiebla();
+		GestionarMojado(DeltaTime);
+	}
+
 	GestionarLluviaVFX();
 	GestionarTormenta(DeltaTime);
-	GestionarMojado(DeltaTime);
 }
 
 void UClimaSubsystem::GestionarMojado(float DeltaTime)

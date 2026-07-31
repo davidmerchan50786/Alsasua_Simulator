@@ -10,10 +10,10 @@ struct FPhotoSubject
     GENERATED_BODY()
 
     UPROPERTY(BlueprintReadOnly)
-    AActor* Actor;
+    AActor* Actor = nullptr;
 
     UPROPERTY(BlueprintReadOnly)
-    float Importance;
+    float Importance = 0.f;
 
     UPROPERTY(BlueprintReadOnly)
     FString Description;

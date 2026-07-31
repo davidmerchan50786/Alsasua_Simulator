@@ -28,7 +28,7 @@ void UAlsasuaFoliagePainter::InicializarTipos()
 
     const FString Base = TEXT("/Game/AssetsImportados/Naturaleza");
 
-    FFoliageType Grass02;
+    FFoliageTypeData Grass02;
     Grass02.Nombre = TEXT("Hierba_Larga");
     Grass02.AssetPath = Base + TEXT("/grass_02/grass_04/diffus");
     Grass02.EscalaMin = 0.5f;
@@ -37,7 +37,7 @@ void UAlsasuaFoliagePainter::InicializarTipos()
     Grass02.Tipo = TEXT("hierba");
     Tipos.Add(Grass02);
 
-    FFoliageType Grass07;
+    FFoliageTypeData Grass07;
     Grass07.Nombre = TEXT("Hierba_Corta");
     Grass07.AssetPath = Base + TEXT("/grass_07/diffus");
     Grass07.EscalaMin = 0.3f;
@@ -46,7 +46,7 @@ void UAlsasuaFoliagePainter::InicializarTipos()
     Grass07.Tipo = TEXT("hierba");
     Tipos.Add(Grass07);
 
-    FFoliageType HedgeLong;
+    FFoliageTypeData HedgeLong;
     HedgeLong.Nombre = TEXT("Seto_Largo");
     HedgeLong.AssetPath = Base + TEXT("/Hedges/Long/HedgeLong");
     HedgeLong.EscalaMin = 0.8f;
@@ -55,7 +55,7 @@ void UAlsasuaFoliagePainter::InicializarTipos()
     HedgeLong.Tipo = TEXT("seto");
     Tipos.Add(HedgeLong);
 
-    FFoliageType HedgeSmall;
+    FFoliageTypeData HedgeSmall;
     HedgeSmall.Nombre = TEXT("Seto_Pequeno");
     HedgeSmall.AssetPath = Base + TEXT("/Hedges/Small/HedgeSmall");
     HedgeSmall.EscalaMin = 0.6f;
@@ -64,7 +64,7 @@ void UAlsasuaFoliagePainter::InicializarTipos()
     HedgeSmall.Tipo = TEXT("seto");
     Tipos.Add(HedgeSmall);
 
-    FFoliageType Rock01;
+    FFoliageTypeData Rock01;
     Rock01.Nombre = TEXT("Roca_01");
     Rock01.AssetPath = Base + TEXT("/rocks/01/rock_01");
     Rock01.EscalaMin = 0.5f;
@@ -73,7 +73,7 @@ void UAlsasuaFoliagePainter::InicializarTipos()
     Rock01.Tipo = TEXT("roca");
     Tipos.Add(Rock01);
 
-    FFoliageType Rock03;
+    FFoliageTypeData Rock03;
     Rock03.Nombre = TEXT("Roca_03");
     Rock03.AssetPath = Base + TEXT("/rocks/03/rock_03");
     Rock03.EscalaMin = 0.3f;
@@ -82,7 +82,7 @@ void UAlsasuaFoliagePainter::InicializarTipos()
     Rock03.Tipo = TEXT("roca");
     Tipos.Add(Rock03);
 
-    FFoliageType Weed01;
+    FFoliageTypeData Weed01;
     Weed01.Nombre = TEXT("Maleza_01");
     Weed01.AssetPath = Base + TEXT("/tiny_weeds_2/01");
     Weed01.EscalaMin = 0.3f;
@@ -91,7 +91,7 @@ void UAlsasuaFoliagePainter::InicializarTipos()
     Weed01.Tipo = TEXT("maleza");
     Tipos.Add(Weed01);
 
-    FFoliageType Ivy;
+    FFoliageTypeData Ivy;
     Ivy.Nombre = TEXT("Hiedra");
     Ivy.AssetPath = Base + TEXT("/tiny_weeds_3/ivy/ivy_default");
     Ivy.EscalaMin = 0.5f;
@@ -148,7 +148,7 @@ int32 UAlsasuaFoliagePainter::PintarFoliageEnZonasVerdes()
         const FVector Center = UAlsasuaGeoData::UnityaUnreal(FVector(GX, GZ, 0));
         const float RadiusCm = Radius * 100.0f;
 
-        for (const FFoliageType& Tipo : Tipos)
+        for (const FFoliageTypeData& Tipo : Tipos)
         {
             const int32 Count = FMath::Max(1, (int32)(RadiusCm * Tipo.Densidad / 500.0f));
             for (int32 i = 0; i < Count; i++)

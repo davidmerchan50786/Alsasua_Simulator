@@ -8,6 +8,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Kismet/GameplayStatics.h"
+#include "GameFramework/GameStateBase.h"
 
 UAlsasuaNightLightingSystem::UAlsasuaNightLightingSystem()
 {
@@ -46,8 +47,7 @@ void UAlsasuaNightLightingSystem::UpdateNightFactor()
     UWorld* World = GetWorld();
     if (!World) return;
 
-    const FDateTime Now = World->GetGameState()->GetServerWorldTimeSeconds();
-    float TotalSeconds = World->GetGameState()->GetServerWorldTimeSeconds();
+    const float TotalSeconds = World->GetGameState()->GetServerWorldTimeSeconds();
     CurrentHour = fmod(TotalSeconds / 3600.0f, 24.0f);
 
     float NightStart = SunsetHour;

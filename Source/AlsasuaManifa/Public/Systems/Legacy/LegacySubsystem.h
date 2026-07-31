@@ -14,7 +14,7 @@ struct FEndGameCinematicData {
     FName SequenceToPlay; // El nombre del level sequence que el artista debe disparar
 
     UPROPERTY(BlueprintReadOnly)
-    FLinearColor GradingColor; // Tinte de color: Cálido (victoria), Frío/Azul (represión), Rojo (caos)
+    FLinearColor GradingColor = FLinearColor::White; // Tinte de color: Cálido (victoria), Frío/Azul (represión), Rojo (caos)
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMissionEndingReached, FEndGameCinematicData, CinematicData);

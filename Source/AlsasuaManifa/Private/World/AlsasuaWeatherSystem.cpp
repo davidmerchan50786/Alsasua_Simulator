@@ -2,6 +2,7 @@
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "Components/ExponentialHeightFogComponent.h"
+#include "Engine/ExponentialHeightFog.h"
 #include "Components/SkyAtmosphereComponent.h"
 #include "Components/SkyLightComponent.h"
 #include "Components/DirectionalLightComponent.h"
@@ -121,6 +122,41 @@ void UAlsasuaWeatherSystem::LoadWeatherData()
     if (!bDataLoaded)
     {
         UE_LOG(LogTemp, Warning, TEXT("WeatherSystem: Solo %d meses cargados"), MonthlyData.Num());
+        return;
+    }
+
+    FString ClimateStr;
+    const FString ClimPath = FPaths::ProjectContentDir() + TEXT("Datos/climate_data.json");
+    if (FFileHelper::LoadFileToString(ClimateStr, *ClimPath))
+    {
+        TSharedPtr<FJsonObject> ClimRoot;
+        TSharedRef<TJsonReader<>> ClimRd = TJsonReaderFactory<>::Create(ClimateStr);
+        if (FJsonSerializer::Deserialize(ClimRd, ClimRoot) && ClimRoot.IsValid())
+        {
+            const TArray<TSharedPtr<FJsonValue>>* DatosArr;
+            if (ClimRoot->TryGetArrayField(TEXT("datos_mensuales"), DatosArr))
+            {
+                for (const auto& DV : *DatosArr)
+                {
+                    const TSharedPtr<FJsonObject>& DO = DV->AsObject();
+                    if (!DO) continue;
+                    const int32 Mes = DO->GetIntegerField(TEXT("mes"));
+                    for (FMonthlyWeather& M : MonthlyData)
+                    {
+                        if (M.Month == Mes)
+                        {
+                            const float DiasLluvia = DO->GetNumberField(TEXT("dias_lluvia"));
+                            const float NieveDias = DO->GetNumberField(TEXT("nieve_dias"));
+                            const float Humedad = DO->GetNumberField(TEXT("humedad"));
+                            M.RainProbability = FMath::Clamp(DiasLluvia / 30.0f, 0.0f, 1.0f);
+                            M.SnowProbability = FMath::Clamp(NieveDias / 30.0f, 0.0f, 1.0f);
+                            break;
+                        }
+                    }
+                }
+                UE_LOG(LogTemp, Log, TEXT("WeatherSystem: climate_data.json cargado, %d meses refinados"), DatosArr->Num());
+            }
+        }
     }
 }
 

@@ -31,6 +31,9 @@ public:
 	float BalconyDepth = 80.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Facade|Balconies")
+	float BalconyWidth = 100.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Facade|Balconies")
 	float BalconyHeight = 10.f;
 
 	// --- Shutters ---

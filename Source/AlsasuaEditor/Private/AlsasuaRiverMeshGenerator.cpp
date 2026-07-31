@@ -10,7 +10,6 @@
 #include "Engine/StaticMeshActor.h"
 #include "Materials/MaterialInterface.h"
 #include "EditorAssetLibrary.h"
-#include "Engine/AssetLibrary.h"
 
 static bool LoadWaterwayPoints(TArray<TArray<FVector>>& OutRivers)
 {

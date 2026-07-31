@@ -31,7 +31,7 @@ void UAlsasuaVFXManager::SpawnRainParticles(float Intensity)
     {
         ActiveRain = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
             World, RainSystem, Loc, FRotator::ZeroRotator,
-            FVector(1.0f), true, true, true);
+            FVector(1.0f), true, true);
     }
 
     if (ActiveRain)
@@ -57,7 +57,7 @@ void UAlsasuaVFXManager::SpawnLeafParticles(float WindSpeed)
     {
         ActiveLeaf = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
             World, LeafSystem, Loc, FRotator::ZeroRotator,
-            FVector(1.0f), true, true, true);
+            FVector(1.0f), true, true);
     }
 
     if (ActiveLeaf)
@@ -80,7 +80,7 @@ void UAlsasuaVFXManager::SpawnDustParticles()
     FVector Loc = PC->GetPawn()->GetActorLocation();
     UNiagaraFunctionLibrary::SpawnSystemAtLocation(
         World, DustSystem, Loc, FRotator::ZeroRotator,
-        FVector(1.0f), true, true, true);
+        FVector(1.0f), true, true);
 }
 
 void UAlsasuaVFXManager::StopAllParticles()

@@ -7,8 +7,8 @@ USTRUCT(BlueprintType)
 struct ALSASUACORE_API FAlsasuaGeoCoords
 {
     GENERATED_BODY()
-    UPROPERTY() double UTM_E = 568043.0;
-    UPROPERTY() double UTM_N = 4764787.0;
+    UPROPERTY() double UTM_E = 567951.0;
+    UPROPERTY() double UTM_N = 4749902.0;
     UPROPERTY() double OX = 1918.0;
     UPROPERTY() double OZ = 8570.0;
     UPROPERTY() double ScaleX = 1.0;
@@ -35,7 +35,7 @@ struct ALSASUACORE_API FAlsasuaGeoCoords
 //
 //  UTM ZONE 30N (EPSG:32630):
 //    - Real-world metric projection
-//    - Alsasua center: E=568043.3m, N=4764786.9m
+//    - Alsasua center (LIDAR meta): E=567951.0m, N=4749902.0m
 //    - Central meridian: -3°, scale factor 0.9996
 //
 //  UNREAL ENGINE 5:
@@ -73,6 +73,13 @@ public:
     /** UTM meters → UE5 centimeters (centers on Alsasua origin). */
     static FVector UTMToUE5(double UtmE, double UtmN, double AltM = 0.0);
 
+    /** Get absolute local coordinates of a barrio center (meters).
+     *  Coordinates derived from neighborhoods.json relative offsets + Herriko center. */
+    static FVector BarrioCenter(const FString& BarrioName);
+
+    /** Get all barrio names and their centers. */
+    static void GetAllBarrioCenters(TMap<FString, FVector>& OutCenters);
+
     // --- Constants ---
 
     // OX/OZ: offset from relative to absolute local coords.
@@ -96,6 +103,7 @@ public:
 
     // Alsasua origin in absolute local coords (for centering).
     // Trees data center: ~1891.5, 8572.0
+    // (UTM↔UE5 usa el frame LIDAR: UE5 m = UTM - (566033, 4741332); no usar estos para UTM.)
     static constexpr double OriginLocalX = 1891.5;
     static constexpr double OriginLocalZ = 8572.0;
 };

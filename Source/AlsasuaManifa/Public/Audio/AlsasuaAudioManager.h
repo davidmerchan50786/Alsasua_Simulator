@@ -14,7 +14,7 @@ class ALSASUAMANIFA_API UAlsasuaAudioManager : public UWorldSubsystem, public FT
 public:
 	virtual void Tick(float DeltaTime) override;
 	virtual bool IsAllowedToTick() const override { return true; }
-	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(AlsasuaAudioManager, STATGROUP_AlsasuaCrowd); }
+	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(AlsasuaAudioManager, STATGROUP_Game); }
 
 	// Parámetros de control para Audio Gameplay (Metasounds/FMOD)
 	UFUNCTION(BlueprintCallable, Category = "AAA|Audio")

@@ -1,11 +1,11 @@
 #pragma once
 #include "CoreMinimal.h"
-#include "Systems/MisionManager.h"
+#include "Systems/MisionData.h"
 #include "UObject/NoExportTypes.h"
 #include "DeepStateMissionData.generated.h"
 
 USTRUCT(BlueprintType)
-struct FMisionCloacas : public FMisionData {
+struct FMisionCloacas : public FMissionData {
     GENERATED_BODY()
 
     UPROPERTY(BlueprintReadWrite)

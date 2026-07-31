@@ -13,9 +13,9 @@ void AAlsasuaRoadManager::GenerateRoadMesh()
     if (!RoadSpline) return;
 
     // Limpiar splinemeshes previos.
-    TArray<USceneComponent*> Children;
-    RoadSpline->GetChildrenComponents(false, Children);
-    for (USceneComponent* Child : Children)
+    TArray<USceneComponent*> ChildComps;
+    RoadSpline->GetChildrenComponents(false, ChildComps);
+    for (USceneComponent* Child : ChildComps)
     {
         if (USplineMeshComponent* SMC = Cast<USplineMeshComponent>(Child))
         {

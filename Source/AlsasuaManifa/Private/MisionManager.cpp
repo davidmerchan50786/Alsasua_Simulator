@@ -1,6 +1,6 @@
 #include "Systems/MisionManager.h"
 
-void UMisionManager::StartMission(const FMisionData& MissionData)
+void UMisionManager::StartMission(const FMissionData& MissionData)
 {
     if (IsMissionActive(MissionData.MissionID))
     {

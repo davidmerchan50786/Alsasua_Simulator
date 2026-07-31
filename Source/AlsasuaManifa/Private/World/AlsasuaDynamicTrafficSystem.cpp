@@ -57,9 +57,7 @@ void UAlsasuaDynamicTrafficSystem::CargarCallejero()
         {
             const TSharedPtr<FJsonObject>& Pt = (*PointsArr)[i]->AsObject();
             if (!Pt) continue;
-            const float X = Pt->GetNumberField(TEXT("x")) + UAlsasuaGeoData::OX;
-            const float Z = Pt->GetNumberField(TEXT("z")) + UAlsasuaGeoData::OZ;
-            PuntosCalle.Add(UAlsasuaGeoData::UnityaUnreal(FVector(X, 0.0f, Z)));
+            PuntosCalle.Add(UAlsasuaGeoData::RelLocalToUE5(FVector(Pt->GetNumberField(TEXT("x")), 0.0f, Pt->GetNumberField(TEXT("z")))));
         }
 
         if (PuntosCalle.Num() >= 2)
@@ -246,5 +244,5 @@ FVector UAlsasuaDynamicTrafficSystem::ObtenerPuntoInicio() const
             return Calle[0];
     }
 
-    return UAlsasuaGeoData::UnityaUnreal(FVector(1891.5f, 0.0f, 8572.0f));
+    return UAlsasuaGeoData::AbsLocalToUE5(UAlsasuaGeoData::BarrioCenter(TEXT("Herriko")));
 }

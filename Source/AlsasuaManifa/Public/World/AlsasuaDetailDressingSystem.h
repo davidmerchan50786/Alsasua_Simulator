@@ -42,9 +42,14 @@ public:
     int32 MaxVallasVerdes = 20;
 
     const TArray<FDetailItem>& GetDetalles() const { return Detalles; }
+    bool UsaDatosReales() const { return bUsandoDatosReales; }
 
 private:
+    bool bUsandoDatosReales = false;
     TArray<FDetailItem> Detalles;
+    TArray<AStaticMeshActor*> MueblesReales;
+
+    void CargarMueblesReales(UWorld* World);
     void ColocarMacetas(UWorld* World);
     void ColocarBuzones(UWorld* World);
     void ColocarPapeleiras(UWorld* World);

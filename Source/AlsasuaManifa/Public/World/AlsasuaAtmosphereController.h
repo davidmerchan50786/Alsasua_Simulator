@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
+#include "Tickable.h"
 #include "AlsasuaAtmosphereController.generated.h"
 
 class UExponentialHeightFogComponent;
@@ -15,13 +16,15 @@ class AExponentialHeightFog;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTimeOfDayVisualChanged, float, SunAngle);
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaAtmosphereController : public UWorldSubsystem
+class ALSASUAMANIFA_API UAlsasuaAtmosphereController : public UWorldSubsystem, public FTickableGameObject
 {
 	GENERATED_BODY()
 
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Tick(float DeltaTime) override;
+	virtual bool IsAllowedToTick() const override { return true; }
+	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(AlsasuaAtmosphereController, STATGROUP_Game); }
 
 	UFUNCTION(BlueprintCallable, Category = "Alsasua|Atmosphere")
 	void SetSunAngle(float AngleDeg);

@@ -14,10 +14,10 @@ void UEventBusAlsasua::BroadcastEvent(FName EventName, UObject* Payload)
                 UFunction* Func = (*ListenerList)[i]->FindFunction(FName(TEXT("OnAlsasuaEvent")));
                 if (Func && Func->NumParms == 2)
                 {
-                    FFrame Frame(Func, (*ListenerList)[i].Get());
-                    FName Param0 = EventName;
-                    UObject* Param1 = Payload;
-                    Frame.ProcessCurrentScript(Func, &Param0, &Param1);
+                    struct { FName EventName; UObject* Payload; } Params;
+                    Params.EventName = EventName;
+                    Params.Payload = Payload;
+                    (*ListenerList)[i]->ProcessEvent(Func, &Params);
                 }
             }
             else

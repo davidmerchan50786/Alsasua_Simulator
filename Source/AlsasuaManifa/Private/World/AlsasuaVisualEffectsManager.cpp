@@ -18,8 +18,6 @@ void UAlsasuaVisualEffectsManager::Initialize(FSubsystemCollectionBase& Collecti
 
 void UAlsasuaVisualEffectsManager::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
-
 	UpdateWetness(DeltaTime);
 	UpdateTimeOfDay();
 	UpdateWind(DeltaTime);
@@ -51,8 +49,8 @@ void UAlsasuaVisualEffectsManager::SetRoadWear(float Wear)
 void UAlsasuaVisualEffectsManager::UpdateWetness(float DeltaTime)
 {
 	UWeatherSubsystem* Weather = GetWorld() ? GetWorld()->GetSubsystem<UWeatherSubsystem>() : nullptr;
-	const bool bRaining = Weather && (Weather->CurrentWeather == EWeatherState::Rainy || Weather->CurrentWeather == EWeatherState::Thunderstorm);
-	const bool bFoggy = Weather && Weather->CurrentWeather == EWeatherState::HeavyFog;
+	const bool bRaining = Weather && (Weather->CurrentWeather == EWeatherSubsystemState::Rainy || Weather->CurrentWeather == EWeatherSubsystemState::Thunderstorm);
+	const bool bFoggy = Weather && Weather->CurrentWeather == EWeatherSubsystemState::HeavyFog;
 
 	float TargetWetness = 0.f;
 	if (bRaining) TargetWetness = 1.f;
@@ -97,7 +95,7 @@ void UAlsasuaVisualEffectsManager::UpdateWind(float DeltaTime)
 	WindIntensity = FMath::Clamp(WindIntensity + (Gust + Noise) * DeltaTime, 0.05f, 1.f);
 
 	UWeatherSubsystem* Weather = GetWorld() ? GetWorld()->GetSubsystem<UWeatherSubsystem>() : nullptr;
-	if (Weather && Weather->CurrentWeather == EWeatherState::Thunderstorm)
+	if (Weather && Weather->CurrentWeather == EWeatherSubsystemState::Thunderstorm)
 	{
 		WindIntensity = FMath::Max(WindIntensity, 0.8f);
 	}

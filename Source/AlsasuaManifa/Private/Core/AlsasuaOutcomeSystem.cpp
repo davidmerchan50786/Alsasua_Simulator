@@ -64,7 +64,7 @@ void UAlsasuaOutcomeSystem::FinalizeSession()
 {
     FAlsasuaMissionResult FinalData = EvaluateManifestation();
 
-    UAlsasuaSaveGame* Save = Cast<UAlsasuaSaveGame>(UGameplayStatics::CreateSaveGameObject(UAlsasuaSaveGame::StaticClass()));
+    UDEPRECATED_AlsasuaSaveGame* Save = Cast<UDEPRECATED_AlsasuaSaveGame>(UGameplayStatics::CreateSaveGameObject(UDEPRECATED_AlsasuaSaveGame::StaticClass()));
     if (Save)
     {
         UWorld* World = GetWorld();

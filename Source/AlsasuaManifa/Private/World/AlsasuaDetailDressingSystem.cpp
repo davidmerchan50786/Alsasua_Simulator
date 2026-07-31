@@ -14,20 +14,112 @@ void UAlsasuaDetailDressingSystem::Initialize(FSubsystemCollectionBase& Collecti
     Super::Initialize(Collection);
 }
 
+void UAlsasuaDetailDressingSystem::CargarMueblesReales(UWorld* World)
+{
+    const FString JsonPath = FPaths::ProjectContentDir() + TEXT("Datos/street_furniture.json");
+    FString JsonStr;
+    if (!FFileHelper::LoadFileToString(JsonStr, *JsonPath))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("DetailDressing: No street_furniture.json, fallback procedural"));
+        return;
+    }
+
+    TArray<TSharedPtr<FJsonValue>> Arr;
+    TSharedRef<TJsonReader<>> Rd = TJsonReaderFactory<>::Create(JsonStr);
+    if (!FJsonSerializer::Deserialize(Rd, Arr) || Arr.Num() == 0)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("DetailDressing: JSON parse failed, fallback procedural"));
+        return;
+    }
+
+    struct FMuebleDef
+    {
+        FString Tipo;
+        FString Mesh;
+        FVector Scale;
+        FLinearColor Color;
+    };
+
+    const TMap<FString, FMuebleDef> Defs = {
+        {TEXT("banco"),           {TEXT("banco"),        TEXT("/Game/EngineBasicShapes/Cube"),     FVector(1.2f, 0.5f, 0.8f),  FLinearColor(0.4f, 0.6f, 0.2f)}},
+        {TEXT("bollard"),         {TEXT("bollard"),      TEXT("/Game/EngineBasicShapes/Cylinder"), FVector(0.15f, 0.15f, 0.6f), FLinearColor(0.3f, 0.3f, 0.3f)}},
+        {TEXT("buzon_correos"),   {TEXT("buzon_correos"),TEXT("/Game/EngineBasicShapes/Cube"),     FVector(0.4f, 0.4f, 1.0f),  FLinearColor(0.8f, 0.1f, 0.1f)}},
+        {TEXT("boca_incendio"),   {TEXT("boca_incendio"),TEXT("/Game/EngineBasicShapes/Cylinder"), FVector(0.2f, 0.2f, 0.6f),  FLinearColor(0.9f, 0.15f, 0.05f)}},
+        {TEXT("parada_bus"),      {TEXT("parada_bus"),   TEXT("/Game/EngineBasicShapes/Cube"),     FVector(0.2f, 2.0f, 2.5f),  FLinearColor(0.1f, 0.3f, 0.8f)}},
+        {TEXT("senal_stop"),     {TEXT("senal_stop"),   TEXT("/Game/EngineBasicShapes/Cube"),     FVector(0.6f, 0.05f, 0.8f), FLinearColor(0.9f, 0.2f, 0.0f)}},
+        {TEXT("espejo_seguridad"),{TEXT("espejo_seguridad"),TEXT("/Game/EngineBasicShapes/Sphere"),FVector(0.3f, 0.3f, 0.3f),  FLinearColor(0.7f, 0.7f, 0.8f)}},
+        {TEXT("bici_arbol"),      {TEXT("bici_arbol"),   TEXT("/Game/EngineBasicShapes/Cube"),     FVector(0.15f, 1.0f, 1.5f), FLinearColor(0.2f, 0.6f, 0.15f)}},
+    };
+
+    int32 Placed = 0;
+    for (const auto& Val : Arr)
+    {
+        const TSharedPtr<FJsonObject>& Obj = Val->AsObject();
+        if (!Obj) continue;
+
+        const FString Tipo = Obj->GetStringField(TEXT("tipo"));
+        const FMuebleDef* Def = Defs.Find(Tipo);
+        if (!Def) continue;
+
+        const float X = Obj->GetNumberField(TEXT("x"));
+        const float Z = Obj->GetNumberField(TEXT("z"));
+        const float Y = Obj->HasField(TEXT("y")) ? Obj->GetNumberField(TEXT("y")) : 0.0f;
+
+        const FVector Pos = UAlsasuaGeoData::RelLocalToUE5(FVector(X, Y, Z));
+
+        AStaticMeshActor* Actor = World->SpawnActor<AStaticMeshActor>(
+            AStaticMeshActor::StaticClass(), Pos, FRotator::ZeroRotator);
+        if (!Actor) continue;
+
+        Actor->SetMobility(EComponentMobility::Static);
+        Actor->SetActorScale3D(Def->Scale);
+
+        UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, *Def->Mesh);
+        if (Mesh) Actor->GetStaticMeshComponent()->SetStaticMesh(Mesh);
+
+        UMaterialInterface* Mat = LoadObject<UMaterialInterface>(nullptr,
+            TEXT("/Engine/EngineMaterials/DefaultMaterial.DefaultMaterial"));
+        if (Mat) Actor->GetStaticMeshComponent()->SetMaterial(0, Mat);
+
+#if WITH_EDITOR
+        Actor->SetActorLabel(*FString::Printf(TEXT("Mueble_%s_%d"), *Tipo, Placed));
+#endif
+
+        FDetailItem Item;
+        Item.Tipo = Tipo;
+        Item.Posicion = Pos;
+        Item.Rotacion = 0.0f;
+        Item.Escala = 1.0f;
+        Item.Color = Def->Color;
+        Detalles.Add(Item);
+        MueblesReales.Add(Actor);
+        Placed++;
+    }
+
+    if (Placed > 0)
+    {
+        bUsandoDatosReales = true;
+        UE_LOG(LogTemp, Log, TEXT("DetailDressing: %d muebles reales de street_furniture.json"), Placed);
+    }
+}
+
 int32 UAlsasuaDetailDressingSystem::ColocarDetalle()
 {
     UWorld* World = GetWorld();
     if (!World) return 0;
 
-    int32 Total = 0;
+    CargarMueblesReales(World);
 
-    ColocarMacetas(World);
-    ColocarBuzones(World);
-    ColocarPapeleiras(World);
-    ColocarBancos(World);
-    ColocarVallasVerdes(World);
+    if (!bUsandoDatosReales)
+    {
+        ColocarMacetas(World);
+        ColocarBuzones(World);
+        ColocarPapeleiras(World);
+        ColocarBancos(World);
+        ColocarVallasVerdes(World);
+    }
 
-    Total = Detalles.Num();
+    int32 Total = Detalles.Num();
     UE_LOG(LogTemp, Log, TEXT("DetailDressing: %d items de detalle colocados"), Total);
     return Total;
 }
@@ -65,15 +157,7 @@ void UAlsasuaDetailDressingSystem::ColocarMacetas(UWorld* World)
     for (int32 i = 0; i < MaxMacetas; i++)
     {
         FString Barrio = Barrios[FMath::RandRange(0, Barrios.Num() - 1)];
-        FVector Centro;
-        if (Barrio == TEXT("Herriko"))
-            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1891.5f, 0.0f, 8568.5f));
-        else if (Barrio == TEXT("Zelai"))
-            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1893.0f, 0.0f, 8573.5f));
-        else if (Barrio == TEXT("SanPedro"))
-            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1895.2f, 0.0f, 8565.5f));
-        else
-            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1889.5f, 0.0f, 8569.0f));
+        FVector Centro = UAlsasuaGeoData::AbsLocalToUE5(UAlsasuaGeoData::BarrioCenter(Barrio));
 
         FVector Pos = Centro + FVector(
             FMath::RandRange(-800.0f, 800.0f),
@@ -147,21 +231,7 @@ void UAlsasuaDetailDressingSystem::ColocarPapeleiras(UWorld* World)
     for (int32 i = 0; i < MaxPapeleiras; i++)
     {
         FString Barrio = Barrios[FMath::RandRange(0, Barrios.Num() - 1)];
-        FVector Centro;
-        if (Barrio == TEXT("Herriko"))
-            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1891.5f, 0.0f, 8568.5f));
-        else if (Barrio == TEXT("Zelai"))
-            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1893.0f, 0.0f, 8573.5f));
-        else if (Barrio == TEXT("Intxostia"))
-            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1890.0f, 0.0f, 8577.0f));
-        else if (Barrio == TEXT("SanPedro"))
-            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1895.2f, 0.0f, 8565.5f));
-        else if (Barrio == TEXT("Errota"))
-            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1897.0f, 0.0f, 8570.5f));
-        else if (Barrio == TEXT("Harrobieta"))
-            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1889.5f, 0.0f, 8569.0f));
-        else
-            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1892.5f, 0.0f, 8571.5f));
+        FVector Centro = UAlsasuaGeoData::AbsLocalToUE5(UAlsasuaGeoData::BarrioCenter(Barrio));
 
         FVector Pos = Centro + FVector(
             FMath::RandRange(-1000.0f, 1000.0f),
@@ -221,13 +291,7 @@ void UAlsasuaDetailDressingSystem::ColocarVallasVerdes(UWorld* World)
         else if (i < 14) Barrio = TEXT("Monte");
         else Barrio = TEXT("Intxostia");
 
-        FVector Centro;
-        if (Barrio == TEXT("Zelai"))
-            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1893.0f, 0.0f, 8573.5f));
-        else if (Barrio == TEXT("Monte"))
-            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1894.0f, 0.0f, 8575.0f));
-        else
-            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1890.0f, 0.0f, 8577.0f));
+        FVector Centro = UAlsasuaGeoData::AbsLocalToUE5(UAlsasuaGeoData::BarrioCenter(Barrio));
 
         FVector Pos = Centro + FVector(
             FMath::RandRange(-1200.0f, 1200.0f),

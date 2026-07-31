@@ -132,7 +132,7 @@ void UAlsasuaActorPoolSubsystem::ReleaseActor(AActor* Actor, float AutoReturnTim
 
 	// Añadir al pool.
 	UClass* Class = Actor->GetClass();
-	TArray<TObjectPtr<AActor>>& Pool = Pools.FindOrAdd(Class);
+	TArray<AActor*>& Pool = Pools.FindOrAdd(Class);
 	Pool.Add(Actor);
 }
 
@@ -140,7 +140,7 @@ void UAlsasuaActorPoolSubsystem::ReleaseAll()
 {
 	for (auto& Pair : Pools)
 	{
-		for (TObjectPtr<AActor>& ActorPtr : Pair.Value)
+		for (AActor* ActorPtr : Pair.Value)
 		{
 			if (IsValid(ActorPtr))
 			{
@@ -162,7 +162,7 @@ void UAlsasuaActorPoolSubsystem::ReleaseAll()
 
 int32 UAlsasuaActorPoolSubsystem::GetInactiveCount(TSubclassOf<AActor> Class) const
 {
-	if (const TArray<TObjectPtr<AActor>>* Pool = Pools.Find(Class))
+	if (const TArray<AActor*>* Pool = Pools.Find(Class))
 	{
 		return Pool->Num();
 	}
@@ -236,6 +236,6 @@ void UAlsasuaActorPoolSubsystem::OnAutoReturnTimerExpired(AActor* Actor)
 	DeactivateActor(Actor);
 
 	UClass* Class = Actor->GetClass();
-	TArray<TObjectPtr<AActor>>& Pool = Pools.FindOrAdd(Class);
+	TArray<AActor*>& Pool = Pools.FindOrAdd(Class);
 	Pool.Add(Actor);
 }

@@ -16,6 +16,9 @@ void UManifaManager::TriggerManifestation(FVector CenterLocation) {
     OnManifaStateChanged.Broadcast(true);
 }
 
+void UManifaManager::Tick(float DeltaTime) {
+}
+
 void UManifaManager::UpdateManifestationStrength(float DeltaPopularSupport) {
     Momentum = FMath::Clamp(Momentum + DeltaPopularSupport, 0.f, 100.f);
 }

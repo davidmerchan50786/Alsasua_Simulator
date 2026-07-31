@@ -22,7 +22,7 @@ class ALSASUAMANIFA_API UMisionManager : public UObject {
 
 public:
     UFUNCTION(BlueprintCallable, Category = "AAA|Mission")
-    void StartMission(const FMisionData& MissionData);
+    void StartMission(const FMissionData& MissionData);
 
     UFUNCTION(BlueprintCallable, Category = "AAA|Mission")
     void CompleteMission(FName MissionID);

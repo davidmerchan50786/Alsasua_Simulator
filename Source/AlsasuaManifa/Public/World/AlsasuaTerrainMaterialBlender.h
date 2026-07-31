@@ -49,7 +49,7 @@ public:
 	float SummerSnowLine = 58000.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Terrain|Season")
-	float AutumnSnowLine = 54000.f);
+	float AutumnSnowLine = 54000.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Terrain|Season")
 	float WinterSnowLine = 52000.f;

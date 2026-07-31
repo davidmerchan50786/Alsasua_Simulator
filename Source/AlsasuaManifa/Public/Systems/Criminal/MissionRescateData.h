@@ -4,11 +4,11 @@
 #include "MissionRescateData.generated.h"
 
 USTRUCT(BlueprintType)
-struct FMisionRescate : public FMisionData {
+struct FMisionRescate : public FMissionData {
     GENERATED_BODY()
 
     UPROPERTY(BlueprintReadWrite)
-    class AHostageCharacter* TargetHostage;
+    class AHostageCharacter* TargetHostage = nullptr;
 
     UPROPERTY(BlueprintReadWrite)
     float RansomAmount = 5000.f;

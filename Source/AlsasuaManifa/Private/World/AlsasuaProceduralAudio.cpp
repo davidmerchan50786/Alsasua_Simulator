@@ -70,8 +70,8 @@ void UAlsasuaProceduralAudio::UpdateAudioLayers(float DeltaTime)
 
 	const float Wind = VFXMgr->WindIntensity;
 	const float Hour = TimeMgr->CurrentTime;
-	const bool bRaining = Weather && (Weather->CurrentWeather == EWeatherState::Rainy ||
-		Weather->CurrentWeather == EWeatherState::Thunderstorm);
+	const bool bRaining = Weather && (Weather->CurrentWeather == EWeatherSubsystemState::Rainy ||
+		Weather->CurrentWeather == EWeatherSubsystemState::Thunderstorm);
 	const bool bIsNight = Hour >= CricketStartHour || Hour < CricketEndHour;
 	const bool bIsDay = Hour >= BirdStartHour && Hour < BirdEndHour;
 

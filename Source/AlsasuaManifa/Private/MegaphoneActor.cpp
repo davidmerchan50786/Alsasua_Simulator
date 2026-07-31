@@ -13,7 +13,7 @@ void AMegaphoneActor::Interact_Implementation(AActor* Interactor)
     UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Interactor);
     if (!ASC) return;
 
-    UAlsasuaAttributeSet* AS = ASC->GetSet<UAlsasuaAttributeSet>();
+    const UAlsasuaAttributeSet* AS = ASC->GetSet<UAlsasuaAttributeSet>();
     if (AS)
     {
         ASC->ApplyModToAttribute(AS->GetPopularSupportAttribute(), EGameplayModOp::Additive, 5.f);

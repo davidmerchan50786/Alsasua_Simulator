@@ -87,6 +87,12 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Alsasua|Facade")
     int32 GenerarFachadasEnMundo();
 
+    UFUNCTION(BlueprintCallable, Category = "Alsasua|Facade")
+    int32 ColocarLandmarksReales();
+
+    UFUNCTION(BlueprintCallable, Category = "Alsasua|Facade")
+    int32 ColocarParadasTransporte();
+
     const TArray<FBuildingFacadeEntry>& GetFachadas() const { return Fachadas; }
 
 private:

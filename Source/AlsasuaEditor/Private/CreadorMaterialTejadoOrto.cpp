@@ -28,8 +28,10 @@ using ML = UMaterialEditingLibrary;
 //   Unreal.X = Unity.Z*100 ; Unreal.Y = Unity.X*100
 //   texU = (WPos.Y - ux_min*100) / (ancho_ux*100)
 //   texV = (uz_max*100 - WPos.X) / (ancho_uz*100)   (V=0 al norte/arriba)
+namespace {
 static const float UXMIN_CM = 59630.f, RANGO_UX_CM = 275040.f;
 static const float UZMAX_CM = 1005060.f, RANGO_UZ_CM = 267170.f;
+}
 
 bool UCreadorMaterialTejadoOrto::CrearMaterialTejadoOrto()
 {

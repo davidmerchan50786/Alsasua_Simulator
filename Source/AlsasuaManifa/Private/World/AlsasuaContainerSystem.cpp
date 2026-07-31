@@ -21,6 +21,91 @@ int32 UAlsasuaContainerSystem::ColocarContenedores()
 
     Contenedores.Empty();
 
+    const FString JsonPath = FPaths::ProjectContentDir() + TEXT("Datos/street_furniture.json");
+    TArray<FString> Lines;
+    if (!FFileHelper::LoadFileToStringArray(Lines, *JsonPath))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Containers: No se pudo cargar street_furniture.json, usando fallback"));
+        return ColocarContenedoresFallback();
+    }
+
+    FString Js;
+    for (const FString& L : Lines) Js += L;
+
+    TArray<TSharedPtr<FJsonValue>> Arr;
+    TSharedRef<TJsonReader<>> Rd = TJsonReaderFactory<>::Create(Js);
+    if (!FJsonSerializer::Deserialize(Rd, Arr)) return ColocarContenedoresFallback();
+
+    const TArray<TPair<FString, FLinearColor>> TiposContenedor = {
+        {TEXT("resto"), FLinearColor(0.3f, 0.3f, 0.3f)},
+        {TEXT("papel"), FLinearColor(0.0f, 0.3f, 0.7f)},
+        {TEXT("plastico"), FLinearColor(0.0f, 0.5f, 0.0f)},
+        {TEXT("vidrio"), FLinearColor(0.1f, 0.6f, 0.1f)},
+        {TEXT("organico"), FLinearColor(0.5f, 0.3f, 0.1f)},
+    };
+
+    int32 Placed = 0;
+    for (const auto& Val : Arr)
+    {
+        const TSharedPtr<FJsonObject>& Obj = Val->AsObject();
+        if (!Obj) continue;
+
+        const FString Type = Obj->GetStringField(TEXT("type"));
+        if (Type != TEXT("papelera") && Type != TEXT("papelera_reciclaje")) continue;
+
+        const float X = Obj->GetNumberField(TEXT("x"));
+        const float Z = Obj->GetNumberField(TEXT("z"));
+        const FString Barrio = Obj->GetStringField(TEXT("barrio"));
+        const float Rot = Obj->HasField(TEXT("rotacion")) ? Obj->GetNumberField(TEXT("rotacion")) : 0.0f;
+
+        const FVector Pos = UAlsasuaGeoData::RelLocalToUE5(FVector(X, 0.0f, Z));
+
+        int32 TipoIdx = Placed % TiposContenedor.Num();
+        const auto& TipoInfo = TiposContenedor[TipoIdx];
+
+        FContainer Cont;
+        Cont.Tipo = TipoInfo.Key;
+        Cont.Posicion = Pos;
+        Cont.Rotacion = Rot;
+        Cont.Barrio = Barrio;
+
+        AStaticMeshActor* ContActor = World->SpawnActor<AStaticMeshActor>(
+            AStaticMeshActor::StaticClass(), Pos, FRotator(0, Rot, 0));
+        if (ContActor)
+        {
+            ContActor->SetMobility(EComponentMobility::Static);
+            ContActor->SetActorScale3D(FVector(1.2f, 0.8f, 1.0f));
+
+            UStaticMesh* TrashcanMesh = LoadObject<UStaticMesh>(nullptr,
+                TEXT("/Game/CitySample/Prop/Kit_Trashcan_A/Mesh/SM_Trashcan_A_01"));
+            if (TrashcanMesh)
+                ContActor->GetStaticMeshComponent()->SetStaticMesh(TrashcanMesh);
+
+            UMaterialInterface* Mat = LoadObject<UMaterialInterface>(nullptr,
+                TEXT("/Engine/EngineMaterials/DefaultMaterial.DefaultMaterial"));
+            if (Mat) ContActor->GetStaticMeshComponent()->SetMaterial(0, Mat);
+
+#if WITH_EDITOR
+            ContActor->SetActorLabel(*FString::Printf(TEXT("Contenedor_%s_%s_%d"),
+                *TipoInfo.Key, *Barrio.Left(6), Placed));
+#endif
+        }
+
+        Contenedores.Add(Cont);
+        Placed++;
+    }
+
+    UE_LOG(LogTemp, Log, TEXT("Containers: %d contenedores reales de street_furniture.json"), Placed);
+    return Placed;
+}
+
+int32 UAlsasuaContainerSystem::ColocarContenedoresFallback()
+{
+    UWorld* World = GetWorld();
+    if (!World) return 0;
+
+    Contenedores.Empty();
+
     const TArray<FString> Barrios = {
         TEXT("Herriko"), TEXT("Zelai"), TEXT("Intxostia"), TEXT("SanPedro"),
         TEXT("Errota"), TEXT("Harrobieta"), TEXT("Ferroviario"), TEXT("Monte")
@@ -35,31 +120,11 @@ int32 UAlsasuaContainerSystem::ColocarContenedores()
     };
 
     int32 Placed = 0;
-
     for (int32 i = 0; i < MaxContenedores; i++)
     {
         FString Barrio = Barrios[FMath::RandRange(0, Barrios.Num() - 1)];
-        FVector Centro;
-        if (Barrio == TEXT("Herriko"))
-            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1891.5f, 0.0f, 8568.5f));
-        else if (Barrio == TEXT("Zelai"))
-            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1893.0f, 0.0f, 8573.5f));
-        else if (Barrio == TEXT("Intxostia"))
-            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1890.0f, 0.0f, 8577.0f));
-        else if (Barrio == TEXT("SanPedro"))
-            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1895.2f, 0.0f, 8565.5f));
-        else if (Barrio == TEXT("Errota"))
-            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1897.0f, 0.0f, 8570.5f));
-        else if (Barrio == TEXT("Harrobieta"))
-            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1889.5f, 0.0f, 8569.0f));
-        else if (Barrio == TEXT("Ferroviario"))
-            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1892.5f, 0.0f, 8571.5f));
-        else
-            Centro = UAlsasuaGeoData::UnityaUnreal(FVector(1894.0f, 0.0f, 8575.0f));
-
-        FVector Pos = Centro + FVector(
-            FMath::RandRange(-1000.0f, 1000.0f),
-            FMath::RandRange(-1000.0f, 1000.0f), 0);
+        FVector Centro = UAlsasuaGeoData::AbsLocalToUE5(UAlsasuaGeoData::BarrioCenter(Barrio));
+        FVector Pos = Centro + FVector(FMath::RandRange(-1000.0f, 1000.0f), FMath::RandRange(-1000.0f, 1000.0f), 0);
 
         const auto& TipoInfo = TiposContenedor[FMath::RandRange(0, TiposContenedor.Num() - 1)];
         float Rot = FMath::RandRange(0.0f, 360.0f);
@@ -76,27 +141,17 @@ int32 UAlsasuaContainerSystem::ColocarContenedores()
         {
             ContActor->SetMobility(EComponentMobility::Static);
             ContActor->SetActorScale3D(FVector(1.2f, 0.8f, 1.0f));
-
-            UStaticMesh* CubeMesh = LoadObject<UStaticMesh>(nullptr,
-                TEXT("/Game/EngineBasicShapes/Cube"));
-            if (CubeMesh)
-                ContActor->GetStaticMeshComponent()->SetStaticMesh(CubeMesh);
-
-            UMaterialInterface* ContMat = LoadObject<UMaterialInterface>(nullptr,
-                TEXT("/Game/Materiales/M_Contenedor"));
-            if (ContMat)
-                ContActor->GetStaticMeshComponent()->SetMaterial(0, ContMat);
-
+            UStaticMesh* TrashcanMesh = LoadObject<UStaticMesh>(nullptr,
+                TEXT("/Game/CitySample/Prop/Kit_Trashcan_A/Mesh/SM_Trashcan_A_01"));
+            if (TrashcanMesh) ContActor->GetStaticMeshComponent()->SetStaticMesh(TrashcanMesh);
 #if WITH_EDITOR
-            ContActor->SetActorLabel(*FString::Printf(TEXT("Contenedor_%s_%s_%d"),
-                *TipoInfo.Key, *Barrio.Left(6), i));
+            ContActor->SetActorLabel(*FString::Printf(TEXT("Contenedor_%s_%s_%d"), *TipoInfo.Key, *Barrio.Left(6), i));
 #endif
         }
-
         Contenedores.Add(Cont);
         Placed++;
     }
 
-    UE_LOG(LogTemp, Log, TEXT("Containers: %d contenedores de residuos en 8 barrios"), Placed);
+    UE_LOG(LogTemp, Log, TEXT("Containers: %d contenedores fallback aleatorios"), Placed);
     return Placed;
 }

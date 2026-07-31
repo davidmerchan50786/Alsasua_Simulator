@@ -22,7 +22,7 @@ struct FDeepStateProject {
     float Progress = 0.f; // 0 a 100
 
     UPROPERTY(BlueprintReadOnly)
-    EDeepStateOp OperationType;
+    EDeepStateOp OperationType = EDeepStateOp::Disinformation;
 
     UPROPERTY(BlueprintReadOnly)
     bool bIsActive = false;

@@ -59,12 +59,12 @@ void UAlsasuaAtmosphereFogComponent::UpdateFog(float DeltaTime)
 	}
 
 	// Rain boost
-	if (Weather && (Weather->CurrentWeather == EWeatherState::Rainy ||
-		Weather->CurrentWeather == EWeatherState::Thunderstorm))
+	if (Weather && (Weather->CurrentWeather == EWeatherSubsystemState::Rainy ||
+		Weather->CurrentWeather == EWeatherSubsystemState::Thunderstorm))
 	{
 		TargetDensity *= 3.f;
 	}
-	else if (Weather && Weather->CurrentWeather == EWeatherState::HeavyFog)
+	else if (Weather && Weather->CurrentWeather == EWeatherSubsystemState::HeavyFog)
 	{
 		TargetDensity *= 5.f;
 	}

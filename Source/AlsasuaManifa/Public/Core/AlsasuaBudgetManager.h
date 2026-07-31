@@ -25,7 +25,7 @@ public:
 
 	// FTickableGameObject
 	virtual bool IsAllowedToTick() const override { return true; }
-	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(AlsasuaBudgetManager, STATGROUP_AlsasuaCrowd); }
+	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(AlsasuaBudgetManager, STATGROUP_Game); }
 
 	/** Consulta si queda presupuesto de tiempo para ejecutar una tarea en este frame */
 	UFUNCTION(BlueprintCallable, Category = "AAA|Budget")

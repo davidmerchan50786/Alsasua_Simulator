@@ -1,5 +1,6 @@
 #include "Items/ResistanceTool.h"
 #include "AlsasuaTypes.h"
+#include "Engine/OverlapResult.h"
 #include "AI/AlsasuaCrowdSentiment.h"
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraFunctionLibrary.h"
@@ -43,9 +44,9 @@ void AResistanceTool::UseTool(FVector TargetLocation)
             {
                 if (AActor* HitActor = Hit.GetActor())
                 {
-                    if (HitActor->Implements<UDamageable>())
+                    if (IDamageable* Damageable = Cast<IDamageable>(HitActor))
                     {
-                        IDamageable::Execute_RecibirDano(HitActor, 50, TargetLocation, ETipoDano::Impacto);
+                        Damageable->RecibirDano(50, TargetLocation, ETipoDano::Impacto);
                     }
                 }
             }

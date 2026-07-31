@@ -33,6 +33,7 @@ class ALSASUAMANIFA_API ACrowdRagdollActor : public ACharacter
 
 public:
 	ACrowdRagdollActor();
+	virtual void Tick(float DeltaTime) override;
 
 	/**
 	 * Activa el ragdoll con el nivel de calidad indicado.

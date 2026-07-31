@@ -2,7 +2,6 @@
 #include "Engine/Engine.h"
 #include "EngineUtils.h"
 #include "Engine/DirectionalLight.h"
-#include "Engine/SkyAtmosphere.h"
 #include "Engine/SkyLight.h"
 #include "Engine/ExponentialHeightFog.h"
 #include "Components/DirectionalLightComponent.h"
@@ -39,7 +38,7 @@ void UAlsasuaAtmosphereController::FindOrCreateAtmosphereActors()
 		if (SunLight)
 		{
 			SunLight->SetActorLabel(TEXT("Atmosphere_Sun"));
-			UDirectionalLightComponent* DirComp = SunLight->GetLightComponent();
+			UDirectionalLightComponent* DirComp = Cast<UDirectionalLightComponent>(SunLight->GetLightComponent());
 			if (DirComp)
 			{
 				DirComp->SetIntensity(SunIntensity);
@@ -94,7 +93,7 @@ void UAlsasuaAtmosphereController::FindOrCreateAtmosphereActors()
 		if (HeightFog)
 		{
 			HeightFog->SetActorLabel(TEXT("Atmosphere_Fog"));
-			UExponentialHeightFogComponent* FogComp = HeightFog->GetHeightFogComponent();
+			UExponentialHeightFogComponent* FogComp = HeightFog->GetComponent();
 			if (FogComp)
 			{
 				FogComp->SetFogDensity(BaseFogDensity);
@@ -108,8 +107,6 @@ void UAlsasuaAtmosphereController::FindOrCreateAtmosphereActors()
 
 void UAlsasuaAtmosphereController::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
-
 	UTimeOfDayManager* TimeMgr = GetWorld() ? GetWorld()->GetSubsystem<UTimeOfDayManager>() : nullptr;
 	if (!TimeMgr) return;
 
@@ -183,7 +180,7 @@ void UAlsasuaAtmosphereController::UpdateSunVisuals(float Hour)
 
 	if (!SunLight || !SunLight->GetLightComponent()) return;
 
-	UDirectionalLightComponent* DirComp = SunLight->GetLightComponent();
+	UDirectionalLightComponent* DirComp = Cast<UDirectionalLightComponent>(SunLight->GetLightComponent());
 
 	float Intensity;
 	FLinearColor Color;
@@ -225,13 +222,13 @@ void UAlsasuaAtmosphereController::UpdateSunVisuals(float Hour)
 
 void UAlsasuaAtmosphereController::UpdateFogVisuals(float Hour)
 {
-	if (!HeightFog || !HeightFog->GetHeightFogComponent()) return;
+	if (!HeightFog || !HeightFog->GetComponent()) return;
 
-	UExponentialHeightFogComponent* FogComp = HeightFog->GetHeightFogComponent();
+	UExponentialHeightFogComponent* FogComp = HeightFog->GetComponent();
 
 	UWeatherSubsystem* Weather = GetWorld() ? GetWorld()->GetSubsystem<UWeatherSubsystem>() : nullptr;
-	const bool bRaining = Weather && (Weather->CurrentWeather == EWeatherState::Rainy || Weather->CurrentWeather == EWeatherState::Thunderstorm);
-	const bool bFoggy = Weather && Weather->CurrentWeather == EWeatherState::HeavyFog;
+	const bool bRaining = Weather && (Weather->CurrentWeather == EWeatherSubsystemState::Rainy || Weather->CurrentWeather == EWeatherSubsystemState::Thunderstorm);
+	const bool bFoggy = Weather && Weather->CurrentWeather == EWeatherSubsystemState::HeavyFog;
 
 	float TargetFogDensity = BaseFogDensity;
 	FLinearColor TargetFogColor = DayFogColor;
@@ -298,16 +295,16 @@ void UAlsasuaAtmosphereController::UpdateCloudVisuals(float Hour)
 	{
 		switch (Weather->CurrentWeather)
 		{
-		case EWeatherState::Clear:
+		case EWeatherSubsystemState::Clear:
 			CurrentCloudDensity *= 0.4f;
 			break;
-		case EWeatherState::Rainy:
+		case EWeatherSubsystemState::Rainy:
 			CurrentCloudDensity *= 1.5f;
 			break;
-		case EWeatherState::Thunderstorm:
+		case EWeatherSubsystemState::Thunderstorm:
 			CurrentCloudDensity *= 2.0f;
 			break;
-		case EWeatherState::HeavyFog:
+		case EWeatherSubsystemState::HeavyFog:
 			CurrentCloudDensity *= 0.2f;
 			break;
 		}
@@ -329,7 +326,7 @@ void UAlsasuaAtmosphereController::UpdateMoonVisuals(float Hour)
 		{
 			const float MoonPhase = FMath::Abs(FMath::Sin(Hour * 0.26f));
 			const float MoonBright = MoonBrightness * MoonPhase;
-			SLComp->SetLightColor(FLinearColor::Lerp(SLComp->GetLightColor(), MoonColor, 0.3f));
+			SLComp->SetLightColor(FLinearColor::LerpUsingHSV(SLComp->GetLightColor(), MoonColor, 0.3f));
 		}
 	}
 }

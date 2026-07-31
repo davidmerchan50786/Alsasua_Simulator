@@ -5,7 +5,7 @@
 #include "HAL/IConsoleManager.h"
 #include "Interfaces/IPluginManager.h"
 #include "GenericPlatform/GenericPlatformMisc.h"
-#include "Engine/GameUserSettings.h"
+#include "GameFramework/GameUserSettings.h"
 #include "Json.h"
 #include "JsonUtilities.h"
 #include "Misc/FileHelper.h"
@@ -38,19 +38,19 @@ void UAlsasuaSettingsWidget::ApplySettings()
 	{
 		switch (ShadowQuality)
 		{
-		case 0: Settings->SetShadowQualityLevel(0); break;
-		case 1: Settings->SetShadowQualityLevel(1); break;
-		case 2: Settings->SetShadowQualityLevel(2); break;
-		case 3: Settings->SetShadowQualityLevel(3); break;
+		case 0: Settings->SetShadowQuality(0); break;
+		case 1: Settings->SetShadowQuality(1); break;
+		case 2: Settings->SetShadowQuality(2); break;
+		case 3: Settings->SetShadowQuality(3); break;
 		default: break;
 		}
 
 		switch (TextureQuality)
 		{
-		case 0: Settings->SetTextureQualityLevel(0); break;
-		case 1: Settings->SetTextureQualityLevel(1); break;
-		case 2: Settings->SetTextureQualityLevel(2); break;
-		case 3: Settings->SetTextureQualityLevel(3); break;
+		case 0: Settings->SetTextureQuality(0); break;
+		case 1: Settings->SetTextureQuality(1); break;
+		case 2: Settings->SetTextureQuality(2); break;
+		case 3: Settings->SetTextureQuality(3); break;
 		default: break;
 		}
 
@@ -145,7 +145,7 @@ void UAlsasuaSettingsWidget::SaveSettings()
 
 	FString OutputString;
 	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&OutputString);
-	if (FJsonSerializer::Deserialize(Writer, Json.ToSharedRef()))
+	if (FJsonSerializer::Serialize(Json.ToSharedRef(), Writer))
 	{
 		const FString SavePath = GetSettingsSavePath();
 		const FString Dir = FPaths::GetPath(SavePath);
@@ -216,12 +216,12 @@ int32 UAlsasuaSettingsWidget::NativePaint(const FPaintArgs& Args, const FGeometr
 
 	FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
 		AllottedGeometry.ToPaintGeometry(FVector2D(0, 0), Size),
-		&FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")),
+		FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")),
 		ESlateDrawEffect::None, FLinearColor(0, 0, 0, 0.6f));
 
 	FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
 		AllottedGeometry.ToPaintGeometry(FVector2D(PanelX, PanelY), FVector2D(PanelWidth, PanelHeight)),
-		&FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")),
+		FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")),
 		ESlateDrawEffect::None, BackgroundColor);
 
 	float Y = PanelY + 20.f;
@@ -278,7 +278,7 @@ void UAlsasuaSettingsWidget::DrawSectionHeader(FSlateWindowElementList& OutDrawE
 
 	FSlateDrawElement::MakeBox(OutDrawElements, 0,
 		Geom.ToPaintGeometry(FVector2D(PanelX + 16.f, Y), FVector2D(PanelWidth - 32.f, 1.f)),
-		&FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")),
+		FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")),
 		ESlateDrawEffect::None, SectionColor);
 
 	FSlateDrawElement::MakeText(OutDrawElements, 0,
@@ -306,14 +306,14 @@ void UAlsasuaSettingsWidget::DrawSlider(FSlateWindowElementList& OutDrawElements
 	const float SliderX = PanelX + PanelWidth - SliderWidth - 50.f;
 	FSlateDrawElement::MakeBox(OutDrawElements, 0,
 		Geom.ToPaintGeometry(FVector2D(SliderX, Y + 10.f), FVector2D(SliderWidth, 4.f)),
-		&FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")),
+		FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")),
 		ESlateDrawEffect::None, FLinearColor(0.2f, 0.2f, 0.25f, 1.f));
 
 	const float Normalized = (MaxVal > MinVal) ? (Value - MinVal) / (MaxVal - MinVal) : 0.f;
 	FSlateDrawElement::MakeBox(OutDrawElements, 0,
 		Geom.ToPaintGeometry(FVector2D(SliderX, Y + 10.f),
 			FVector2D(SliderWidth * Normalized, 4.f)),
-		&FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")),
+		FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")),
 		ESlateDrawEffect::None, FLinearColor(0.8f, 0.2f, 0.2f, 1.f));
 
 	const FString ValStr = (MaxVal <= 1.f)
@@ -346,7 +346,7 @@ void UAlsasuaSettingsWidget::DrawToggle(FSlateWindowElementList& OutDrawElements
 
 	FSlateDrawElement::MakeBox(OutDrawElements, 0,
 		Geom.ToPaintGeometry(FVector2D(ToggleX, Y + 4.f), FVector2D(40.f, 18.f)),
-		&FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")),
+		FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")),
 		ESlateDrawEffect::None, BoxColor);
 
 	const FString StateStr = bValue ? TEXT("ON") : TEXT("OFF");
@@ -380,7 +380,7 @@ void UAlsasuaSettingsWidget::DrawOption(FSlateWindowElementList& OutDrawElements
 
 		FSlateDrawElement::MakeBox(OutDrawElements, 0,
 			Geom.ToPaintGeometry(FVector2D(X, Y + 2.f), FVector2D(OptWidth - 2.f, 22.f)),
-			&FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")),
+			FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")),
 			ESlateDrawEffect::None, BG);
 
 		FSlateFontInfo OptFont = FCoreStyle::GetDefaultFontStyle(bSelected ? "Bold" : "Regular", 9);

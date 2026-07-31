@@ -1,10 +1,11 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
+#include "Tickable.h"
 #include "ManifaManager.generated.h"
 
 UCLASS()
-class ALSASUAMANIFA_API UManifaManager : public UWorldSubsystem {
+class ALSASUAMANIFA_API UManifaManager : public UWorldSubsystem, public FTickableGameObject {
     GENERATED_BODY()
 public:
     UPROPERTY(BlueprintReadOnly, Category="AAA|Manifa")
@@ -24,7 +25,7 @@ public:
     FOnManifaStateChanged OnManifaStateChanged;
 
 public:
-    virtual bool IsTickable() const override { return true; }
+    virtual bool IsAllowedToTick() const override { return true; }
     virtual void Tick(float DeltaTime) override;
-    virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(ManifaManager, STATGROUP_AlsasuaCrowd); }
+    virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(ManifaManager, STATGROUP_Game); }
 };

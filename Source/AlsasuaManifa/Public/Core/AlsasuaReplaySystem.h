@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
+#include "Tickable.h"
 #include "AlsasuaReplaySystem.generated.h"
 
 USTRUCT(BlueprintType)
@@ -10,22 +11,24 @@ struct FReplaySnapshot
     GENERATED_BODY()
 
     UPROPERTY()
-    float TimeStamp;
+    float TimeStamp = 0.f;
 
     UPROPERTY()
-    float GlobalTension;
+    float GlobalTension = 0.f;
 
     UPROPERTY()
     TArray<FVector> ActorLocations;
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaReplaySystem : public UWorldSubsystem
+class ALSASUAMANIFA_API UAlsasuaReplaySystem : public UWorldSubsystem, public FTickableGameObject
 {
     GENERATED_BODY()
 
 public:
     virtual void Tick(float DeltaTime) override;
+    virtual bool IsTickable() const override { return true; }
+    virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(UAlsasuaReplaySystem, STATGROUP_Game); }
 
     UFUNCTION(BlueprintCallable, Category = "AAA|Replay")
     void StartRecording();

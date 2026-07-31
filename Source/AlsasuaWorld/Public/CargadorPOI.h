@@ -22,7 +22,7 @@ struct FPOIData
 	UPROPERTY(BlueprintReadOnly) bool bExtorsionable = false;
 	UPROPERTY(BlueprintReadOnly) FString Faccion;
 	UPROPERTY(BlueprintReadOnly) FString Dialogo;
-	UPROPERTY(BlueprintReadOnly) FVector PosicionMundo;
+	UPROPERTY(BlueprintReadOnly) FVector PosicionMundo = FVector::ZeroVector;
 };
 
 UCLASS()

@@ -29,7 +29,8 @@ public class AlsasuaManifa : ModuleRules
 			"Landscape",
 			"Niagara",
 			"ProceduralMeshComponent",
-			"AlsasuaCore"
+			"AlsasuaCore",
+			"AlsasuaUI"
 		});
 
         PrivateDependencyModuleNames.AddRange(new string[] { 

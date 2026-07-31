@@ -56,7 +56,7 @@ int32 UAlsasuaBuildingInteriorSystem::GenerarInteriores()
         CX /= VertsArr->Num();
         CZ /= VertsArr->Num();
 
-        FVector Center = UAlsasuaGeoData::UnityaUnreal(FVector(CX + UAlsasuaGeoData::OX, 0.0f, CZ + UAlsasuaGeoData::OZ));
+        FVector Center = UAlsasuaGeoData::RelLocalToUE5(FVector(CX, 0.0f, CZ));
         int32 NumPlantas = FMath::Max(1, FMath::CeilToInt(Height / 3.0f));
 
         FBuildingInterior Interior;
@@ -81,10 +81,14 @@ int32 UAlsasuaBuildingInteriorSystem::GenerarInteriores()
                 APointLight::StaticClass(), LightPos, FRotator::ZeroRotator);
             if (Light)
             {
-                Light->GetPointLightComponent()->SetIntensity(Interior.IntensidadLuz * 500.0f);
-                Light->GetPointLightComponent()->SetLightColor(Interior.ColorLuz);
-                Light->GetPointLightComponent()->SetAttenuationRadius(600.0f);
-                Light->GetPointLightComponent()->SetSourceRadius(10.0f);
+                UPointLightComponent* PLComp = Cast<UPointLightComponent>(Light->GetLightComponent());
+                if (PLComp)
+                {
+                    PLComp->SetIntensity(Interior.IntensidadLuz * 500.0f);
+                    PLComp->SetLightColor(Interior.ColorLuz);
+                    PLComp->SetAttenuationRadius(600.0f);
+                    PLComp->SetSourceRadius(10.0f);
+                }
 
 #if WITH_EDITOR
                 Light->SetActorLabel(*FString::Printf(TEXT("LuzInterior_%d"), Id));

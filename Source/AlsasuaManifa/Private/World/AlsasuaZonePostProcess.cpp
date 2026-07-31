@@ -26,7 +26,6 @@ void UAlsasuaZonePostProcess::Initialize(FSubsystemCollectionBase& Collection)
 
 void UAlsasuaZonePostProcess::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
 	ApplyZoneBlending(DeltaTime);
 	UpdatePostProcessVolume(DeltaTime);
 }

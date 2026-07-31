@@ -77,13 +77,13 @@ int32 UAlsasuaFarolaPlacer::ColocarFarolasEnMundo()
     int32 Placed = 0;
 
     UStaticMesh* LampMesh1 = LoadObject<UStaticMesh>(nullptr,
-        TEXT("/Game/AssetsImportados/Farolas/StreetLamps2/StreetLampRound1"));
+        TEXT("/Game/CitySample/Prop/Kit_StreetLamp_A/Mesh/SM_StreetLamp_A_Pole_Large"));
     UStaticMesh* LampMesh2 = LoadObject<UStaticMesh>(nullptr,
-        TEXT("/Game/AssetsImportados/Farolas/StreetLamps2/StreetLampRound2"));
+        TEXT("/Game/CitySample/Prop/Kit_StreetLamp_B/Mesh/SM_StreetLamp_B"));
 
     for (const FFarolaEntry& F : Farolas)
     {
-        FVector Loc = UAlsasuaGeoData::UnityaUnreal(FVector(F.X + UAlsasuaGeoData::OX, 0.0f, F.Z + UAlsasuaGeoData::OZ));
+        FVector Loc = UAlsasuaGeoData::RelLocalToUE5(FVector(F.X, 0.0f, F.Z));
         Loc.Z += F.AlturaM * 50.0f;
 
         AStaticMeshActor* FarolaActor = World->SpawnActor<AStaticMeshActor>(

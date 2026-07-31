@@ -5,6 +5,7 @@
 #include "AlsasuaCharacter.h"
 #include "GAS/AlsasuaAbilitySystemComponent.h"
 #include "AlsasuaAttributeSet.h"
+#include "AbilitySystemGlobals.h"
 
 UAlsasuaGameInstance::UAlsasuaGameInstance()
 {
@@ -12,7 +13,7 @@ UAlsasuaGameInstance::UAlsasuaGameInstance()
 
 void UAlsasuaGameInstance::SaveGame(FString SlotName)
 {
-    UAlsasuaSaveGame* SaveInstance = Cast<UAlsasuaSaveGame>(UGameplayStatics::CreateSaveGameObject(UAlsasuaSaveGame::StaticClass()));
+    UDEPRECATED_AlsasuaSaveGame* SaveInstance = Cast<UDEPRECATED_AlsasuaSaveGame>(UGameplayStatics::CreateSaveGameObject(UDEPRECATED_AlsasuaSaveGame::StaticClass()));
     if (!SaveInstance) return;
 
     UWorld* World = GetWorld();
@@ -28,7 +29,7 @@ void UAlsasuaGameInstance::SaveGame(FString SlotName)
         UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Pawn);
         if (ASC)
         {
-            UAlsasuaAttributeSet* AS = ASC->GetSet<UAlsasuaAttributeSet>();
+            const UAlsasuaAttributeSet* AS = ASC->GetSet<UAlsasuaAttributeSet>();
             if (AS)
             {
                 SaveInstance->SavedPopularSupport = AS->GetPopularSupport();
@@ -46,7 +47,7 @@ void UAlsasuaGameInstance::LoadGame(FString SlotName)
 {
     if (!UGameplayStatics::DoesSaveGameExist(SlotName, 0)) return;
 
-    UAlsasuaSaveGame* Loaded = Cast<UAlsasuaSaveGame>(
+    UDEPRECATED_AlsasuaSaveGame* Loaded = Cast<UDEPRECATED_AlsasuaSaveGame>(
         UGameplayStatics::LoadGameFromSlot(SlotName, 0));
     if (!Loaded) return;
 
@@ -63,7 +64,7 @@ void UAlsasuaGameInstance::LoadGame(FString SlotName)
         UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Pawn);
         if (ASC)
         {
-            UAlsasuaAttributeSet* AS = ASC->GetSet<UAlsasuaAttributeSet>();
+            const UAlsasuaAttributeSet* AS = ASC->GetSet<UAlsasuaAttributeSet>();
             if (AS)
             {
                 ASC->ApplyModToAttribute(AS->GetPopularSupportAttribute(), EGameplayModOp::Override, Loaded->SavedPopularSupport);

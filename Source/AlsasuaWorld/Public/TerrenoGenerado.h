@@ -28,8 +28,45 @@ public:
 	UPROPERTY(EditAnywhere, Category="Terreno") double LocZ = 49567.0;
 	UPROPERTY(EditAnywhere, Category="Terreno") FString RutaRAW = TEXT("Terreno/alsasua_landscape_4033.r16");
 
+	/** LIDAR 0.5m real (Alsasua centro urbano) — mayor precisión, se funde con el DTM ancho en los bordes. */
+	UPROPERTY(EditAnywhere, Category="Terreno|LIDAR") bool bUsarLidar = true;
+	UPROPERTY(EditAnywhere, Category="Terreno|LIDAR") FString RutaLidarRAW = TEXT("Terreno/lidar_dtm_05m.raw");
+	UPROPERTY(EditAnywhere, Category="Terreno|LIDAR") FString RutaLidarMeta = TEXT("Terreno/lidar_dtm_meta.json");
+	UPROPERTY(EditAnywhere, Category="Terreno|LIDAR") FString RutaLidarGround = TEXT("Terreno/lidar_ground.xyz");
+	/** Ancho del blend gaussiano (metros) entre LIDAR y DTM ancho en los bordes del área LIDAR. */
+	UPROPERTY(EditAnywhere, Category="Terreno|LIDAR") double LidarBlendMetros = 200.0;
+
+	/** Valida el heightmap final contra lidar_ground.xyz (587k puntos reales) y loguea RMSE. */
+	UFUNCTION(CallInEditor, Category="Terreno|LIDAR")
+	void ValidarTerrenoRMSE();
+
 	UPROPERTY(EditAnywhere, Category="Terreno|Material")
 	TSoftObjectPtr<UMaterialInterface> TerrainMaterial;
+
+	/** Ortofoto satelital real de Alsasua, draped sobre el terreno completo. */
+	UPROPERTY(EditAnywhere, Category="Terreno|Material")
+	TSoftObjectPtr<UTexture> SatelliteImage;
+
+	UPROPERTY(EditAnywhere, Category="Terreno|Material|Textures")
+	TSoftObjectPtr<UTexture> GrassDiffuse;
+
+	UPROPERTY(EditAnywhere, Category="Terreno|Material|Textures")
+	TSoftObjectPtr<UTexture> GrassNormal;
+
+	UPROPERTY(EditAnywhere, Category="Terreno|Material|Textures")
+	TSoftObjectPtr<UTexture> RockDiffuse;
+
+	UPROPERTY(EditAnywhere, Category="Terreno|Material|Textures")
+	TSoftObjectPtr<UTexture> RockNormal;
+
+	UPROPERTY(EditAnywhere, Category="Terreno|Material|Textures")
+	TSoftObjectPtr<UTexture> GroundDiffuse;
+
+	UPROPERTY(EditAnywhere, Category="Terreno|Material|Textures")
+	TSoftObjectPtr<UTexture> GroundNormal;
+
+	UPROPERTY(EditAnywhere, Category="Terreno|Material|Textures")
+	float TextureTilingCm = 500.0f;
 
 	UPROPERTY(EditAnywhere, Category="Terreno|LOD")
 	int32 LOD0Step = 1;
@@ -56,10 +93,23 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
+	void GenerarSiguienteChunk();
+
 	TArray<uint16> AlturasRAW;
 	int32 NumChunksX = 0;
 	int32 NumChunksY = 0;
 	FVector OriginWorld = FVector::ZeroVector;
+	int32 ChunkIndexProgreso = 0;
+
+	// ── LIDAR 0.5m ──────────────────────────────────────────────────────
+	TArray<uint16> LidarRaw;
+	int32 LidarRes = 0;
+	double LidarWidthM = 0.0;
+	double LidarLengthM = 0.0;
+	double LidarZMinM = 0.0;
+	double LidarZMaxM = 0.0;
+	bool bLidarCargado = false;
+	bool bLidarFusionado = false;
 
 	struct FInfoChunk
 	{
@@ -75,6 +125,9 @@ private:
 	TArray<FInfoChunk> ChunksInfo;
 
 	void CargarRAW(const FString& Ruta);
+	void CargarLidar();
+	float SampleLidarBicubic(double WorldXcm, double WorldYcm) const;
+	bool DentroLidar(double WorldXcm, double WorldYcm, double& OutDistBordeCm) const;
 	void GenerarChunk(FInfoChunk& Info, int32 LODLevel, int32 Step);
 	void GenerarTodosChunks();
 

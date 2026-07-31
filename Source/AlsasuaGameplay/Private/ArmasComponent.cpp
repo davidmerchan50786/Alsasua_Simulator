@@ -14,6 +14,7 @@
 #include "GameFramework/PlayerController.h"
 #include "Engine/World.h"
 #include "Engine/GameInstance.h"
+#include "Engine/OverlapResult.h"
 
 UArmasComponent::UArmasComponent()
 {
@@ -629,8 +630,9 @@ void UArmasComponent::CocheBombaDetonar()
 
 	if (NearestVehicle && NearestVehicle->Implements<UDamageable>())
 	{
-		if (!IDamageable::Execute_EstaMuerto(NearestVehicle))
-			IDamageable::Execute_RecibirDano(NearestVehicle, 200, BoomLocation, ETipoDano::Explosion);
+		if (IDamageable* Dmg = Cast<IDamageable>(NearestVehicle))
+			if (!Dmg->EstaMuerto())
+				Dmg->RecibirDano(200, BoomLocation, ETipoDano::Explosion);
 	}
 
 	SubirBusqueda(6);

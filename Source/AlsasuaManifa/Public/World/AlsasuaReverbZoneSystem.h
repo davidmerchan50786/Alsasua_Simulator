@@ -3,8 +3,6 @@
 #include "Components/ActorComponent.h"
 #include "AlsasuaReverbZoneSystem.generated.h"
 
-class UAudioReverbZoneComponent;
-
 /**
  * Sistema de zonas de reverberación por ubicación.
  * Añade reverb adaptativo: interior, exterior, callejón, iglesia, cueva.
@@ -64,5 +62,5 @@ private:
 	void SpawnReverbZones();
 
 	UPROPERTY()
-	TArray<TObjectPtr<UAudioReverbZoneComponent>> SpawnedZones;
+	TArray<TObjectPtr<AActor>> SpawnedZones;
 };

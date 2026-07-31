@@ -28,6 +28,7 @@ public:
 
 private:
 	bool bCreado = false;
+	float TiempoActualizacion = 0.f;
 	UPROPERTY() ADirectionalLight* Sol = nullptr;
 	UPROPERTY() ASkyLight* CieloLuz = nullptr;
 	UPROPERTY() AExponentialHeightFog* Niebla = nullptr;

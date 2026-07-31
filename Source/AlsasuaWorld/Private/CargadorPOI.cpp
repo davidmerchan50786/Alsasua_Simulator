@@ -8,6 +8,7 @@
 #include "Misc/Paths.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
+#include "GeoDataAlsasua.h"
 
 void UCargadorPOI::OnWorldBeginPlay(UWorld& InWorld)
 {
@@ -57,9 +58,17 @@ int32 UCargadorPOI::Cargar()
 		Data.Faccion = O->HasField(TEXT("faccion")) ? O->GetStringField(TEXT("faccion")) : FString();
 		Data.Dialogo = O->HasField(TEXT("dialogo")) ? O->GetStringField(TEXT("dialogo")) : FString();
 
-		// El POI no tiene coordenadas directas — se coloca por nombre de calle.
-		// Usamos una aproximación basada en el tipo.
-		Data.PosicionMundo = FVector::ZeroVector;
+		// Coordenadas locales relativas a Herriko Plaza (x,z en metros) → mundo UE5.
+		if (O->HasField(TEXT("x")) && O->HasField(TEXT("z")))
+		{
+			Data.PosicionMundo = UAlsasuaGeoData::RelLocalToUE5(
+				FVector(O->GetNumberField(TEXT("x")), 0.0, O->GetNumberField(TEXT("z"))));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[POI] %s sin coordenadas x/z, omitido"), *Data.Nombre);
+			continue;
+		}
 
 		TodosLosPOIs.Add(Data);
 		ColocarPOI(Data);
@@ -91,7 +100,6 @@ void UCargadorPOI::ColocarPOI(const FPOIData& Data)
 	Texto->RegisterComponent();
 	Texto->SetupAttachment(Actor->GetRootComponent());
 	Texto->SetText(FText::FromString(Data.Nombre));
-	Texto->SetTextSize(100.f);
 	Texto->SetTextRenderColor(FColor::Yellow);
 	Texto->SetHorizontalAlignment(EHTA_Center);
 	Texto->SetWorldSize(200.f);

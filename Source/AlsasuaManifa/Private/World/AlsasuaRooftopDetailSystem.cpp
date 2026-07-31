@@ -20,12 +20,9 @@ int32 UAlsasuaRooftopDetailSystem::ColocarDetallesCubierta()
     FString JsonStr;
     if (!FFileHelper::LoadFileToString(JsonStr, *JsonPath)) return 0;
 
-    TSharedPtr<FJsonValue> RootVal;
+    TArray<TSharedPtr<FJsonValue>> BuildingsArr;
     TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(JsonStr);
-    if (!FJsonSerializer::Deserialize(Reader, RootVal) || !RootVal.IsValid()) return 0;
-
-    const TArray<TSharedPtr<FJsonValue>>* BuildingsArr;
-    if (!RootVal->TryGetArray(BuildingsArr)) return 0;
+    if (!FJsonSerializer::Deserialize(Reader, BuildingsArr) || BuildingsArr.Num() == 0) return 0;
 
     UWorld* World = GetWorld();
     if (!World) return 0;
@@ -33,14 +30,15 @@ int32 UAlsasuaRooftopDetailSystem::ColocarDetallesCubierta()
     Items.Empty();
     int32 Placed = 0;
 
-    for (const auto& BldVal : *BuildingsArr)
+    for (const auto& BldVal : BuildingsArr)
     {
         const TSharedPtr<FJsonObject>& Bld = BldVal->AsObject();
         if (!Bld) continue;
 
-        const int32 Id = Bld->HasField(TEXT("id")) ? Bld->GetIntegerField(TEXT("id")) : -1;
-        const FString Barrio = Bld->HasField(TEXT("barrio")) ? Bld->GetStringField(TEXT("barrio")) : TEXT("Herriko");
+        const int32 Id = Bld->GetIntegerField(TEXT("id"));
         const float Height = Bld->HasField(TEXT("height")) ? Bld->GetNumberField(TEXT("height")) : 10.0f;
+        const FString Barrio = Bld->HasField(TEXT("barrio")) ? Bld->GetStringField(TEXT("barrio")) : TEXT("");
+        const FString RoofTipo = Bld->HasField(TEXT("roof_tipo_real")) ? Bld->GetStringField(TEXT("roof_tipo_real")) : TEXT("desconocido");
 
         const TArray<TSharedPtr<FJsonValue>>* VertsArr;
         if (!Bld->TryGetArrayField(TEXT("vertices"), VertsArr) || !VertsArr || VertsArr->Num() < 3) continue;
@@ -56,8 +54,11 @@ int32 UAlsasuaRooftopDetailSystem::ColocarDetallesCubierta()
         CX /= VertsArr->Num();
         CZ /= VertsArr->Num();
 
-        FVector RoofCenter = UAlsasuaGeoData::UnityaUnreal(FVector(CX + UAlsasuaGeoData::OX, 0.0f, CZ + UAlsasuaGeoData::OZ));
+        FVector RoofCenter = UAlsasuaGeoData::RelLocalToUE5(FVector(CX, 0.0f, CZ));
         RoofCenter.Z += Height * 100.0f;
+
+        const bool bFlatRoof = RoofTipo.Contains(TEXT("cemento"));
+        const bool bPitchedRoof = RoofTipo.Contains(TEXT("pizarra")) || RoofTipo.Contains(TEXT("teja"));
 
         auto CrearItem = [&](const FString& Tipo, const TCHAR* MeshPath,
             const TCHAR* MatPath, float SX, float SY, float SZ, float OffX, float OffZ)
@@ -93,44 +94,54 @@ int32 UAlsasuaRooftopDetailSystem::ColocarDetallesCubierta()
             Placed++;
         };
 
-        if (FMath::FRand() < ProbAntena)
+        if (bPitchedRoof && FMath::FRand() < 0.4f)
         {
             float OffX = FMath::RandRange(-200.0f, 200.0f);
             float OffZ = FMath::RandRange(-200.0f, 200.0f);
             CrearItem(TEXT("antena"),
-                TEXT("/Game/EngineBasicShapes/Cylinder"),
-                TEXT("/Game/Materiales/M_Metal_Gris"),
+                TEXT("/Engine/EngineMeshes/Cylinder"),
+                TEXT("/Engine/EngineMaterials/DefaultMaterial"),
                 0.05f, 0.05f, 3.0f, OffX, OffZ);
         }
 
-        if (FMath::FRand() < ProbChimenea)
+        if (bPitchedRoof && FMath::FRand() < 0.6f)
         {
             float OffX = FMath::RandRange(-150.0f, 150.0f);
             float OffZ = FMath::RandRange(-150.0f, 150.0f);
             CrearItem(TEXT("chimenea"),
-                TEXT("/Game/EngineBasicShapes/Cube"),
-                TEXT("/Game/Materiales/M_Ladrillo_Rojo"),
+                TEXT("/Engine/EngineMeshes/Cube"),
+                TEXT("/Engine/EngineMaterials/DefaultMaterial"),
                 0.5f, 0.5f, 1.2f, OffX, OffZ);
         }
 
-        if (FMath::FRand() < ProbDeposito)
+        if (bFlatRoof && FMath::FRand() < 0.3f)
         {
             float OffX = FMath::RandRange(-100.0f, 100.0f);
             float OffZ = FMath::RandRange(-100.0f, 100.0f);
             CrearItem(TEXT("deposito_agua"),
-                TEXT("/Game/EngineBasicShapes/Cylinder"),
-                TEXT("/Game/Materiales/M_Metal_Negro"),
+                TEXT("/Engine/EngineMeshes/Cylinder"),
+                TEXT("/Engine/EngineMaterials/DefaultMaterial"),
                 1.0f, 1.0f, 1.5f, OffX, OffZ);
         }
 
-        if (FMath::FRand() < ProbPlacaSolar)
+        if (bFlatRoof && FMath::FRand() < 0.2f)
         {
             float OffX = FMath::RandRange(-200.0f, 200.0f);
             float OffZ = FMath::RandRange(-200.0f, 200.0f);
             CrearItem(TEXT("placa_solar"),
-                TEXT("/Game/EngineBasicShapes/Plane"),
-                TEXT("/Game/Materiales/M_SolarPanel"),
+                TEXT("/Engine/EngineMeshes/Plane"),
+                TEXT("/Engine/EngineMaterials/DefaultMaterial"),
                 2.0f, 1.5f, 0.02f, OffX, OffZ);
+        }
+
+        if (FMath::FRand() < 0.15f)
+        {
+            float OffX = FMath::RandRange(-150.0f, 150.0f);
+            float OffZ = FMath::RandRange(-150.0f, 150.0f);
+            CrearItem(TEXT("satelital"),
+                TEXT("/Engine/EngineMeshes/Cylinder"),
+                TEXT("/Engine/EngineMaterials/DefaultMaterial"),
+                0.3f, 0.3f, 0.8f, OffX, OffZ);
         }
     }
 

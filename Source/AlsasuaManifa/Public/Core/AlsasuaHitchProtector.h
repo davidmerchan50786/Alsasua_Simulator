@@ -2,15 +2,18 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
+#include "Tickable.h"
 #include "AlsasuaHitchProtector.generated.h"
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaHitchProtector : public UWorldSubsystem
+class ALSASUAMANIFA_API UAlsasuaHitchProtector : public UWorldSubsystem, public FTickableGameObject
 {
 	GENERATED_BODY()
 
 public:
 	virtual void Tick(float DeltaTime) override;
+	virtual bool IsTickable() const override { return true; }
+	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(UAlsasuaHitchProtector, STATGROUP_Game); }
 
 	// Devuelve el factor de escala de densidad actual (1.0 = normal, 0.2 = pánico)
 	UFUNCTION(BlueprintCallable, Category = "AAA|Optimization")

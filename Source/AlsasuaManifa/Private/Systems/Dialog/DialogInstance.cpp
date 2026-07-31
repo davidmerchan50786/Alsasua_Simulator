@@ -142,7 +142,7 @@ void UDialogInstance::AutoAdvanceTick()
 	if (Current.Options.Num() == 0 && Current.NextNodeIDIfNotChoice != NAME_None)
 	{
 		// Advance directly to the next node.
-		CurrentNodeID = Current.NextNodeIDIfNotChoice;
+		CurrentNodeID = FCString::Atoi(*Current.NextNodeIDIfNotChoice.ToString());
 
 		const FDialogNode* NextNode = SourceAsset ? SourceAsset->FindNodeByID(CurrentNodeID) : nullptr;
 		if (NextNode)

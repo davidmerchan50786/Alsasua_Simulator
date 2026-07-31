@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
+#include "Tickable.h"
 #include "AlsasuaVisualEffectsManager.generated.h"
 
 class UMaterialParameterCollection;
@@ -12,13 +13,15 @@ class UMaterialParameterCollectionInstance;
  * TODOS los materiales del juego.
  */
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaVisualEffectsManager : public UWorldSubsystem
+class ALSASUAMANIFA_API UAlsasuaVisualEffectsManager : public UWorldSubsystem, public FTickableGameObject
 {
 	GENERATED_BODY()
 
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Tick(float DeltaTime) override;
+	virtual bool IsAllowedToTick() const override { return true; }
+	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(AlsasuaVisualEffectsManager, STATGROUP_Game); }
 
 	// --- Wetness (lluvia) ---
 	UPROPERTY(BlueprintReadOnly, Category = "VFX|Wetness")

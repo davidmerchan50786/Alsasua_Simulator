@@ -97,7 +97,7 @@ void UAlsasuaReplaySystem::SaveReplayToFile(FString FileName)
     }
 
     FString OutputPath = FPaths::ProjectSavedDir() / TEXT("Replays") / (FileName + TEXT(".json"));
-    FPaths::MakePathValid(OutputPath);
+    FPaths::NormalizeFilename(OutputPath);
 
     // Crear directorio si no existe.
     const FString ReplayDir = FPaths::ProjectSavedDir() / TEXT("Replays");

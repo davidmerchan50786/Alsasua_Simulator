@@ -4,7 +4,7 @@
 #include "AlsasuaFoliagePainter.generated.h"
 
 USTRUCT(BlueprintType)
-struct FFoliageType
+struct FFoliageTypeData
 {
     GENERATED_BODY()
     FString Nombre;
@@ -29,10 +29,10 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Alsasua|Foliage")
     int32 PintarFoliageEnZonasVerdes();
 
-    const TArray<FFoliageType>& GetTipos() const { return Tipos; }
+    const TArray<FFoliageTypeData>& GetTipos() const { return Tipos; }
 
 private:
-    TArray<FFoliageType> Tipos;
+    TArray<FFoliageTypeData> Tipos;
     bool bCargado = false;
     void InicializarTipos();
 };

@@ -72,5 +72,26 @@ void UAlsasuaOptimizerSubsystem::OptimizeCrowd(AAlsasuaCharacter* Player)
 				NPC->GetController()->SetActorTickEnabled(true);
 			}
 		}
+
+		// LOD multitud: lejos del jugador, forzar el LOD mas grueso y quitar
+		// sombras dinamicas. Equivale a impostor para SkeletalMesh sin asset.
+		USkeletalMeshComponent* Mesh = NPC->GetMesh();
+		if (Mesh)
+		{
+			const float RenderLODDistSq = RenderLODDistance * RenderLODDistance;
+			if (Dist > RenderLODDistSq)
+			{
+				if (Mesh->GetForcedLOD() == 0)
+				{
+					Mesh->SetForcedLOD(Mesh->GetNumLODs());
+					Mesh->SetCastShadow(false);
+				}
+			}
+			else
+			{
+				Mesh->SetForcedLOD(0);
+				Mesh->SetCastShadow(true);
+			}
+		}
 	}
 }

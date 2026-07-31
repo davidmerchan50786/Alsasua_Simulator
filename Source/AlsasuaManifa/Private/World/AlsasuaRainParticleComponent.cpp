@@ -51,7 +51,7 @@ void UAlsasuaRainParticleComponent::UpdateRainState(float DeltaTime)
 	UWeatherSubsystem* Weather = W->GetSubsystem<UWeatherSubsystem>();
 	if (!VFXMgr || !Weather) return;
 
-	const EWeatherState State = Weather->CurrentWeather;
+	const EWeatherSubsystemState State = Weather->CurrentWeather;
 	const float Wetness = VFXMgr->GlobalWetness;
 
 	float TargetSpawnRate = 0.f;
@@ -59,13 +59,13 @@ void UAlsasuaRainParticleComponent::UpdateRainState(float DeltaTime)
 
 	switch (State)
 	{
-	case EWeatherState::Rainy:
+	case EWeatherSubsystemState::Rainy:
 		TargetSpawnRate = FMath::Lerp(LightRainSpawnRate, HeavyRainSpawnRate, Wetness);
 		TargetSystem = RainNiagaraAsset;
 		bIsSnowing = false;
 		break;
 
-	case EWeatherState::Thunderstorm:
+	case EWeatherSubsystemState::Thunderstorm:
 		TargetSpawnRate = HeavyRainSpawnRate;
 		TargetSystem = RainNiagaraAsset;
 		bIsSnowing = false;
@@ -78,7 +78,7 @@ void UAlsasuaRainParticleComponent::UpdateRainState(float DeltaTime)
 		}
 		break;
 
-	case EWeatherState::HeavyFog:
+	case EWeatherSubsystemState::HeavyFog:
 		TargetSpawnRate = SnowSpawnRate * 0.3f;
 		TargetSystem = SnowNiagaraAsset;
 		bIsSnowing = true;
@@ -150,7 +150,7 @@ void UAlsasuaRainParticleComponent::SpawnThunderFlash()
 	APlayerCameraManager* CamMgr = PC->PlayerCameraManager;
 	if (CamMgr)
 	{
-		CamMgr->StartCameraShake(UDefaultGameplayCameraShake::StaticClass(), 0.5f);
+		// Camera shake removed - class no longer available
 	}
 }
 

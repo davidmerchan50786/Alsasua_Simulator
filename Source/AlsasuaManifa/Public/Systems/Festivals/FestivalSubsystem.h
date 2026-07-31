@@ -18,13 +18,13 @@ struct FFestivalSchedule {
     GENERATED_BODY()
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    int32 Month;
+    int32 Month = 1;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    int32 Day;
+    int32 Day = 1;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    ETraditionType Festival;
+    ETraditionType Festival = ETraditionType::Other;
 };
 
 UCLASS()

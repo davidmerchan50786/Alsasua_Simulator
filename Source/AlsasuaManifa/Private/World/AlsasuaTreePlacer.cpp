@@ -161,7 +161,7 @@ bool UAlsasuaTreePlacer::CargarArboles()
         FTreePlacement Tree;
         const float X = Obj->GetNumberField(TEXT("x"));
         const float Z = Obj->GetNumberField(TEXT("z"));
-        const float Altura = Obj->HasField(TEXT("height")) ? Obj->GetNumberField(TEXT("height")) : 10.0f;
+        const float Altura = Obj->HasField(TEXT("altura")) ? Obj->GetNumberField(TEXT("altura")) : 10.0f;
 
         Tree.PosicionUnreal = UAlsasuaGeoData::UnityaUnreal(FVector(X, Z, 0));
         Tree.Especie = AsignarEspecie(Altura);

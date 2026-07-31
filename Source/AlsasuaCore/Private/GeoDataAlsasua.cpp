@@ -101,8 +101,9 @@ FVector2D UAlsasuaGeoData::UE5ToLatLon(const FVector& UE5Pos)
     const double LocalX = UE5Pos.X / 100.0;
     const double LocalZ = UE5Pos.Y / 100.0;
 
-    const double ApproxE = (LocalX - OriginLocalX) + 568043.3;
-    const double ApproxN = (LocalZ - OriginLocalZ) + 4764786.9;
+    // Frame LIDAR (metadatos del proyecto Unity original): UE5 m = UTM - (566033, 4741332).
+    const double ApproxE = LocalX + 566033.0;
+    const double ApproxN = LocalZ + 4741332.0;
 
     const double M  = (ApproxN - UTM_FN) / UTM_K0;
     const double Mu = M / (UTM_A * kA0);
@@ -139,7 +140,47 @@ FVector2D UAlsasuaGeoData::UE5ToLatLon(const FVector& UE5Pos)
 
 FVector UAlsasuaGeoData::UTMToUE5(double UtmE, double UtmN, double AltM)
 {
-    const double LocalE = UtmE - 568043.3;
-    const double LocalN = UtmN - 4764786.9;
+    // Frame LIDAR real (lidar_dtm_meta.json del proyecto Unity original):
+    //   Herriko Plaza = UTM (567951.0, 4749902.0) = UE5 (1918, 8570) m = CentroMundo del terreno.
+    //   => UE5 m = UTM - (567951-1918, 4749902-8570) = UTM - (566033, 4741332).
+    const double LocalE = UtmE - 566033.0;
+    const double LocalN = UtmN - 4741332.0;
     return FVector(LocalE * 100.0, LocalN * 100.0, AltM * 100.0);
+}
+
+// ============================================================
+//  Barrio centers — absolute local coords (meters)
+//  Derived from neighborhoods.json relative offsets + Herriko center
+// ============================================================
+
+FVector UAlsasuaGeoData::BarrioCenter(const FString& BarrioName)
+{
+    // Herriko center is at absolute local (1891.5, 8572.0)
+    static const TMap<FString, FVector> Centers = {
+        {TEXT("Herriko"),     FVector(1891.5, 0.0, 8572.0)},
+        {TEXT("Zelai"),       FVector(1691.5, 0.0, 8722.0)},
+        {TEXT("Intxostia"),   FVector(1991.5, 0.0, 8272.0)},
+        {TEXT("Errota"),      FVector(2291.5, 0.0, 8672.0)},
+        {TEXT("SanPedro"),    FVector(1791.5, 0.0, 8972.0)},
+        {TEXT("Harrobieta"),  FVector(2091.5, 0.0, 8622.0)},
+        {TEXT("Ferroviario"), FVector(1891.5, 0.0, 9172.0)},
+        {TEXT("Monte"),       FVector(2391.5, 0.0, 8072.0)},
+    };
+
+    if (const FVector* C = Centers.Find(BarrioName))
+        return *C;
+
+    return FVector(1891.5, 0.0, 8572.0);
+}
+
+void UAlsasuaGeoData::GetAllBarrioCenters(TMap<FString, FVector>& OutCenters)
+{
+    OutCenters.Add(TEXT("Herriko"),     FVector(1891.5, 0.0, 8572.0));
+    OutCenters.Add(TEXT("Zelai"),       FVector(1691.5, 0.0, 8722.0));
+    OutCenters.Add(TEXT("Intxostia"),   FVector(1991.5, 0.0, 8272.0));
+    OutCenters.Add(TEXT("Errota"),      FVector(2291.5, 0.0, 8672.0));
+    OutCenters.Add(TEXT("SanPedro"),    FVector(1791.5, 0.0, 8972.0));
+    OutCenters.Add(TEXT("Harrobieta"),  FVector(2091.5, 0.0, 8622.0));
+    OutCenters.Add(TEXT("Ferroviario"), FVector(1891.5, 0.0, 9172.0));
+    OutCenters.Add(TEXT("Monte"),       FVector(2391.5, 0.0, 8072.0));
 }

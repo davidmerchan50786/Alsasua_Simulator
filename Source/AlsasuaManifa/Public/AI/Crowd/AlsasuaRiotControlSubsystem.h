@@ -227,6 +227,7 @@ private:
 	// ── Datos internos ──────────────────────────────────────────────────────
 
 	/** Disturbios activos. */
+	UPROPERTY()
 	TArray<FRiotInstance> ActiveRiots;
 
 	/** Timer para el chequeo probabilístico. */

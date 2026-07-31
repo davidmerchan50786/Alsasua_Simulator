@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
+#include "Tickable.h"
 #include "Components/PostProcessComponent.h"
 #include "AlsasuaZonePostProcess.generated.h"
 
@@ -31,13 +32,15 @@ enum class EZoneType : uint8
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaZonePostProcess : public UWorldSubsystem
+class ALSASUAMANIFA_API UAlsasuaZonePostProcess : public UWorldSubsystem, public FTickableGameObject
 {
 	GENERATED_BODY()
 
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Tick(float DeltaTime) override;
+	virtual bool IsTickable() const override { return true; }
+	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(UAlsasuaZonePostProcess, STATGROUP_Game); }
 
 	UFUNCTION(BlueprintCallable, Category = "Alsasua|PostProcess")
 	void RegisterZone(const FZoneColorGrading& Zone);

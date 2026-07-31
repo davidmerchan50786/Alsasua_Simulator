@@ -57,17 +57,12 @@ def spawn_sky():
     if not world:
         return
 
-    # Verificar si ya hay un DirectionalLight
+    # Eliminar DirectionalLights existentes para evitar duplicados
     actors = unreal.EditorLevelLibrary.get_all_level_actors()
-    has_sun = False
     for a in actors:
         if isinstance(a, unreal.DirectionalLight):
-            has_sun = True
-            break
-
-    if has_sun:
-        unreal.log("DirectionalLight ya existe, saltando.")
-        return
+            unreal.EditorLevelLibrary.destroy_actor(a)
+            unreal.log(f"Eliminado DirectionalLight existente: {a.get_actor_label()}")
 
     # Spawn DirectionalLight (Sol)
     sun = unreal.EditorLevelLibrary.spawn_actor_from_class(
@@ -75,13 +70,14 @@ def spawn_sky():
     )
     if sun:
         sun.set_actor_label("Sun")
-        # Rotación: ~45° pitch, orientada al sur para Alsasua (lat 42.9°N)
         sun.set_actor_rotation(unreal.Rotator(-45.0, 0.0, 0.0))
-        # Intensidad
+        # Movilidad estática — evita warning spam de "Movilidad Movible"
+        mobility = unreal.ActorMobility.STATIC
+        sun.set_mobility(mobility)
         light_comp = sun.get_editor_property("light_component")
         if light_comp:
             light_comp.set_editor_property("intensity", 10.0)
-        unreal.log("Creado DirectionalLight (Sun)")
+        unreal.log("Creado DirectionalLight (Sun) — Static mobility")
 
     # Spawn SkyAtmosphere
     sky_atmo = unreal.EditorLevelLibrary.spawn_actor_from_class(
@@ -108,8 +104,8 @@ def spawn_fog():
     actors = unreal.EditorLevelLibrary.get_all_level_actors()
     for a in actors:
         if isinstance(a, unreal.ExponentialHeightFog):
-            unreal.log("ExponentialHeightFog ya existe, saltando.")
-            return
+            unreal.EditorLevelLibrary.destroy_actor(a)
+            unreal.log(f"Eliminado HeightFog existente: {a.get_actor_label()}")
 
     fog = unreal.EditorLevelLibrary.spawn_actor_from_class(
         unreal.ExponentialHeightFog, unreal.Vector(0, 0, 0)
@@ -127,24 +123,48 @@ def spawn_post_process():
     actors = unreal.EditorLevelLibrary.get_all_level_actors()
     for a in actors:
         if isinstance(a, unreal.PostProcessVolume):
-            unreal.log("PostProcessVolume ya existe, saltando.")
-            return
+            unreal.EditorLevelLibrary.destroy_actor(a)
+            unreal.log(f"Eliminado PostProcessVolume existente: {a.get_actor_label()}")
 
     pp = unreal.EditorLevelLibrary.spawn_actor_from_class(
         unreal.PostProcessVolume, unreal.Vector(0, 0, 0)
     )
     if pp:
         pp.set_actor_label("PostProcess_Alsasua")
-        pp.set_editor_property("infinite_extent", True)  # Afecta a todo el nivel
-        # Auto-exposure
+        pp.set_editor_property("bInfiniteExtent", True)
         pp.set_editor_property("priority", 1.0)
         unreal.log("Creado PostProcessVolume (infinite extent, auto-exposure)")
 
 
+def spawn_director_arranque():
+    """Coloca ADirectorArranque en el nivel — orquesta los 51 sistemas."""
+    actors = unreal.EditorLevelLibrary.get_all_level_actors()
+    for a in actors:
+        if a.get_actor_label() == "DirectorArranque":
+            unreal.EditorLevelLibrary.destroy_actor(a)
+            unreal.log("DirectorArranque existente eliminado.")
+
+    # Cargar clase del módulo AlsasuaWorld
+    director_class = unreal.EditorAssetLibrary.load_class(
+        "/Script/AlsasuaWorld.DirectorArranque"
+    )
+    if not director_class:
+        unreal.log_warning("No se pudo cargar DirectorArranque (¿módulo compilado?)")
+        return
+
+    # Colocar en origen — el Director lee las coordenadas del mundo
+    actor = unreal.EditorLevelLibrary.spawn_actor_from_class(
+        director_class, unreal.Vector(0, 0, 0)
+    )
+    if actor:
+        actor.set_actor_label("DirectorArranque")
+        unreal.log("Creado DirectorArranque — orquestador de 51 sistemas")
+    else:
+        unreal.log_error("No se pudo crear DirectorArranque")
+
+
 def set_gamemode():
     """Configura el GameMode del nivel."""
-    # El GameMode se configura por ini (DefaultEngine.ini ya lo tiene)
-    # Pero podemos setearlo en el nivel también
     world_settings = unreal.EditorLevelLibrary.get_world_settings()
     if world_settings:
         gm_class = unreal.EditorAssetLibrary.load_class(
@@ -164,10 +184,11 @@ def run():
     spawn_sky()
     spawn_fog()
     spawn_post_process()
+    spawn_director_arranque()
     set_gamemode()
-    # Guardar
     unreal.EditorLevelLibrary.save_current_level()
     unreal.log("=== SetupLevel: Nivel guardado ===")
+    unreal.log("  SIGUIENTE PASO: Play (PIE) → DirectorArranque genera 51 sistemas")
 
 
 if __name__ == "__main__":

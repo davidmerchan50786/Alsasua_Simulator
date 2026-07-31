@@ -1,6 +1,7 @@
 #include "Core/AlsasuaCommandQueue.h"
 #include "Core/AlsasuaBudgetManager.h"
 #include "Optimization/AlsasuaActorPoolSubsystem.h"
+#include "Engine/StaticMeshActor.h"
 
 void UAlsasuaCommandQueue::Tick(float DeltaTime)
 {
@@ -24,7 +25,7 @@ void UAlsasuaCommandQueue::Tick(float DeltaTime)
         switch (Cmd.Type)
         {
             case EAlsasuaCommandType::AcquireActor:
-                if (Pool) Pool->AcquireActor(Cmd.Location, FRotator::ZeroRotator);
+                if (Pool) Pool->AcquireActor(AStaticMeshActor::StaticClass(), Cmd.Location, FRotator::ZeroRotator);
                 break;
             case EAlsasuaCommandType::ReleaseActor:
                 if (Pool && Cmd.TargetActor) Pool->ReleaseActor(Cmd.TargetActor);

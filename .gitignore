@@ -17,5 +17,9 @@ Saved/
 # Conserva la estructura de Content aunque esté vacía
 !Content/
 
+# Python (Tools)
+__pycache__/
+*.pyc
+
 # Plugins descargados de terceros (p. ej. Cesium): versiona sólo si lo decides
 # Plugins/CesiumForUnreal/

@@ -71,13 +71,14 @@ void UAlsasuaAmbientAudioSystem::CrearCapa(FAmbientLayer& Layer, const FString& 
         Owner->GetRootComponent(),
         NAME_None,
         FVector::ZeroVector,
+        FRotator::ZeroRotator,
         EAttachLocation::SnapToTarget,
         true,
         0.0f,
         0.0f,
         0.0f,
         nullptr,
-        true,
+        nullptr,
         true
     );
 

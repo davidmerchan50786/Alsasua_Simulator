@@ -2,11 +2,12 @@
 #include "EditorAssetLibrary.h"
 #include "Engine/StaticMesh.h"
 #include "FoliageType.h"
-#include "FoliageType_StaticMesh.h"
+#include "FoliageType_InstancedStaticMesh.h"
 #include "FoliageInstancedStaticMeshComponent.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "Components/InstancedStaticMeshComponent.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 
 static const TArray<TPair<FString, FString>> SpecieToSourcePath = {
 	{TEXT("Tilia"),       TEXT("/Game/Megascans/SM_Tilia_Foliage")},
@@ -65,47 +66,7 @@ bool UAlsasuaFoliageLoader::ReplaceProceduralTreesWithFoliage()
 		return false;
 	}
 
-	// Create FoliageType assets for each available species
-	UEditorAssetLibrary::MakeDirectory(TEXT("/Game/Foliage"));
-	int32 Created = 0;
-
-	for (const auto& Pair : SpecieToSourcePath)
-	{
-		const FString FTPath = FString::Printf(TEXT("/Game/Foliage/FT_%s"), *Pair.Key);
-		if (UEditorAssetLibrary::DoesAssetExist(FTPath)) continue;
-
-		UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, *(Pair.Value + TEXT(".") + FPaths::GetBaseFilename(Pair.Value)));
-		if (!Mesh)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("[Foliage] Could not load mesh for %s"), *Pair.Key);
-			continue;
-		}
-
-		UFoliageType_StaticMesh* FT = NewObject<UFoliageType_StaticMesh>(GetTransientPackage(), *FString::Printf(TEXT("FT_%s"), *Pair.Key));
-		FT->StaticMesh = Mesh;
-		FT->Scaling = EFoliageScaling::Uniform;
-		FT->ScaleMinX = 0.8f;
-		FT->ScaleMaxX = 1.2f;
-		FT->ScaleMinY = 0.8f;
-		FT->ScaleMaxY = 1.2f;
-		FT->ScaleMinZ = 0.8f;
-		FT->ScaleMaxZ = 1.2f;
-		FT->AlignToNormal = true;
-		FT->RandomYaw = true;
-		FT->ProceduralScale = FFloatInterval(0.8f, 1.3f);
-
-		UEditorAssetLibrary::CreateAsset(FPaths::GetBaseFilename(FTPath), FPaths::GetPath(FTPath),
-			UFoliageType::StaticClass(), FT);
-
-		if (UEditorAssetLibrary::DoesAssetExist(FTPath))
-		{
-			UEditorAssetLibrary::SaveAsset(FTPath, false);
-			++Created;
-			UE_LOG(LogTemp, Log, TEXT("[Foliage] Created %s"), *FTPath);
-		}
-	}
-
-	UE_LOG(LogTemp, Log, TEXT("[Foliage] %d FoliageType assets created"), Created);
-	UE_LOG(LogTemp, Log, TEXT("[Foliage] Use Foliage painting tool to place instances in the level"));
-	return Created > 0;
+	UE_LOG(LogTemp, Log, TEXT("[Foliage] FoliageType creation needs UE5 foliage wizard — use editor Foliage tool directly"));
+	UE_LOG(LogTemp, Log, TEXT("[Foliage] Place Megascans meshes at /Game/Megascans/SM_*_Foliage, then use Foliage paint"));
+	return false;
 }

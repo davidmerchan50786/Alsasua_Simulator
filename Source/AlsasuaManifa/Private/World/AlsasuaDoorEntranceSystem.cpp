@@ -86,7 +86,7 @@ int32 UAlsasuaDoorEntranceSystem::ColocarPuertas()
             DoorOffset = FVector(SideX, CZ, 0);
         }
 
-        FVector DoorPos = UAlsasuaGeoData::UnityaUnreal(FVector(DoorOffset.X + UAlsasuaGeoData::OX, 0.0f, DoorOffset.Z + UAlsasuaGeoData::OZ));
+        FVector DoorPos = UAlsasuaGeoData::RelLocalToUE5(FVector(DoorOffset.X, 0.0f, DoorOffset.Z));
         DoorPos.Z += 110.0f;
 
         FDoorEntry Puerta;

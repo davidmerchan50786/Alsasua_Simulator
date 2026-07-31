@@ -123,5 +123,13 @@ void UCicloVisualSubsystem::Tick(float DeltaTime)
 	if (const UGameInstance* GI = GetGameInstance())
 		if (const UDiaNocheSubsystem* Dn = GI->GetSubsystem<UDiaNocheSubsystem>())
 			Hora = Dn->Hora;
-	Actualizar(Hora);
+
+	// SetActorRotation/SetIntensity/SetLightColor del sol y skylight solo 4x/seg:
+	// por frame invalidan el cache de draw commands del pueblo entero.
+	TiempoActualizacion -= DeltaTime;
+	if (TiempoActualizacion <= 0.f)
+	{
+		TiempoActualizacion = 0.25f;
+		Actualizar(Hora);
+	}
 }

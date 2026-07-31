@@ -1,7 +1,7 @@
 #include "World/AlsasuaNPCPedestrianSystem.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
-#include "Engine/SkeletalMeshActor.h"
+#include "Animation/SkeletalMeshActor.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "GeoDataAlsasua.h"
@@ -74,9 +74,7 @@ void UAlsasuaNPCPedestrianSystem::CargarCallejero()
         {
             const TSharedPtr<FJsonObject>& Pt = (*PointsArr)[i]->AsObject();
             if (!Pt) continue;
-            const float X = Pt->GetNumberField(TEXT("x")) + UAlsasuaGeoData::OX;
-            const float Z = Pt->GetNumberField(TEXT("z")) + UAlsasuaGeoData::OZ;
-            PuntosCalle.Add(UAlsasuaGeoData::UnityaUnreal(FVector(X, 0.0f, Z)));
+            PuntosCalle.Add(UAlsasuaGeoData::RelLocalToUE5(FVector(Pt->GetNumberField(TEXT("x")), 0.0f, Pt->GetNumberField(TEXT("z")))));
         }
 
         if (PuntosCalle.Num() >= 2)
@@ -94,32 +92,80 @@ void UAlsasuaNPCPedestrianSystem::GenerarNPCs()
 
     NPCs.Empty();
 
-    const TArray<FString> Barrios = {
-        TEXT("Herriko"), TEXT("Zelai"), TEXT("Intxostia"), TEXT("SanPedro"),
-        TEXT("Errota"), TEXT("Harrobieta"), TEXT("Ferroviario"), TEXT("Monte")
-    };
+    struct FBarrioNPC { FString Nombre; float Peso; };
+    TArray<FBarrioNPC> Barrios;
 
-    for (int32 i = 0; i < MaxNPCs; i++)
+    const FString NPath = FPaths::ProjectContentDir() + TEXT("Datos/nighborhoods.json");
+    TArray<FString> Lines;
+    if (FFileHelper::LoadFileToStringArray(Lines, *NPath))
     {
-        FNPCPedestrian NPC;
-        NPC.Nombre = FString::Printf(TEXT("Peaton_%03d"), i);
-        NPC.Barrio = Barrios[i % Barrios.Num()];
-        NPC.GrupoEdad = FMath::RandRange(0, 3);
-        NPC.Velocidad = FMath::RandRange(80.0f, 180.0f);
-        NPC.bLlevaCompras = (FMath::RandRange(0, 3) == 0);
-        NPC.bMascota = (FMath::RandRange(0, 5) == 0);
-        NPC.ActividadActual = ENPCActivity::Walk;
-        NPC.DuracionActividad = FMath::RandRange(3.0f, 10.0f);
-
-        NPC.PosicionInicio = ObtenerPuntoCalleAleatorio();
-        NPC.PosicionObjetivo = ObtenerPuntoCalleAleatorio();
-        NPC.DireccionMovimiento = (NPC.PosicionObjetivo - NPC.PosicionInicio).GetSafeNormal();
-
-        CrearNPCEnPunto(NPC);
-        NPCs.Add(NPC);
+        FString Js;
+        for (const FString& L : Lines) Js += L;
+        TSharedPtr<FJsonObject> Root;
+        TSharedRef<TJsonReader<>> Rd = TJsonReaderFactory<>::Create(Js);
+        if (FJsonSerializer::Deserialize(Rd, Root) && Root.IsValid())
+        {
+            const TArray<TSharedPtr<FJsonValue>>* BarArr;
+            if (Root->TryGetArrayField(TEXT("barrios"), BarArr))
+            {
+                for (const auto& BV : *BarArr)
+                {
+                    const TSharedPtr<FJsonObject>& BO = BV->AsObject();
+                    if (!BO) continue;
+                    const FString Nombre = BO->GetStringField(TEXT("id"));
+                    const FString Den = BO->GetStringField(TEXT("densidad_edificios"));
+                    float Peso = 1.0f;
+                    if (Den == TEXT("Alta")) Peso = 3.0f;
+                    else if (Den == TEXT("Media")) Peso = 2.0f;
+                    else if (Den == TEXT("Baja")) Peso = 1.0f;
+                    else if (Den == TEXT("Muy Baja")) Peso = 0.5f;
+                    Barrios.Add({Nombre, Peso});
+                }
+            }
+        }
     }
 
-    UE_LOG(LogTemp, Log, TEXT("NPCPedestrians: %d peatones generados en 8 barrios"), NPCs.Num());
+    if (Barrios.Num() == 0)
+    {
+        Barrios.Add({TEXT("Herriko"), 3.0f});
+        Barrios.Add({TEXT("Zelai"), 2.0f});
+        Barrios.Add({TEXT("Intxostia"), 3.0f});
+        Barrios.Add({TEXT("Errota"), 1.0f});
+        Barrios.Add({TEXT("SanPedro"), 2.0f});
+        Barrios.Add({TEXT("Harrobieta"), 2.0f});
+        Barrios.Add({TEXT("Ferroviario"), 1.0f});
+        Barrios.Add({TEXT("Monte"), 0.5f});
+    }
+
+    float PesoTotal = 0.0f;
+    for (const FBarrioNPC& B : Barrios) PesoTotal += B.Peso;
+
+    int32 NPCCount = 0;
+    for (const FBarrioNPC& B : Barrios)
+    {
+        const int32 N = FMath::Max(1, FMath::RoundToInt32(MaxNPCs * B.Peso / PesoTotal));
+        for (int32 i = 0; i < N && NPCCount < MaxNPCs; ++i, ++NPCCount)
+        {
+            FNPCPedestrian NPC;
+            NPC.Nombre = FString::Printf(TEXT("Peaton_%03d"), NPCCount);
+            NPC.Barrio = B.Nombre;
+            NPC.GrupoEdad = FMath::RandRange(0, 3);
+            NPC.Velocidad = FMath::RandRange(80.0f, 180.0f);
+            NPC.bLlevaCompras = (FMath::RandRange(0, 3) == 0);
+            NPC.bMascota = (FMath::RandRange(0, 5) == 0);
+            NPC.ActividadActual = ENPCActivity::Walk;
+            NPC.DuracionActividad = FMath::RandRange(3.0f, 10.0f);
+
+            NPC.PosicionInicio = ObtenerPuntoCalle(B.Nombre);
+            NPC.PosicionObjetivo = ObtenerPuntoCalleAleatorio();
+            NPC.DireccionMovimiento = (NPC.PosicionObjetivo - NPC.PosicionInicio).GetSafeNormal();
+
+            CrearNPCEnPunto(NPC);
+            NPCs.Add(NPC);
+        }
+    }
+
+    UE_LOG(LogTemp, Log, TEXT("NPCPedestrians: %d peatones generados distribuidos por densidad"), NPCs.Num());
 }
 
 void UAlsasuaNPCPedestrianSystem::ActualizarNPCs(float DeltaTime)
@@ -204,7 +250,7 @@ void UAlsasuaNPCPedestrianSystem::CrearNPCEnPunto(FNPCPedestrian& NPC)
         ASkeletalMeshActor::StaticClass(), NPC.PosicionInicio, FRotator::ZeroRotator);
     if (!NPCActor) return;
 
-    NPCActor->SetMobility(EComponentMobility::Movable);
+    NPCActor->GetRootComponent()->SetMobility(EComponentMobility::Movable);
 
     USkeletalMesh* MeshAUsar = nullptr;
     if (NPC.GrupoEdad <= 1)
@@ -255,19 +301,5 @@ FVector UAlsasuaNPCPedestrianSystem::ObtenerPuntoCalleAleatorio()
 
 FVector UAlsasuaNPCPedestrianSystem::ObtenerPuntoCalle(const FString& Barrio)
 {
-    const TMap<FString, FVector> CentrosBarrios = {
-        {TEXT("Herriko"), UAlsasuaGeoData::UnityaUnreal(FVector(1891.0f, 0.0f, 8568.0f))},
-        {TEXT("Zelai"), UAlsasuaGeoData::UnityaUnreal(FVector(1893.0f, 0.0f, 8573.0f))},
-        {TEXT("Intxostia"), UAlsasuaGeoData::UnityaUnreal(FVector(1890.0f, 0.0f, 8577.0f))},
-        {TEXT("SanPedro"), UAlsasuaGeoData::UnityaUnreal(FVector(1895.0f, 0.0f, 8565.0f))},
-        {TEXT("Errota"), UAlsasuaGeoData::UnityaUnreal(FVector(1897.0f, 0.0f, 8570.0f))},
-        {TEXT("Harrobieta"), UAlsasuaGeoData::UnityaUnreal(FVector(1889.0f, 0.0f, 8569.0f))},
-        {TEXT("Ferroviario"), UAlsasuaGeoData::UnityaUnreal(FVector(1892.0f, 0.0f, 8571.0f))},
-        {TEXT("Monte"), UAlsasuaGeoData::UnityaUnreal(FVector(1894.0f, 0.0f, 8575.0f))}
-    };
-
-    if (const FVector* Centro = CentrosBarrios.Find(Barrio))
-        return *Centro;
-
-    return UAlsasuaGeoData::UnityaUnreal(FVector(1891.5f, 0.0f, 8572.0f));
+    return UAlsasuaGeoData::AbsLocalToUE5(UAlsasuaGeoData::BarrioCenter(Barrio));
 }

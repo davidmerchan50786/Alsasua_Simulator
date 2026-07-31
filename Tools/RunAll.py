@@ -5,22 +5,23 @@ Ejecutar desde el editor: Window > Output Log > consola:
 
 Orden de ejecución:
   1. SetupMaterials  — MPC_Clima + 6 materiales
-  2. SetupLevel      — L_Alsasua + cielo + niebla + post-process
+  2. SetupLevel      — L_Alsasua + cielo + niebla + post-process + DirectorArranque
   3. SetupInput      — IMC_Jugador + 10 InputActions
   4. SetupLandscape  — Guía de importación del heightmap
   5. SetupActors     — 12 actores placeholder (jugador, NPCs, etc.)
   6. SetupAudio      — 4 AmbientSounds
+  7. create_niagara_vfx — Efectos de partículas
+  8. ue5_import_all_assets — Importar FBX de MeshyAI
 
 Después de ejecutar:
   1. Landscape Mode → Import from File → alsasua_landscape_4033.r16
-  2. Abrir materiales en Material Editor para refinar
-  3. Play!
+  2. Play (PIE) → DirectorArranque genera los 51 sistemas
 """
 import unreal
 import sys
 import os
 
-TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+TOOLS_DIR = "F:/Epic Games/UE_5.7/altsasu_gtavii/UnrealProject/Tools"
 
 
 def run():
@@ -34,7 +35,7 @@ def run():
 
     scripts = [
         ("SetupMaterials", "Materiales"),
-        ("SetupLevel", "Nivel"),
+        ("SetupLevel", "Nivel + DirectorArranque"),
         ("SetupInput", "Input"),
         ("SetupLandscape", "Landscape (guía)"),
         ("SetupActors", "Actores placeholder"),
@@ -49,14 +50,27 @@ def run():
         except Exception as e:
             unreal.log_error(f"Error en {module_name}: {e}")
 
+    # Scripts adicionales (opcional, requieren assets)
+    optional = [
+        ("create_niagara_vfx", "Niagara VFX"),
+        ("ue5_import_all_assets", "Importar FBX MeshyAI"),
+    ]
+    for i, (module_name, desc) in enumerate(optional, len(scripts) + 1):
+        unreal.log(f"\n--- Paso {i}/{len(scripts) + len(optional)}: {desc} (opcional) ---")
+        try:
+            mod = __import__(module_name)
+            mod.run()
+        except Exception as e:
+            unreal.log_warning(f"Saltado {module_name}: {e}")
+
     unreal.log("\n" + "=" * 60)
     unreal.log("  SETUP COMPLETO — SIGUIENTES PASOS:")
     unreal.log("=" * 60)
     unreal.log("  1. Landscape Mode (Shift+3) → Import from File")
     unreal.log("     Archivo: Content/Terreno/alsasua_landscape_4033.r16")
-    unreal.log("     Scale XY: 178.5714 | Scale Z: 200 | Loc Z: 49567")
-    unreal.log("  2. Abrir materiales en Material Editor para refinar")
-    unreal.log("  3. Play!")
+    unreal.log("     Scale XY: 178.5714 | Scale Z: 200 | Loc Z: 53194 (CotaPlaza)")
+    unreal.log("  2. Play (PIE) → DirectorArranque genera los 51 sistemas")
+    unreal.log("  3. Guardar nivel cuando termine la generación")
     unreal.log("=" * 60)
 
 

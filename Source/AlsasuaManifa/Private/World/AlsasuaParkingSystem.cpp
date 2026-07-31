@@ -12,24 +12,64 @@
 void UAlsasuaParkingSystem::Initialize(FSubsystemCollectionBase& Collection)
 {
     Super::Initialize(Collection);
+    CargarCalles();
 }
 
-FVector UAlsasuaParkingSystem::ObtenerPuntoEnCalle(const FString& Barrio)
+void UAlsasuaParkingSystem::CargarCalles()
 {
-    const TMap<FString, FVector> Centros = {
-        {TEXT("Herriko"), UAlsasuaGeoData::UnityaUnreal(FVector(1891.5f, 0.0f, 8568.5f))},
-        {TEXT("Zelai"), UAlsasuaGeoData::UnityaUnreal(FVector(1893.0f, 0.0f, 8573.5f))},
-        {TEXT("Intxostia"), UAlsasuaGeoData::UnityaUnreal(FVector(1890.0f, 0.0f, 8577.0f))},
-        {TEXT("SanPedro"), UAlsasuaGeoData::UnityaUnreal(FVector(1895.2f, 0.0f, 8565.5f))},
-        {TEXT("Errota"), UAlsasuaGeoData::UnityaUnreal(FVector(1897.0f, 0.0f, 8570.5f))},
-        {TEXT("Harrobieta"), UAlsasuaGeoData::UnityaUnreal(FVector(1889.5f, 0.0f, 8569.0f))},
-        {TEXT("Ferroviario"), UAlsasuaGeoData::UnityaUnreal(FVector(1892.5f, 0.0f, 8571.5f))},
-    };
+    SegmentosCalle.Empty();
+    const FString JsonPath = FPaths::ProjectContentDir() + TEXT("Datos/roads_unity.json");
+    TArray<FString> Lines;
+    if (!FFileHelper::LoadFileToStringArray(Lines, *JsonPath)) return;
 
-    if (const FVector* Centro = Centros.Find(Barrio))
-        return *Centro + FVector(FMath::RandRange(-800, 800), FMath::RandRange(-800, 800), 0);
+    FString Js;
+    for (const FString& L : Lines) Js += L;
 
-    return UAlsasuaGeoData::UnityaUnreal(FVector(1891.5f, 0.0f, 8572.0f));
+    TArray<TSharedPtr<FJsonValue>> RoadsArr;
+    TSharedRef<TJsonReader<>> Rd = TJsonReaderFactory<>::Create(Js);
+    if (!FJsonSerializer::Deserialize(Rd, RoadsArr)) return;
+
+    for (const auto& RV : RoadsArr)
+    {
+        const TSharedPtr<FJsonObject>& Road = RV->AsObject();
+        if (!Road) continue;
+
+        const TArray<TSharedPtr<FJsonValue>>* PtsArr;
+        if (!Road->TryGetArrayField(TEXT("points"), PtsArr)) continue;
+        if (PtsArr->Num() < 2) continue;
+
+        TArray<FVector> Pts;
+        for (const auto& PV : *PtsArr)
+        {
+            const TSharedPtr<FJsonObject>& PO = PV->AsObject();
+            if (!PO) continue;
+            Pts.Add(UAlsasuaGeoData::RelLocalToUE5(FVector(PO->GetNumberField(TEXT("x")), 0.0f, PO->GetNumberField(TEXT("z")))));
+        }
+
+        for (int32 i = 0; i < Pts.Num() - 1; ++i)
+            SegmentosCalle.Add(TPair<FVector, FVector>(Pts[i], Pts[i + 1]));
+    }
+
+    UE_LOG(LogTemp, Log, TEXT("Parking: %d segmentos de calle cargados"), SegmentosCalle.Num());
+}
+
+FVector UAlsasuaParkingSystem::ObtenerPuntoEnCalle(FVector& OutDir)
+{
+    if (SegmentosCalle.Num() == 0)
+    {
+        OutDir = FVector::ForwardVector;
+        return FVector(FMath::RandRange(189000.0f, 192000.0f), FMath::RandRange(856000.0f, 858000.0f), 0.0f);
+    }
+
+    const TPair<FVector, FVector>& Seg = SegmentosCalle[FMath::RandRange(0, SegmentosCalle.Num() - 1)];
+    const float T = FMath::FRandRange(0.1f, 0.9f);
+    const FVector RoadPos = FMath::Lerp(Seg.Key, Seg.Value, T);
+    const FVector Dir = (Seg.Value - Seg.Key).GetSafeNormal();
+    const FVector Right = FVector(-Dir.Y, Dir.X, 0.0f);
+    const float Side = (FMath::RandRange(0, 1) == 0) ? 1.0f : -1.0f;
+    const float Offset = FMath::RandRange(150.0f, 250.0f);
+    OutDir = Dir;
+    return RoadPos + Right * Side * Offset;
 }
 
 int32 UAlsasuaParkingSystem::GenerarPlazasAparcamiento()
@@ -49,11 +89,12 @@ int32 UAlsasuaParkingSystem::GenerarPlazasAparcamiento()
     for (int32 i = 0; i < MaxPlazasCalle; i++)
     {
         FString Barrio = Barrios[FMath::RandRange(0, Barrios.Num() - 1)];
-        FVector Pos = ObtenerPuntoEnCalle(Barrio);
+        FVector RoadDir;
+        FVector Pos = ObtenerPuntoEnCalle(RoadDir);
 
         FParkingSpot Spot;
         Spot.Posicion = Pos;
-        Spot.Rotacion = FMath::RandRange(0.0f, 360.0f);
+        Spot.Rotacion = RoadDir.Rotation().Yaw;
         Spot.Tipo = TEXT("calle");
         Spot.bOcupado = (FMath::RandRange(0, 3) == 0);
         Spot.Barrio = Barrio;
@@ -83,7 +124,6 @@ int32 UAlsasuaParkingSystem::GenerarPlazasAparcamiento()
         if (Spot.bOcupado)
         {
             FVector CarPos = Pos;
-            CarPos.Z += 40.0f;
 
             AStaticMeshActor* Car = World->SpawnActor<AStaticMeshActor>(
                 AStaticMeshActor::StaticClass(), CarPos, FRotator(0, Spot.Rotacion, 0));
@@ -92,10 +132,11 @@ int32 UAlsasuaParkingSystem::GenerarPlazasAparcamiento()
                 Car->SetMobility(EComponentMobility::Movable);
                 Car->SetActorScale3D(FVector(4.2f, 1.8f, 1.3f));
 
-                UStaticMesh* CubeMesh = LoadObject<UStaticMesh>(nullptr,
-                    TEXT("/Game/EngineBasicShapes/Cube"));
-                if (CubeMesh)
-                    Car->GetStaticMeshComponent()->SetStaticMesh(CubeMesh);
+                // ponytail: no CitySample vehicle meshes — too large, not copied yet
+                // UStaticMesh* CarMesh = LoadObject<UStaticMesh>(nullptr,
+                //     TEXT("/Game/CitySample/Vehicles/..."));
+                // if (CarMesh)
+                //     Car->GetStaticMeshComponent()->SetStaticMesh(CarMesh);
 
                 const TArray<FString> ColoresCoche = {
                     TEXT("/Game/Materiales/M_Vehiculo_Blanco"),
@@ -122,11 +163,12 @@ int32 UAlsasuaParkingSystem::GenerarPlazasAparcamiento()
     for (int32 i = 0; i < MaxGarajes; i++)
     {
         FString Barrio = Barrios[FMath::RandRange(0, Barrios.Num() - 1)];
-        FVector Pos = ObtenerPuntoEnCalle(Barrio);
+        FVector GarajeDir;
+        FVector Pos = ObtenerPuntoEnCalle(GarajeDir);
 
         FParkingSpot Garaje;
         Garaje.Posicion = Pos;
-        Garaje.Rotacion = FMath::RandRange(0.0f, 360.0f);
+        Garaje.Rotacion = GarajeDir.Rotation().Yaw;
         Garaje.Tipo = TEXT("garaje");
         Garaje.bOcupado = true;
         Garaje.Barrio = Barrio;

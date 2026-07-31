@@ -16,16 +16,59 @@ void UAlsasuaAwningShutterSystem::Initialize(FSubsystemCollectionBase& Collectio
 
 int32 UAlsasuaAwningShutterSystem::ColocarToldosYPersianas()
 {
-    const FString JsonPath = FPaths::ProjectContentDir() + TEXT("Datos/buildings_final.json");
+    const FString FacPath = FPaths::ProjectContentDir() + TEXT("Datos/building_facades.json");
+    TArray<FString> FacLines;
+    TMap<int32, int32> VentanasConPersiana;
+    TMap<int32, bool> TieneToldo;
+
+    if (FFileHelper::LoadFileToStringArray(FacLines, *FacPath))
+    {
+        FString FacJs;
+        for (const FString& L : FacLines) FacJs += L;
+
+        TArray<TSharedPtr<FJsonValue>> FacArr;
+        TSharedRef<TJsonReader<>> FacRd = TJsonReaderFactory<>::Create(FacJs);
+        if (FJsonSerializer::Deserialize(FacRd, FacArr))
+        {
+            for (const auto& FV : FacArr)
+            {
+                const TSharedPtr<FJsonObject>& FO = FV->AsObject();
+                if (!FO) continue;
+                const int32 BId = FO->GetIntegerField(TEXT("building_id"));
+
+                int32 PersianaCount = 0;
+                bool bToldo = false;
+                const TArray<TSharedPtr<FJsonValue>>* VentArr;
+                if (FO->TryGetArrayField(TEXT("ventanas"), VentArr))
+                {
+                    for (const auto& WV : *VentArr)
+                    {
+                        const TSharedPtr<FJsonObject>& WO = WV->AsObject();
+                        if (!WO) continue;
+                        if (WO->GetBoolField(TEXT("con_persiana"))) PersianaCount++;
+                        if (WO->GetBoolField(TEXT("con_balcon"))) bToldo = true;
+                    }
+                }
+
+                const TArray<TSharedPtr<FJsonValue>>* TieArr;
+                if (FO->TryGetArrayField(TEXT("tiendas_planta_baja"), TieArr))
+                {
+                    if (TieArr->Num() > 0) bToldo = true;
+                }
+
+                VentanasConPersiana.Add(BId, PersianaCount);
+                TieneToldo.Add(BId, bToldo);
+            }
+        }
+    }
+
+    const FString BldPath = FPaths::ProjectContentDir() + TEXT("Datos/buildings_final.json");
     FString JsonStr;
-    if (!FFileHelper::LoadFileToString(JsonStr, *JsonPath)) return 0;
+    if (!FFileHelper::LoadFileToString(JsonStr, *BldPath)) return 0;
 
-    TSharedPtr<FJsonValue> RootVal;
+    TArray<TSharedPtr<FJsonValue>> BuildingsArr;
     TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(JsonStr);
-    if (!FJsonSerializer::Deserialize(Reader, RootVal) || !RootVal.IsValid()) return 0;
-
-    const TArray<TSharedPtr<FJsonValue>>* BuildingsArr;
-    if (!RootVal->TryGetArray(BuildingsArr)) return 0;
+    if (!FJsonSerializer::Deserialize(Reader, BuildingsArr)) return 0;
 
     UWorld* World = GetWorld();
     if (!World) return 0;
@@ -33,25 +76,14 @@ int32 UAlsasuaAwningShutterSystem::ColocarToldosYPersianas()
     Toldos.Empty();
     Persianas.Empty();
 
-    const TArray<FString> ColoresToldo = {
-        TEXT("rojo"), TEXT("verde"), TEXT("azul"), TEXT("crema"),
-        TEXT("marron"), TEXT("blanco"), TEXT("naranja")
-    };
-
-    const TArray<FString> ColoresPersiana = {
-        TEXT("blanco"), TEXT("verde_oscuro"), TEXT("marron"),
-        TEXT("gris"), TEXT("azul_oscuro"), TEXT("beige")
-    };
-
     int32 Placed = 0;
 
-    for (const auto& BldVal : *BuildingsArr)
+    for (const auto& BldVal : BuildingsArr)
     {
         const TSharedPtr<FJsonObject>& Bld = BldVal->AsObject();
         if (!Bld) continue;
 
-        const int32 Id = Bld->HasField(TEXT("id")) ? Bld->GetIntegerField(TEXT("id")) : -1;
-        const FString Barrio = Bld->HasField(TEXT("barrio")) ? Bld->GetStringField(TEXT("barrio")) : TEXT("Herriko");
+        const int32 Id = Bld->GetIntegerField(TEXT("id"));
         const float Height = Bld->HasField(TEXT("height")) ? Bld->GetNumberField(TEXT("height")) : 10.0f;
 
         const TArray<TSharedPtr<FJsonValue>>* VertsArr;
@@ -67,10 +99,12 @@ int32 UAlsasuaAwningShutterSystem::ColocarToldosYPersianas()
         }
         CX /= VertsArr->Num();
         CZ /= VertsArr->Num();
+        FVector Center = UAlsasuaGeoData::RelLocalToUE5(FVector(CX, 0.0f, CZ));
 
-        FVector Center = UAlsasuaGeoData::UnityaUnreal(FVector(CX + UAlsasuaGeoData::OX, 0.0f, CZ + UAlsasuaGeoData::OZ));
+        bool bHasAwning = false;
+        if (bool* Found = TieneToldo.Find(Id)) bHasAwning = *Found;
 
-        if (FMath::FRand() < ProbabilidadToldo)
+        if (bHasAwning && FMath::FRand() < 0.7f)
         {
             float Rot = FMath::RandRange(0.0f, 360.0f);
             FVector ToldoPos = Center;
@@ -82,8 +116,8 @@ int32 UAlsasuaAwningShutterSystem::ColocarToldosYPersianas()
             Toldo.Rotacion = Rot;
             Toldo.Ancho = FMath::RandRange(150.0f, 400.0f);
             Toldo.Profundidad = FMath::RandRange(80.0f, 150.0f);
-            Toldo.ColorToldo = ColoresToldo[FMath::RandRange(0, ColoresToldo.Num() - 1)];
-            Toldo.Barrio = Barrio;
+            Toldo.ColorToldo = TEXT("crema");
+            Toldo.Barrio = TEXT("");
             Toldo.bPlegado = (FMath::FRand() < 0.3f);
 
             AStaticMeshActor* ToldoActor = World->SpawnActor<AStaticMeshActor>(
@@ -99,27 +133,20 @@ int32 UAlsasuaAwningShutterSystem::ColocarToldosYPersianas()
                     TEXT("/Game/EngineBasicShapes/Plane"));
                 if (PlaneMesh)
                     ToldoActor->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
-
-                UMaterialInterface* ToldoMat = LoadObject<UMaterialInterface>(nullptr,
-                    TEXT("/Game/Materiales/M_Toldo"));
-                if (ToldoMat)
-                    ToldoActor->GetStaticMeshComponent()->SetMaterial(0, ToldoMat);
-
-#if WITH_EDITOR
-                ToldoActor->SetActorLabel(*FString::Printf(TEXT("Toldo_%d_%s"), Id,
-                    *Toldo.ColorToldo));
-#endif
             }
-
             Toldos.Add(Toldo);
             Placed++;
         }
 
-        int32 NumPersianas = FMath::Max(0, FMath::CeilToInt(Height / 3.0f) - 1);
-        for (int32 p = 0; p < NumPersianas; p++)
-        {
-            if (FMath::FRand() > ProbabilidadPersiana) continue;
+        int32 NumPersianasReales = 0;
+        if (int32* Found = VentanasConPersiana.Find(Id))
+            NumPersianasReales = *Found;
 
+        if (NumPersianasReales == 0)
+            NumPersianasReales = FMath::Max(0, FMath::CeilToInt(Height / 3.0f) - 1);
+
+        for (int32 p = 0; p < NumPersianasReales; p++)
+        {
             float Rot = FMath::RandRange(0.0f, 360.0f);
             FVector PersianaPos = Center;
             PersianaPos.Z += (p + 1) * 300.0f + 150.0f;
@@ -128,7 +155,7 @@ int32 UAlsasuaAwningShutterSystem::ColocarToldosYPersianas()
             Persiana.BuildingId = Id;
             Persiana.Posicion = PersianaPos;
             Persiana.Rotacion = Rot;
-            Persiana.Color = ColoresPersiana[FMath::RandRange(0, ColoresPersiana.Num() - 1)];
+            Persiana.Color = TEXT("blanco");
             Persiana.bAbierto = (FMath::FRand() < 0.5f);
 
             AStaticMeshActor* PersianaActor = World->SpawnActor<AStaticMeshActor>(
@@ -144,23 +171,12 @@ int32 UAlsasuaAwningShutterSystem::ColocarToldosYPersianas()
                     TEXT("/Game/EngineBasicShapes/Plane"));
                 if (PlaneMesh)
                     PersianaActor->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
-
-                UMaterialInterface* PersianaMat = LoadObject<UMaterialInterface>(nullptr,
-                    TEXT("/Game/Materiales/M_Persiana"));
-                if (PersianaMat)
-                    PersianaActor->GetStaticMeshComponent()->SetMaterial(0, PersianaMat);
-
-#if WITH_EDITOR
-                PersianaActor->SetActorLabel(*FString::Printf(TEXT("Persiana_%d_%d_%s"), Id, p,
-                    *Persiana.Color));
-#endif
             }
-
             Persianas.Add(Persiana);
             Placed++;
         }
     }
 
-    UE_LOG(LogTemp, Log, TEXT("Awnings: %d toldos + %d persianas colocados"), Toldos.Num(), Persianas.Num());
+    UE_LOG(LogTemp, Log, TEXT("Awnings: %d toldos + %d persianas (facade-driven)"), Toldos.Num(), Persianas.Num());
     return Placed;
 }

@@ -5,14 +5,14 @@
 #include "WeatherSubsystem.generated.h"
 
 UENUM(BlueprintType)
-enum class EWeatherState : uint8 {
+enum class EWeatherSubsystemState : uint8 {
     Clear,
     Rainy,
     HeavyFog,
     Thunderstorm
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeatherChanged, EWeatherState, NewState);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeatherChanged, EWeatherSubsystemState, NewState);
 
 UCLASS()
 class ALSASUAMANIFA_API UWeatherSubsystem : public UWorldSubsystem
@@ -21,13 +21,13 @@ class ALSASUAMANIFA_API UWeatherSubsystem : public UWorldSubsystem
 
 public:
     UPROPERTY(BlueprintReadOnly, Category="AAA|Weather")
-    EWeatherState CurrentWeather = EWeatherState::Clear;
+    EWeatherSubsystemState CurrentWeather = EWeatherSubsystemState::Clear;
 
     UPROPERTY(BlueprintAssignable, Category="AAA|Weather")
     FOnWeatherChanged OnWeatherChanged;
 
     UFUNCTION(BlueprintCallable, Category="AAA|Weather")
-    void SetWeather(EWeatherState NewState);
+    void SetWeather(EWeatherSubsystemState NewState);
 
     // Impacto en la jugabilidad
     UFUNCTION(BlueprintPure, Category="AAA|Weather")

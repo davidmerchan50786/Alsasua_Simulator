@@ -17,10 +17,10 @@ struct FEvidencePhoto {
     FDateTime Timestamp;
 
     UPROPERTY(BlueprintReadOnly)
-    FVector CaptureLocation;
+    FVector CaptureLocation = FVector::ZeroVector;
 
     UPROPERTY(BlueprintReadOnly)
-    FRotator CaptureDirection;
+    FRotator CaptureDirection = FRotator::ZeroRotator;
 };
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))

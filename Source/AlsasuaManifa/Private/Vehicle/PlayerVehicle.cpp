@@ -6,6 +6,7 @@
 #include "Components/InputComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/PawnMovementComponent.h"
+#include "GameFramework/FloatingPawnMovement.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
 

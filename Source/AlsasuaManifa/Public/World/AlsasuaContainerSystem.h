@@ -31,4 +31,5 @@ public:
 
 private:
     TArray<FContainer> Contenedores;
+    int32 ColocarContenedoresFallback();
 };

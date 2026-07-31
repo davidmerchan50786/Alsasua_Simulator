@@ -5,11 +5,11 @@ public class AlsasuaWorld : ModuleRules
     public AlsasuaWorld(ReadOnlyTargetRules Target) : base(Target)
     {
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "AlsasuaCore", "ProceduralMeshComponent", "NavigationSystem", "Json", "JsonUtilities" });
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "AlsasuaCore", "AlsasuaManifa", "ProceduralMeshComponent", "NavigationSystem", "Json", "JsonUtilities" });
 
         if (Target.bBuildEditor)
         {
-            PrivateDependencyModuleNames.AddRange(new string[] { "UnrealEd", "AssetTools", "MaterialEditor" });
+            PrivateDependencyModuleNames.AddRange(new string[] { "UnrealEd", "AssetTools", "MaterialEditor", "EditorScriptingUtilities" });
         }
     }
 }

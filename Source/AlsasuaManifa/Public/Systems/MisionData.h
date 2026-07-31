@@ -12,7 +12,7 @@ struct ALSASUAMANIFA_API FMisionObjective {
 };
 
 USTRUCT(BlueprintType)
-struct ALSASUAMANIFA_API FMisionReward {
+struct ALSASUAMANIFA_API FMissionReward {
     GENERATED_BODY()
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere) float Money = 0.f;

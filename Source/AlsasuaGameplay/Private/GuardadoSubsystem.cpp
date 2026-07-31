@@ -87,8 +87,8 @@ bool UGuardadoSubsystem::GuardarEnSlot(int32 Slot)
 
 	if (const UDisfrazSubsystem* Df = GI->GetSubsystem<UDisfrazSubsystem>())
 	{
-		S->DisfrazType = (int32)Df->GetCurrentDisguise();
-		S->DisfrazDurability = Df->GetDurabilityPercent();
+		S->DisfrazType = Df->bEncubierto ? 1 : 0;
+		S->DisfrazDurability = 1.0f;
 	}
 
 	if (APawn* Jug = UGameplayStatics::GetPlayerPawn(W, 0))

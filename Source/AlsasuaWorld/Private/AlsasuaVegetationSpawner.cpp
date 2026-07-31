@@ -53,9 +53,7 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 		{
 			const auto& Po = Pv->AsObject();
 			if (!Po.IsValid()) continue;
-			const double ux = Po->GetNumberField(TEXT("x")) + UAlsasuaGeoData::OX;
-			const double uz = Po->GetNumberField(TEXT("z")) + UAlsasuaGeoData::OZ;
-			const FVector M = UAlsasuaGeoData::UnityaUnreal(FVector(ux, 0.0, uz));
+			const FVector M = UAlsasuaGeoData::RelLocalToUE5(FVector(Po->GetNumberField(TEXT("x")), 0.0, Po->GetNumberField(TEXT("z"))));
 			Poly.Add(FVector(M.X, M.Y, 0));
 		}
 		if (Poly.Num() >= 3) Polygons.Add(Poly);

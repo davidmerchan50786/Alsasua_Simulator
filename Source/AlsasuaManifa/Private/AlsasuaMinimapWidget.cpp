@@ -3,7 +3,7 @@
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/Pawn.h"
 #include "Kismet/GameplayStatics.h"
-#include "Core/GeoDataAlsasua.h"
+#include "GeoDataAlsasua.h"
 #include "Rendering/DrawElements.h"
 #include "Json.h"
 #include "JsonUtilities.h"
@@ -120,21 +120,21 @@ int32 UAlsasuaMinimapWidget::NativePaint(const FPaintArgs& Args, const FGeometry
 	const float HalfMap = MapSize * 0.5f;
 	const float Zoom = CurrentZoom;
 
-	const FSlateBrush WhiteBox = FCoreStyle::Get().GetWidgetStyle<FWidgetStyle>().GetBrush(TEXT("GenericWhiteBox"));
+	const FSlateBrush* WhiteBox = FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox"));
 
 	// Background border
 	FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
 		AllottedGeometry.ToPaintGeometry(
 			FVector2D(Center.X - HalfMap - 2.f, Center.Y - HalfMap - 2.f),
 			FVector2D(MapSize + 4.f, MapSize + 4.f)),
-		&WhiteBox, ESlateDrawEffect::None, FLinearColor::Black);
+		WhiteBox, ESlateDrawEffect::None, FLinearColor::Black);
 
 	// Background fill
 	FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
 		AllottedGeometry.ToPaintGeometry(
 			FVector2D(Center.X - HalfMap, Center.Y - HalfMap),
 			FVector2D(MapSize, MapSize)),
-		&WhiteBox, ESlateDrawEffect::None, BackgroundColor);
+		WhiteBox, ESlateDrawEffect::None, BackgroundColor);
 
 	// --- Draw roads ---
 	APlayerController* PC = GetOwningPlayer();
@@ -259,7 +259,7 @@ int32 UAlsasuaMinimapWidget::NativePaint(const FPaintArgs& Args, const FGeometry
 		FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
 			AllottedGeometry.ToPaintGeometry(
 				MapPos - FVector2D(Icon.IconRadius), FVector2D(Icon.IconRadius * 2.f)),
-			&WhiteBox, ESlateDrawEffect::None, Icon.IconColor);
+			WhiteBox, ESlateDrawEffect::None, Icon.IconColor);
 
 		FSlateFontInfo FontInfo = FCoreStyle::GetDefaultFontStyle("Bold", 8);
 		FSlateDrawElement::MakeText(OutDrawElements, LayerId,
@@ -280,12 +280,12 @@ int32 UAlsasuaMinimapWidget::NativePaint(const FPaintArgs& Args, const FGeometry
 
 			FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
 				AllottedGeometry.ToPaintGeometry(WPos - FVector2D(Pulse), FVector2D(Pulse * 2.f)),
-				&WhiteBox, ESlateDrawEffect::None,
+				WhiteBox, ESlateDrawEffect::None,
 				FLinearColor(WaypointColor.R, WaypointColor.G, WaypointColor.B, 0.3f));
 
 			FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
 				AllottedGeometry.ToPaintGeometry(WPos - FVector2D(3.f), FVector2D(6.f)),
-				&WhiteBox, ESlateDrawEffect::None, WaypointColor);
+				WhiteBox, ESlateDrawEffect::None, WaypointColor);
 
 			const float Distance = FVector::Dist(PlayerLoc, WaypointLocation);
 			const FString DistStr = Distance > 1000.f
@@ -305,11 +305,11 @@ int32 UAlsasuaMinimapWidget::NativePaint(const FPaintArgs& Args, const FGeometry
 
 	FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
 		AllottedGeometry.ToPaintGeometry(Center - FVector2D(DotSize + 2.f), FVector2D((DotSize + 2.f) * 2.f)),
-		&WhiteBox, ESlateDrawEffect::None, FLinearColor(0.f, 0.f, 0.f, 0.5f));
+		WhiteBox, ESlateDrawEffect::None, FLinearColor(0.f, 0.f, 0.f, 0.5f));
 
 	FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
 		AllottedGeometry.ToPaintGeometry(Center - FVector2D(DotSize), FVector2D(DotSize * 2.f)),
-		&WhiteBox, ESlateDrawEffect::None, PlayerColor);
+		WhiteBox, ESlateDrawEffect::None, PlayerColor);
 
 	if (bRotateWithPlayer)
 	{
@@ -340,7 +340,7 @@ int32 UAlsasuaMinimapWidget::NativePaint(const FPaintArgs& Args, const FGeometry
 		FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
 			AllottedGeometry.ToPaintGeometry(FVector2D(CompassLeft, MapTop),
 				FVector2D(CompassWidth, CompassHeight)),
-			&WhiteBox, ESlateDrawEffect::None, FLinearColor(0.05f, 0.05f, 0.1f, 0.7f));
+			WhiteBox, ESlateDrawEffect::None, FLinearColor(0.05f, 0.05f, 0.1f, 0.7f));
 
 		const float Yaw = GetPlayerYaw();
 		const FString Dirs[] = { TEXT("E"), TEXT("NE"), TEXT("N"), TEXT("NW"), TEXT("W"), TEXT("SW"), TEXT("S"), TEXT("SE") };

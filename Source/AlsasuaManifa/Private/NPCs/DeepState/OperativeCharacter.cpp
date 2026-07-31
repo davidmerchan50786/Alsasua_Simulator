@@ -1,5 +1,6 @@
 #include "NPCs/DeepState/OperativeCharacter.h"
 #include "AlsasuaTypes.h"
+#include "Engine/OverlapResult.h"
 #include "Character/Stealth/GuardDetectionComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
@@ -56,18 +57,18 @@ void AOperativeCharacter::RevealOperative()
     bIsDisguised = false;
 
     // Impulso visual al revelarse (el operativo se "transforma").
-    if (USkeletalMeshComponent* Mesh = GetMesh())
+    if (USkeletalMeshComponent* SkelMesh = GetMesh())
     {
-        Mesh->SetSimulatePhysics(true);
-        Mesh->AddImpulse(FVector(0, 0, RevealImpulseForce), NAME_None, true);
+        SkelMesh->SetSimulatePhysics(true);
+        SkelMesh->AddImpulse(FVector(0, 0, RevealImpulseForce), NAME_None, true);
 
         // Desactivar física tras un breve momento.
         FTimerHandle TimerHandle;
-        GetWorldTimerManager().SetTimer(TimerHandle, [Mesh]()
+        GetWorldTimerManager().SetTimer(TimerHandle, [SkelMesh]()
         {
-            if (Mesh)
+            if (SkelMesh)
             {
-                Mesh->SetSimulatePhysics(false);
+                SkelMesh->SetSimulatePhysics(false);
             }
         }, 0.3f, false);
     }

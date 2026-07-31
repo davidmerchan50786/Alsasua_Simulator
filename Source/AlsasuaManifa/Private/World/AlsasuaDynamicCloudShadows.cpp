@@ -33,8 +33,8 @@ void UAlsasuaDynamicCloudShadows::UpdateCloudShadows(float DeltaTime)
 	if (!TimeMgr || !VFXMgr) return;
 
 	const float Hour = TimeMgr->CurrentTime;
-	const bool bRaining = Weather && (Weather->CurrentWeather == EWeatherState::Rainy ||
-		Weather->CurrentWeather == EWeatherState::Thunderstorm);
+	const bool bRaining = Weather && (Weather->CurrentWeather == EWeatherSubsystemState::Rainy ||
+		Weather->CurrentWeather == EWeatherSubsystemState::Thunderstorm);
 
 	TimeAccum += DeltaTime;
 

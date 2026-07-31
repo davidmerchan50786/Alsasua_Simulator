@@ -10,11 +10,17 @@
 #include "GameFramework/Pawn.h"
 #include "Engine/World.h"
 #include "Engine/GameInstance.h"
+#include "Misc/CommandLine.h"
 
 void UMisionesSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 	ConstruirMisionesDemo();   // M00 por defecto si nadie registra misiones
+	// -NoMisiones: modo validación/perf sin misiones ni multitud.
+	if (FParse::Param(FCommandLine::Get(), TEXT("NoMisiones")))
+	{
+		bSaltarIntro = true;
+	}
 }
 
 void UMisionesSubsystem::Tick(float DeltaTime)

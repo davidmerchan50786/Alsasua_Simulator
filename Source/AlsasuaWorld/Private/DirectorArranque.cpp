@@ -13,6 +13,7 @@
 #include "CargadorPOI.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
+#include "Kismet/GameplayStatics.h"
 #include "Subsystems/SubsystemCollection.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -113,7 +114,7 @@ void ADirectorArranque::IniciarConstruccion()
     UCargadorArboles* Arboles = World->GetSubsystem<UCargadorArboles>();
     if (Arboles)
     {
-        const int32 NumArboles = Arboles->CargarArboles();
+        const int32 NumArboles = Arboles->Cargar();
         UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d árboles cargados (LIDAR real)."), NumArboles);
     }
 
@@ -123,7 +124,7 @@ void ADirectorArranque::IniciarConstruccion()
     UCargadorVias* Vias = World->GetSubsystem<UCargadorVias>();
     if (Vias)
     {
-        Vias->CargarVias();
+        Vias->Cargar();
         UE_LOG(LogTemp, Log, TEXT("DirectorArranque: Vías férreas cargadas."));
     }
 
@@ -131,7 +132,7 @@ void ADirectorArranque::IniciarConstruccion()
     UCargadorCalles* Calles = World->GetSubsystem<UCargadorCalles>();
     if (Calles)
     {
-        Calles->CargarCalles();
+        Calles->Cargar();
         UE_LOG(LogTemp, Log, TEXT("DirectorArranque: Calles cargadas."));
     }
 
@@ -141,15 +142,16 @@ void ADirectorArranque::IniciarConstruccion()
     UCargadorEdificios* Edificios = World->GetSubsystem<UCargadorEdificios>();
     if (Edificios)
     {
-        Edificios->CargarEdificios();
+        Edificios->Cargar();
         UE_LOG(LogTemp, Log, TEXT("DirectorArranque: Edificios cargados (LIDAR real)."));
     }
 
     // --- 7. Herriko Plaza (plaza real con mobiliario) ---
-    UHerrikoPlazaGenerator* Plaza = World->GetSubsystem<UHerrikoPlazaGenerator>();
+    AHerrikoPlazaGenerator* Plaza = World->SpawnActor<AHerrikoPlazaGenerator>(
+        AHerrikoPlazaGenerator::StaticClass(), FVector(0, 0, 100), FRotator::ZeroRotator);
     if (Plaza)
     {
-        Plaza->GenerarPlaza();
+        Plaza->Generar();
         UE_LOG(LogTemp, Log, TEXT("DirectorArranque: Herriko Plaza generada."));
     }
 
@@ -157,7 +159,7 @@ void ADirectorArranque::IniciarConstruccion()
     UCargadorPuentes* Puentes = World->GetSubsystem<UCargadorPuentes>();
     if (Puentes)
     {
-        Puentes->CargarPuentes();
+        Puentes->GenerarPuentes();
         UE_LOG(LogTemp, Log, TEXT("DirectorArranque: Puentes cargados."));
     }
 
@@ -165,7 +167,7 @@ void ADirectorArranque::IniciarConstruccion()
     UCargadorPOI* POIs = World->GetSubsystem<UCargadorPOI>();
     if (POIs)
     {
-        POIs->CargarPOIs();
+        POIs->Cargar();
         UE_LOG(LogTemp, Log, TEXT("DirectorArranque: POIs cargados."));
     }
 
@@ -231,53 +233,11 @@ void ADirectorArranque::IniciarConstruccion()
 
     ArranqueMundo::Progreso = 0.8f;
 
-    // --- 11. Mobiliario urbano (street_furniture.json real) ---
-    {
-        TArray<FString> Lineas;
-        const FString JsonPath = FPaths::ProjectContentDir() + TEXT("Datos/street_furniture.json");
-        if (FFileHelper::LoadFileToStringArray(Lineas, *JsonPath))
-        {
-            FString JsonStr = TEXT("");
-            for (const FString& Line : Lineas) JsonStr += Line;
-
-            TSharedPtr<FJsonObject> Root;
-            TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(JsonStr);
-            if (FJsonSerializer::Deserialize(Reader, Root) && Root.IsValid())
-            {
-                const TArray<TSharedPtr<FJsonValue>>* ItemsArr;
-                if (Root->TryGetArrayField(TEXT("items"), ItemsArr))
-                {
-                    int32 MobiliarioCount = 0;
-                    for (const auto& ItemVal : *ItemsArr)
-                    {
-                        const TSharedPtr<FJsonObject>& Item = ItemVal->AsObject();
-                        if (!Item) continue;
-
-                        const FString Type = Item->GetStringField(TEXT("type"));
-                        const float X = Item->GetNumberField(TEXT("x"));
-                        const float Z = Item->GetNumberField(TEXT("z"));
-                        const float Rot = Item->GetNumberField(TEXT("rotacion"));
-
-                        FVector Location = UAlsasuaGeoData::UnityaUnreal(FVector(X + UAlsasuaGeoData::OX, 0.0f, Z + UAlsasuaGeoData::OZ));
-                        FRotator Rotation = FRotator(0, Rot, 0);
-
-                        AStaticMeshActor* MobActor = World->SpawnActor<AStaticMeshActor>(
-                            AStaticMeshActor::StaticClass(), Location, Rotation);
-                        if (MobActor)
-                        {
-                            MobActor->SetMobility(EComponentMobility::Movable);
-#if WITH_EDITOR
-                            MobActor->SetActorLabel(*FString::Printf(TEXT("%s_%s"),
-                                *Type, *Item->GetStringField(TEXT("calle"))));
-#endif
-                            MobiliarioCount++;
-                        }
-                    }
-                    UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d piezas de mobiliario real."), MobiliarioCount);
-                }
-            }
-        }
-    }
+    // --- 11. Mobiliario urbano (handled by specialized systems) ---
+    // Removed: ContainerSystem (papelera), FarolaPlacer (farolas),
+    // FountainSystem (fuentes), DetailDressingSystem (banco, bollard, buzon, etc.),
+    // TrafficLightSystem (semaforos), GuardrailSystem (barandillas)
+    // all read street_furniture.json or roads_unity.json directly.
 
     // --- 12. Vegetación (greenspaces_unity.json real) ---
     UAlsasuaVegetationSpawner* Vegetacion = World->GetSubsystem<UAlsasuaVegetationSpawner>();
@@ -393,7 +353,10 @@ void ADirectorArranque::IniciarConstruccion()
         if (Facades)
         {
             const int32 NumFachadas = Facades->GenerarFachadasEnMundo();
-            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d fachadas reales generadas."), NumFachadas);
+            const int32 NumLMK = Facades->ColocarLandmarksReales();
+            const int32 NumTransport = Facades->ColocarParadasTransporte();
+            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d fachadas, %d landmarks, %d paradas transporte."),
+                NumFachadas, NumLMK, NumTransport);
         }
     }
 

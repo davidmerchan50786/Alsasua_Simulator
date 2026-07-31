@@ -43,10 +43,10 @@ void AAlsasuaBuildingGenerator::SpawnBuildingsFromData(FString JsonPath) {
         const double X = (*Obj)->GetNumberField(TEXT("x"));
         const double Y = (*Obj)->GetNumberField(TEXT("y"));
         const double Z = (*Obj)->GetNumberField(TEXT("z"));
-        const double Height = (*Obj)->TryGetNumberField(TEXT("height")) ? (*Obj)->GetNumberField(TEXT("height")) : 300.0;
-        const double Width = (*Obj)->TryGetNumberField(TEXT("width")) ? (*Obj)->GetNumberField(TEXT("width")) : 400.0;
-        const double Depth = (*Obj)->TryGetNumberField(TEXT("depth")) ? (*Obj)->GetNumberField(TEXT("depth")) : 400.0;
-        const double Rotation = (*Obj)->TryGetNumberField(TEXT("rotation")) ? (*Obj)->GetNumberField(TEXT("rotation")) : 0.0;
+        double Height; const bool bHasHeight = (*Obj)->TryGetNumberField(TEXT("height"), Height); Height = bHasHeight ? Height : 300.0;
+        double Width; const bool bHasWidth = (*Obj)->TryGetNumberField(TEXT("width"), Width); Width = bHasWidth ? Width : 400.0;
+        double Depth; const bool bHasDepth = (*Obj)->TryGetNumberField(TEXT("depth"), Depth); Depth = bHasDepth ? Depth : 400.0;
+        double Rotation; const bool bHasRotation = (*Obj)->TryGetNumberField(TEXT("rotation"), Rotation); Rotation = bHasRotation ? Rotation : 0.0;
 
         FVector Location(X, Y, Z);
         FRotator Rot(0.0, Rotation, 0.0);

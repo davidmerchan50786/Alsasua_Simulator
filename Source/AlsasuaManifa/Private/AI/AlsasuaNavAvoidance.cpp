@@ -7,6 +7,10 @@ UAlsasuaNavAvoidance::UAlsasuaNavAvoidance()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
+void UAlsasuaNavAvoidance::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+}
+
 void UAlsasuaNavAvoidance::DetectConflictAgencies(TArray<AActor*>& OutConflicts)
 {
 	AActor* Owner = GetOwner();

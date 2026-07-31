@@ -42,8 +42,8 @@ void UAlsasuaAmbientParticles::UpdateAmbientParticles(float DeltaTime)
 	const float Wind = VFXMgr ? VFXMgr->WindIntensity : 0.3f;
 	const float Hour = TimeMgr ? TimeMgr->CurrentTime : 12.f;
 	const float Season = TimeMgr ? TimeMgr->CurrentTime / 365.f : 0.5f;
-	const bool bRaining = Weather && (Weather->CurrentWeather == EWeatherState::Rainy ||
-		Weather->CurrentWeather == EWeatherState::Thunderstorm);
+	const bool bRaining = Weather && (Weather->CurrentWeather == EWeatherSubsystemState::Rainy ||
+		Weather->CurrentWeather == EWeatherSubsystemState::Thunderstorm);
 
 	TimeAccum += DeltaTime;
 
