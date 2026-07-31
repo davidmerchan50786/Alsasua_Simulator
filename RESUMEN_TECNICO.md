@@ -163,6 +163,27 @@ Comparativa global:
 La mediana GPU vuelve al nivel del run viejo (20 ms) **con las misiones y la
 multitud corriendo encima**, y los hitches de 8 s desaparecen.
 
+### 3.5 Experimento — Lumen + VSM desactivados (CSV 12:13)
+
+Para desglosar los ~19 ms GPU restantes se lanzó un run con
+`-ExecCmds="r.DynamicGlobalIlluminationMethod=0, r.Shadow.Virtual.Enable=0"`
+(sin Lumen ni Virtual Shadow Maps). Resultado:
+
+| Métrica | Baseline (11:29) | Lumen+VSM off (12:13) |
+|---|---|---|
+| Mediana GPU | **18.9 ms** | 22.0 ms |
+| p95 GPU | 22.5 ms | 25.6 ms |
+| Primitivas (mediana) | 4.07 M | 4.56 M |
+| Draw calls (mediana) | 819 | 2215 |
+| Spikes > 100 ms (tras warmup) | 2 | 0 |
+
+**Conclusión: Lumen y VSM NO son el cuello de botella.** Apagarlos *empeora*
+el rendimiento: sin VSM el juego cae a shadow maps en cascada clásicos (CSM)
+y los draw calls de sombra se multiplican ~3× (819 → 2215). El coste está en
+el **base pass / geometría** (4 M prims de terreno ProceduralMesh + fachadas),
+no en la iluminación. Lumen+VSM en DX11 sin RT y a esta densidad ya son la
+opción barata; la config de render queda como estaba.
+
 ---
 
 ## 4. Diagnóstico de causa raíz
@@ -287,14 +308,20 @@ Fallo intermedio corregido: `SetForcedLodModel` → `SetForcedLOD` (error C2039)
 
 ## 8. Siguientes pasos sugeridos
 
-1. **Perfilado por pass** (RenderDoc / Unreal Insights con GPU traces) para
-   desglosar los ~19 ms restantes (shadow pass de VSM, base pass del
-   ProceduralMesh, lumenscene).
-2. **Multitud**: imposters de LOD reales en los assets de malla (modelos
-   MeshyAI suelen tener un solo LOD; generar LODs/ billboards de distancia).
-3. **Nanite en fachadas**: si sube la densidad, migrar
-   `UProceduralMeshComponent` → `UDynamicMeshComponent` +
-   `SetEnableNanite(true)` (soportado en 5.4) para LOD/imposters automáticos.
+1. **El objetivo de rendimiento está cumplido** (48 FPS, 2 spikes residuales).
+   Los ~19 ms GPU son base pass/geometría, no GI/sombras (ver §3.5). Apretar
+   más (LOD de terreno ProceduralMesh, bajar densidad) da 2-4 ms a costa de
+   calidad visual — solo si se persigue el target estricto de 60 FPS.
+2. **Nanite en fachadas NO es viable en 5.4**: `UDynamicMeshComponent` no
+   expone `SetEnableNanite` (verificado en `BaseDynamicMeshComponent.h`).
+   Migrar a UE 5.7+ daría LOD/imposters automáticos, pero es un cambio de
+   motor, no de código.
+3. **Imposters de multitud: innecesario por ahora** — la manifestación real
+   (manifestantes skeletal con `ManifestanteActor`) está capada a ~60
+   personas (`TamMax`). Replantear solo si la multitud escala a cientos.
 4. **HLOD**: no aplica a actores generados en runtime; si se bakea el pueblo
    a un nivel persistente, HLODs masivos reducirían draw calls lejanos.
 5. **Content en Git LFS** o repositorio de assets separado.
+6. Pendiente menor: el `AlsasuaManifestacionManager` (port de Unity, sin
+   callers) instanciaba 2 ISMCs huérfanos en `Initialize`, generando un
+   `ensure` en cada boot — la llamada se ha eliminado (clase queda dormida).

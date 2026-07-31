@@ -22,7 +22,6 @@
 void UAlsasuaManifestacionManager::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
-	SetupISMCs();
 
 	// Registrar timer de actualización (~30Hz).
 	UWorld* World = GetWorld();
