@@ -184,6 +184,27 @@ el **base pass / geometría** (4 M prims de terreno ProceduralMesh + fachadas),
 no en la iluminación. Lumen+VSM en DX11 sin RT y a esta densidad ya son la
 opción barata; la config de render queda como estaba.
 
+### 3.6 Ajuste de LOD de terreno (CSV 12:35)
+
+El terreno (4033×4033 px, chunk 128 px → 1024 chunks) teselaba de más en
+rango lejano: `LOD1Step=2` (800 m-2 km) y `LOD2Step=4` (>2 km) eran
+sub-píxel. Cambiados a `LOD1Step=4`, `LOD2Step=8` (`TerrenoGenerado.h`;
+espaciado de vértice 0.7 m / 1.4 m vs píxel ≈ 2-3 m a esas distancias → sin
+cambio visual perceptible).
+
+| Métrica | Pre-LOD (12:13) | Post-LOD (12:35) |
+|---|---|---|
+| Primitivas (mediana) | 4.56 M | **3.55 M** (−22 %) |
+| GPU (mediana) | 22.0 ms | **20.5 ms** |
+| GPU p95 | 25.6 ms | 23.9 ms |
+
+Nota: el run 11:29 (18.9 ms, 819 DC) vs los de la mañana posterior (20.5 ms,
+2225 DC) muestran una anomalía de benchmark en `BeginOcclusionTests`
+(257 → 1613) con config y mapa idénticos y la misma escena (GPUSceneInstanceCount
+8267 en ambos) — no la provocan los cambios de esta sesión (ya presente en el
+run 12:13, pre-LOD) y no afecta al resultado jugable. No perseguida: sería
+profundizar en internals del renderer sin impacto en FPS real.
+
 ---
 
 ## 4. Diagnóstico de causa raíz
@@ -309,9 +330,10 @@ Fallo intermedio corregido: `SetForcedLodModel` → `SetForcedLOD` (error C2039)
 ## 8. Siguientes pasos sugeridos
 
 1. **El objetivo de rendimiento está cumplido** (48 FPS, 2 spikes residuales).
-   Los ~19 ms GPU son base pass/geometría, no GI/sombras (ver §3.5). Apretar
-   más (LOD de terreno ProceduralMesh, bajar densidad) da 2-4 ms a costa de
-   calidad visual — solo si se persigue el target estricto de 60 FPS.
+   Los ~19 ms GPU son base pass/geometría, no GI/sombras (ver §3.5). El LOD
+   de terreno ya se ha afinado (§3.6, −22 % prims, −1.5 ms) sin cambio visual.
+   Un target estricto de 60 FPS requeriría recortar más geometría (p. ej.
+   LOD0 del terreno o densidad de fachadas) a costa de calidad.
 2. **Nanite en fachadas NO es viable en 5.4**: `UDynamicMeshComponent` no
    expone `SetEnableNanite` (verificado en `BaseDynamicMeshComponent.h`).
    Migrar a UE 5.7+ daría LOD/imposters automáticos, pero es un cambio de

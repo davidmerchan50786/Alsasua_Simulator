@@ -72,10 +72,10 @@ public:
 	int32 LOD0Step = 1;
 
 	UPROPERTY(EditAnywhere, Category="Terreno|LOD")
-	int32 LOD1Step = 2;
+	int32 LOD1Step = 4;
 
 	UPROPERTY(EditAnywhere, Category="Terreno|LOD")
-	int32 LOD2Step = 4;
+	int32 LOD2Step = 8;
 
 	UPROPERTY(EditAnywhere, Category="Terreno|LOD")
 	double LOD1Distance = 80000.0;
