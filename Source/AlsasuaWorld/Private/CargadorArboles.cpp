@@ -59,7 +59,7 @@ UHierarchicalInstancedStaticMeshComponent* UCargadorArboles::ComponenteDe(const 
 	{
 		C->SetStaticMesh(MallaDefecto);
 	}
-	C->SetCullDistances(0, 30000);
+	C->SetCullDistances(0, 80000);  // árboles visibles hasta 800 m — coherente con RadioMax del GobernadorRender
 	C->SetCastShadow(true);
 	C->RegisterComponent();
 	C->AttachToComponent(Host->GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);

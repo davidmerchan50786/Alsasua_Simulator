@@ -16,9 +16,9 @@ class ALSASUAWORLD_API UGobernadorRender : public UWorldSubsystem, public FTicka
 public:
 	// Presupuesto objetivo: 60 fps = 16.6 ms. Por encima => encoge.
 	UPROPERTY(EditAnywhere, Category="Render") float MsObjetivo   = 16.6f;
-	UPROPERTY(EditAnywhere, Category="Render") float RadioMin     = 8000.f;    // 80 m
-	UPROPERTY(EditAnywhere, Category="Render") float RadioMax     = 60000.f;   // 600 m
-	UPROPERTY(EditAnywhere, Category="Render") float FactorImpostor = 1.6f;    // banda impostor = radio × esto
+	UPROPERTY(EditAnywhere, Category="Render") float RadioMin     = 15000.f;   // 150 m
+	UPROPERTY(EditAnywhere, Category="Render") float RadioMax     = 200000.f;  // 2 km — colinas y horizonte reales de Alsasua
+	UPROPERTY(EditAnywhere, Category="Render") float FactorImpostor = 2.0f;    // banda impostor = radio × esto
 
 	float RadioActivacion() const { return Radio; }
 	float RadioImpostor()   const { return Radio * FactorImpostor; }
@@ -31,7 +31,7 @@ public:
 	virtual bool DoesSupportWorldType(const EWorldType::Type Tipo) const override { return Tipo == EWorldType::Game || Tipo == EWorldType::PIE; }
 
 private:
-	float Radio   = 30000.f;   // 300 m de salida
+	float Radio   = 80000.f;   // 800 m de salida (horizonte realista del valle del Arakil)
 	float MsSuave = 16.6f;
 	float Carga   = 1.f;
 };
