@@ -24,6 +24,9 @@ static UMaterialInterface* CargarMaterialSueloVias()
 }
 static UMaterialInterface* CargarMaterialAcera()
 {
+	if (UMaterialInterface* AAA = LoadObject<UMaterialInterface>(nullptr,
+		TEXT("/Game/Road/Material/MI/M_Sidewalk_Master_Inst.M_Sidewalk_Master_Inst")))
+		return AAA;
 	UMaterialInterface* Adoquin = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Terreno_Acera.M_Terreno_Acera"));
 	return Adoquin ? Adoquin : CargarMaterialSueloVias();
 }

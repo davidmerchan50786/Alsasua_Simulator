@@ -90,7 +90,7 @@ int32 UAlsasuaRoadMarkingsSystem::GenerarMarcas()
                         LineaActor->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
 
                     UMaterialInterface* WhiteMat = LoadObject<UMaterialInterface>(nullptr,
-                        TEXT("/Game/Materiales/M_Marca_Blanca"));
+                        TEXT("/Game/Road/Material/MI/M_Asphalt_Master_Inst_Crosswalk.M_Asphalt_Master_Inst_Crosswalk"));
                     if (WhiteMat)
                         LineaActor->GetStaticMeshComponent()->SetMaterial(0, WhiteMat);
 
@@ -133,7 +133,7 @@ int32 UAlsasuaRoadMarkingsSystem::GenerarMarcas()
                             Stripe->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
 
                         UMaterialInterface* WhiteMat = LoadObject<UMaterialInterface>(nullptr,
-                            TEXT("/Game/Materiales/M_Marca_Blanca"));
+                            TEXT("/Game/Road/Material/MI/M_Asphalt_Master_Inst_Crosswalk.M_Asphalt_Master_Inst_Crosswalk"));
                         if (WhiteMat)
                             Stripe->GetStaticMeshComponent()->SetMaterial(0, WhiteMat);
 
@@ -173,7 +173,7 @@ int32 UAlsasuaRoadMarkingsSystem::GenerarMarcas()
                         StopLine->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
 
                     UMaterialInterface* WhiteMat = LoadObject<UMaterialInterface>(nullptr,
-                        TEXT("/Game/Materiales/M_Marca_Blanca"));
+                        TEXT("/Game/Road/Material/MI/M_Asphalt_Master_Inst_Crosswalk.M_Asphalt_Master_Inst_Crosswalk"));
                     if (WhiteMat)
                         StopLine->GetStaticMeshComponent()->SetMaterial(0, WhiteMat);
 

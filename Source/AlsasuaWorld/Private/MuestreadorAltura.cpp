@@ -30,6 +30,8 @@ void UMuestreadorAltura::BuscarTerreno()
 
 float UMuestreadorAltura::AlturaMundo(const FVector& Pos) const
 {
+	if (!Terreno)
+		const_cast<UMuestreadorAltura*>(this)->BuscarTerreno();
 	if (!Terreno) return 0.f;
 	return Terreno->AlturaEnMundo(Pos.X, Pos.Y);
 }

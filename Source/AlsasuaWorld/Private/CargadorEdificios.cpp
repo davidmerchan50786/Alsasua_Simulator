@@ -13,6 +13,7 @@
 #include "Math/RandomStream.h"
 #include "ProceduralMeshComponent.h"
 #include "Materials/MaterialInterface.h"
+#include "MuestreadorAltura.h"
 
 // Paleta vasca por edificio (determinista por id): arenisca rojiza en muros,
 // teja terracota o pizarra en tejados.
@@ -80,6 +81,11 @@ float UCargadorEdificios::AlturaSuelo(const FVector2D& XY) const
 {
 	const UWorld* W = GetWorld();
 	if (!W) return 0.f;
+	if (const UMuestreadorAltura* Muestreador = W->GetSubsystem<UMuestreadorAltura>())
+	{
+		const float Altura = Muestreador->AlturaMundo(FVector(XY.X, XY.Y, 0.f));
+		if (!FMath::IsNearlyZero(Altura)) return Altura;
+	}
 	FHitResult Hit;
 	FCollisionQueryParams Q(SCENE_QUERY_STAT(AlturaSuelo), true);
 	if (W->LineTraceSingleByChannel(Hit, FVector(XY.X, XY.Y, UAlsasuaGeoData::TraceUp), FVector(XY.X, XY.Y, UAlsasuaGeoData::TraceDown), ECC_Visibility, Q))

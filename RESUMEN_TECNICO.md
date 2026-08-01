@@ -198,6 +198,12 @@ cambio visual perceptible).
 | GPU (mediana) | 22.0 ms | **20.5 ms** |
 | GPU p95 | 25.6 ms | 23.9 ms |
 
+**Siguiente afinado (run 02:10, ya en binarios):** `LOD2Step=8→16` (vértice
+1.4→2.8 m a >2 km, sub-píxel). GPU mediana 20.5→**13.1 ms**, p95 23.9→22.1 ms;
+prims se mantuvieron en 3.55 M — el coste dominante es LOD0/LOD1 (cerca del
+jugador), no LOD2. Parte de la mejora puede ser varianza del benchmark (anomalía
+`BeginOcclusionTests`, ver nota siguiente).
+
 Nota: el run 11:29 (18.9 ms, 819 DC) vs los de la mañana posterior (20.5 ms,
 2225 DC) muestran una anomalía de benchmark en `BeginOcclusionTests`
 (257 → 1613) con config y mapa idénticos y la misma escena (GPUSceneInstanceCount
@@ -334,10 +340,10 @@ Fallo intermedio corregido: `SetForcedLodModel` → `SetForcedLOD` (error C2039)
    de terreno ya se ha afinado (§3.6, −22 % prims, −1.5 ms) sin cambio visual.
    Un target estricto de 60 FPS requeriría recortar más geometría (p. ej.
    LOD0 del terreno o densidad de fachadas) a costa de calidad.
-2. **Nanite en fachadas NO es viable en 5.4**: `UDynamicMeshComponent` no
-   expone `SetEnableNanite` (verificado en `BaseDynamicMeshComponent.h`).
-   Migrar a UE 5.7+ daría LOD/imposters automáticos, pero es un cambio de
-   motor, no de código.
+2. **Nanite en fachadas NO es viable (verificado también en 5.8)**: tras
+   migrar a UE 5.8, `UDynamicMeshComponent` sigue sin exponer `SetEnableNanite`
+   (revisado en `BaseDynamicMeshComponent.h` de 5.8). Un bake de la geometría a
+   StaticMesh sí sería Nanite-ready, pero es un cambio estructural, no de código.
 3. **Imposters de multitud: innecesario por ahora** — la manifestación real
    (manifestantes skeletal con `ManifestanteActor`) está capada a ~60
    personas (`TamMax`). Replantear solo si la multitud escala a cientos.

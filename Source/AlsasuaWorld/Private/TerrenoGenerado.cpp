@@ -756,8 +756,8 @@ void ATerrenoGenerado::GenerarChunk(FInfoChunk& Info, int32 LODLevel, int32 Step
 
 	FString Name = FString::Printf(TEXT("Chunk_%d_%d_LOD%d"), Info.ChunkX, Info.ChunkY, LODLevel);
 	UProceduralMeshComponent* PMC = NewObject<UProceduralMeshComponent>(this, FName(*Name));
-	PMC->RegisterComponent();
 	PMC->SetupAttachment(RootComponent);
+	PMC->RegisterComponent();
 	PMC->SetMobility(EComponentMobility::Static);
 	PMC->bUseAsyncCooking = true;
 

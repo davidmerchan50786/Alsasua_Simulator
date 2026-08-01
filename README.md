@@ -35,8 +35,9 @@ con X=east, Y=north. Texturas con el **sur arriba** (v=0 en Ymin).
 | `Content/Textures/ortofoto_pnoa_plaza_8192.png` → `/Game/Textures/T_Ortofoto` | 2750×2750 m (núcleo urbano) | 0.336 m/px | X 54300..329300, Y 719500..994500 |
 
 - `M_Terreno_Orto` (terreno en `-game`) drapea el satélite completo;
-  `M_Tejado_Orto` (tejados) usa el detalle urbano. `M_TerrenoAlsasua` (editor)
-  regenera el drape en cada Play.
+  `M_Tejado_Orto` (tejados) usa el detalle urbano y hace fallback al satélite
+  fuera de la plaza (máscara "dentro de núcleo", borde suave). `M_TerrenoAlsasua`
+  (editor) regenera el drape en cada Play.
 - **Regeneración**: `Tools/DescargarOrtofotoPNOA.py` descarga ambos mosaicos
   (WMS `OI.OrthoimageCoverage` + style Default; `OI.MosaicElement` está roto) y
   verifica la alineación por round-trip (corr ≈ 0.999). Después

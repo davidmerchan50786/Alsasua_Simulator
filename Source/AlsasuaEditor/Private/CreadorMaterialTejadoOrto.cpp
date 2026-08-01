@@ -10,6 +10,7 @@
 #include "Materials/MaterialExpressionConstant.h"
 #include "Materials/MaterialExpressionSubtract.h"
 #include "Materials/MaterialExpressionMultiply.h"
+#include "Materials/MaterialExpressionAbs.h"
 #include "Materials/MaterialExpressionAppendVector.h"
 #include "Materials/MaterialExpressionTextureSampleParameter2D.h"
 #include "Materials/MaterialExpressionAdd.h"
@@ -29,6 +30,9 @@ using ML = UMaterialEditingLibrary;
 namespace {
 static const float TOWN_XMIN_CM = 54300.f, TOWN_RANGO_CM = 275000.f;
 static const float TOWN_YMIN_CM = 719500.f;
+// Satélite completo (cubre todo el mundo, mismo origen/grid UTM que el terreno).
+static const float SAT_XMIN_CM = -168200.f, SAT_RANGO_CM = 720000.f;
+static const float SAT_YMIN_CM = 497000.f;
 }
 
 bool UCreadorMaterialTejadoOrto::CrearMaterialTejadoOrto()
@@ -50,6 +54,7 @@ bool UCreadorMaterialTejadoOrto::CrearMaterialTejadoOrto()
 	auto Sub   = [&](UMaterialExpression* A, UMaterialExpression* B, int32 y){ return Bin(UMaterialExpressionSubtract::StaticClass(), A, B, y); };
 	auto Add   = [&](UMaterialExpression* A, UMaterialExpression* B, int32 y){ return Bin(UMaterialExpressionAdd::StaticClass(), A, B, y); };
 	auto Sat   = [&](UMaterialExpression* X, int32 y){ return Un(UMaterialExpressionSaturate::StaticClass(), X, y); };
+	auto Abs   = [&](UMaterialExpression* X, int32 y){ return Un(UMaterialExpressionAbs::StaticClass(), X, y); };
 
 	// WorldPosition -> X, Y
 	auto* WP = New(UMaterialExpressionWorldPosition::StaticClass(), -200);
@@ -61,9 +66,15 @@ bool UCreadorMaterialTejadoOrto::CrearMaterialTejadoOrto()
 	// texU = (WPos.X - TOWN_XMIN) / RANGO ; texV = (WPos.Y - TOWN_YMIN) / RANGO
 	auto* u = Mul(Sub(wX, Const(TOWN_XMIN_CM, -160), -160), Const(1.f / TOWN_RANGO_CM, -160), -150);
 	auto* v = Mul(Sub(wY, Const(TOWN_YMIN_CM, -240), -240), Const(1.f / TOWN_RANGO_CM, -240), -250);
-	auto* uv = Bin(UMaterialExpressionAppendVector::StaticClass(), u, v, -200);   // float2(U,V)
+	auto* uv = Bin(UMaterialExpressionAppendVector::StaticClass(), u, v, -200);   // float2(U,V) plaza
 
-	// Muestra de la ortofoto (parámetro asignable).
+	// UV del satélite completo (cubre todo el mundo; fuera de la plaza los tejados
+	// usan este en vez de estirar el borde clampado de la ortofoto urbana).
+	auto* uSat = Mul(Sub(wX, Const(SAT_XMIN_CM, -300), -300), Const(1.f / SAT_RANGO_CM, -300), -290);
+	auto* vSat = Mul(Sub(wY, Const(SAT_YMIN_CM, -360), -360), Const(1.f / SAT_RANGO_CM, -360), -350);
+	auto* uvSat = Bin(UMaterialExpressionAppendVector::StaticClass(), uSat, vSat, -320);
+
+	// Muestra de la ortofoto urbana (alta res, 25 cm/px; parámetro asignable).
 	auto* tex = Cast<UMaterialExpressionTextureSampleParameter2D>(New(UMaterialExpressionTextureSampleParameter2D::StaticClass(), 0));
 	tex->ParameterName = TEXT("Ortofoto");
 	if (UTexture2D* T = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Textures/T_Ortofoto.T_Ortofoto")))
@@ -74,6 +85,25 @@ bool UCreadorMaterialTejadoOrto::CrearMaterialTejadoOrto()
 		UE_LOG(LogTemp, Warning, TEXT("[TejadoOrto] importa /Game/Textures/T_Ortofoto y asigna el parametro 'Ortofoto'."));
 	}
 	ML::ConnectMaterialExpressions(uv, TEXT(""), tex, TEXT("UVs"));
+
+	// Fallback: satélite completo (0.88 m/px), mismo origen PNOA → solo resolución cambia.
+	auto* texSat = Cast<UMaterialExpressionTextureSampleParameter2D>(New(UMaterialExpressionTextureSampleParameter2D::StaticClass(), -60));
+	texSat->ParameterName = TEXT("Satelite");
+	if (UTexture2D* T = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Terreno/T_Satelite_Alsasua.T_Satelite_Alsasua")))
+		texSat->Texture = T;
+	else
+		texSat->Texture = LoadObject<UTexture2D>(nullptr, TEXT("/Engine/EngineResources/DefaultTexture.DefaultTexture"));
+	ML::ConnectMaterialExpressions(uvSat, TEXT(""), texSat, TEXT("UVs"));
+
+	// Máscara "dentro de la plaza": |U-0.5|<0.5 y |V-0.5|<0.5, borde suave (~14 m).
+	auto* mU = Sat(Mul(Sub(Const(0.5f, 120), Abs(Sub(u, Const(0.5f, 120), 120), 120), 120), Const(200.f, 120), 120), 120);
+	auto* mV = Sat(Mul(Sub(Const(0.5f, 180), Abs(Sub(v, Const(0.5f, 180), 180), 180), 180), Const(200.f, 180), 180), 180);
+	auto* dentro = Mul(mU, mV, 150);
+
+	auto* base = Cast<UMaterialExpressionLinearInterpolate>(New(UMaterialExpressionLinearInterpolate::StaticClass(), 20));
+	ML::ConnectMaterialExpressions(texSat, TEXT(""), base, TEXT("A"));
+	ML::ConnectMaterialExpressions(tex, TEXT(""), base, TEXT("B"));
+	ML::ConnectMaterialExpressions(dentro, TEXT(""), base, TEXT("Alpha"));
 
 	// --- Detalle de teja de cerca: textura tileada que modula el brillo, fundida por distancia ---
 	auto* dUV = Bin(UMaterialExpressionAppendVector::StaticClass(),
@@ -90,7 +120,7 @@ bool UCreadorMaterialTejadoOrto::CrearMaterialTejadoOrto()
 	auto* fade  = Sat(Mul(Sub(Const(5000.f, 540), depth, 540), Const(1.f / 3500.f, 540), 540), 540);
 	auto* factor = Add(Const(1.f, 400), Mul(centrado, fade, 440), 420);
 
-	ML::ConnectMaterialProperty(Mul(tex, factor, 0), TEXT(""), MP_BaseColor);   // ortofoto * detalle
+	ML::ConnectMaterialProperty(Mul(base, factor, 0), TEXT(""), MP_BaseColor);   // (sat fallback + orto plaza) * detalle
 
 	// Relieve de teja de cerca: normal map tileado, fundido a plano por distancia.
 	auto* plano = Cast<UMaterialExpressionConstant3Vector>(New(UMaterialExpressionConstant3Vector::StaticClass(), 600)); plano->Constant = FLinearColor(0, 0, 1);

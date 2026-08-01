@@ -112,7 +112,7 @@ int32 UAlsasuaParkingSystem::GenerarPlazasAparcamiento()
                 SpotActor->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
 
             UMaterialInterface* AsphaltMat = LoadObject<UMaterialInterface>(nullptr,
-                TEXT("/Game/Materiales/M_Asphalt_Marcas"));
+                TEXT("/Game/Road/Material/MI/M_Asphalt_Master_Inst_ParkingLots.M_Asphalt_Master_Inst_ParkingLots"));
             if (AsphaltMat)
                 SpotActor->GetStaticMeshComponent()->SetMaterial(0, AsphaltMat);
 

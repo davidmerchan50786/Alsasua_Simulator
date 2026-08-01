@@ -37,6 +37,12 @@ void UAlsasuaCrowdSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 
+	// Sin mundo de juego (commandlets/cook) no hay multitud: saltar todo.
+	if (IsRunningCommandlet())
+	{
+		return;
+	}
+
 	UpdateInterval = 1.f / FMath::Max(UpdateFrequency, 1.f);
 
 	SetupInstancedRendering();

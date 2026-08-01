@@ -1,7 +1,6 @@
 #include "DirectorArranque.h"
 #include "ArranqueMundo.h"
 #include "TerrenoGenerado.h"
-#include "AguaNivel.h"
 #include "MuestreadorAltura.h"
 #include "CargadorArboles.h"
 #include "CargadorVias.h"
@@ -44,7 +43,6 @@
 #include "World/AlsasuaLODManager.h"
 #include "World/AlsasuaCollisionSystem.h"
 #include "World/AlsasuaVFXManager.h"
-#include "World/AlsasuaArakilWaterSystem.h"
 #include "World/AlsasuaShopFrontSystem.h"
 #include "World/AlsasuaTerrainLayersSystem.h"
 #include "World/AlsasuaNPCPedestrianSystem.h"
@@ -96,21 +94,7 @@ void ADirectorArranque::IniciarConstruccion()
 
     ArranqueMundo::Progreso = 0.3f;
 
-    // --- 2. Agua nivel (río Arakil real) ---
-    AAguaNivel* Agua = World->SpawnActor<AAguaNivel>(
-        AAguaNivel::StaticClass(),
-        FVector(0, 0, 100), FRotator::ZeroRotator);
-    if (Agua)
-    {
-#if WITH_EDITOR
-        Agua->SetActorLabel(TEXT("Alsasua_RioArakil"));
-#endif
-        UE_LOG(LogTemp, Log, TEXT("DirectorArranque: Agua nivel spawneada."));
-    }
-
-    ArranqueMundo::Progreso = 0.4f;
-
-    // --- 3. Árboles (2783 posiciones LIDAR reales) ---
+    // --- 2. Árboles (2783 posiciones LIDAR reales) ---
     UCargadorArboles* Arboles = World->GetSubsystem<UCargadorArboles>();
     if (Arboles)
     {
@@ -120,7 +104,7 @@ void ADirectorArranque::IniciarConstruccion()
 
     ArranqueMundo::Progreso = 0.5f;
 
-    // --- 4. Vías férreas (railways_unity.json real) ---
+    // --- 3. Vías férreas (railways_unity.json real) ---
     UCargadorVias* Vias = World->GetSubsystem<UCargadorVias>();
     if (Vias)
     {
@@ -128,7 +112,7 @@ void ADirectorArranque::IniciarConstruccion()
         UE_LOG(LogTemp, Log, TEXT("DirectorArranque: Vías férreas cargadas."));
     }
 
-    // --- 5. Calles (roads_unity.json real) ---
+    // --- 4. Calles (roads_unity.json real) ---
     UCargadorCalles* Calles = World->GetSubsystem<UCargadorCalles>();
     if (Calles)
     {
@@ -138,7 +122,7 @@ void ADirectorArranque::IniciarConstruccion()
 
     ArranqueMundo::Progreso = 0.6f;
 
-    // --- 6. Edificios (2783 footprint LIDAR real) ---
+    // --- 5. Edificios (2783 footprint LIDAR real) ---
     UCargadorEdificios* Edificios = World->GetSubsystem<UCargadorEdificios>();
     if (Edificios)
     {
@@ -146,7 +130,7 @@ void ADirectorArranque::IniciarConstruccion()
         UE_LOG(LogTemp, Log, TEXT("DirectorArranque: Edificios cargados (LIDAR real)."));
     }
 
-    // --- 7. Herriko Plaza (plaza real con mobiliario) ---
+    // --- 6. Herriko Plaza (plaza real con mobiliario) ---
     AHerrikoPlazaGenerator* Plaza = World->SpawnActor<AHerrikoPlazaGenerator>(
         AHerrikoPlazaGenerator::StaticClass(), FVector(0, 0, 100), FRotator::ZeroRotator);
     if (Plaza)
@@ -155,7 +139,7 @@ void ADirectorArranque::IniciarConstruccion()
         UE_LOG(LogTemp, Log, TEXT("DirectorArranque: Herriko Plaza generada."));
     }
 
-    // --- 8. Puentes (waterways_unity.json real) ---
+    // --- 7. Puentes (waterways_unity.json real) ---
     UCargadorPuentes* Puentes = World->GetSubsystem<UCargadorPuentes>();
     if (Puentes)
     {
@@ -163,7 +147,7 @@ void ADirectorArranque::IniciarConstruccion()
         UE_LOG(LogTemp, Log, TEXT("DirectorArranque: Puentes cargados."));
     }
 
-    // --- 9. POIs (poi_data.json real: Ayuntamiento, Iglesia, ermitas, frontón...) ---
+    // --- 8. POIs (poi_data.json real: Ayuntamiento, Iglesia, ermitas, frontón...) ---
     UCargadorPOI* POIs = World->GetSubsystem<UCargadorPOI>();
     if (POIs)
     {
@@ -173,64 +157,7 @@ void ADirectorArranque::IniciarConstruccion()
 
     ArranqueMundo::Progreso = 0.7f;
 
-    // --- 10. Ríos (waterways_unity.json real) ---
-    {
-        FString JsonStr;
-        const FString JsonPath = FPaths::ProjectContentDir() + TEXT("Datos/waterways_unity.json");
-        if (FFileHelper::LoadFileToString(JsonStr, *JsonPath))
-        {
-            TSharedPtr<FJsonValue> RootVal;
-            TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(JsonStr);
-            if (FJsonSerializer::Deserialize(Reader, RootVal) && RootVal.IsValid())
-            {
-                const TArray<TSharedPtr<FJsonValue>>* RiversArr;
-                if (RootVal->TryGetArray(RiversArr))
-                {
-                    int32 RiverCount = 0;
-                    for (const auto& RiverVal : *RiversArr)
-                    {
-                        const TSharedPtr<FJsonObject>& River = RiverVal->AsObject();
-                        if (!River) continue;
-
-                        const TArray<TSharedPtr<FJsonValue>>* PtsArr;
-                        if (River->TryGetArrayField(TEXT("pts"), PtsArr) && PtsArr->Num() >= 6)
-                        {
-                            TArray<FVector> Points;
-                            for (int32 i = 0; i + 2 < PtsArr->Num(); i += 3)
-                            {
-                                const float X = (*PtsArr)[i]->AsNumber();
-                                const float Y = (*PtsArr)[i + 1]->AsNumber();
-                                const float Z = (*PtsArr)[i + 2]->AsNumber();
-                                Points.Add(UAlsasuaGeoData::UnityaUnreal(FVector(X, Y, Z)));
-                            }
-
-                            if (Points.Num() >= 2)
-                            {
-                                AActor* RiverActor = World->SpawnActor<AActor>(
-                                    AActor::StaticClass(), Points[0], FRotator::ZeroRotator);
-                                if (RiverActor)
-                                {
-                                    UProceduralMeshComponent* ProcMesh =
-                                        NewObject<UProceduralMeshComponent>(RiverActor);
-                                    if (ProcMesh)
-                                    {
-                                        ProcMesh->SetupAttachment(RiverActor->GetRootComponent());
-                                        ProcMesh->RegisterComponent();
-                                    }
-#if WITH_EDITOR
-                                    RiverActor->SetActorLabel(*FString::Printf(TEXT("Rio_%d"), RiverCount));
-#endif
-                                    RiverCount++;
-                                }
-                            }
-                        }
-                    }
-                    UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d ríos cargados."), RiverCount);
-                }
-            }
-        }
-    }
-
+    // Los ríos los genera CargadorVias como cintas drapeadas sobre el terreno.
     ArranqueMundo::Progreso = 0.8f;
 
     // --- 11. Mobiliario urbano (handled by specialized systems) ---
@@ -468,17 +395,7 @@ void ADirectorArranque::IniciarConstruccion()
         }
     }
 
-    // --- 32. Agua procedural del Arakil (tramos reales con movimiento) ---
-    {
-        UAlsasuaArakilWaterSystem* AguaSys = World->GetGameInstance()->GetSubsystem<UAlsasuaArakilWaterSystem>();
-        if (AguaSys)
-        {
-            const int32 NumTramos = AguaSys->GenerarMallaAgua();
-            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d tramos de agua Arakil generados."), NumTramos);
-        }
-    }
-
-    // --- 33. Tiendas reales (signage_data.json: bares, restaurantes, tiendas) ---
+    // --- 32. Tiendas reales (signage_data.json: bares, restaurantes, tiendas) ---
     {
         UAlsasuaShopFrontSystem* Shops = World->GetGameInstance()->GetSubsystem<UAlsasuaShopFrontSystem>();
         if (Shops)

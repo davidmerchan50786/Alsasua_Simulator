@@ -16,11 +16,17 @@
 // Si no existen aún, se cae al vertex-color (ColorBase) sobre M_Edificio.
 static UMaterialInterface* CargarMaterialSueloCalles()
 {
+	if (UMaterialInterface* AAA = LoadObject<UMaterialInterface>(nullptr,
+		TEXT("/Game/Road/Material/MI/M_Asphalt_Master_Inst.M_Asphalt_Master_Inst")))
+		return AAA;
 	UMaterialInterface* Asfalto = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Terreno_Calles.M_Terreno_Calles"));
 	return Asfalto ? Asfalto : LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Edificio.M_Edificio"));
 }
 static UMaterialInterface* CargarMaterialSueloSendero()
 {
+	if (UMaterialInterface* AAA = LoadObject<UMaterialInterface>(nullptr,
+		TEXT("/Game/Road/Material/MI/M_Sidewalk_Master_Inst.M_Sidewalk_Master_Inst")))
+		return AAA;
 	UMaterialInterface* Adoquin = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Terreno_Acera.M_Terreno_Acera"));
 	return Adoquin ? Adoquin : LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Edificio.M_Edificio"));
 }

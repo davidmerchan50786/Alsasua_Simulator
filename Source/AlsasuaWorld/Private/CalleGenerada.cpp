@@ -4,6 +4,7 @@
 #include "GeoDataAlsasua.h"
 #include "Engine/World.h"
 #include "CollisionQueryParams.h"
+#include "MuestreadorAltura.h"
 
 ACalleGenerada::ACalleGenerada()
 {
@@ -19,6 +20,11 @@ float ACalleGenerada::AlturaSuelo(const FVector2D& XY) const
 {
 	const UWorld* W = GetWorld();
 	if (!W) return 0.f;
+	if (const UMuestreadorAltura* Muestreador = W->GetSubsystem<UMuestreadorAltura>())
+	{
+		const float Altura = Muestreador->AlturaMundo(FVector(XY.X, XY.Y, 0.f));
+		if (!FMath::IsNearlyZero(Altura)) return Altura;
+	}
 	FHitResult Hit;
 	FCollisionQueryParams Q(SCENE_QUERY_STAT(AlturaCalle), true);
 	Q.AddIgnoredActor(this);
