@@ -12,6 +12,10 @@ conflicto social con misiones, manifestaciones, multitudes y presión policial.
 - Mundo procedural real: `DirectorArranque` genera terreno (LiDAR), río, plaza,
   **1030 fachadas** (una sección de malla por edificio), 19 landmarks, señales,
   calles y carreteras.
+- Materiales de calzada/aceras/parking/marcas: usan los de la librería
+  `Content/Road` (asfalto/acera AAA) solo si sus dependencias (Megascans,
+  `T_Black_Mask_VT`, …) están en el proyecto; si no, caen a
+  `M_Terreno_Calles`/`M_Terreno_Acera` (ver `CargarMaterialComun.h`).
 - **Ortofoto PNOA real** (satélite + montes) drapada sobre el terreno y los
   tejados, alineada al grid UTM 30N del mundo (ver sección más abajo).
 - Ciclo día/noche y clima (niebla, lluvia, nubosidad, MPC) con setters de render
