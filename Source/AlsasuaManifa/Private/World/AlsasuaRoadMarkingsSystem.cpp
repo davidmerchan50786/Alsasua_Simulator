@@ -8,6 +8,15 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "GeoDataAlsasua.h"
+#include "CargarMaterialComun.h"
+
+static UMaterialInterface* CargarMaterialMarcas()
+{
+	return CargarMaterialConFallback(
+		TEXT("/Game/Road/Material/MI/M_Asphalt_Master_Inst_Crosswalk.M_Asphalt_Master_Inst_Crosswalk"),
+		TEXT("/Game/Materiales/M_Terreno_Calles.M_Terreno_Calles"),
+		TEXT("/Game/Materiales/M_Edificio.M_Edificio"));
+}
 
 void UAlsasuaRoadMarkingsSystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -89,8 +98,7 @@ int32 UAlsasuaRoadMarkingsSystem::GenerarMarcas()
                     if (PlaneMesh)
                         LineaActor->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
 
-                    UMaterialInterface* WhiteMat = LoadObject<UMaterialInterface>(nullptr,
-                        TEXT("/Game/Road/Material/MI/M_Asphalt_Master_Inst_Crosswalk.M_Asphalt_Master_Inst_Crosswalk"));
+                    UMaterialInterface* WhiteMat = CargarMaterialMarcas();
                     if (WhiteMat)
                         LineaActor->GetStaticMeshComponent()->SetMaterial(0, WhiteMat);
 
@@ -172,8 +180,7 @@ int32 UAlsasuaRoadMarkingsSystem::GenerarMarcas()
                     if (PlaneMesh)
                         StopLine->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
 
-                    UMaterialInterface* WhiteMat = LoadObject<UMaterialInterface>(nullptr,
-                        TEXT("/Game/Road/Material/MI/M_Asphalt_Master_Inst_Crosswalk.M_Asphalt_Master_Inst_Crosswalk"));
+                    UMaterialInterface* WhiteMat = CargarMaterialMarcas();
                     if (WhiteMat)
                         StopLine->GetStaticMeshComponent()->SetMaterial(0, WhiteMat);
 

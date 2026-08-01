@@ -11,6 +11,7 @@
 #include "HAL/PlatformTime.h"
 #include "ProceduralMeshComponent.h"
 #include "Materials/MaterialInterface.h"
+#include "CargarMaterialComun.h"
 
 // Material de agua creado por la utilidad de editor UCreadorMaterialAgua.
 // Si no existe aún, los ríos quedan con su color de vértice (azulado).
@@ -24,11 +25,10 @@ static UMaterialInterface* CargarMaterialSueloVias()
 }
 static UMaterialInterface* CargarMaterialAcera()
 {
-	if (UMaterialInterface* AAA = LoadObject<UMaterialInterface>(nullptr,
-		TEXT("/Game/Road/Material/MI/M_Sidewalk_Master_Inst.M_Sidewalk_Master_Inst")))
-		return AAA;
-	UMaterialInterface* Adoquin = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Terreno_Acera.M_Terreno_Acera"));
-	return Adoquin ? Adoquin : CargarMaterialSueloVias();
+	return CargarMaterialConFallback(
+		TEXT("/Game/Road/Material/MI/M_Sidewalk_Master_Inst.M_Sidewalk_Master_Inst"),
+		TEXT("/Game/Materiales/M_Terreno_Acera.M_Terreno_Acera"),
+		TEXT("/Game/Materiales/M_Edificio.M_Edificio"));
 }
 
 void UCargadorVias::OnWorldBeginPlay(UWorld& InWorld)

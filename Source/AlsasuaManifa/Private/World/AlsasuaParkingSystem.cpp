@@ -8,6 +8,7 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "GeoDataAlsasua.h"
+#include "CargarMaterialComun.h"
 
 void UAlsasuaParkingSystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -111,8 +112,10 @@ int32 UAlsasuaParkingSystem::GenerarPlazasAparcamiento()
             if (PlaneMesh)
                 SpotActor->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
 
-            UMaterialInterface* AsphaltMat = LoadObject<UMaterialInterface>(nullptr,
-                TEXT("/Game/Road/Material/MI/M_Asphalt_Master_Inst_ParkingLots.M_Asphalt_Master_Inst_ParkingLots"));
+            UMaterialInterface* AsphaltMat = CargarMaterialConFallback(
+                TEXT("/Game/Road/Material/MI/M_Asphalt_Master_Inst_ParkingLots.M_Asphalt_Master_Inst_ParkingLots"),
+                TEXT("/Game/Materiales/M_Terreno_Calles.M_Terreno_Calles"),
+                TEXT("/Game/Materiales/M_Edificio.M_Edificio"));
             if (AsphaltMat)
                 SpotActor->GetStaticMeshComponent()->SetMaterial(0, AsphaltMat);
 

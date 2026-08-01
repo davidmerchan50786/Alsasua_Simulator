@@ -31,8 +31,8 @@ namespace {
 static const float TOWN_XMIN_CM = 54300.f, TOWN_RANGO_CM = 275000.f;
 static const float TOWN_YMIN_CM = 719500.f;
 // Satélite completo (cubre todo el mundo, mismo origen/grid UTM que el terreno).
-static const float SAT_XMIN_CM = -168200.f, SAT_RANGO_CM = 720000.f;
-static const float SAT_YMIN_CM = 497000.f;
+static const float SAT_ORT_XMIN_CM = -168200.f, SAT_ORT_RANGO_CM = 720000.f;
+static const float SAT_ORT_YMIN_CM = 497000.f;
 }
 
 bool UCreadorMaterialTejadoOrto::CrearMaterialTejadoOrto()
@@ -70,8 +70,8 @@ bool UCreadorMaterialTejadoOrto::CrearMaterialTejadoOrto()
 
 	// UV del satélite completo (cubre todo el mundo; fuera de la plaza los tejados
 	// usan este en vez de estirar el borde clampado de la ortofoto urbana).
-	auto* uSat = Mul(Sub(wX, Const(SAT_XMIN_CM, -300), -300), Const(1.f / SAT_RANGO_CM, -300), -290);
-	auto* vSat = Mul(Sub(wY, Const(SAT_YMIN_CM, -360), -360), Const(1.f / SAT_RANGO_CM, -360), -350);
+	auto* uSat = Mul(Sub(wX, Const(SAT_ORT_XMIN_CM, -300), -300), Const(1.f / SAT_ORT_RANGO_CM, -300), -290);
+	auto* vSat = Mul(Sub(wY, Const(SAT_ORT_YMIN_CM, -360), -360), Const(1.f / SAT_ORT_RANGO_CM, -360), -350);
 	auto* uvSat = Bin(UMaterialExpressionAppendVector::StaticClass(), uSat, vSat, -320);
 
 	// Muestra de la ortofoto urbana (alta res, 25 cm/px; parámetro asignable).
