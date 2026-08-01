@@ -78,7 +78,7 @@ void UAlsasuaManifestacionManager::SetupISMCs()
 	if (LeaderISMC == nullptr)
 	{
 		LeaderISMC = NewObject<UInstancedStaticMeshComponent>(World);
-		LeaderISMC->RegisterComponent();
+		LeaderISMC->RegisterComponentWithWorld(World);
 		LeaderISMC->SetMobility(EComponentMobility::Movable);
 		LeaderISMC->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		LeaderISMC->CastShadow = true;
@@ -99,7 +99,7 @@ void UAlsasuaManifestacionManager::SetupISMCs()
 	if (FollowerISMC == nullptr)
 	{
 		FollowerISMC = NewObject<UInstancedStaticMeshComponent>(World);
-		FollowerISMC->RegisterComponent();
+		FollowerISMC->RegisterComponentWithWorld(World);
 		FollowerISMC->SetMobility(EComponentMobility::Movable);
 		FollowerISMC->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		FollowerISMC->CastShadow = true;

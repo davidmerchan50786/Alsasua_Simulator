@@ -114,8 +114,10 @@ void UAlsasuaCrowdSubsystem::SetupInstancedRendering()
 
 	if (InstancedMeshComponent == nullptr)
 	{
+		// Sin actor owner: RegisterComponent() haría ensure (MyOwnerWorld null) y no
+		// registraría nada. RegisterComponentWithWorld registra el ISMC standalone.
 		InstancedMeshComponent = NewObject<UInstancedStaticMeshComponent>(World);
-		InstancedMeshComponent->RegisterComponent();
+		InstancedMeshComponent->RegisterComponentWithWorld(World);
 		InstancedMeshComponent->SetMobility(EComponentMobility::Movable);
 		InstancedMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		InstancedMeshComponent->CastShadow = true;

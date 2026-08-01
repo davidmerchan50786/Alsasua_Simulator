@@ -35,7 +35,7 @@ void UAlsasuaRiotControlSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 	UWorld* World = &InWorld;
 
 	FlareMarkerISMC = NewObject<UInstancedStaticMeshComponent>(World);
-	FlareMarkerISMC->RegisterComponent();
+	FlareMarkerISMC->RegisterComponentWithWorld(World);
 	FlareMarkerISMC->SetMobility(EComponentMobility::Movable);
 	FlareMarkerISMC->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	FlareMarkerISMC->CastShadow = false;
@@ -231,7 +231,7 @@ void UAlsasuaRiotControlSubsystem::SpawnFlareEffects(FRiotInstance& Riot)
 	Riot.FlareLight = NewObject<UPointLightComponent>(World);
 	if (Riot.FlareLight != nullptr)
 	{
-		Riot.FlareLight->RegisterComponent();
+		Riot.FlareLight->RegisterComponentWithWorld(World);
 		Riot.FlareLight->SetWorldLocation(Riot.Epicenter + FVector(0.f, 0.f, 20.f));
 		Riot.FlareLight->SetLightColor(FLinearColor(1.f, 0.f, 0.f));
 		Riot.FlareLight->SetIntensity(Config.FlareLightIntensity);

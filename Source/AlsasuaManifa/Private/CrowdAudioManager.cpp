@@ -23,7 +23,7 @@ void UCrowdAudioManager::Initialize(FSubsystemCollectionBase& Collection)
         {
             Comp->AttenuationSettings = CrowdAttenuation;
         }
-        Comp->RegisterComponent();
+        Comp->RegisterComponentWithWorld(World);
         return Comp;
     };
 
