@@ -77,9 +77,11 @@ void UCargadorVias::PrepararCarga()
 {
 	if (bPreparado) return;
 	bPreparado = true;
-	Encolar(TEXT("Datos/footways_unity.json"),  TEXT("Acera"), 8.f,  3.f, false);
-	Encolar(TEXT("Datos/railways_unity.json"),  TEXT("Via"),  14.f,  2.5f, true);
-	Encolar(TEXT("Datos/waterways_unity.json"), TEXT("Agua"),-20.f,  6.f, false);   // río un poco hundido
+	Encolar(TEXT("Datos/footways_unity.json"),  TEXT("Acera"),  8.f,  3.f, false);
+	Encolar(TEXT("Datos/railways_unity.json"),  TEXT("Via"),   14.f,  2.5f, true);
+	Encolar(TEXT("Datos/waterways_unity.json"), TEXT("Agua"), -20.f,  6.f, false);   // río un poco hundido
+	Encolar(TEXT("Datos/caminos_unity.json"),   TEXT("Camino"), 6.f,  3.f, false);   // pistas/senderos de monte
+	Encolar(TEXT("Datos/tunnels_unity.json"),   TEXT("Tunel"),  8.f,  4.f, false);   // túneles (placeholder hasta ATunelAlsasua)
 	UE_LOG(LogTemp, Log, TEXT("[Vias] %d vías en cola"), Trabajos.Num());
 }
 
@@ -90,6 +92,11 @@ bool UCargadorVias::PasoPresupuesto(double PresupuestoMs)
 	while (Idx < Trabajos.Num())
 	{
 		const FTrabajoVia& T = Trabajos[Idx++];
+
+		// Túneles: datos cargados para uso futuro de ATunelAlsasua (paso 3).
+		// Por ahora se omite la malla visible para evitar artefactos en superficie.
+		if (T.Tag == TEXT("Tunel")) { ++Construidas; continue; }
+
 		FActorSpawnParameters SP;
 		SP.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		const FVector2D Centro = T.PuntosMundo[0];
@@ -101,8 +108,9 @@ bool UCargadorVias::PasoPresupuesto(double PresupuestoMs)
 			C->EpsilonCm = T.EpsilonCm;
 			if (T.Tag != NAME_None) C->Tags.Add(T.Tag);
 			// Color por tipo de vía.
-			if      (T.Tag == TEXT("Acera")) C->ColorBase = FColor(120, 112, 100, 255); // adoquín claro
-			else if (T.Tag == TEXT("Via"))   C->ColorBase = FColor(70, 62, 54, 255);    // balasto
+			if      (T.Tag == TEXT("Acera"))  C->ColorBase = FColor(120, 112, 100, 255); // adoquín claro
+			else if (T.Tag == TEXT("Via"))    C->ColorBase = FColor( 70,  62,  54, 255); // balasto
+			else if (T.Tag == TEXT("Camino")) C->ColorBase = FColor(130, 105,  70, 255); // tierra/grava marrón
 			C->Construir(T.PuntosMundo, T.AnchoCm);
 
 			if (C->Malla)
@@ -134,6 +142,6 @@ int32 UCargadorVias::Cargar()
 	const int32 MaxIter = 10000;
 	while (!PasoPresupuesto(1000.0) && ++IterGuard < MaxIter) {}
 	if (IterGuard >= MaxIter) UE_LOG(LogTemp, Warning, TEXT("[Vias] Iteration guard reached (%d)"), MaxIter);
-	UE_LOG(LogTemp, Log, TEXT("[Vias] %d vías construidas (aceras+ferrocarril+ríos)"), Construidas);
+	UE_LOG(LogTemp, Log, TEXT("[Vias] %d vías construidas (aceras+ferrocarril+ríos+caminos+túneles)"), Construidas);
 	return Construidas;
 }
