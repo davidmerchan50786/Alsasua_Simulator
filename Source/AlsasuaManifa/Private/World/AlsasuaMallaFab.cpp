@@ -61,6 +61,46 @@ namespace
 		{ TEXT("estacion_tren"),     TEXT("estacion_tren_altsasu|estacion_tren|estacion|train_station|railway_station") },
 		{ TEXT("mercado"),           TEXT("mercado|azoka|market_hall|market") },
 		{ TEXT("polideportivo"),     TEXT("nave_industrial|polideportivo|kiroldegia|sports_hall|gymnasium") },
+
+		// ── Kit modular de Village (142 piezas) ────────────────────────────
+		// Familias limpias por prefijo: Roof_ (29), Stucco_ (26), Stone_ (23),
+		// Wood_ (16), Prop_ (13), Canopy_ (10), Waterwheel_ (9), Cobblestone_,
+		// Wall_Prop_, Dirt_, Kit_Window_. Se apunta a la pieza recta o
+		// "Full" de cada familia, que es la que sirve de caso general.
+		{ TEXT("toldo"),             TEXT("canopy_full|canopy_side|canopy_top|awning") },
+		{ TEXT("marquesina"),        TEXT("canopy_full|canopy_beam|canopy_corner") },
+		{ TEXT("bordillo"),          TEXT("stone_curb|curb|kerb") },
+		{ TEXT("acera_pieza"),       TEXT("cobblestone_floor|stone_floor|pp_floor_tile") },
+		{ TEXT("puerta"),            TEXT("wall_prop_door_simple|wall_prop_door_ornate|stucco_doorway|stone_doorway|door") },
+		{ TEXT("escaparate"),        TEXT("stucco_doorway_wide|harategia|okindegia|shop_front|storefront") },
+		{ TEXT("ventana"),           TEXT("stucco_window_single|stucco_window_double|kit_window|ventana_basca|window") },
+		{ TEXT("muro_piedra"),       TEXT("stone_wall|piedra_muro|stone_arch") },
+		{ TEXT("tejado_pieza"),      TEXT("roof_straight_side|roof_concave_side|roof_convex_side") },
+		{ TEXT("chimenea"),          TEXT("roof_prop_chimney|chimenea_piedra|chimney") },
+		{ TEXT("pilar"),             TEXT("stone_pillar|stucco_prop_support_pillar|wood_post") },
+		{ TEXT("escalera"),          TEXT("stone_steps|wood_steps|stairs|steps") },
+		{ TEXT("barril"),            TEXT("prop_barrel|barrel") },
+		{ TEXT("caja_madera"),       TEXT("prop_crate|crate") },
+		{ TEXT("escalera_mano"),     TEXT("prop_ladder|ladder") },
+		{ TEXT("pozo"),              TEXT("prop_well|well") },
+		{ TEXT("noria"),             TEXT("waterwheel_1|waterwheel|water_wheel") },
+		{ TEXT("canal_agua"),        TEXT("waterwheel_flume_straight|flume") },
+		{ TEXT("molino"),            TEXT("wall_prop_windmill|casa_chorro_errota|windmill") },
+		{ TEXT("cartel_pared"),      TEXT("wall_prop_sign|sign") },
+		{ TEXT("farola_pared"),      TEXT("wall_prop_lamp") },
+		{ TEXT("valla"),             TEXT("pp_small_fence|small_fence|fence") },
+		{ TEXT("puente_pieza"),      TEXT("pp_bridge_15_middle|pp_bridge|bridge") },
+
+		// ── ForestPack (34 piezas) para el suelo del monte ────────────────
+		{ TEXT("roca"),              TEXT("pp_rock_moss_grown|pp_rock_pile|roca_grande|rock_01|rock_03") },
+		{ TEXT("musgo"),             TEXT("pp_forest_mountain_moss|moss") },
+		{ TEXT("seta"),              TEXT("pp_mushroom|mushroom") },
+		{ TEXT("flor"),              TEXT("pp_daffodil|pp_hyacinth|pp_sunflower|fleur") },
+		{ TEXT("prado"),             TEXT("pp_meadow_07|pp_meadow_08|meadow") },
+		{ TEXT("senda"),             TEXT("pp_meadow_path|path") },
+		{ TEXT("hierba_pieza"),      TEXT("pp_grass|grass_07|hierba_larga|multi_stylized_grass") },
+		{ TEXT("seto"),              TEXT("hedgelong|hedgesmall|seto_verde|hedge") },
+		{ TEXT("tronco_caido"),      TEXT("tronco_caido|pine_roots|dead_tree_trunk") },
 	};
 
 	/**

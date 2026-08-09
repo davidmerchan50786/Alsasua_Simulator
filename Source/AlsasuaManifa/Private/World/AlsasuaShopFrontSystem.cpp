@@ -1,4 +1,5 @@
 #include "World/AlsasuaShopFrontSystem.h"
+#include "World/AlsasuaMallaFab.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "Engine/StaticMeshActor.h"
@@ -91,8 +92,8 @@ int32 UAlsasuaShopFrontSystem::ColocarTiendasEnMundo()
         float ScaleZ = Tienda.AlturaM * 100.0f;
         ShopActor->SetActorScale3D(FVector(ScaleX / 100.0f, 1.0f, ScaleZ / 100.0f));
 
-        UStaticMesh* CubeMesh = LoadObject<UStaticMesh>(nullptr,
-            TEXT("/Engine/BasicShapes/Cube.Cube"));
+        UStaticMesh* CubeMesh = AlsasuaMallaFab::Resolver(TEXT("escaparate"),
+                    TEXT("/Engine/BasicShapes/Cube.Cube"));
         if (CubeMesh)
             ShopActor->GetStaticMeshComponent()->SetStaticMesh(CubeMesh);
 

@@ -1,4 +1,5 @@
 #include "World/AlsasuaAwningShutterSystem.h"
+#include "World/AlsasuaMallaFab.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "Engine/StaticMeshActor.h"
@@ -129,7 +130,7 @@ int32 UAlsasuaAwningShutterSystem::ColocarToldosYPersianas()
                 float SZ = Toldo.bPlegado ? 0.1f : Toldo.Profundidad / 100.0f;
                 ToldoActor->SetActorScale3D(FVector(SX, SZ, 0.05f));
 
-                UStaticMesh* PlaneMesh = LoadObject<UStaticMesh>(nullptr,
+                UStaticMesh* PlaneMesh = AlsasuaMallaFab::Resolver(TEXT("toldo"),
                     TEXT("/Engine/BasicShapes/Plane.Plane"));
                 if (PlaneMesh)
                     ToldoActor->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
