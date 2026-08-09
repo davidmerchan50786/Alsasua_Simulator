@@ -158,7 +158,10 @@ int32 UAlsasuaTrafficSystem::ColocarCocheAparcado()
             CarActor->SetActorScale3D(FVector(1.0f));
 
             UStaticMesh* CarMesh = LoadObject<UStaticMesh>(nullptr,
-                TEXT("/Game/Content/AssetsImportados/Casas/Village_Houses_Pack/SM_House_01"));
+                // Tres errores en esta ruta: /Game ya ES Content (sobra el prefijo), la
+                // carpeta del pack se llama HousePack, y las mallas son House1..14.
+                // Nombres reales según Datos/asset_manifest.json.
+                TEXT("/Game/AssetsImportados/Casas/HousePack/House1.House1"));
             if (CarMesh) CarActor->GetStaticMeshComponent()->SetStaticMesh(CarMesh);
 
 #if WITH_EDITOR

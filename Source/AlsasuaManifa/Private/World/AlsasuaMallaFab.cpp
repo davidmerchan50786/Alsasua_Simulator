@@ -6,11 +6,19 @@
 
 namespace
 {
-	/** Carpetas donde aterrizan las descargas de Fab y del launcher de Epic. */
+	/**
+	 * Carpetas de contenido descargado, por orden de preferencia.
+	 *
+	 * Las tres primeras son de Fab / launcher de Epic. AssetsImportados es lo
+	 * que ya estaba descargado en el proyecto (552 mallas de packs de Unity,
+	 * Meshy AI y modelos sueltos, según Datos/asset_manifest.json): estaba
+	 * importándose y casi nada lo cargaba.
+	 */
 	const TCHAR* RaicesFab[] = {
 		TEXT("/Game/Megascans"),
 		TEXT("/Game/MSPresets"),
 		TEXT("/Game/Fab"),
+		TEXT("/Game/AssetsImportados"),
 	};
 
 	/**
@@ -44,6 +52,24 @@ namespace
 	};
 
 	/**
+	 * Claves de especie para lo descargado. Salen de los nombres reales del
+	 * manifiesto: MeshyAI/Arbol_Roble, Mundo/pine/snow_pine_tree,
+	 * Naturaleza/ForestPack/PP_Birch_Tree_05, Cypress/cypress...
+	 */
+	const FClaves ClavesArbol[] = {
+		{ TEXT("QuercusRobur"), TEXT("arbol_roble|oak") },
+		{ TEXT("Fagus"),        TEXT("arbol_haya|beech") },
+		{ TEXT("Betula"),       TEXT("arbol_abedul|birch") },
+		{ TEXT("Pinus"),        TEXT("pine_tree|snow_pine|pino") },
+		{ TEXT("Populus"),      TEXT("aspen|poplar") },
+		{ TEXT("Salix"),        TEXT("willow|sauce") },
+		{ TEXT("Tilia"),        TEXT("linden|tilia") },
+		{ TEXT("Platanus"),     TEXT("plane_tree|platanus") },
+		{ TEXT("Acer"),         TEXT("maple|acer") },
+		{ TEXT("Prunus"),       TEXT("cherry|prunus") },
+	};
+
+	/**
 	 * Arquetipo de landmark para cada tipo. Quince tipos comparten siete
 	 * mallas: una iglesia y una ikastola no pueden ser el mismo cubo, pero un
 	 * juzgado y una biblioteca sí comparten volumen.
@@ -73,6 +99,32 @@ namespace
 		return nullptr;
 	}
 
+	/** Respaldo procedural de árbol (UCreadorMallaArbol) para cada arquetipo. */
+	const TCHAR* MallaArbolDe(const FString& Arquetipo)
+	{
+		static const TCHAR* Conocidos[] = {
+			TEXT("QuercusRobur"), TEXT("Pinus"), TEXT("Fagus"), TEXT("Betula"),
+			TEXT("Populus"), TEXT("Salix"), TEXT("Prunus"), TEXT("Tilia"),
+			TEXT("Platanus"), TEXT("Acer"),
+		};
+		for (const TCHAR* K : Conocidos)
+		{
+			if (Arquetipo == K)
+			{
+				// Cadena estática por arquetipo: se construye una vez y vive
+				// mientras dure el proceso.
+				static TMap<FString, FString> Rutas;
+				FString& R = Rutas.FindOrAdd(Arquetipo);
+				if (R.IsEmpty())
+				{
+					R = FString::Printf(TEXT("/Game/Meshes/Arboles/SM_%s.SM_%s"), K, K);
+				}
+				return *R;
+			}
+		}
+		return nullptr;
+	}
+
 	/** Nombre de la malla propia para ese tipo, o null si no hay. */
 	const TCHAR* MallaPropiaDe(const FString& Tipo)
 	{
@@ -84,6 +136,7 @@ namespace
 		if (Tipo == TEXT("tapa_alcantarilla")) return TEXT("/Game/Mobiliario/SM_TapaAlcantarilla.SM_TapaAlcantarilla");
 		if (Tipo == TEXT("buzon_correos"))     return TEXT("/Game/Mobiliario/SM_BuzonCorreos.SM_BuzonCorreos");
 		if (Tipo == TEXT("parada_bus"))        return TEXT("/Game/Mobiliario/SM_ParadaBus.SM_ParadaBus");
+		if (const TCHAR* Arbol = MallaArbolDe(Tipo)) return Arbol;
 		return ArquetipoLandmarkDe(Tipo);
 	}
 
@@ -143,6 +196,13 @@ namespace
 		for (const FClaves& C : ClavesPorTipo)
 		{
 			if (Tipo == C.Tipo) { Entrada = &C; break; }
+		}
+		if (!Entrada)
+		{
+			for (const FClaves& C : ClavesArbol)
+			{
+				if (Tipo == C.Tipo) { Entrada = &C; break; }
+			}
 		}
 		if (!Entrada) return nullptr;
 
