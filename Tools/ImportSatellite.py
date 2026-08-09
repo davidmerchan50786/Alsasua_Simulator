@@ -4,11 +4,11 @@ Ejecutar desde el editor (consola Python): exec(open("Tools/ImportSatellite.py")
 """
 import unreal
 
-FULL_SRC = "F:/Epic Games/UE_5.7/altsasu_gtavii/UnrealProject/Content/Terreno/alsasua_satelite_pnoa_8192.png"
+FULL_SRC = unreal.Paths.project_content_dir() + "Terreno/alsasua_satelite_pnoa_8192.png"
 FULL_FOLDER = "/Game/Terreno"
 FULL_NAME = "T_Satelite_Alsasua"
 
-TOWN_SRC = "F:/Epic Games/UE_5.7/altsasu_gtavii/UnrealProject/Content/Textures/ortofoto_pnoa_plaza_8192.png"
+TOWN_SRC = unreal.Paths.project_content_dir() + "Textures/ortofoto_pnoa_plaza_8192.png"
 TOWN_FOLDER = "/Game/Textures"
 TOWN_NAME = "T_Ortofoto"
 

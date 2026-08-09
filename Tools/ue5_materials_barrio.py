@@ -1,4 +1,4 @@
-"""
+r"""
 UE5 Material Setup - Creates all materials by barrio with real PBR textures
 Run inside UE5: exec(open(r"F:\...\Tools\ue5_materials_barrio.py").read())
 """

@@ -1,4 +1,4 @@
-"""
+r"""
 ImportAssets.bat - Batch script to import assets into UE5
 Run from: Tools/ImportAssets.bat
 Requires: UE5.7 with Python Script Plugin enabled
@@ -13,7 +13,7 @@ import unreal
 import os
 import glob
 
-ASSETS_ROOT = "F:/Epic Games/UE_5.7/altsasu_gtavii/UnrealProject/Content/AssetsImportados"
+ASSETS_ROOT = unreal.Paths.project_content_dir() + "AssetsImportados"
 
 def import_fbx(fbx_path, dest_path, name):
     """Import a single FBX file"""
