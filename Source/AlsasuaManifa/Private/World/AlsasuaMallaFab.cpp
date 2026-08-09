@@ -12,13 +12,15 @@ namespace
 	 * Las tres primeras son de Fab / launcher de Epic. AssetsImportados es lo
 	 * que ya estaba descargado en el proyecto (552 mallas de packs de Unity,
 	 * Meshy AI y modelos sueltos, según Datos/asset_manifest.json): estaba
-	 * importándose y casi nada lo cargaba.
+	 * importándose y casi nada lo cargaba. ModelosDescargados son props CC0 de
+	 * Poly Haven para los huecos que ninguna de las otras cubría.
 	 */
 	const TCHAR* RaicesFab[] = {
 		TEXT("/Game/Megascans"),
 		TEXT("/Game/MSPresets"),
 		TEXT("/Game/Fab"),
 		TEXT("/Game/AssetsImportados"),
+		TEXT("/Game/ModelosDescargados"),
 	};
 
 	/**
@@ -29,26 +31,36 @@ namespace
 	struct FClaves { const TCHAR* Tipo; const TCHAR* Claves; };
 
 	const FClaves ClavesPorTipo[] = {
-		{ TEXT("banco"),             TEXT("bench|park_bench|seat") },
-		{ TEXT("papelera"),          TEXT("trash|litter|waste|bin|garbage") },
-		{ TEXT("bollard"),           TEXT("bollard|post") },
-		{ TEXT("parada_bus"),        TEXT("bus_stop|busstop|shelter") },
-		{ TEXT("boca_incendio"),     TEXT("hydrant|fire_hydrant") },
-		{ TEXT("tapa_alcantarilla"), TEXT("manhole|drain|sewer") },
-		{ TEXT("maceta"),            TEXT("planter|flower_pot|flowerpot|pot") },
-		{ TEXT("buzon_correos"),     TEXT("mailbox|postbox|post_box") },
-		{ TEXT("fuente"),            TEXT("fountain|drinking_fountain") },
-		{ TEXT("farola_decorativa"), TEXT("street_lamp|streetlamp|lamp_post|lantern") },
-		{ TEXT("señal_stop"),        TEXT("stop_sign|road_sign|traffic_sign") },
-		{ TEXT("cuadro_electrico"),  TEXT("electrical_box|utility_box|cabinet") },
+		// Cada tipo lleva primero el nombre español o euskera, que es como está
+		// nombrado lo descargado en AssetsImportados (los 43 modelos de MeshyAI
+		// se generaron para este pueblo: Ayuntamiento_Altsasu,
+		// Iglesia_Jasokundeko, Fronton_Pelota...), y después el término inglés
+		// del catálogo de Fab/Megascans. Con sólo el inglés fallaban 21 de 29.
+		{ TEXT("banco"),             TEXT("banco_parque|banco|modular_street_seating|bench|park_bench") },
+		{ TEXT("papelera"),          TEXT("papelera|contenedor_reciclaje|metal_trash_can|trash|litter|waste|bin") },
+		{ TEXT("bollard"),           TEXT("bolardo|pilona|bollard") },
+		{ TEXT("parada_bus"),        TEXT("parada_autobus|parada_bus|bus_stop|busstop|shelter") },
+		{ TEXT("boca_incendio"),     TEXT("boca_incendio|hidrante|fire_hydrant|hydrant") },
+		{ TEXT("tapa_alcantarilla"), TEXT("tapa_alcantarilla|alcantarilla|water_manhole_cover|manhole|rejilla|drain|sewer") },
+		{ TEXT("maceta"),            TEXT("maceta|jardinera|seto_verde|planter|flower_pot") },
+		{ TEXT("buzon_correos"),     TEXT("buzon_correos|buzon|mailbox|postbox") },
+		{ TEXT("fuente"),            TEXT("fuente_agua|fuente_bebida|fuente|fountain") },
+		{ TEXT("farola_decorativa"), TEXT("farola_clasica|farola_moderna|farola|prop_lamp_street|street_lamp|streetlamp|lantern") },
+		{ TEXT("señal_stop"),        TEXT("stop_senal|senal_stop|stop_sign|road_sign") },
+		{ TEXT("señal_velocidad"),   TEXT("senal_calle|senal_velocidad|speed_sign|traffic_sign") },
+		{ TEXT("placa_calle"),       TEXT("placa_calle|senal_calle|street_plate|street_name") },
+		{ TEXT("cuadro_electrico"),  TEXT("cuadro_electrico|deposito_agua|electrical_box|utility_box|cabinet") },
+		{ TEXT("guarda_barandas"),   TEXT("barandilla_puente|barandilla|guardrail|railing") },
+		{ TEXT("semaforo"),          TEXT("semaforo_urbano|semaforo|traffic_light") },
 
-		// Landmarks de landmarks_real.json.
-		{ TEXT("iglesia"),           TEXT("church|chapel|cathedral") },
-		{ TEXT("fronton"),           TEXT("pelota|fronton|handball_court") },
-		{ TEXT("ayuntamiento"),      TEXT("town_hall|city_hall|townhall") },
-		{ TEXT("estacion_tren"),     TEXT("train_station|railway_station|station") },
-		{ TEXT("mercado"),           TEXT("market|market_hall") },
-		{ TEXT("polideportivo"),     TEXT("sports_hall|gymnasium|sports_center") },
+		// Landmarks de landmarks_real.json. Meshy generó los cuatro
+		// singulares del pueblo con su nombre propio.
+		{ TEXT("iglesia"),           TEXT("iglesia_jasokundeko|iglesia|eliza|church|chapel") },
+		{ TEXT("fronton"),           TEXT("fronton_pelota|fronton|pelota|handball_court") },
+		{ TEXT("ayuntamiento"),      TEXT("ayuntamiento_altsasu|ayuntamiento|udaletxea|town_hall|city_hall") },
+		{ TEXT("estacion_tren"),     TEXT("estacion_tren_altsasu|estacion_tren|estacion|train_station|railway_station") },
+		{ TEXT("mercado"),           TEXT("mercado|azoka|market_hall|market") },
+		{ TEXT("polideportivo"),     TEXT("nave_industrial|polideportivo|kiroldegia|sports_hall|gymnasium") },
 	};
 
 	/**
@@ -57,16 +69,17 @@ namespace
 	 * Naturaleza/ForestPack/PP_Birch_Tree_05, Cypress/cypress...
 	 */
 	const FClaves ClavesArbol[] = {
-		{ TEXT("QuercusRobur"), TEXT("arbol_roble|oak") },
-		{ TEXT("Fagus"),        TEXT("arbol_haya|beech") },
-		{ TEXT("Betula"),       TEXT("arbol_abedul|birch") },
-		{ TEXT("Pinus"),        TEXT("pine_tree|snow_pine|pino") },
-		{ TEXT("Populus"),      TEXT("aspen|poplar") },
-		{ TEXT("Salix"),        TEXT("willow|sauce") },
-		{ TEXT("Tilia"),        TEXT("linden|tilia") },
-		{ TEXT("Platanus"),     TEXT("plane_tree|platanus") },
-		{ TEXT("Acer"),         TEXT("maple|acer") },
-		{ TEXT("Prunus"),       TEXT("cherry|prunus") },
+		// arbol_* son los de MeshyAI; pp_*_tree los del pack de Naturaleza.
+		{ TEXT("QuercusRobur"), TEXT("arbol_roble|roble|oak") },
+		{ TEXT("Fagus"),        TEXT("arbol_haya|haya|beech") },
+		{ TEXT("Betula"),       TEXT("arbol_abedul|abedul|birch") },
+		{ TEXT("Pinus"),        TEXT("snow_pine|pine_tree|pino|cypress|cipres") },
+		{ TEXT("Populus"),      TEXT("chopo|alamo|aspen|poplar") },
+		{ TEXT("Salix"),        TEXT("sauce|willow") },
+		{ TEXT("Tilia"),        TEXT("tilo|tilia|linden|pp_tree|huge_tree") },
+		{ TEXT("Platanus"),     TEXT("platano|plane_tree|platanus") },
+		{ TEXT("Acer"),         TEXT("arce|maple|acer") },
+		{ TEXT("Prunus"),       TEXT("cerezo|cherry|prunus") },
 	};
 
 	/**
