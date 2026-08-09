@@ -33,7 +33,45 @@ namespace
 		{ TEXT("farola_decorativa"), TEXT("street_lamp|streetlamp|lamp_post|lantern") },
 		{ TEXT("señal_stop"),        TEXT("stop_sign|road_sign|traffic_sign") },
 		{ TEXT("cuadro_electrico"),  TEXT("electrical_box|utility_box|cabinet") },
+
+		// Landmarks de landmarks_real.json.
+		{ TEXT("iglesia"),           TEXT("church|chapel|cathedral") },
+		{ TEXT("fronton"),           TEXT("pelota|fronton|handball_court") },
+		{ TEXT("ayuntamiento"),      TEXT("town_hall|city_hall|townhall") },
+		{ TEXT("estacion_tren"),     TEXT("train_station|railway_station|station") },
+		{ TEXT("mercado"),           TEXT("market|market_hall") },
+		{ TEXT("polideportivo"),     TEXT("sports_hall|gymnasium|sports_center") },
 	};
+
+	/**
+	 * Arquetipo de landmark para cada tipo. Quince tipos comparten siete
+	 * mallas: una iglesia y una ikastola no pueden ser el mismo cubo, pero un
+	 * juzgado y una biblioteca sí comparten volumen.
+	 */
+	const TCHAR* ArquetipoLandmarkDe(const FString& Tipo)
+	{
+		if (Tipo == TEXT("iglesia"))          return TEXT("/Game/Landmarks/SM_Iglesia.SM_Iglesia");
+		if (Tipo == TEXT("fronton"))          return TEXT("/Game/Landmarks/SM_Fronton.SM_Fronton");
+		if (Tipo == TEXT("ayuntamiento"))     return TEXT("/Game/Landmarks/SM_Ayuntamiento.SM_Ayuntamiento");
+		if (Tipo == TEXT("estacion_tren"))    return TEXT("/Game/Landmarks/SM_Estacion.SM_Estacion");
+
+		// Naves diáfanas de cubierta ligera.
+		if (Tipo == TEXT("polideportivo") || Tipo == TEXT("mercado"))
+			return TEXT("/Game/Landmarks/SM_Nave.SM_Nave");
+
+		// Centros docentes y culturales: bloque en L de tres plantas.
+		if (Tipo == TEXT("ikastola") || Tipo == TEXT("colegio") ||
+		    Tipo == TEXT("escuela_publica") || Tipo == TEXT("casa_cultura") ||
+		    Tipo == TEXT("gaztetxe"))
+			return TEXT("/Game/Landmarks/SM_Escuela.SM_Escuela");
+
+		// Resto de equipamiento: juzgado, centro de salud, biblioteca.
+		if (Tipo == TEXT("juzgado") || Tipo == TEXT("centro_salud") || Tipo == TEXT("biblioteca"))
+			return TEXT("/Game/Landmarks/SM_BloqueCivico.SM_BloqueCivico");
+
+		// "parque" no es un edificio: no le corresponde malla.
+		return nullptr;
+	}
 
 	/** Nombre de la malla propia para ese tipo, o null si no hay. */
 	const TCHAR* MallaPropiaDe(const FString& Tipo)
@@ -46,7 +84,7 @@ namespace
 		if (Tipo == TEXT("tapa_alcantarilla")) return TEXT("/Game/Mobiliario/SM_TapaAlcantarilla.SM_TapaAlcantarilla");
 		if (Tipo == TEXT("buzon_correos"))     return TEXT("/Game/Mobiliario/SM_BuzonCorreos.SM_BuzonCorreos");
 		if (Tipo == TEXT("parada_bus"))        return TEXT("/Game/Mobiliario/SM_ParadaBus.SM_ParadaBus");
-		return nullptr;
+		return ArquetipoLandmarkDe(Tipo);
 	}
 
 	struct FResuelto
