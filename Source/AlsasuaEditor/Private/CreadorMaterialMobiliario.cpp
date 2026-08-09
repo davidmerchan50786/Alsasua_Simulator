@@ -1,4 +1,5 @@
 #include "CreadorMaterialMobiliario.h"
+#include "CreadorPBRComun.h"
 #include "AssetToolsModule.h"
 #include "IAssetTools.h"
 #include "Factories/MaterialFactoryNew.h"
@@ -31,26 +32,34 @@ bool UCreadorMaterialMobiliario::CrearMaterialMobiliario()
 	auto New   = [&](UClass* C, int32 y){ gy = y; return ML::CreateMaterialExpression(Mat, C, gx, y); };
 	auto Const = [&](float v, int32 y){ auto* c = Cast<UMaterialExpressionConstant>(New(UMaterialExpressionConstant::StaticClass(), y)); c->R = v; return (UMaterialExpression*)c; };
 
-	// Vertex color -> Base Color (so each box part gets its own color)
+	// El color por vértice distingue cada pieza (banco, papelera, bolardo) y
+	// hace de tinte sobre la veta de madera del set: T_Wood_* estaba descargado
+	// y sin usar, y el mobiliario salía en color liso sin grano ni relieve.
 	auto* VC = New(UMaterialExpressionVertexColor::StaticClass(), -100);
-	ML::ConnectMaterialProperty(VC, TEXT(""), MP_BaseColor);
 
-	// Wetness from MPC
-	UMaterialParameterCollection* MPC = LoadObject<UMaterialParameterCollection>(nullptr, TEXT("/Game/Materiales/MPC_Clima.MPC_Clima"));
-	UMaterialExpression* roughness = Const(0.65f, 100);
-	if (MPC)
+	AlsasuaPBR::FOpciones Op;
+	Op.Set = TEXT("Wood");
+	Op.TileCm = 60.f;
+	Op.RoughnessMojado = 0.2f;
+	Op.Tinte = VC;
+	if (!AlsasuaPBR::Cablear(Mat, Op))
 	{
-		auto* wet = Cast<UMaterialExpressionCollectionParameter>(New(UMaterialExpressionCollectionParameter::StaticClass(), 140));
-		wet->Collection = MPC; wet->ParameterName = TEXT("Wetness");
-		auto* lr = Cast<UMaterialExpressionLinearInterpolate>(New(UMaterialExpressionLinearInterpolate::StaticClass(), 180));
-		ML::ConnectMaterialExpressions(Const(0.65f, 160), TEXT(""), lr, TEXT("A"));
-		ML::ConnectMaterialExpressions(Const(0.15f, 200), TEXT(""), lr, TEXT("B"));
-		ML::ConnectMaterialExpressions(wet, TEXT(""), lr, TEXT("Alpha"));
-		roughness = lr;
-	}
-	ML::ConnectMaterialProperty(roughness, TEXT(""), MP_Roughness);
+		ML::ConnectMaterialProperty(VC, TEXT(""), MP_BaseColor);
 
-	// Metallic = 0 (non-metal for wood/stone; can be adjusted per-instance)
+		UMaterialExpression* roughness = Const(0.65f, 100);
+		if (UMaterialExpression* wet = AlsasuaPBR::Clima(Mat, TEXT("Wetness"), -700, 140))
+		{
+			auto* lr = Cast<UMaterialExpressionLinearInterpolate>(New(UMaterialExpressionLinearInterpolate::StaticClass(), 180));
+			ML::ConnectMaterialExpressions(Const(0.65f, 160), TEXT(""), lr, TEXT("A"));
+			ML::ConnectMaterialExpressions(Const(0.15f, 200), TEXT(""), lr, TEXT("B"));
+			ML::ConnectMaterialExpressions(wet, TEXT(""), lr, TEXT("Alpha"));
+			roughness = lr;
+		}
+		ML::ConnectMaterialProperty(roughness, TEXT(""), MP_Roughness);
+	}
+
+	// No metálico: la madera y la piedra manda. Las piezas de hierro llevan su
+	// propio material instanciado con T_MetalPlate_*.
 	ML::ConnectMaterialProperty(Const(0.f, 240), TEXT(""), MP_Metallic);
 
 	Mat->PostEditChange();
