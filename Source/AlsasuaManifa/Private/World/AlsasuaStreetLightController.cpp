@@ -16,6 +16,15 @@ void UAlsasuaStreetLightController::BeginPlay()
 {
 	Super::BeginPlay();
 	SetupLightComponents();
+
+	// Una sola tirada por farola. Antes se tiraba cada tick estando encendida:
+	// con BurnOutChance=0.001 a 0.15 s/tick el pueblo entero se quedaba a
+	// oscuras en unos minutos de juego.
+	bBurnedOut = FMath::FRand() < BurnOutChance;
+
+	// El parpadeo también se decide una vez: si cada farola puede parpadear en
+	// cualquier momento, todo el alumbrado estrobea a la vez.
+	bFlickers = bEnableFlicker && FMath::FRand() < FlickerFixtureChance;
 }
 
 void UAlsasuaStreetLightController::SetupLightComponents()
@@ -39,20 +48,9 @@ void UAlsasuaStreetLightController::SetupLightComponents()
 		}
 	}
 
-	if (bCastPuddleReflection && PointLight)
-	{
-		UPointLightComponent* PuddleLight = NewObject<UPointLightComponent>(Owner);
-		if (PuddleLight)
-		{
-			PuddleLight->SetupAttachment(Owner->GetRootComponent());
-			PuddleLight->SetRelativeLocation(FVector(0, 0, -50.f));
-			PuddleLight->SetIntensity(0.f);
-			PuddleLight->SetLightColor(WarmColor * 0.3f);
-			PuddleLight->SetAttenuationRadius(PuddleReflectionRadius);
-			PuddleLight->SetCastShadows(false);
-			PuddleLight->RegisterComponent();
-		}
-	}
+	// El "reflejo de charco" era una segunda luz por farola que nadie volvía a
+	// tocar: se quedaba a intensidad 0 para siempre y sólo costaba GPU. El
+	// reflejo real lo dan las reflexiones de Lumen sobre el asfalto mojado.
 }
 
 void UAlsasuaStreetLightController::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -60,7 +58,7 @@ void UAlsasuaStreetLightController::TickComponent(float DeltaTime, ELevelTick Ti
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	UpdateLightState(DeltaTime);
 
-	if (bEnableFlicker && bIsOn && !bBurnedOut)
+	if (bFlickers && bIsOn)
 	{
 		ApplyFlicker(DeltaTime);
 	}
@@ -104,26 +102,24 @@ void UAlsasuaStreetLightController::UpdateLightState(float DeltaTime)
 	{
 		PointLight->SetIntensity(CurrentIntensity);
 	}
-
-	if (bShouldBeOn && !bBurnedOut && FMath::FRand() < BurnOutChance)
-	{
-		bBurnedOut = true;
-		UE_LOG(LogTemp, Log, TEXT("StreetLight: Farola quemada en %s"),
-			*GetOwner()->GetName());
-	}
 }
 
 void UAlsasuaStreetLightController::ApplyFlicker(float DeltaTime)
 {
 	FlickerTimer += DeltaTime;
 
+	// Un parpadeo dura FlickerDuration y después la farola vuelve a su
+	// intensidad: antes se dejaba a medio gas hasta el tick siguiente.
+	if (FlickerTimer < FlickerDuration)
+	{
+		if (PointLight) PointLight->SetIntensity(CurrentIntensity * FlickerScale);
+		return;
+	}
+
 	if (FMath::FRand() < FlickerChance)
 	{
-		if (PointLight)
-		{
-			const float FlickerIntensity = CurrentIntensity * FMath::RandRange(0.3f, 0.9f);
-			PointLight->SetIntensity(FlickerIntensity);
-		}
+		FlickerScale = FMath::RandRange(0.3f, 0.9f);
 		FlickerTimer = 0.f;
+		if (PointLight) PointLight->SetIntensity(CurrentIntensity * FlickerScale);
 	}
 }

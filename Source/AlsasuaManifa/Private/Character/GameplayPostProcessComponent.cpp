@@ -93,8 +93,11 @@ void UGameplayPostProcessComponent::UpdateHealthVignette(float DeltaTime)
     const float FlashContribution = DamageFlashIntensity * 0.3f;
     const float FinalVignette = FMath::Clamp(VignetteTarget + FlashContribution, 0.f, 1.f);
 
+    // Sin base fija: este componente es el de gameplay (vida baja, impactos) y
+    // se mezcla encima del volumen. El 0.4 constante se sumaba a la viñeta del
+    // volumen incluso a vida llena y dejaba las esquinas casi negras siempre.
     PostProcessComponent->Settings.VignetteIntensity = FMath::FInterpTo(
-        PostProcessComponent->Settings.VignetteIntensity, 0.4f + FinalVignette, DeltaTime, 5.f);
+        PostProcessComponent->Settings.VignetteIntensity, FinalVignette, DeltaTime, 5.f);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -123,7 +126,9 @@ void UGameplayPostProcessComponent::UpdateDamageFlash(float DeltaTime)
     if (DamageFlashTimer <= 0.f)
     {
         DamageFlashIntensity = 0.f;
-        PostProcessComponent->Settings.AutoExposureBias = 1.f;
+        // 0, no 1: dejarlo a 1 metía +1 EV permanente tras el primer golpe y
+        // anulaba la compensación de exposición nocturna del volumen.
+        PostProcessComponent->Settings.AutoExposureBias = 0.f;
         PostProcessComponent->Settings.SceneFringeIntensity = 0.f;
     }
 }
@@ -167,10 +172,10 @@ void UGameplayPostProcessComponent::UpdateCrowdDust(float DeltaTime)
 
         if (PostProcessComponent)
         {
+            // Se asigna, no se acumula con Max: así el efecto se va con el
+            // temporizador en vez de quedarse pegado para el resto de partida.
             const float Alpha = FMath::Clamp(CrowdDustTimer / 3.0f, 0.f, 1.f);
-            // Aumentar grain/dirt y reducir contraste (polvo en cámara).
-            PostProcessComponent->Settings.SceneFringeIntensity =
-                FMath::Max(PostProcessComponent->Settings.SceneFringeIntensity, CrowdDustIntensity * Alpha * 2.f);
+            PostProcessComponent->Settings.SceneFringeIntensity = CrowdDustIntensity * Alpha * 2.f;
         }
     }
 }

@@ -2,13 +2,10 @@
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "Engine/StaticMeshActor.h"
-#include "Components/LightComponent.h"
-#include "Components/PointLightComponent.h"
-#include "Components/SpotLightComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Kismet/GameplayStatics.h"
-#include "GameFramework/GameStateBase.h"
+#include "World/Time/TimeOfDayManager.h"
 
 UAlsasuaNightLightingSystem::UAlsasuaNightLightingSystem()
 {
@@ -27,19 +24,17 @@ void UAlsasuaNightLightingSystem::CacheNightActors()
     UWorld* World = GetWorld();
     if (!World) return;
 
-    UGameplayStatics::GetAllActorsOfClass(World, AStaticMeshActor::StaticClass(), Farolas);
-    Farolas.RemoveAll([](AActor* A) {
-        return !A->GetName().Contains(TEXT("Farola"));
-    });
-
+    // Las farolas las lleva UAlsasuaStreetLightController, uno por farola: si
+    // este sistema también les escribía la intensidad, las dos escrituras se
+    // pisaban a 0.5 s y 0.15 s y todo el alumbrado latía.
     UGameplayStatics::GetAllActorsOfClass(World, AStaticMeshActor::StaticClass(), Edificios);
     Edificios.RemoveAll([](AActor* A) {
         const FString L = A->GetName();
         return !L.Contains(TEXT("Edificio")) && !L.Contains(TEXT("Building")) && !L.Contains(TEXT("Tienda_"));
     });
 
-    bFarolasCached = true;
-    UE_LOG(LogTemp, Log, TEXT("NightLighting: %d farolas, %d edificios"), Farolas.Num(), Edificios.Num());
+    bEdificiosCached = true;
+    UE_LOG(LogTemp, Log, TEXT("NightLighting: %d edificios con ventanas nocturnas"), Edificios.Num());
 }
 
 void UAlsasuaNightLightingSystem::UpdateNightFactor()
@@ -47,49 +42,28 @@ void UAlsasuaNightLightingSystem::UpdateNightFactor()
     UWorld* World = GetWorld();
     if (!World) return;
 
-    const float TotalSeconds = World->GetGameState()->GetServerWorldTimeSeconds();
-    CurrentHour = fmod(TotalSeconds / 3600.0f, 24.0f);
+    // Mismo reloj que el sol y que el alumbrado. Antes salía de
+    // GetServerWorldTimeSeconds(), un tiempo sin relación con la hora del
+    // mundo: las ventanas se encendían con el sol en lo alto.
+    const UTimeOfDayManager* TimeMgr = World->GetSubsystem<UTimeOfDayManager>();
+    if (!TimeMgr) return;
 
-    float NightStart = SunsetHour;
-    float NightEnd = SunriseHour + 24.0f;
-    if (CurrentHour >= NightStart && CurrentHour <= 24.0f)
+    CurrentHour = TimeMgr->CurrentTime;
+
+    // Rampa continua en el crepúsculo, envolviendo la medianoche.
+    const float HoursIntoNight = FMath::Fmod(CurrentHour - SunsetHour + 24.f, 24.f);
+    const float NightLength = FMath::Fmod(SunriseHour - SunsetHour + 24.f, 24.f);
+    const float FadeSpan = FMath::Max(TransitionDuration, 0.01f);
+
+    if (HoursIntoNight > NightLength)
     {
-        NightFactor = FMath::Clamp((CurrentHour - NightStart) / TransitionDuration, 0.0f, 1.0f);
-    }
-    else if (CurrentHour >= 0.0f && CurrentHour <= NightEnd - 24.0f)
-    {
-        float EndHour = NightEnd - 24.0f;
-        NightFactor = FMath::Clamp(1.0f - (CurrentHour / (SunriseHour + TransitionDuration)), 0.0f, 1.0f);
+        NightFactor = 0.f;   // es de día
     }
     else
     {
-        NightFactor = 0.0f;
-    }
-}
-
-void UAlsasuaNightLightingSystem::UpdateFarolas()
-{
-    for (AActor* Farola : Farolas)
-    {
-        if (!Farola) continue;
-
-        TArray<UPointLightComponent*> PointLights;
-        Farola->GetComponents<UPointLightComponent>(PointLights);
-        for (UPointLightComponent* Light : PointLights)
-        {
-            Light->SetIntensity(NightFactor * FarolaIntensity);
-            Light->SetLightColor(FarolaColor);
-            Light->SetVisibility(NightFactor > 0.1f);
-        }
-
-        TArray<USpotLightComponent*> SpotLights;
-        Farola->GetComponents<USpotLightComponent>(SpotLights);
-        for (USpotLightComponent* Light : SpotLights)
-        {
-            Light->SetIntensity(NightFactor * FarolaIntensity);
-            Light->SetLightColor(FarolaColor);
-            Light->SetVisibility(NightFactor > 0.1f);
-        }
+        const float FadeIn = FMath::Clamp(HoursIntoNight / FadeSpan, 0.f, 1.f);
+        const float FadeOut = FMath::Clamp((NightLength - HoursIntoNight) / FadeSpan, 0.f, 1.f);
+        NightFactor = FMath::Min(FadeIn, FadeOut);
     }
 }
 
@@ -98,6 +72,12 @@ void UAlsasuaNightLightingSystem::UpdateEdificios()
     for (AActor* Edificio : Edificios)
     {
         if (!Edificio) continue;
+
+        // Un brillo fijo por edificio en vez de FRandRange en cada tick: cada
+        // medio segundo las ventanas de todo el pueblo cambiaban de intensidad.
+        const uint32 Seed = GetTypeHash(Edificio->GetFName());
+        const float Bias = (float)(Seed & 0xFFFF) / 65535.f;
+        const bool bIsComercio = Edificio->GetName().Contains(TEXT("Tienda"));
 
         TArray<UStaticMeshComponent*> Meshes;
         Edificio->GetComponents<UStaticMeshComponent>(Meshes);
@@ -110,20 +90,19 @@ void UAlsasuaNightLightingSystem::UpdateEdificios()
             if (!DynMat)
             {
                 DynMat = UMaterialInstanceDynamic::Create(Mat, this);
-                if (DynMat) Mesh->SetMaterial(0, DynMat);
+                if (!DynMat) continue;
+                Mesh->SetMaterial(0, DynMat);
             }
 
-            if (DynMat)
+            if (bIsComercio)
             {
-                float EmissivePower = NightFactor * FMath::FRandRange(WindowEmissiveMin, WindowEmissiveMax);
-                DynMat->SetScalarParameterValue(TEXT("EmissivePower"), EmissivePower);
-
-                bool bIsComercio = Edificio->GetName().Contains(TEXT("Tienda"));
-                if (bIsComercio)
-                {
-                    DynMat->SetVectorParameterValue(TEXT("EmissiveColor"), NeonColorComercio);
-                    DynMat->SetScalarParameterValue(TEXT("EmissivePower"), NightFactor * 3.0f);
-                }
+                DynMat->SetVectorParameterValue(TEXT("EmissiveColor"), NeonColorComercio);
+                DynMat->SetScalarParameterValue(TEXT("EmissivePower"), NightFactor * 3.0f);
+            }
+            else
+            {
+                DynMat->SetScalarParameterValue(TEXT("EmissivePower"),
+                    NightFactor * FMath::Lerp(WindowEmissiveMin, WindowEmissiveMax, Bias));
             }
         }
     }
@@ -133,9 +112,8 @@ void UAlsasuaNightLightingSystem::TickComponent(float DeltaTime, ELevelTick Tick
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-    if (!bFarolasCached) CacheNightActors();
+    if (!bEdificiosCached) CacheNightActors();
 
     UpdateNightFactor();
-    UpdateFarolas();
     UpdateEdificios();
 }

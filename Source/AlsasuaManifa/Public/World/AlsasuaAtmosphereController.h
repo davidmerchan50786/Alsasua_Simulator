@@ -38,8 +38,47 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Alsasua|Atmosphere")
 	void SetTimeOfDay(float Hour);
 
+	/** Elevación solar real en grados (negativa de noche). */
+	UFUNCTION(BlueprintPure, Category = "Alsasua|Atmosphere")
+	float GetSunElevationDeg() const { return CurrentSunElevation; }
+
+	/** Azimut solar en grados desde el norte, sentido horario. */
+	UFUNCTION(BlueprintPure, Category = "Alsasua|Atmosphere")
+	float GetSunAzimuthDeg() const { return CurrentSunAzimuth; }
+
+	/** 0 = sol bajo el horizonte, 1 = sol en el cénit. */
+	UFUNCTION(BlueprintPure, Category = "Alsasua|Atmosphere")
+	float GetDaylightFactor() const { return CurrentDaylight; }
+
 	UPROPERTY(BlueprintAssignable, Category = "Alsasua|Atmosphere")
 	FOnTimeOfDayVisualChanged OnTimeOfDayVisualChanged;
+
+	// ── Emplazamiento: Alsasua / Altsasu (Navarra) ─────────────────────────
+	// La posición del sol se calcula de verdad a partir de estos datos, así que
+	// la altura de mediodía, el azimut de salida/puesta y la duración del día
+	// son los del pueblo real y no una curva inventada.
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Geo")
+	float Latitude = 42.8956f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Geo")
+	float Longitude = -2.1697f;
+
+	/** Huso horario en horas (CET = 1, CEST = 2). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Geo")
+	float TimeZoneHours = 2.f;
+
+	/** Día del año (1-366). 172 = solsticio de verano. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Geo", meta = (ClampMin = "1", ClampMax = "366"))
+	int32 DayOfYear = 172;
+
+	/**
+	 * Segundos entre actualizaciones. Mover el sol invalida la caché de draw
+	 * commands del pueblo entero: hacerlo cada frame cuesta más que el resto
+	 * del ciclo día/noche junto.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere", meta = (ClampMin = "0.0"))
+	float UpdateInterval = 0.1f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Sun")
 	FLinearColor DawnSunColor = FLinearColor(1.0f, 0.6f, 0.3f);
@@ -58,6 +97,21 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Sun")
 	float NightIntensity = 0.1f;
+
+	/** Distancia (cm) de sombras dinámicas nítidas. 300 m cubre el casco urbano. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Sun")
+	float ShadowDistance = 30000.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Sun", meta = (ClampMin = "1", ClampMax = "6"))
+	int32 ShadowCascades = 4;
+
+	/** Contact shadows: asientan bordillos y mobiliario que las cascadas no ven. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Sun")
+	float ContactShadowLength = 0.02f;
+
+	/** Intensidad del sol dentro de la niebla volumétrica (rayos de luz). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Sun")
+	float SunVolumetricScattering = 1.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Fog")
 	float BaseFogDensity = 0.005f;
@@ -79,6 +133,13 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Fog")
 	float FogHeightFalloff = 0.2f;
+
+	/** Anisotropía de la niebla volumétrica: >0 dispersa hacia delante (halo solar). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Fog", meta = (ClampMin = "-0.9", ClampMax = "0.9"))
+	float VolumetricFogScattering = 0.3f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Fog")
+	float VolumetricFogDistance = 25000.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Clouds")
 	float CloudSpeed = 30.f;
@@ -109,12 +170,24 @@ public:
 
 private:
 	void FindOrCreateAtmosphereActors();
-	void UpdateSunVisuals(float Hour);
-	void UpdateFogVisuals(float Hour);
-	void UpdateSkyVisuals(float Hour);
-	void UpdateCloudVisuals(float Hour);
-	void UpdateMoonVisuals(float Hour);
-	float GetSunElevation(float Hour) const;
+	void ApplyLightSetup();
+	void UpdateAtmosphere(float Hour, float DeltaTime);
+	void UpdateSunVisuals(float Hour, float DeltaTime);
+	void UpdateFogVisuals(float DeltaTime);
+	void UpdateSkyVisuals(float DeltaTime);
+	void UpdateCloudVisuals();
+
+	/**
+	 * Posición del sol (o del punto antisolar, donde va la luna llena) para la
+	 * hora dada. NOAA simplificado: declinación de Cooper + ecuación del tiempo.
+	 */
+	void ComputeCelestialPosition(float Hour, bool bAntiSolar, float& OutElevationDeg, float& OutAzimuthDeg) const;
+
+	/** Fracción iluminada de la luna (0 = nueva, 1 = llena). */
+	float ComputeMoonPhase() const;
+
+	/** Atenuación del sol y del cielo por nubosidad según el clima activo. */
+	float GetCloudAttenuation() const;
 
 	UPROPERTY()
 	TObjectPtr<ADirectionalLight> SunLight;
@@ -128,10 +201,15 @@ private:
 	UPROPERTY()
 	TObjectPtr<AExponentialHeightFog> HeightFog;
 
+	float TimeToUpdate = 0.f;
+
 	FLinearColor CurrentSunColor = FLinearColor::White;
 	FLinearColor CurrentFogColor = FLinearColor(0.7f, 0.75f, 0.85f);
 	float CurrentFogDensity = 0.005f;
 	float CurrentCloudDensity = 0.5f;
 	float CurrentSkyIntensity = 1.f;
 	float CurrentSunIntensity = 10.f;
+	float CurrentSunElevation = 45.f;
+	float CurrentSunAzimuth = 180.f;
+	float CurrentDaylight = 1.f;
 };

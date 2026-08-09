@@ -1,10 +1,8 @@
 #include "World/AlsasuaEnhancedPostProcessComponent.h"
 #include "World/Time/TimeOfDayManager.h"
-#include "World/AlsasuaVisualEffectsManager.h"
+#include "World/AlsasuaAtmosphereController.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
-#include "Camera/CameraComponent.h"
-#include "GameFramework/Character.h"
 #include "Engine/PostProcessVolume.h"
 
 UAlsasuaEnhancedPostProcessComponent::UAlsasuaEnhancedPostProcessComponent()
@@ -29,26 +27,23 @@ void UAlsasuaEnhancedPostProcessComponent::UpdatePostProcess(float DeltaTime)
 	UWorld* W = GetWorld();
 	if (!W) return;
 
+	UAlsasuaAtmosphereController* Atmos = W->GetSubsystem<UAlsasuaAtmosphereController>();
 	UTimeOfDayManager* TimeMgr = W->GetSubsystem<UTimeOfDayManager>();
-	UAlsasuaVisualEffectsManager* VFXMgr = W->GetSubsystem<UAlsasuaVisualEffectsManager>();
 
-	const float Hour = TimeMgr ? TimeMgr->CurrentTime : 12.f;
-	const float Rain = VFXMgr ? VFXMgr->GlobalWetness : 0.f;
-
-	// Day/night blend factor: 0=full night, 1=full day
-	float DayFactor = 1.f;
-	if (Hour >= 6.f && Hour <= 20.f)
+	// La mezcla día/noche sale de la elevación real del sol, no de tramos de
+	// hora: así el grading cambia cuando cambia la luz, no a las 20:00 en punto.
+	float DayFactor;
+	if (Atmos)
 	{
-		const float MidDay = 13.f;
-		DayFactor = 1.f - FMath::Clamp(FMath::Abs(Hour - MidDay) / 7.f, 0.f, 1.f) * 0.3f;
+		DayFactor = FMath::Clamp(Atmos->GetSunElevationDeg() / 10.f, 0.f, 1.f);
 	}
 	else
 	{
-		DayFactor = 0.f;
+		const float Hour = TimeMgr ? TimeMgr->CurrentTime : 12.f;
+		DayFactor = (Hour >= 7.f && Hour <= 20.f) ? 1.f : 0.f;
 	}
 
-	CurrentTemperature = FMath::FInterpTo(CurrentTemperature,
-		FMath::Lerp(NightTemperature, DayTemperature, DayFactor), DeltaTime, 2.f);
+	CurrentTint = FLinearColor::LerpUsingHSV(NightColorTint, DayColorTint, DayFactor);
 
 	CurrentSaturation = FMath::FInterpTo(CurrentSaturation,
 		FMath::Lerp(NightSaturation, DaySaturation, DayFactor), DeltaTime, 2.f);
@@ -59,17 +54,11 @@ void UAlsasuaEnhancedPostProcessComponent::UpdatePostProcess(float DeltaTime)
 	CurrentVignette = FMath::FInterpTo(CurrentVignette,
 		FMath::Lerp(NightVignetteIntensity, DayVignetteIntensity, DayFactor), DeltaTime, 2.f);
 
-	CurrentGrain = FMath::FInterpTo(CurrentGrain,
-		FMath::Lerp(DayGrainIntensity, RainGrainIntensity, Rain), DeltaTime, 2.f);
-
 	CurrentBloom = FMath::FInterpTo(CurrentBloom,
 		FMath::Lerp(NightBloomIntensity, DayBloomIntensity, DayFactor), DeltaTime, 2.f);
 
-	APlayerController* PC = UGameplayStatics::GetPlayerController(W, 0);
-	if (!PC) return;
-
-	APawn* Pawn = PC->GetPawn();
-	if (!Pawn) return;
+	CurrentExposureBias = FMath::FInterpTo(CurrentExposureBias,
+		FMath::Lerp(NightExposureBias, DayExposureBias, DayFactor), DeltaTime, 1.f);
 
 	TArray<AActor*> PPVolumes;
 	UGameplayStatics::GetAllActorsOfClass(W, APostProcessVolume::StaticClass(), PPVolumes);
@@ -77,7 +66,7 @@ void UAlsasuaEnhancedPostProcessComponent::UpdatePostProcess(float DeltaTime)
 	for (AActor* VolActor : PPVolumes)
 	{
 		APostProcessVolume* PPV = Cast<APostProcessVolume>(VolActor);
-		if (!PPV || !PPV->Settings.bOverride_AutoExposureMinBrightness) continue;
+		if (!PPV) continue;
 
 		FPostProcessSettings& S = PPV->Settings;
 
@@ -95,14 +84,12 @@ void UAlsasuaEnhancedPostProcessComponent::UpdatePostProcess(float DeltaTime)
 		S.VignetteIntensity = CurrentVignette;
 
 		S.bOverride_SceneColorTint = true;
-		const float TempNorm = (CurrentTemperature - 3000.f) / 10000.f;
-		S.SceneColorTint = FLinearColor(
-			1.f + (TempNorm - 0.5f) * 0.1f,
-			1.f,
-			1.f - (TempNorm - 0.5f) * 0.15f
-		);
+		S.SceneColorTint = CurrentTint;
 
 		S.bOverride_SceneFringeIntensity = true;
 		S.SceneFringeIntensity = CurrentChromatic;
+
+		S.bOverride_AutoExposureBias = true;
+		S.AutoExposureBias = CurrentExposureBias;
 	}
 }
