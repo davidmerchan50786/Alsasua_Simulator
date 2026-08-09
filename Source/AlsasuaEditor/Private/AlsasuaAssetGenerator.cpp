@@ -28,6 +28,7 @@
 #include "AlsasuaFoliageLoader.h"
 #include "CreadorMallaMobiliario.h"
 #include "CreadorMallaLandmark.h"
+#include "CreadorMallaArbol.h"
 #include "AssetToolsModule.h"
 #include "IAssetTools.h"
 #include "AssetImportTask.h"
@@ -173,13 +174,11 @@ bool UAlsasuaAssetGenerator::ScanFoliage()
 	return UAlsasuaFoliageLoader::ScanAndRegisterFoliage();
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  Árboles: mejor de Fab que procedurales, así que sigue sin implementar.
-// ─────────────────────────────────────────────────────────────────────────────
 bool UAlsasuaAssetGenerator::GenerarMeshesArboles()
 {
-	UE_LOG(LogTemp, Warning, TEXT("[Assets] Árboles procedurales: sin implementar (necesita FStaticMeshAttributes). Usa el paso de Fab."));
-	return false;
+	// Diez especies para el censo de trees_unity.json. Si luego se bajan
+	// árboles de Fab, el paso de foliage los detecta y son mejores que estos.
+	return UCreadorMallaArbol::GenerarTodas() > 0;
 }
 
 bool UAlsasuaAssetGenerator::GenerarMobiliarioUrbano()
@@ -214,6 +213,7 @@ bool UAlsasuaAssetGenerator::GenerarTodosLosAssets()
 	const bool bPBR = CrearMaterialesPBR();
 
 	// 4. Geometría, que asigna esos materiales.
+	const bool bArboles = GenerarMeshesArboles();
 	const bool bMobiliario = GenerarMobiliarioUrbano();
 	const bool bLandmarks = GenerarLandmarks();
 	const bool bRios = GenerarRios();
@@ -225,12 +225,13 @@ bool UAlsasuaAssetGenerator::GenerarTodosLosAssets()
 	UE_LOG(LogTemp, Log, TEXT("[Assets] ---------------- Resumen ----------------"));
 	UE_LOG(LogTemp, Log, TEXT("[Assets]  Materiales base : %s"), bBase    ? TEXT("OK") : TEXT("con fallos"));
 	UE_LOG(LogTemp, Log, TEXT("[Assets]  Superficies PBR : %s"), bPBR     ? TEXT("OK") : TEXT("con fallos"));
+	UE_LOG(LogTemp, Log, TEXT("[Assets]  Árboles         : %s"), bArboles ? TEXT("OK") : TEXT("con fallos"));
 	UE_LOG(LogTemp, Log, TEXT("[Assets]  Mobiliario      : %s"), bMobiliario ? TEXT("OK") : TEXT("con fallos"));
 	UE_LOG(LogTemp, Log, TEXT("[Assets]  Landmarks       : %s"), bLandmarks ? TEXT("OK") : TEXT("con fallos"));
 	UE_LOG(LogTemp, Log, TEXT("[Assets]  Ríos            : %s"), bRios    ? TEXT("OK") : TEXT("con fallos"));
 	UE_LOG(LogTemp, Log, TEXT("[Assets]  Puentes         : %s"), bPuentes ? TEXT("OK") : TEXT("con fallos"));
 	UE_LOG(LogTemp, Log, TEXT("[Assets]  Foliage de Fab  : %s"), bFoliage ? TEXT("OK") : TEXT("nada bajado"));
-	UE_LOG(LogTemp, Log, TEXT("[Assets] Pendiente: árboles procedurales (mejor bajarlos de Fab)."));
+	UE_LOG(LogTemp, Log, TEXT("[Assets] Los árboles de Fab, si se bajan, sustituyen a los procedurales."));
 	UE_LOG(LogTemp, Log, TEXT("[Assets] ====================================================="));
 
 	// Materiales y superficies son lo imprescindible para que el pueblo no
