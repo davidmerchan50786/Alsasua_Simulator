@@ -119,6 +119,21 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 	const float StepSize = 150.f; // sample every 1.5m
 	FRandomStream Rng(42);
 
+	// Geometría helper: quad doble cara (visible desde ambos lados sin material two-sided).
+	// Añade 4 verts + 4 triángulos (2 caras × 2 triángulos).
+	auto AddQuad = [&](FVector BL, FVector BR, FVector TL, FVector TR,
+	                   FVector Nrm, FColor Color)
+	{
+		const int32 B = V.Num();
+		V.Append({BL, BR, TR, TL});
+		N.Append({Nrm, Nrm, Nrm, Nrm});
+		UV.Append({FVector2D(0,1), FVector2D(1,1), FVector2D(1,0), FVector2D(0,0)});
+		C.Append({Color, Color, Color, Color});
+		T.Append({B, B+2, B+1,  B, B+3, B+2});    // cara frontal
+		T.Append({B, B+1, B+2,  B, B+2, B+3});    // cara trasera
+		Tan.AddZeroed(4);
+	};
+
 	for (float X = MinX; X <= MaxX && HierbaCount < MaxHierba; X += StepSize)
 	{
 		for (float Y = MinY; Y <= MaxY && HierbaCount < MaxHierba; Y += StepSize)
@@ -138,54 +153,55 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 			}
 			if (!bInside) continue;
 
-			float Rand = Rng.FRand();
+			const float Rand = Rng.FRand();
 
 			if (Rand < DensidadHierba * 0.8f && HierbaCount < MaxHierba)
 			{
-				// Grass blade (small triangle)
-				float Scale = Rng.FRandRange(20.f, 50.f);
-				int32 BV = V.Num();
-				FVector Base(TestPt.X, TestPt.Y, 0);
-				V.Append({
-					Base + FVector(-Scale * 0.3f, 0, 0),
-					Base + FVector(Scale * 0.3f, 0, 0),
-					Base + FVector(0, Rng.FRandRange(-Scale * 0.2f, Scale * 0.2f), Scale)
-				});
-				N.Append({FVector(0, -1, 0.3f).GetSafeNormal(), FVector(0, 1, 0.3f).GetSafeNormal(), FVector(0, 0, 1)});
-				UV.Append({FVector2D(0, 0), FVector2D(1, 0), FVector2D(0.5f, 1)});
+				// Hierba: 2 quads perpendiculares en X (billboard cruzado).
+				const float H    = Rng.FRandRange(30.f, 75.f);    // altura (cm)
+				const float W    = H * 0.55f;                     // semi-ancho
+				const float Yaw  = Rng.FRandRange(0.f, 360.f);   // rotación aleatoria
+				const float CR   = FMath::DegreesToRadians(Yaw);
+				const FVector XD(FMath::Cos(CR), FMath::Sin(CR), 0.f);
+				const FVector YD(-XD.Y, XD.X, 0.f);
+				const FVector Base(TestPt.X, TestPt.Y, 0.f);
+				const FVector Top(0.f, 0.f, H);
 
-				// Green variation
-				uint8 Green = (uint8)Rng.RandRange(80, 140);
-				C.Append({FColor(30, Green, 25), FColor(30, Green, 25), FColor(35, Green + 10, 30)});
-				T.Append({BV, BV + 1, BV + 2});
+				// Color verde con variación natural
+				const uint8 G = (uint8)Rng.RandRange(82, 145);
+				const FColor GrassColor(22 + Rng.RandRange(0,15), G, 18 + Rng.RandRange(0,12));
+
+				// Quad 1 — alineado a XD
+				AddQuad(Base - XD*W, Base + XD*W,
+				        Base - XD*W + Top, Base + XD*W + Top,
+				        YD, GrassColor);
+				// Quad 2 — alineado a YD (perpendicular)
+				AddQuad(Base - YD*W, Base + YD*W,
+				        Base - YD*W + Top, Base + YD*W + Top,
+				        XD, GrassColor);
 				++HierbaCount;
 			}
 			else if (Rand < DensidadHierba * 0.8f + DensidadArbusto && ArbustoCount < MaxArbustos)
 			{
-				// Bush (small pyramid shape)
-				float Scale = Rng.FRandRange(30.f, 80.f);
-				int32 BV = V.Num();
-				FVector Base(TestPt.X, TestPt.Y, 0);
-				V.Append({
-					Base + FVector(-Scale * 0.5f, -Scale * 0.5f, 0),
-					Base + FVector(Scale * 0.5f, -Scale * 0.5f, 0),
-					Base + FVector(Scale * 0.5f, Scale * 0.5f, 0),
-					Base + FVector(-Scale * 0.5f, Scale * 0.5f, 0),
-					Base + FVector(0, 0, Scale)
-				});
-				N.Append({FVector(0, -1, 0), FVector(1, 0, 0), FVector(0, 1, 0), FVector(-1, 0, 0), FVector(0, 0, 1)});
-				for (int32 k = 0; k < 5; ++k) UV.Add(FVector2D(0, 0));
-				uint8 Green = (uint8)Rng.RandRange(60, 110);
-				FColor BushColor(25, Green, 20);
-				for (int32 k = 0; k < 5; ++k) C.Add(BushColor);
+				// Arbusto: 3 quads cruzados a 60° — aproxima una esfera de follaje.
+				const float H    = Rng.FRandRange(45.f, 110.f);  // altura (cm)
+				const float W    = H * 0.75f;                    // semi-ancho
+				const float Yaw  = Rng.FRandRange(0.f, 360.f);
+				const FVector Base(TestPt.X, TestPt.Y, 0.f);
+				const FVector Top(0.f, 0.f, H);
 
-				T.Append({BV, BV + 1, BV + 4});
-				T.Append({BV + 1, BV + 2, BV + 4});
-				T.Append({BV + 2, BV + 3, BV + 4});
-				T.Append({BV + 3, BV, BV + 4});
-				// Bottom face
-				T.Append({BV, BV + 2, BV + 1});
-				T.Append({BV, BV + 3, BV + 2});
+				const uint8 G = (uint8)Rng.RandRange(60, 115);
+				const FColor BushColor(20 + Rng.RandRange(0,12), G, 16 + Rng.RandRange(0,10));
+
+				for (int32 Qi = 0; Qi < 3; ++Qi)
+				{
+					const float A  = FMath::DegreesToRadians(Yaw + Qi * 60.f);
+					const FVector D(FMath::Cos(A), FMath::Sin(A), 0.f);
+					const FVector Perp(-D.Y, D.X, 0.f);
+					AddQuad(Base - D*W, Base + D*W,
+					        Base - D*W + Top, Base + D*W + Top,
+					        Perp, BushColor);
+				}
 				++ArbustoCount;
 			}
 		}
