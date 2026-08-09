@@ -47,7 +47,7 @@ public:
 private:
     bool bUsandoDatosReales = false;
     TArray<FDetailItem> Detalles;
-    TArray<AStaticMeshActor*> MueblesReales;
+    TArray<AActor*> MueblesReales;
 
     void CargarMueblesReales(UWorld* World);
     void ColocarMacetas(UWorld* World);
@@ -55,6 +55,6 @@ private:
     void ColocarPapeleiras(UWorld* World);
     void ColocarBancos(UWorld* World);
     void ColocarVallasVerdes(UWorld* World);
-    AStaticMeshActor* CrearActor(UWorld* World, const FVector& Pos, float Rot, float Scale,
+    AActor* CrearActor(UWorld* World, const FVector& Pos, float Rot, float Scale,
         const TCHAR* MeshPath, const TCHAR* MatPath, const FString& Label);
 };

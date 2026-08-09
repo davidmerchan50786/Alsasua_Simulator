@@ -14,4 +14,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, CallInEditor, Category="Alsasua|Materiales")
 	static bool CrearMaterialAcera();
+
+	UFUNCTION(BlueprintCallable, CallInEditor, Category="Alsasua|Materiales")
+	static bool CrearMaterialMarcaBlanca();
 };

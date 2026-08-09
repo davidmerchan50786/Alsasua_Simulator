@@ -29,12 +29,12 @@ void UAlsasuaNightLightingSystem::CacheNightActors()
 
     UGameplayStatics::GetAllActorsOfClass(World, AStaticMeshActor::StaticClass(), Farolas);
     Farolas.RemoveAll([](AActor* A) {
-        return !A->GetActorLabel().Contains(TEXT("Farola"));
+        return !A->GetName().Contains(TEXT("Farola"));
     });
 
     UGameplayStatics::GetAllActorsOfClass(World, AStaticMeshActor::StaticClass(), Edificios);
     Edificios.RemoveAll([](AActor* A) {
-        const FString L = A->GetActorLabel();
+        const FString L = A->GetName();
         return !L.Contains(TEXT("Edificio")) && !L.Contains(TEXT("Building")) && !L.Contains(TEXT("Tienda_"));
     });
 
@@ -118,7 +118,7 @@ void UAlsasuaNightLightingSystem::UpdateEdificios()
                 float EmissivePower = NightFactor * FMath::FRandRange(WindowEmissiveMin, WindowEmissiveMax);
                 DynMat->SetScalarParameterValue(TEXT("EmissivePower"), EmissivePower);
 
-                bool bIsComercio = Edificio->GetActorLabel().Contains(TEXT("Tienda"));
+                bool bIsComercio = Edificio->GetName().Contains(TEXT("Tienda"));
                 if (bIsComercio)
                 {
                     DynMat->SetVectorParameterValue(TEXT("EmissiveColor"), NeonColorComercio);

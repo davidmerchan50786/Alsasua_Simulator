@@ -20,7 +20,7 @@ void UAlsasuaBarrioStyleSystem::ApplyBarrioStyles()
 	if (!Owner) return;
 
 	// Detectar barrio por nombre del actor
-	const FString Label = Owner->GetActorLabel().ToLower();
+	const FString Label = Owner->GetName().ToLower();
 
 	FLinearColor FachadaColor = FLinearColor(0.75f, 0.72f, 0.65f); // Default: piedra
 	FLinearColor TejadoColor = FLinearColor(0.7f, 0.35f, 0.15f);   // Default: terracota

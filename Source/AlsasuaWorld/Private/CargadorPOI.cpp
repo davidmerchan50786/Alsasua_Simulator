@@ -58,10 +58,10 @@ int32 UCargadorPOI::Cargar()
 		Data.Faccion = O->HasField(TEXT("faccion")) ? O->GetStringField(TEXT("faccion")) : FString();
 		Data.Dialogo = O->HasField(TEXT("dialogo")) ? O->GetStringField(TEXT("dialogo")) : FString();
 
-		// Coordenadas locales relativas a Herriko Plaza (x,z en metros) → mundo UE5.
+		// poi_data.json es ABSOLUTO en mundo Unity (x,z en metros) → mundo UE5.
 		if (O->HasField(TEXT("x")) && O->HasField(TEXT("z")))
 		{
-			Data.PosicionMundo = UAlsasuaGeoData::RelLocalToUE5(
+			Data.PosicionMundo = UAlsasuaGeoData::UnityaUnreal(
 				FVector(O->GetNumberField(TEXT("x")), 0.0, O->GetNumberField(TEXT("z"))));
 		}
 		else

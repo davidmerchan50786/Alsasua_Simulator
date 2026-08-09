@@ -37,7 +37,7 @@ void UAlsasuaAtmosphereController::FindOrCreateAtmosphereActors()
 		SunLight = W->SpawnActor<ADirectionalLight>(ADirectionalLight::StaticClass(), FVector::ZeroVector, FRotator(-60, 0, 0), Params);
 		if (SunLight)
 		{
-			SunLight->SetActorLabel(TEXT("Atmosphere_Sun"));
+			SunLight->Rename(TEXT("Atmosphere_Sun"));
 			UDirectionalLightComponent* DirComp = Cast<UDirectionalLightComponent>(SunLight->GetLightComponent());
 			if (DirComp)
 			{
@@ -46,6 +46,12 @@ void UAlsasuaAtmosphereController::FindOrCreateAtmosphereActors()
 				DirComp->SetCastShadows(true);
 			}
 		}
+	}
+
+	if (SunLight)
+	{
+		if (USceneComponent* Root = SunLight->GetRootComponent()) Root->SetMobility(EComponentMobility::Movable);
+		if (UDirectionalLightComponent* DirComp = Cast<UDirectionalLightComponent>(SunLight->GetLightComponent())) DirComp->SetCastShadows(true);
 	}
 
 	for (TActorIterator<ASkyAtmosphere> It(W); It; ++It)
@@ -57,7 +63,7 @@ void UAlsasuaAtmosphereController::FindOrCreateAtmosphereActors()
 	{
 		FActorSpawnParameters Params;
 		SkyAtmosphere = W->SpawnActor<ASkyAtmosphere>(ASkyAtmosphere::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
-		if (SkyAtmosphere) SkyAtmosphere->SetActorLabel(TEXT("Atmosphere_SkyAtmosphere"));
+		if (SkyAtmosphere) SkyAtmosphere->Rename(TEXT("Atmosphere_SkyAtmosphere"));
 	}
 
 	for (TActorIterator<ASkyLight> It(W); It; ++It)
@@ -71,7 +77,7 @@ void UAlsasuaAtmosphereController::FindOrCreateAtmosphereActors()
 		SkyLight = W->SpawnActor<ASkyLight>(ASkyLight::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
 		if (SkyLight)
 		{
-			SkyLight->SetActorLabel(TEXT("Atmosphere_SkyLight"));
+			SkyLight->Rename(TEXT("Atmosphere_SkyLight"));
 			USkyLightComponent* SLComp = SkyLight->GetLightComponent();
 			if (SLComp)
 			{
@@ -79,6 +85,11 @@ void UAlsasuaAtmosphereController::FindOrCreateAtmosphereActors()
 				SLComp->bRealTimeCapture = true;
 			}
 		}
+	}
+
+	if (SkyLight)
+	{
+		if (USkyLightComponent* SLComp = SkyLight->GetLightComponent()) SLComp->bRealTimeCapture = true;
 	}
 
 	for (TActorIterator<AExponentialHeightFog> It(W); It; ++It)
@@ -92,7 +103,7 @@ void UAlsasuaAtmosphereController::FindOrCreateAtmosphereActors()
 		HeightFog = W->SpawnActor<AExponentialHeightFog>(AExponentialHeightFog::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
 		if (HeightFog)
 		{
-			HeightFog->SetActorLabel(TEXT("Atmosphere_Fog"));
+			HeightFog->Rename(TEXT("Atmosphere_Fog"));
 			UExponentialHeightFogComponent* FogComp = HeightFog->GetComponent();
 			if (FogComp)
 			{

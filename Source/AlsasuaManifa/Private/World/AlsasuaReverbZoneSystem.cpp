@@ -19,7 +19,7 @@ void UAlsasuaReverbZoneSystem::SpawnReverbZones()
 	if (!Owner) return;
 
 	const FVector Origin = Owner->GetActorLocation();
-	const FString Label = Owner->GetActorLabel().ToLower();
+	const FString Label = Owner->GetName().ToLower();
 
 	float Radius = DefaultZoneRadius;
 	float ReverbTime = ExteriorReverbTime;

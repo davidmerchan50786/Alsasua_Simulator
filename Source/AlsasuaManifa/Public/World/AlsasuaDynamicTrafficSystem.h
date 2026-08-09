@@ -24,7 +24,7 @@ struct FVehiclePath
     FString Calle;
     FString Direccion;
     bool bEnMarcha = true;
-    TWeakObjectPtr<AStaticMeshActor> ActorAsociado;
+    TWeakObjectPtr<AActor> ActorAsociado;
     FLinearColor ColorCarroceria = FLinearColor::White;
 };
 

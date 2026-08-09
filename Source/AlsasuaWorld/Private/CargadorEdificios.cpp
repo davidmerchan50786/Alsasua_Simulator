@@ -14,6 +14,8 @@
 #include "ProceduralMeshComponent.h"
 #include "Materials/MaterialInterface.h"
 #include "MuestreadorAltura.h"
+#include "CargarMaterialComun.h"
+
 
 // Paleta vasca por edificio (determinista por id): arenisca rojiza en muros,
 // teja terracota o pizarra en tejados.
@@ -34,7 +36,10 @@ static UMaterialInterface* CargarMaterialEdificio()
 	// Fachada con ventanas nocturnas si existe; si no, el material de suelo.
 	if (UMaterialInterface* F = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Fachada.M_Fachada")))
 		return F;
-	return LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Edificio.M_Edificio"));
+	return CargarMaterialConFallbackSeguro(
+		TEXT("/Game/Materiales/M_Edificio.M_Edificio"),
+		TEXT("/Game/Materiales/M_Edificio.M_Edificio"),
+		TEXT("/Game/Materiales/M_Edificio.M_Edificio"));
 }
 
 // Color de fachada real (mat_r/g/b, 0..1) -> FColor; si falta, paleta por id.
@@ -73,8 +78,7 @@ static EFormaTejado FormaReal(const TSharedPtr<FJsonObject>& O, float& OutEscala
 void UCargadorEdificios::OnWorldBeginPlay(UWorld& InWorld)
 {
 	Super::OnWorldBeginPlay(InWorld);
-	// Si hay director de arranque, él decide el ritmo; no auto-cargamos.
-	if (bAutoCargar && !ArranqueMundo::HayDirector) Cargar();
+	// La construye ADirectorArranque tras generar el terreno; aquí aún no existe (cota 0).
 }
 
 float UCargadorEdificios::AlturaSuelo(const FVector2D& XY) const
@@ -129,7 +133,7 @@ void UCargadorEdificios::ConstruirUno(const TSharedPtr<FJsonObject>& O)
 	Centro /= MundoXY.Num();
 
 	const double AlturaM = O->HasField(TEXT("height")) ? O->GetNumberField(TEXT("height")) : 6.0;
-	const float  Suelo   = AlturaSuelo(Centro);
+	const float  Suelo   = AlturaSuelo(Centro) + 8.f;   // alzado sobre el terreno (anti z-fighting)
 
 	TArray<FVector2D> Local; Local.Reserve(MundoXY.Num());
 	for (const FVector2D& V : MundoXY) Local.Add(V - Centro);

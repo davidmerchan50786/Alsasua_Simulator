@@ -55,6 +55,7 @@ void ATerrenoGenerado::BeginPlay()
 		{
 			if (bUsarLidar) CargarLidar();
 			GenerarDesdeRAW(Ruta, ResolucionRAW, EscalaXY, EscalaZ, LocZ, CentroMundo());
+			GenerarTodoAhora();
 		}
 	}
 }
@@ -492,255 +493,17 @@ void ATerrenoGenerado::BuildMeshData(const FInfoChunk& Info, int32 Step,
 
 UMaterialInterface* ATerrenoGenerado::CrearMaterialTerreno()
 {
-#if WITH_EDITOR
-	// -game / standalone sin editor: UEditorAssetLibrary no es utilizable.
-	if (!GEditor)
+	if (UMaterialInterface* Mat = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Terreno_Orto.M_Terreno_Orto")))
 	{
-		if (UMaterialInterface* Mat = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_TerrenoAlsasua.M_TerrenoAlsasua")))
-		{
-			return Mat;
-		}
-		if (UMaterialInterface* Mat = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Terreno_Orto.M_Terreno_Orto")))
-		{
-			return Mat;
-		}
-		return LoadObject<UMaterialInterface>(nullptr, TEXT("/Engine/EngineMaterials/WorldGridMaterial.WorldGridMaterial"));
+		return Mat;
 	}
 
-	const FString Carpeta = TEXT("/Game/Materiales");
-	const FString Nombre  = TEXT("M_TerrenoAlsasua");
-	const FString Ruta    = Carpeta / Nombre;
-
-	if (UEditorAssetLibrary::DoesAssetExist(Ruta))
+	if (UMaterialInterface* Mat = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_TerrenoAlsasua.M_TerrenoAlsasua")))
 	{
-		UMaterialInterface* Existente = LoadObject<UMaterialInterface>(nullptr, *(Ruta + TEXT(".") + Nombre));
-		if (Existente) return Existente;
+		return Mat;
 	}
 
-	IAssetTools& AT = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
-	UObject* Obj = AT.CreateAsset(Nombre, Carpeta, UMaterial::StaticClass(), NewObject<UMaterialFactoryNew>());
-	UMaterial* Mat = Cast<UMaterial>(Obj);
-	if (!Mat)
-	{
-		UE_LOG(LogTemp, Error, TEXT("[Terreno] No se pudo crear M_TerrenoAlsasua"));
-		return nullptr;
-	}
-
-	Mat->BlendMode = EBlendMode::BLEND_Opaque;
-	Mat->SetShadingModel(EMaterialShadingModel::MSM_DefaultLit);
-	Mat->TwoSided = false;
-
-	using ML = UMaterialEditingLibrary;
-
-	// ── World Position for tiling ──────────────────────────────────────
-	UMaterialExpressionWorldPosition* WP = Cast<UMaterialExpressionWorldPosition>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionWorldPosition::StaticClass(), -1200, 400));
-
-	UMaterialExpressionScalarParameter* TileScale = Cast<UMaterialExpressionScalarParameter>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionScalarParameter::StaticClass(), -1200, 500));
-	TileScale->ParameterName = TEXT("TilingScale");
-	TileScale->DefaultValue = 1.0f / FMath::Max(TextureTilingCm, 1.0f);
-
-	UMaterialExpressionMultiply* TileXY = Cast<UMaterialExpressionMultiply>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionMultiply::StaticClass(), -900, 450));
-	ML::ConnectMaterialExpressions(WP, TEXT(""), TileXY, TEXT("A"));
-	ML::ConnectMaterialExpressions(TileScale, TEXT(""), TileXY, TEXT("B"));
-
-	// ── Vertex Color ────────────────────────────────────────────────────
-	UMaterialExpressionVertexColor* VC = Cast<UMaterialExpressionVertexColor>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionVertexColor::StaticClass(), -800, 0));
-
-	// ── TEXTURE SAMPLES ─────────────────────────────────────────────────
-
-	auto SafeLoad = [](TSoftObjectPtr<UTexture>& Slot, const TCHAR* Fallback) -> UTexture*
-	{
-		if (Slot.IsValid()) return Slot.Get();
-		if (Slot.IsPending()) { UTexture* T = Slot.LoadSynchronous(); if (T) return T; }
-		return LoadObject<UTexture>(nullptr, Fallback);
-	};
-
-	// ── Ortofoto satelital real, draped sobre todo el terreno ───────────
-	const double SatExtentCm = (ResolucionRAW - 1) * EscalaXY;
-	const double SatOriginX = OriginWorld.X;
-	const double SatOriginY = OriginWorld.Y;
-
-	UMaterialExpressionComponentMask* WPMaskX = Cast<UMaterialExpressionComponentMask>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionComponentMask::StaticClass(), -1200, 700));
-	WPMaskX->R = 1; WPMaskX->G = 0; WPMaskX->B = 0; WPMaskX->A = 0;
-	ML::ConnectMaterialExpressions(WP, TEXT(""), WPMaskX, TEXT(""));
-
-	UMaterialExpressionComponentMask* WPMaskY = Cast<UMaterialExpressionComponentMask>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionComponentMask::StaticClass(), -1200, 760));
-	WPMaskY->R = 0; WPMaskY->G = 1; WPMaskY->B = 0; WPMaskY->A = 0;
-	ML::ConnectMaterialExpressions(WP, TEXT(""), WPMaskY, TEXT(""));
-
-	UMaterialExpressionConstant* SatOriginXExpr = Cast<UMaterialExpressionConstant>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionConstant::StaticClass(), -1050, 700));
-	SatOriginXExpr->R = (float)SatOriginX;
-	UMaterialExpressionConstant* SatOriginYExpr = Cast<UMaterialExpressionConstant>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionConstant::StaticClass(), -1050, 760));
-	SatOriginYExpr->R = (float)SatOriginY;
-
-	UMaterialExpressionSubtract* SubX = Cast<UMaterialExpressionSubtract>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionSubtract::StaticClass(), -900, 700));
-	ML::ConnectMaterialExpressions(WPMaskX, TEXT(""), SubX, TEXT("A"));
-	ML::ConnectMaterialExpressions(SatOriginXExpr, TEXT(""), SubX, TEXT("B"));
-
-	UMaterialExpressionSubtract* SubY = Cast<UMaterialExpressionSubtract>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionSubtract::StaticClass(), -900, 760));
-	ML::ConnectMaterialExpressions(WPMaskY, TEXT(""), SubY, TEXT("A"));
-	ML::ConnectMaterialExpressions(SatOriginYExpr, TEXT(""), SubY, TEXT("B"));
-
-	UMaterialExpressionScalarParameter* InvExtent = Cast<UMaterialExpressionScalarParameter>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionScalarParameter::StaticClass(), -900, 820));
-	InvExtent->ParameterName = TEXT("SatInvExtent");
-	InvExtent->DefaultValue = 1.0f / FMath::Max((float)SatExtentCm, 1.0f);
-
-	UMaterialExpressionMultiply* MulU = Cast<UMaterialExpressionMultiply>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionMultiply::StaticClass(), -750, 700));
-	ML::ConnectMaterialExpressions(SubX, TEXT(""), MulU, TEXT("A"));
-	ML::ConnectMaterialExpressions(InvExtent, TEXT(""), MulU, TEXT("B"));
-
-	UMaterialExpressionMultiply* MulV = Cast<UMaterialExpressionMultiply>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionMultiply::StaticClass(), -750, 760));
-	ML::ConnectMaterialExpressions(SubY, TEXT(""), MulV, TEXT("A"));
-	ML::ConnectMaterialExpressions(InvExtent, TEXT(""), MulV, TEXT("B"));
-
-	UMaterialExpressionAppendVector* SatUV = Cast<UMaterialExpressionAppendVector>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionAppendVector::StaticClass(), -600, 730));
-	ML::ConnectMaterialExpressions(MulU, TEXT(""), SatUV, TEXT("A"));
-	ML::ConnectMaterialExpressions(MulV, TEXT(""), SatUV, TEXT("B"));
-
-	UTexture* SatTex = SafeLoad(SatelliteImage, TEXT("/Game/Terreno/T_Satelite_Alsasua.T_Satelite_Alsasua"));
-	UMaterialExpressionTextureSample* SatSample = Cast<UMaterialExpressionTextureSample>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionTextureSample::StaticClass(), -400, 730));
-	if (SatTex) { SatSample->Texture = SatTex; SatSample->SamplerType = SAMPLERTYPE_Color; }
-	ML::ConnectMaterialExpressions(SatUV, TEXT(""), SatSample, TEXT("UVs"));
-
-	UTexture* GrassTex = SafeLoad(GrassDiffuse,
-		TEXT("/Game/AssetsImportados/TexturasUnity/GrassPBR_Color.GrassPBR_Color"));
-	UMaterialExpressionTextureSample* GrassDiff = Cast<UMaterialExpressionTextureSample>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionTextureSample::StaticClass(), -800, -350));
-	if (GrassTex) { GrassDiff->Texture = GrassTex; GrassDiff->SamplerType = SAMPLERTYPE_Color; }
-	ML::ConnectMaterialExpressions(TileXY, TEXT(""), GrassDiff, TEXT("UVs"));
-
-	UTexture* RockTex = SafeLoad(RockDiffuse,
-		TEXT("/Game/AssetsImportados/Naturaleza/rocks/01/diffuse"));
-	UMaterialExpressionTextureSample* RockDiff = Cast<UMaterialExpressionTextureSample>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionTextureSample::StaticClass(), -800, -100));
-	if (RockTex) { RockDiff->Texture = RockTex; RockDiff->SamplerType = SAMPLERTYPE_Color; }
-	ML::ConnectMaterialExpressions(TileXY, TEXT(""), RockDiff, TEXT("UVs"));
-
-	UTexture* GroundTex = SafeLoad(GroundDiffuse,
-		TEXT("/Game/AssetsImportados/TexturasUnity/GroundPBR_Color.GroundPBR_Color"));
-	UMaterialExpressionTextureSample* GroundDiff = Cast<UMaterialExpressionTextureSample>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionTextureSample::StaticClass(), -800, 100));
-	if (GroundTex) { GroundDiff->Texture = GroundTex; GroundDiff->SamplerType = SAMPLERTYPE_Color; }
-	ML::ConnectMaterialExpressions(TileXY, TEXT(""), GroundDiff, TEXT("UVs"));
-
-	UMaterialExpressionConstant4Vector* CSnow = Cast<UMaterialExpressionConstant4Vector>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionConstant4Vector::StaticClass(), -800, 300));
-	CSnow->Constant = FLinearColor(0.85f, 0.85f, 0.88f, 1.f);
-
-	UMaterialExpressionConstant4Vector* CWater = Cast<UMaterialExpressionConstant4Vector>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionConstant4Vector::StaticClass(), -800, -500));
-	CWater->Constant = FLinearColor(0.05f, 0.12f, 0.18f, 1.f);
-
-	// ── NORMAL MAPS ─────────────────────────────────────────────────────
-	UTexture* GrassNormTex = SafeLoad(GrassNormal,
-		TEXT("/Game/AssetsImportados/TexturasUnity/GrassPBR_Normal.GrassPBR_Normal"));
-	UTexture* RockNormTex = SafeLoad(RockNormal,
-		TEXT("/Game/AssetsImportados/Naturaleza/rocks/01/normal"));
-	UTexture* GroundNormTex = SafeLoad(GroundNormal,
-		TEXT("/Game/AssetsImportados/TexturasUnity/GroundPBR_Normal.GroundPBR_Normal"));
-
-	UMaterialExpressionTextureSample* GrassNorm = Cast<UMaterialExpressionTextureSample>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionTextureSample::StaticClass(), -400, -350));
-	if (GrassNormTex) { GrassNorm->Texture = GrassNormTex; GrassNorm->SamplerType = SAMPLERTYPE_LinearColor; }
-	ML::ConnectMaterialExpressions(TileXY, TEXT(""), GrassNorm, TEXT("UVs"));
-
-	UMaterialExpressionTextureSample* RockNorm = Cast<UMaterialExpressionTextureSample>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionTextureSample::StaticClass(), -400, -100));
-	if (RockNormTex) { RockNorm->Texture = RockNormTex; RockNorm->SamplerType = SAMPLERTYPE_LinearColor; }
-	ML::ConnectMaterialExpressions(TileXY, TEXT(""), RockNorm, TEXT("UVs"));
-
-	UMaterialExpressionTextureSample* GroundNorm = Cast<UMaterialExpressionTextureSample>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionTextureSample::StaticClass(), -400, 100));
-	if (GroundNormTex) { GroundNorm->Texture = GroundNormTex; GroundNorm->SamplerType = SAMPLERTYPE_LinearColor; }
-	ML::ConnectMaterialExpressions(TileXY, TEXT(""), GroundNorm, TEXT("UVs"));
-
-	// ── BLEND: Water → Grass (by VC.R height) ──────────────────────────
-	UMaterialExpressionLinearInterpolate* LerpH = Cast<UMaterialExpressionLinearInterpolate>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionLinearInterpolate::StaticClass(), 0, -350));
-	ML::ConnectMaterialExpressions(CWater, TEXT(""), LerpH, TEXT("A"));
-	ML::ConnectMaterialExpressions(GrassDiff, TEXT(""), LerpH, TEXT("B"));
-	ML::ConnectMaterialExpressions(VC, TEXT("R"), LerpH, TEXT("Alpha"));
-
-	// ── BLEND: grass+water → Rock (by VC.G slope) ──────────────────────
-	UMaterialExpressionLinearInterpolate* LerpS = Cast<UMaterialExpressionLinearInterpolate>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionLinearInterpolate::StaticClass(), 300, -100));
-	ML::ConnectMaterialExpressions(LerpH, TEXT(""), LerpS, TEXT("A"));
-	ML::ConnectMaterialExpressions(RockDiff, TEXT(""), LerpS, TEXT("B"));
-	ML::ConnectMaterialExpressions(VC, TEXT("G"), LerpS, TEXT("Alpha"));
-
-	// ── BLEND: base → Snow (by VC.R > 0.6 altitude) ────────────────────
-	UMaterialExpressionLinearInterpolate* LerpA = Cast<UMaterialExpressionLinearInterpolate>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionLinearInterpolate::StaticClass(), 600, 0));
-	ML::ConnectMaterialExpressions(LerpS, TEXT(""), LerpA, TEXT("A"));
-	ML::ConnectMaterialExpressions(CSnow, TEXT(""), LerpA, TEXT("B"));
-	ML::ConnectMaterialExpressions(VC, TEXT("R"), LerpA, TEXT("Alpha"));
-
-	// ── NORMAL BLEND (same chain) ───────────────────────────────────────
-	UMaterialExpressionLinearInterpolate* NormH = Cast<UMaterialExpressionLinearInterpolate>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionLinearInterpolate::StaticClass(), 0, 200));
-	ML::ConnectMaterialExpressions(GrassNorm, TEXT(""), NormH, TEXT("A"));
-	ML::ConnectMaterialExpressions(RockNorm, TEXT(""), NormH, TEXT("B"));
-	ML::ConnectMaterialExpressions(VC, TEXT("G"), NormH, TEXT("Alpha"));
-
-	// ── ROUGHNESS (grass=0.9, rock=0.7, snow=0.3) ──────────────────────
-	UMaterialExpressionConstant* RG = Cast<UMaterialExpressionConstant>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionConstant::StaticClass(), -400, 600));
-	RG->R = 0.9f;
-	UMaterialExpressionConstant* RR = Cast<UMaterialExpressionConstant>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionConstant::StaticClass(), -400, 660));
-	RR->R = 0.7f;
-	UMaterialExpressionConstant* RS = Cast<UMaterialExpressionConstant>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionConstant::StaticClass(), -400, 720));
-	RS->R = 0.3f;
-
-	UMaterialExpressionLinearInterpolate* LerpRG = Cast<UMaterialExpressionLinearInterpolate>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionLinearInterpolate::StaticClass(), -100, 620));
-	ML::ConnectMaterialExpressions(RG, TEXT(""), LerpRG, TEXT("A"));
-	ML::ConnectMaterialExpressions(RR, TEXT(""), LerpRG, TEXT("B"));
-	ML::ConnectMaterialExpressions(VC, TEXT("G"), LerpRG, TEXT("Alpha"));
-
-	UMaterialExpressionLinearInterpolate* LerpRRS = Cast<UMaterialExpressionLinearInterpolate>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionLinearInterpolate::StaticClass(), 200, 660));
-	ML::ConnectMaterialExpressions(LerpRG, TEXT(""), LerpRRS, TEXT("A"));
-	ML::ConnectMaterialExpressions(RS, TEXT(""), LerpRRS, TEXT("B"));
-	ML::ConnectMaterialExpressions(VC, TEXT("R"), LerpRRS, TEXT("Alpha"));
-
-	// ── Satelite drapeado, agua se mantiene en zonas bajas (VC.R) ──────
-	UMaterialExpressionLinearInterpolate* LerpWaterSat = Cast<UMaterialExpressionLinearInterpolate>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionLinearInterpolate::StaticClass(), -200, -500));
-	ML::ConnectMaterialExpressions(CWater, TEXT(""), LerpWaterSat, TEXT("A"));
-	ML::ConnectMaterialExpressions(SatSample, TEXT(""), LerpWaterSat, TEXT("B"));
-	ML::ConnectMaterialExpressions(VC, TEXT("R"), LerpWaterSat, TEXT("Alpha"));
-
-	// ── Connect outputs ─────────────────────────────────────────────────
-	ML::ConnectMaterialProperty(LerpWaterSat, TEXT(""), MP_BaseColor);
-	ML::ConnectMaterialProperty(LerpRRS, TEXT(""), MP_Roughness);
-	ML::ConnectMaterialProperty(NormH, TEXT(""), MP_Normal);
-
-	Mat->PostEditChange();
-	ML::RecompileMaterial(Mat);
-	UEditorAssetLibrary::SaveAsset(Ruta, false);
-
-	UE_LOG(LogTemp, Log, TEXT("[Terreno] Material M_TerrenoAlsasua (PBR) creado en %s"), *Ruta);
-	return Mat;
-#else
-	return LoadObject<UMaterialInterface>(nullptr, TEXT("/Engine/EngineMaterials/WorldGridMaterial.WorldGridMaterial"));
-#endif
+	return UMaterial::GetDefaultMaterial(MD_Surface);
 }
 
 void ATerrenoGenerado::GenerarChunk(FInfoChunk& Info, int32 LODLevel, int32 Step)
@@ -826,6 +589,15 @@ void ATerrenoGenerado::GenerarTodosChunks()
 	ChunkIndexProgreso = 0;
 	PrimaryActorTick.TickInterval = 0.0f;
 	UE_LOG(LogTemp, Log, TEXT("[Terreno] %d chunks encolados (generando %d/frame)"), ChunksInfo.Num(), CHUNKS_POR_FRAME);
+}
+
+void ATerrenoGenerado::GenerarTodoAhora()
+{
+	while (ChunkIndexProgreso < ChunksInfo.Num())
+	{
+		GenerarSiguienteChunk();
+	}
+	ActualizarLODs();
 }
 
 void ATerrenoGenerado::GenerarSiguienteChunk()

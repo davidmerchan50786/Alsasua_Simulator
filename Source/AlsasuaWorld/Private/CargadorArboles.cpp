@@ -30,7 +30,7 @@ static FLinearColor ColorEspecie(const FString& E)
 void UCargadorArboles::OnWorldBeginPlay(UWorld& InWorld)
 {
 	Super::OnWorldBeginPlay(InWorld);
-	if (bAutoCargar && !ArranqueMundo::HayDirector) Cargar();
+	// Los coloca ADirectorArranque tras generar el terreno.
 }
 
 float UCargadorArboles::AlturaSuelo(const FVector2D& XY) const

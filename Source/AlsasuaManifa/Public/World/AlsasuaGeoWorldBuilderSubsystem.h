@@ -64,13 +64,13 @@ public:
 
 private:
     void BuildWorld();
-    void BuildTerrainMesh(AActor* Owner);
-    void BuildRoadMesh(AActor* Owner, const TArray<FVector>& Points, float Width);
-    void BuildRailMesh(AActor* Owner, const TArray<FVector>& Points, float Width);
-    void BuildBuildings(AActor* Owner);
-    void BuildForest(AActor* Owner);
-    void BuildGeoBuilding(AActor* Owner, const TArray<FGeoPoint>& Points, const FGeoLayerData& GeoData);
-    void BuildGeoForest(AActor* Owner, const TArray<FGeoPoint>& Points, const FGeoLayerData& GeoData);
+    void BuildTerrainMesh(AActor* Owner, class UInstancedStaticMeshComponent* TerrainISM);
+    void BuildRoadMesh(AActor* Owner, const TArray<FVector>& Points, float Width, class UInstancedStaticMeshComponent* RoadISM);
+    void BuildRailMesh(AActor* Owner, const TArray<FVector>& Points, float Width, class UInstancedStaticMeshComponent* RoadISM);
+    void BuildBuildings(AActor* Owner, class UInstancedStaticMeshComponent* BuildingISM);
+    void BuildForest(AActor* Owner, class UInstancedStaticMeshComponent* ForestISM);
+    void BuildGeoBuilding(AActor* Owner, const TArray<FGeoPoint>& Points, const FGeoLayerData& GeoData, class UInstancedStaticMeshComponent* BuildingISM);
+    void BuildGeoForest(AActor* Owner, const TArray<FGeoPoint>& Points, const FGeoLayerData& GeoData, class UInstancedStaticMeshComponent* ForestISM);
     void BuildNamedRoadLabel(AActor* Owner, const FGeoNamedFeature& Feature, const FGeoLayerData& GeoData);
     void BuildNamedPlazaLabel(AActor* Owner, const FGeoNamedFeature& Feature, const FGeoLayerData& GeoData);
     void BuildNamedNeighborhoodLabel(AActor* Owner, const FGeoNamedFeature& Feature, const FGeoLayerData& GeoData);

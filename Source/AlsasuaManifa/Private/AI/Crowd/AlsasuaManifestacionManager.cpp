@@ -23,6 +23,11 @@ void UAlsasuaManifestacionManager::Initialize(FSubsystemCollectionBase& Collecti
 {
 	Super::Initialize(Collection);
 
+	if (IsRunningCommandlet() || GIsEditor)
+	{
+		return;
+	}
+
 	// Registrar timer de actualización (~30Hz).
 	UWorld* World = GetWorld();
 	if (World != nullptr)

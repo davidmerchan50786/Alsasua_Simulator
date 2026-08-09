@@ -8,6 +8,14 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "GeoDataAlsasua.h"
+#include "CargarMaterialComun.h"
+#include "HAL/ConsoleManager.h"
+
+static TAutoConsoleVariable<int32> CVarSkipDetailDressing(
+    TEXT("alsasua.SkipDetailDressing"),
+    0,
+    TEXT("Skips detail dressing generation for profiling"),
+    ECVF_Cheat);
 
 void UAlsasuaDetailDressingSystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -74,15 +82,15 @@ void UAlsasuaDetailDressingSystem::CargarMueblesReales(UWorld* World)
         Actor->SetMobility(EComponentMobility::Static);
         Actor->SetActorScale3D(Def->Scale);
 
-        UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, *Def->Mesh);
+        UStaticMesh* Mesh = CargarMeshRapido(*Def->Mesh);
         if (Mesh) Actor->GetStaticMeshComponent()->SetStaticMesh(Mesh);
+ 
+        UMaterialInterface* Mat = CargarMaterialRapido(TEXT("/Engine/EngineMaterials/DefaultMaterial.DefaultMaterial"));
 
-        UMaterialInterface* Mat = LoadObject<UMaterialInterface>(nullptr,
-            TEXT("/Engine/EngineMaterials/DefaultMaterial.DefaultMaterial"));
         if (Mat) Actor->GetStaticMeshComponent()->SetMaterial(0, Mat);
 
 #if WITH_EDITOR
-        Actor->SetActorLabel(*FString::Printf(TEXT("Mueble_%s_%d"), *Tipo, Placed));
+        Actor->Rename(*FString::Printf(TEXT("Mueble_%s_%d"), *Tipo, Placed));
 #endif
 
         FDetailItem Item;
@@ -105,6 +113,12 @@ void UAlsasuaDetailDressingSystem::CargarMueblesReales(UWorld* World)
 
 int32 UAlsasuaDetailDressingSystem::ColocarDetalle()
 {
+    if (CVarSkipDetailDressing.GetValueOnAnyThread() != 0)
+    {
+        UE_LOG(LogTemp, Log, TEXT("Detail dressing skipped by alsasua.SkipDetailDressing"));
+        return 0;
+    }
+
     UWorld* World = GetWorld();
     if (!World) return 0;
 
@@ -124,25 +138,34 @@ int32 UAlsasuaDetailDressingSystem::ColocarDetalle()
     return Total;
 }
 
-AStaticMeshActor* UAlsasuaDetailDressingSystem::CrearActor(
+AActor* UAlsasuaDetailDressingSystem::CrearActor(
     UWorld* World, const FVector& Pos, float Rot, float Scale,
     const TCHAR* MeshPath, const TCHAR* MatPath, const FString& Label)
 {
-    AStaticMeshActor* Actor = World->SpawnActor<AStaticMeshActor>(
-        AStaticMeshActor::StaticClass(), Pos, FRotator(0, Rot, 0));
+    AActor* Actor = World->SpawnActor<AActor>(
+        AActor::StaticClass(), Pos, FRotator(0, Rot, 0));
     if (!Actor) return nullptr;
 
-    Actor->SetMobility(EComponentMobility::Static);
     Actor->SetActorScale3D(FVector(Scale));
 
-    UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, MeshPath);
-    if (Mesh) Actor->GetStaticMeshComponent()->SetStaticMesh(Mesh);
+    UStaticMeshComponent* MeshComp = Actor->FindComponentByClass<UStaticMeshComponent>();
+    if (!MeshComp)
+    {
+        MeshComp = NewObject<UStaticMeshComponent>(Actor);
+        MeshComp->SetupAttachment(Actor->GetRootComponent());
+        MeshComp->RegisterComponent();
+        Actor->SetRootComponent(MeshComp);
+    }
 
-    UMaterialInterface* Mat = LoadObject<UMaterialInterface>(nullptr, MatPath);
-    if (Mat) Actor->GetStaticMeshComponent()->SetMaterial(0, Mat);
+    UStaticMesh* Mesh = CargarMeshRapido(MeshPath);
+    if (Mesh) MeshComp->SetStaticMesh(Mesh);
+ 
+    UMaterialInterface* Mat = CargarMaterialRapido(MatPath);
+
+    if (Mat) MeshComp->SetMaterial(0, Mat);
 
 #if WITH_EDITOR
-    Actor->SetActorLabel(*Label);
+    Actor->Rename(*Label);
 #endif
 
     return Actor;
@@ -175,7 +198,7 @@ void UAlsasuaDetailDressingSystem::ColocarMacetas(UWorld* World)
         Item.Color = FLinearColor(0.6f, 0.3f, 0.15f);
 
         FString Label = FString::Printf(TEXT("Maceta_%s_%d"), *Barrio.Left(8), i);
-        AStaticMeshActor* Actor = CrearActor(World, Pos, Rot, Escala,
+        AActor* Actor = CrearActor(World, Pos, Rot, Escala,
             TEXT("/Game/EngineBasicShapes/Cylinder"),
             TEXT("/Game/Materiales/M_Piedra"), Label);
 
@@ -271,7 +294,7 @@ void UAlsasuaDetailDressingSystem::ColocarBancos(UWorld* World)
         Item.Color = FLinearColor(0.4f, 0.25f, 0.1f);
 
         FString Label = FString::Printf(TEXT("Banco_%d"), i);
-        AStaticMeshActor* Actor = CrearActor(World, Pos, Item.Rotacion, 1.0f,
+        AActor* Actor = CrearActor(World, Pos, Item.Rotacion, 1.0f,
             TEXT("/Game/EngineBasicShapes/Cube"),
             TEXT("/Game/Materiales/M_Madera"), Label);
 
@@ -306,7 +329,7 @@ void UAlsasuaDetailDressingSystem::ColocarVallasVerdes(UWorld* World)
         Item.Color = FLinearColor(0.15f, 0.55f, 0.15f);
 
         FString Label = FString::Printf(TEXT("VallaVerde_%s_%d"), *Barrio.Left(8), i);
-        AStaticMeshActor* Actor = CrearActor(World, Pos, Item.Rotacion, 1.2f,
+        AActor* Actor = CrearActor(World, Pos, Item.Rotacion, 1.2f,
             TEXT("/Game/EngineBasicShapes/Cube"),
             TEXT("/Game/Materiales/M_Seto"), Label);
 

@@ -11,16 +11,20 @@
 #include "HAL/PlatformTime.h"
 #include "ProceduralMeshComponent.h"
 #include "Materials/MaterialInterface.h"
+#include "CargarMaterialComun.h"
 
 static UMaterialInterface* CargarMaterialSueloPoligonos()
 {
-	return LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Edificio.M_Edificio"));
+	return CargarMaterialConFallbackSeguro(
+		TEXT("/Game/Materiales/M_Edificio.M_Edificio"),
+		TEXT("/Game/Materiales/M_Edificio.M_Edificio"),
+		TEXT("/Game/Materiales/M_Edificio.M_Edificio"));
 }
 
 void UCargadorPoligonos::OnWorldBeginPlay(UWorld& InWorld)
 {
 	Super::OnWorldBeginPlay(InWorld);
-	if (bAutoCargar && !ArranqueMundo::HayDirector) Cargar();
+	// Los construye ADirectorArranque tras generar el terreno.
 }
 
 void UCargadorPoligonos::Encolar(const FString& RutaRel, FColor ColorDefecto, float EpsilonCm)

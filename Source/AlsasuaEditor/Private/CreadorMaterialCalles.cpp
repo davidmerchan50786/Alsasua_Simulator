@@ -11,6 +11,7 @@
 #include "Materials/MaterialExpressionCollectionParameter.h"
 #include "Materials/MaterialParameterCollection.h"
 #include "Materials/MaterialExpressionVertexColor.h"
+#include "Materials/MaterialExpressionConstant3Vector.h"
 #include "Materials/MaterialExpressionWorldPosition.h"
 #include "Materials/MaterialExpressionComponentMask.h"
 #include "Materials/MaterialExpressionAppendVector.h"
@@ -118,23 +119,33 @@ bool UCreadorMaterialCalles::CrearMaterialAcera()
 	// Cobblestone: tiling ~0.5m, rough 0.85
 	CrearMaterialConTextura(TEXT("M_Terreno_Acera"), TEXT("/Game/Textures/T_Cobblestone_Color.T_Cobblestone_Color"),
 		50.f, 50.f, 0.85f, TEXT("Acera"));
+	return true;
+}
 
-	const FString RutaAcera = TEXT("/Game/Materiales/M_Terreno_Acera");
-	if (UMaterial* Mat = LoadObject<UMaterial>(nullptr, *(RutaAcera + TEXT(".M_Terreno_Acera"))))
-	{
-		if (UTexture2D* Nrm = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Textures/T_Cobblestone_Normal.T_Cobblestone_Normal")))
-		{
-			auto* tex = Cast<UMaterialExpressionTextureSampleParameter2D>(
-				ML::CreateMaterialExpression(Mat, UMaterialExpressionTextureSampleParameter2D::StaticClass(), -800, 40));
-			tex->ParameterName = TEXT("NormalTex");
-			tex->SamplerType = SAMPLERTYPE_Normal;
-			tex->Texture = Nrm;
-			ML::ConnectMaterialProperty(tex, TEXT("RGB"), MP_Normal);
-			Mat->PostEditChange();
-			ML::RecompileMaterial(Mat);
-			UEditorAssetLibrary::SaveAsset(RutaAcera, false);
-		}
-	}
+bool UCreadorMaterialCalles::CrearMaterialMarcaBlanca()
+{
+	const FString Nombre = TEXT("M_Marca_Blanca");
+	const FString Carpeta = TEXT("/Game/Materiales");
+	const FString Ruta = Carpeta / Nombre;
 
+	if (UEditorAssetLibrary::DoesAssetExist(Ruta))
+		UEditorAssetLibrary::DeleteAsset(Ruta);
+
+	IAssetTools& AT = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
+	UMaterial* Mat = Cast<UMaterial>(AT.CreateAsset(Nombre, Carpeta, UMaterial::StaticClass(), NewObject<UMaterialFactoryNew>()));
+	if (!Mat) { UE_LOG(LogTemp, Error, TEXT("[MarcaBlanca] no pude crear el material")); return false; }
+
+	auto* Color = Cast<UMaterialExpressionConstant3Vector>(ML::CreateMaterialExpression(Mat, UMaterialExpressionConstant3Vector::StaticClass(), 0, 0));
+	Color->Constant = FLinearColor(1.f, 1.f, 1.f);
+	ML::ConnectMaterialProperty(Color, TEXT("RGB"), MP_BaseColor);
+
+	auto* Rough = Cast<UMaterialExpressionConstant>(ML::CreateMaterialExpression(Mat, UMaterialExpressionConstant::StaticClass(), 0, 120));
+	Rough->R = 0.8f;
+	ML::ConnectMaterialProperty(Rough, TEXT(""), MP_Roughness);
+
+	Mat->PostEditChange();
+	ML::RecompileMaterial(Mat);
+	UEditorAssetLibrary::SaveAsset(Ruta, false);
+	UE_LOG(LogTemp, Log, TEXT("[MarcaBlanca] material creado en %s"), *Ruta);
 	return true;
 }

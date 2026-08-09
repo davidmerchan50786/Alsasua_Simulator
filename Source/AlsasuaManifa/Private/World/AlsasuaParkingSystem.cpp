@@ -9,6 +9,13 @@
 #include "Serialization/JsonSerializer.h"
 #include "GeoDataAlsasua.h"
 #include "CargarMaterialComun.h"
+#include "HAL/ConsoleManager.h"
+
+static TAutoConsoleVariable<int32> CVarSkipParkingGeneration(
+    TEXT("alsasua.SkipParkingGeneration"),
+    0,
+    TEXT("Skips parking generation for profiling"),
+    ECVF_Cheat);
 
 void UAlsasuaParkingSystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -75,6 +82,12 @@ FVector UAlsasuaParkingSystem::ObtenerPuntoEnCalle(FVector& OutDir)
 
 int32 UAlsasuaParkingSystem::GenerarPlazasAparcamiento()
 {
+    if (CVarSkipParkingGeneration.GetValueOnAnyThread() != 0)
+    {
+        UE_LOG(LogTemp, Log, TEXT("Parking generation skipped by alsasua.SkipParkingGeneration"));
+        return 0;
+    }
+
     UWorld* World = GetWorld();
     if (!World) return 0;
 
@@ -124,40 +137,8 @@ int32 UAlsasuaParkingSystem::GenerarPlazasAparcamiento()
 #endif
         }
 
-        if (Spot.bOcupado)
-        {
-            FVector CarPos = Pos;
-
-            AStaticMeshActor* Car = World->SpawnActor<AStaticMeshActor>(
-                AStaticMeshActor::StaticClass(), CarPos, FRotator(0, Spot.Rotacion, 0));
-            if (Car)
-            {
-                Car->SetMobility(EComponentMobility::Movable);
-                Car->SetActorScale3D(FVector(4.2f, 1.8f, 1.3f));
-
-                // ponytail: no CitySample vehicle meshes — too large, not copied yet
-                // UStaticMesh* CarMesh = LoadObject<UStaticMesh>(nullptr,
-                //     TEXT("/Game/CitySample/Vehicles/..."));
-                // if (CarMesh)
-                //     Car->GetStaticMeshComponent()->SetStaticMesh(CarMesh);
-
-                const TArray<FString> ColoresCoche = {
-                    TEXT("/Game/Materiales/M_Vehiculo_Blanco"),
-                    TEXT("/Game/Materiales/M_Vehiculo_Gris"),
-                    TEXT("/Game/Materiales/M_Vehiculo_Negro"),
-                    TEXT("/Game/Materiales/M_Vehiculo_Rojo"),
-                    TEXT("/Game/Materiales/M_Vehiculo_Azul")
-                };
-                UMaterialInterface* CarMat = LoadObject<UMaterialInterface>(nullptr,
-                    *ColoresCoche[FMath::RandRange(0, ColoresCoche.Num() - 1)]);
-                if (CarMat)
-                    Car->GetStaticMeshComponent()->SetMaterial(0, CarMat);
-
-#if WITH_EDITOR
-                Car->SetActorLabel(*FString::Printf(TEXT("CocheAparcado_%s_%d"), *Barrio.Left(8), i));
-#endif
-            }
-        }
+        // ponytail: no CitySample vehicle meshes copied yet; skip car spawning to avoid grey boxes
+        // if (Spot.bOcupado) { ... }
 
         Plazas.Add(Spot);
         Placed++;

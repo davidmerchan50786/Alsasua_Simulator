@@ -49,7 +49,7 @@ void UAlsasuaLODManager::CacheActors()
     for (AActor* Actor : AllStatic)
     {
         if (!Actor) continue;
-        const FString Label = Actor->GetActorLabel();
+        const FString Label = Actor->GetName();
         if (Label.Contains(TEXT("Arbol_")) || Label.Contains(TEXT("Arboleda")))
             CachedTrees.Add(Actor);
         else if (Label.Contains(TEXT("Edificio_")) || Label.Contains(TEXT("Building_")))

@@ -19,6 +19,7 @@ Saved/
 
 # Content pesado (assets importados, mapa, lidar raw): fuera de git
 Content/AssetsImportados/
+Content/External/
 Content/CitySample/
 Content/Materiales/
 Content/Road/

@@ -46,14 +46,14 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 		if (!O.IsValid()) continue;
 
 		const TArray<TSharedPtr<FJsonValue>>* Points = nullptr;
-		if (!O->TryGetArrayField(TEXT("points"), Points) || !Points || Points->Num() < 3) continue;
+		if (!O->TryGetArrayField(TEXT("poly"), Points) || !Points || Points->Num() < 6) continue;
 
 		TArray<FVector> Poly;
-		for (const auto& Pv : *Points)
+		for (int32 i = 0; i + 1 < Points->Num(); i += 2)
 		{
-			const auto& Po = Pv->AsObject();
-			if (!Po.IsValid()) continue;
-			const FVector M = UAlsasuaGeoData::RelLocalToUE5(FVector(Po->GetNumberField(TEXT("x")), 0.0, Po->GetNumberField(TEXT("z"))));
+			// greenspaces_unity.json es ABSOLUTO en mundo Unity (x,z en metros).
+			const FVector M = UAlsasuaGeoData::UnityaUnreal(
+				FVector((*Points)[i]->AsNumber(), 0.0, (*Points)[i + 1]->AsNumber()));
 			Poly.Add(FVector(M.X, M.Y, 0));
 		}
 		if (Poly.Num() >= 3) Polygons.Add(Poly);

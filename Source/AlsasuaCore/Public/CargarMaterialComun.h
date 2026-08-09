@@ -2,6 +2,7 @@
 #include "UObject/UObjectGlobals.h"
 #include "Misc/PackageName.h"
 #include "Materials/MaterialInterface.h"
+#include "Engine/StaticMesh.h"
 
 // Los materiales AAA de la libreria Road compilan solo si TODAS sus dependencias
 // (atlases/surfaces de Megascans, MaterialFunctions, texturas SurfaceFeature y la
@@ -31,4 +32,21 @@ inline UMaterialInterface* CargarMaterialConFallback(const TCHAR* RutaAAA, const
 	}
 	UMaterialInterface* Propio = LoadObject<UMaterialInterface>(nullptr, RutaPropia);
 	return Propio ? Propio : LoadObject<UMaterialInterface>(nullptr, RutaFinal);
+}
+
+inline UMaterialInterface* CargarMaterialConFallbackSeguro(const TCHAR* RutaAAA, const TCHAR* RutaPropia, const TCHAR* RutaFinal)
+{
+	if (UMaterialInterface* Mat = CargarMaterialConFallback(RutaAAA, RutaPropia, RutaFinal))
+		return Mat;
+	return LoadObject<UMaterialInterface>(nullptr, TEXT("/Engine/EngineMaterials/DefaultMaterial.DefaultMaterial"));
+}
+
+inline UStaticMesh* CargarMeshRapido(const TCHAR* MeshPath)
+{
+	return MeshPath ? LoadObject<UStaticMesh>(nullptr, MeshPath) : nullptr;
+}
+
+inline UMaterialInterface* CargarMaterialRapido(const TCHAR* MaterialPath)
+{
+	return MaterialPath ? LoadObject<UMaterialInterface>(nullptr, MaterialPath) : nullptr;
 }

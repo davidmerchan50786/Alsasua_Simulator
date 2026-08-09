@@ -3,15 +3,27 @@
 #include "Engine/Engine.h"
 #include "Engine/StaticMeshActor.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/InstancedStaticMeshComponent.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "GeoDataAlsasua.h"
 #include "CargarMaterialComun.h"
+#include "HAL/ConsoleManager.h"
+
+#include "Materials/MaterialInterface.h"
+
+static TAutoConsoleVariable<int32> CVarSkipRoadMarkings(
+    TEXT("alsasua.SkipRoadMarkings"),
+    0,
+    TEXT("Skips road-marking generation for profiling"),
+    ECVF_Cheat);
 
 static UMaterialInterface* CargarMaterialMarcas()
 {
+	if (UMaterialInterface* M = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Marca_Blanca.M_Marca_Blanca")))
+		return M;
 	return CargarMaterialConFallback(
 		TEXT("/Game/Road/Material/MI/M_Asphalt_Master_Inst_Crosswalk.M_Asphalt_Master_Inst_Crosswalk"),
 		TEXT("/Game/Materiales/M_Terreno_Calles.M_Terreno_Calles"),
@@ -25,6 +37,12 @@ void UAlsasuaRoadMarkingsSystem::Initialize(FSubsystemCollectionBase& Collection
 
 int32 UAlsasuaRoadMarkingsSystem::GenerarMarcas()
 {
+    if (CVarSkipRoadMarkings.GetValueOnAnyThread() != 0)
+    {
+        UE_LOG(LogTemp, Log, TEXT("RoadMarkings skipped by alsasua.SkipRoadMarkings"));
+        return 0;
+    }
+
     const FString JsonPath = FPaths::ProjectContentDir() + TEXT("Datos/roads_unity.json");
     FString JsonStr;
     if (!FFileHelper::LoadFileToString(JsonStr, *JsonPath)) return 0;
@@ -43,6 +61,36 @@ int32 UAlsasuaRoadMarkingsSystem::GenerarMarcas()
     int32 TotalCruces = 0;
     int32 TotalLineas = 0;
     int32 TotalStop = 0;
+
+    UInstancedStaticMeshComponent* LineasISM = nullptr;
+    UInstancedStaticMeshComponent* CrucesISM = nullptr;
+    UInstancedStaticMeshComponent* StopISM = nullptr;
+
+    auto CrearISM = [&](const TCHAR* Name, UInstancedStaticMeshComponent*& OutComp)
+    {
+        if (OutComp) return;
+        AActor* Holder = World->SpawnActor<AActor>(AActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator);
+        if (!Holder) return;
+        Holder->Rename(Name);
+        Holder->SetHidden(true);
+        OutComp = NewObject<UInstancedStaticMeshComponent>(Holder, UInstancedStaticMeshComponent::StaticClass(), FName(Name));
+        if (!OutComp) return;
+        OutComp->RegisterComponentWithWorld(World);
+        OutComp->SetMobility(EComponentMobility::Static);
+        OutComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+        OutComp->SetCanEverAffectNavigation(false);
+        OutComp->CastShadow = true;
+        OutComp->SetStaticMesh(LoadObject<UStaticMesh>(nullptr, TEXT("/Game/EngineBasicShapes/Plane")));
+        UMaterialInterface* WhiteMat = CargarMaterialMarcas();
+        if (WhiteMat) OutComp->SetMaterial(0, WhiteMat);
+        OutComp->SetFlags(RF_Transactional);
+        Holder->AddInstanceComponent(OutComp);
+        Holder->SetRootComponent(OutComp);
+    };
+
+    CrearISM(TEXT("RoadMarking_Lines"), LineasISM);
+    CrearISM(TEXT("RoadMarking_Crosswalks"), CrucesISM);
+    CrearISM(TEXT("RoadMarking_Stop"), StopISM);
 
     for (const auto& RoadVal : *RoadsArr)
     {
@@ -86,25 +134,13 @@ int32 UAlsasuaRoadMarkingsSystem::GenerarMarcas()
                 LineaCentral.Calle = Calle;
                 LineaCentral.Barrio = Barrio;
 
-                AStaticMeshActor* LineaActor = World->SpawnActor<AStaticMeshActor>(
-                    AStaticMeshActor::StaticClass(), LineaCentral.Posicion, FRotator(0, Angle, 0));
-                if (LineaActor)
+                if (LineasISM)
                 {
-                    LineaActor->SetMobility(EComponentMobility::Static);
-                    LineaActor->SetActorScale3D(FVector(Largo / 100.0f, 0.1f, 0.02f));
-
-                    UStaticMesh* PlaneMesh = LoadObject<UStaticMesh>(nullptr,
-                        TEXT("/Game/EngineBasicShapes/Plane"));
-                    if (PlaneMesh)
-                        LineaActor->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
-
-                    UMaterialInterface* WhiteMat = CargarMaterialMarcas();
-                    if (WhiteMat)
-                        LineaActor->GetStaticMeshComponent()->SetMaterial(0, WhiteMat);
-
-#if WITH_EDITOR
-                    LineaActor->SetActorLabel(*FString::Printf(TEXT("Linea_%s_%d"), *Calle.Left(8), TotalLineas));
-#endif
+                    FTransform Transform;
+                    Transform.SetLocation(LineaCentral.Posicion);
+                    Transform.SetRotation(FQuat(FRotator(0.0f, Angle, 0.0f)));
+                    Transform.SetScale3D(FVector(Largo / 100.0f, 0.1f, 0.02f));
+                    LineasISM->AddInstance(Transform, true);
                 }
 
                 Marcas.Add(LineaCentral);
@@ -123,32 +159,17 @@ int32 UAlsasuaRoadMarkingsSystem::GenerarMarcas()
                 Cruce.Calle = Calle;
                 Cruce.Barrio = Barrio;
 
-                for (int32 s = 0; s < 5; s++)
+                if (CrucesISM)
                 {
-                    FVector StripePos = Loc0 + Normal * (Cruce.Ancho * 0.5f - s * Cruce.Ancho / 5.0f);
-                    StripePos.Z += 2.0f;
-
-                    AStaticMeshActor* Stripe = World->SpawnActor<AStaticMeshActor>(
-                        AStaticMeshActor::StaticClass(), StripePos, FRotator(0, Angle, 0));
-                    if (Stripe)
+                    for (int32 s = 0; s < 5; s++)
                     {
-                        Stripe->SetMobility(EComponentMobility::Static);
-                        Stripe->SetActorScale3D(FVector(3.0f, 0.3f, 0.02f));
-
-                        UStaticMesh* PlaneMesh = LoadObject<UStaticMesh>(nullptr,
-                            TEXT("/Game/EngineBasicShapes/Plane"));
-                        if (PlaneMesh)
-                            Stripe->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
-
-                        UMaterialInterface* WhiteMat = LoadObject<UMaterialInterface>(nullptr,
-                            TEXT("/Game/Road/Material/MI/M_Asphalt_Master_Inst_Crosswalk.M_Asphalt_Master_Inst_Crosswalk"));
-                        if (WhiteMat)
-                            Stripe->GetStaticMeshComponent()->SetMaterial(0, WhiteMat);
-
-#if WITH_EDITOR
-                        Stripe->SetActorLabel(*FString::Printf(TEXT("Cruce_%s_%d_%d"),
-                            *Calle.Left(8), TotalCruces, s));
-#endif
+                        FVector StripePos = Loc0 + Normal * (Cruce.Ancho * 0.5f - s * Cruce.Ancho / 5.0f);
+                        StripePos.Z += 2.0f;
+                        FTransform Transform;
+                        Transform.SetLocation(StripePos);
+                        Transform.SetRotation(FQuat(FRotator(0.0f, Angle, 0.0f)));
+                        Transform.SetScale3D(FVector(3.0f, 0.3f, 0.02f));
+                        CrucesISM->AddInstance(Transform, true);
                     }
                 }
 
@@ -168,25 +189,13 @@ int32 UAlsasuaRoadMarkingsSystem::GenerarMarcas()
                 Stop.Calle = Calle;
                 Stop.Barrio = Barrio;
 
-                AStaticMeshActor* StopLine = World->SpawnActor<AStaticMeshActor>(
-                    AStaticMeshActor::StaticClass(), Stop.Posicion, FRotator(0, Angle, 0));
-                if (StopLine)
+                if (StopISM)
                 {
-                    StopLine->SetMobility(EComponentMobility::Static);
-                    StopLine->SetActorScale3D(FVector(2.0f, RoadWidth * 0.8f, 0.02f));
-
-                    UStaticMesh* PlaneMesh = LoadObject<UStaticMesh>(nullptr,
-                        TEXT("/Game/EngineBasicShapes/Plane"));
-                    if (PlaneMesh)
-                        StopLine->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
-
-                    UMaterialInterface* WhiteMat = CargarMaterialMarcas();
-                    if (WhiteMat)
-                        StopLine->GetStaticMeshComponent()->SetMaterial(0, WhiteMat);
-
-#if WITH_EDITOR
-                    StopLine->SetActorLabel(*FString::Printf(TEXT("Stop_%s_%d"), *Calle.Left(8), TotalStop));
-#endif
+                    FTransform Transform;
+                    Transform.SetLocation(Stop.Posicion);
+                    Transform.SetRotation(FQuat(FRotator(0.0f, Angle, 0.0f)));
+                    Transform.SetScale3D(FVector(2.0f, RoadWidth * 0.8f, 0.02f));
+                    StopISM->AddInstance(Transform, true);
                 }
 
                 Marcas.Add(Stop);

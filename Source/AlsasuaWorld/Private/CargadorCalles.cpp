@@ -33,7 +33,7 @@ static UMaterialInterface* CargarMaterialSueloSendero()
 void UCargadorCalles::OnWorldBeginPlay(UWorld& InWorld)
 {
 	Super::OnWorldBeginPlay(InWorld);
-	if (bAutoCargar && !ArranqueMundo::HayDirector) Cargar();
+	// Las construye ADirectorArranque tras generar el terreno.
 }
 
 void UCargadorCalles::PrepararCarga()

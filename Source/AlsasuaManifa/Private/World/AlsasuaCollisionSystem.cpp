@@ -24,7 +24,7 @@ int32 UAlsasuaCollisionSystem::GenerarColisionesEdificios()
     for (AActor* Actor : Buildings)
     {
         if (!Actor) continue;
-        const FString Label = Actor->GetActorLabel();
+        const FString Label = Actor->GetName();
         if (!Label.Contains(TEXT("Edificio")) && !Label.Contains(TEXT("Building")))
             continue;
 
@@ -56,7 +56,7 @@ int32 UAlsasuaCollisionSystem::GenerarColisionesCalles()
     for (AActor* Actor : Roads)
     {
         if (!Actor) continue;
-        const FString Label = Actor->GetActorLabel();
+        const FString Label = Actor->GetName();
         if (!Label.Contains(TEXT("Road_")) && !Label.Contains(TEXT("Calle_")) && !Label.Contains(TEXT("Rio_")))
             continue;
 

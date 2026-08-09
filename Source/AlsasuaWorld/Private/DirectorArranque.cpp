@@ -208,7 +208,7 @@ void ADirectorArranque::IniciarConstruccion()
         for (AActor* Actor : EdificiosArr)
         {
             if (!Actor) continue;
-            const FString Label = Actor->GetActorLabel();
+            const FString Label = Actor->GetName();
             if (Label.Contains(TEXT("Edificio")) || Label.Contains(TEXT("Building")))
             {
                 UAlsasuaBarrioStyleSystem* Style = NewObject<UAlsasuaBarrioStyleSystem>(Actor);
@@ -226,7 +226,7 @@ void ADirectorArranque::IniciarConstruccion()
         for (AActor* Actor : FarolaActors)
         {
             if (!Actor) continue;
-            const FString Label = Actor->GetActorLabel().ToLower();
+            const FString Label = Actor->GetName().ToLower();
             if (Label.Contains(TEXT("farola")))
             {
                 UAlsasuaStreetLightController* Light = NewObject<UAlsasuaStreetLightController>(Actor);
@@ -244,7 +244,7 @@ void ADirectorArranque::IniciarConstruccion()
         for (AActor* Actor : EdificiosArr)
         {
             if (!Actor) continue;
-            const FString Label = Actor->GetActorLabel();
+            const FString Label = Actor->GetName();
             if (Label.Contains(TEXT("Edificio")) || Label.Contains(TEXT("Building")))
             {
                 UAlsasuaBuildingEmissiveComponent* Emissive =
@@ -263,7 +263,7 @@ void ADirectorArranque::IniciarConstruccion()
         for (AActor* Actor : EdificiosArr)
         {
             if (!Actor) continue;
-            const FString Label = Actor->GetActorLabel();
+            const FString Label = Actor->GetName();
             if (Label.Contains(TEXT("Edificio")) || Label.Contains(TEXT("Building")))
             {
                 UAlsasuaInteriorLightComponent* Interior =
@@ -470,12 +470,7 @@ void ADirectorArranque::IniciarConstruccion()
 
     // --- 40. Interiores con iluminación (building_facons.json) ---
     {
-        UAlsasuaBuildingInteriorSystem* Interiores = World->GetGameInstance()->GetSubsystem<UAlsasuaBuildingInteriorSystem>();
-        if (Interiores)
-        {
-            const int32 NumInteriores = Interiores->GenerarInteriores();
-            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d interiores con iluminación."), NumInteriores);
-        }
+        UE_LOG(LogTemp, Log, TEXT("DirectorArranque: skip interiores con iluminación para perfilado"));
     }
 
     // --- 41. Aparcamiento y garajes ---
@@ -530,12 +525,7 @@ void ADirectorArranque::IniciarConstruccion()
 
     // --- 46. Semáforos en intersecciones ---
     {
-        UAlsasuaTrafficLightSystem* Semaforos = World->GetGameInstance()->GetSubsystem<UAlsasuaTrafficLightSystem>();
-        if (Semaforos)
-        {
-            const int32 NumSemaforos = Semaforos->ColocarSemaforos();
-            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d semáforos."), NumSemaforos);
-        }
+        UE_LOG(LogTemp, Log, TEXT("DirectorArranque: skip semáforos para perfilado"));
     }
 
     // --- 47. Toldos y persianas en edificios ---

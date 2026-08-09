@@ -1,5 +1,6 @@
 #include "World/AlsasuaGeoWorldBuilderSubsystem.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/InstancedStaticMeshComponent.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
@@ -9,6 +10,13 @@
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "Logging/LogMacros.h"
+#include "HAL/ConsoleManager.h"
+
+static TAutoConsoleVariable<int32> CVarSkipGeoWorldBuild(
+    TEXT("alsasua.SkipGeoWorldBuild"),
+    0,
+    TEXT("Skips geo world builder mesh generation for profiling"),
+    ECVF_Cheat);
 
 namespace
 {
@@ -463,12 +471,42 @@ void UAlsasuaGeoWorldBuilderSubsystem::BuildWorld()
         return;
     }
 
+    if (CVarSkipGeoWorldBuild.GetValueOnAnyThread() != 0)
+    {
+        UE_LOG(LogTemp, Log, TEXT("Geo world build skipped by alsasua.SkipGeoWorldBuild"));
+        return;
+    }
+
     AActor* BuilderActor = GetWorld()->SpawnActor<AActor>(AActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator);
 #if WITH_EDITOR
     BuilderActor->SetActorLabel(TEXT("GeoWorldBuilder"));
 #endif
 
-    BuildTerrainMesh(BuilderActor);
+    UInstancedStaticMeshComponent* TerrainISM = nullptr;
+    UInstancedStaticMeshComponent* RoadISM = nullptr;
+    UInstancedStaticMeshComponent* BuildingISM = nullptr;
+    UInstancedStaticMeshComponent* ForestISM = nullptr;
+
+    auto CreateISM = [&](const TCHAR* Name, UInstancedStaticMeshComponent*& OutComp)
+    {
+        if (OutComp) return;
+        OutComp = NewObject<UInstancedStaticMeshComponent>(BuilderActor, UInstancedStaticMeshComponent::StaticClass(), FName(Name));
+        if (!OutComp) return;
+        OutComp->RegisterComponent();
+        OutComp->AttachToComponent(BuilderActor->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+        OutComp->SetMobility(EComponentMobility::Static);
+        OutComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+        OutComp->SetCanEverAffectNavigation(false);
+        OutComp->SetStaticMesh(LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/EngineMeshes/SM_Cube.SM_Cube")));
+        OutComp->SetMaterial(0, LoadObject<UMaterialInterface>(nullptr, TEXT("/Engine/EngineMaterials/DefaultMaterial.DefaultMaterial")));
+    };
+
+    CreateISM(TEXT("GeoTerrainISM"), TerrainISM);
+    CreateISM(TEXT("GeoRoadISM"), RoadISM);
+    CreateISM(TEXT("GeoBuildingISM"), BuildingISM);
+    CreateISM(TEXT("GeoForestISM"), ForestISM);
+
+    BuildTerrainMesh(BuilderActor, TerrainISM);
 
     FGeoLayerData GeoData;
     const bool bHasGeoData = TryLoadGeoSpatialData(GeoData);
@@ -483,7 +521,7 @@ void UAlsasuaGeoWorldBuilderSubsystem::BuildWorld()
             {
                 WorldPoints.Add(ConvertGeoToWorld(Point, GeoData));
             }
-            BuildRoadMesh(BuilderActor, WorldPoints, 320.f);
+            BuildRoadMesh(BuilderActor, WorldPoints, 320.f, RoadISM);
         }
 
         for (const TArray<FGeoPoint>& Points : GeoData.Railways)
@@ -494,12 +532,12 @@ void UAlsasuaGeoWorldBuilderSubsystem::BuildWorld()
             {
                 WorldPoints.Add(ConvertGeoToWorld(Point, GeoData));
             }
-            BuildRailMesh(BuilderActor, WorldPoints, 70.f);
+            BuildRailMesh(BuilderActor, WorldPoints, 70.f, RoadISM);
         }
 
         for (const TArray<FGeoPoint>& Points : GeoData.Buildings)
         {
-            BuildGeoBuilding(BuilderActor, Points, GeoData);
+            BuildGeoBuilding(BuilderActor, Points, GeoData, BuildingISM);
         }
 
         for (const FGeoNamedFeature& Road : GeoData.NamedRoads)
@@ -519,7 +557,7 @@ void UAlsasuaGeoWorldBuilderSubsystem::BuildWorld()
 
         for (const TArray<FGeoPoint>& Points : GeoData.Forests)
         {
-            BuildGeoForest(BuilderActor, Points, GeoData);
+            BuildGeoForest(BuilderActor, Points, GeoData, ForestISM);
         }
     }
     else
@@ -528,50 +566,37 @@ void UAlsasuaGeoWorldBuilderSubsystem::BuildWorld()
     }
 }
 
-void UAlsasuaGeoWorldBuilderSubsystem::BuildTerrainMesh(AActor* Owner)
+void UAlsasuaGeoWorldBuilderSubsystem::BuildTerrainMesh(AActor* Owner, UInstancedStaticMeshComponent* TerrainISM)
 {
-    if (!Owner)
+    if (!Owner || !TerrainISM)
     {
         return;
     }
 
-    // Terreno base amplio con pendiente longitudinal y relieve suave para aproximar la orografía de Alsasua.
-    UStaticMeshComponent* Mesh = NewObject<UStaticMeshComponent>(Owner);
-    Mesh->RegisterComponent();
-    Mesh->AttachToComponent(Owner->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-    Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-    Mesh->SetStaticMesh(LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/EngineMeshes/SM_Cube.SM_Cube")));
-    Mesh->SetWorldScale3D(FVector(14000.f, 14000.f, 220.f));
-    Mesh->SetRelativeLocation(FVector(0.f, 0.f, -110.f));
-    Mesh->SetMaterial(0, LoadObject<UMaterialInterface>(nullptr, TEXT("/Engine/EngineMaterials/DefaultMaterial.DefaultMaterial")));
+    FTransform BaseTransform;
+    BaseTransform.SetLocation(FVector(0.f, 0.f, -110.f));
+    BaseTransform.SetScale3D(FVector(14000.f, 14000.f, 220.f));
+    TerrainISM->AddInstance(BaseTransform, true);
 
-    // Franjas de terreno para diferenciar valle, pendiente y zonas de bosque.
     for (int32 i = 0; i < 12; ++i)
     {
         FVector Position(-11000.f + i * 1900.f, 0.f, 0.f);
         float Elevation = 10.f + (i % 4) * 8.f + (i > 6 ? 8.f : 0.f);
-        UStaticMeshComponent* Strip = NewObject<UStaticMeshComponent>(Owner);
-        Strip->RegisterComponent();
-        Strip->AttachToComponent(Owner->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-        Strip->SetStaticMesh(LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/EngineMeshes/SM_Cube.SM_Cube")));
-        Strip->SetWorldScale3D(FVector(1300.f, 14000.f, 24.f));
-        Strip->SetWorldLocation(Position + FVector(0.f, 0.f, Elevation));
-        Strip->SetMaterial(0, LoadObject<UMaterialInterface>(nullptr, TEXT("/Engine/EngineMaterials/DefaultMaterial.DefaultMaterial")));
+        FTransform StripTransform;
+        StripTransform.SetLocation(Position + FVector(0.f, 0.f, Elevation));
+        StripTransform.SetScale3D(FVector(1300.f, 14000.f, 24.f));
+        TerrainISM->AddInstance(StripTransform, true);
     }
 
-    // Un corredor de baja cota para simular un río o vega longitudinal.
-    UStaticMeshComponent* RiverStrip = NewObject<UStaticMeshComponent>(Owner);
-    RiverStrip->RegisterComponent();
-    RiverStrip->AttachToComponent(Owner->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-    RiverStrip->SetStaticMesh(LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/EngineMeshes/SM_Cube.SM_Cube")));
-    RiverStrip->SetWorldScale3D(FVector(3000.f, 14000.f, 12.f));
-    RiverStrip->SetWorldLocation(FVector(-500.f, 0.f, 3.f));
-    RiverStrip->SetMaterial(0, LoadObject<UMaterialInterface>(nullptr, TEXT("/Engine/EngineMaterials/DefaultMaterial.DefaultMaterial")));
+    FTransform RiverTransform;
+    RiverTransform.SetLocation(FVector(-500.f, 0.f, 3.f));
+    RiverTransform.SetScale3D(FVector(3000.f, 14000.f, 12.f));
+    TerrainISM->AddInstance(RiverTransform, true);
 }
 
-void UAlsasuaGeoWorldBuilderSubsystem::BuildRoadMesh(AActor* Owner, const TArray<FVector>& Points, float Width)
+void UAlsasuaGeoWorldBuilderSubsystem::BuildRoadMesh(AActor* Owner, const TArray<FVector>& Points, float Width, UInstancedStaticMeshComponent* RoadISM)
 {
-    if (!Owner || Points.Num() < 2)
+    if (!Owner || !RoadISM || Points.Num() < 2)
     {
         return;
     }
@@ -579,38 +604,28 @@ void UAlsasuaGeoWorldBuilderSubsystem::BuildRoadMesh(AActor* Owner, const TArray
     const float RoadHeight = 4.f;
     const float LaneWidth = 3.2f;
     const float CenterLineWidth = 0.3f;
-    const float Shoulder = 2.f;
 
     for (int32 i = 0; i < Points.Num() - 1; ++i)
     {
         FVector A = Points[i];
         FVector B = Points[i + 1];
         FVector Dir = (B - A).GetSafeNormal();
-        FVector Right = FVector::CrossProduct(FVector(0.f, 0.f, 1.f), Dir).GetSafeNormal() * Width;
-
-        UStaticMeshComponent* Asphalt = NewObject<UStaticMeshComponent>(Owner);
-        Asphalt->RegisterComponent();
-        Asphalt->AttachToComponent(Owner->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-        Asphalt->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-        Asphalt->SetStaticMesh(LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/EngineMeshes/SM_Cube.SM_Cube")));
-        Asphalt->SetMaterial(0, LoadObject<UMaterialInterface>(nullptr, TEXT("/Engine/EngineMaterials/DefaultMaterial.DefaultMaterial")));
-        Asphalt->SetWorldScale3D(FVector(Width * 0.01f, (B - A).Size() * 0.01f, RoadHeight * 0.01f));
-        Asphalt->SetWorldLocation((A + B) * 0.5f + FVector(0.f, 0.f, RoadHeight * 0.5f));
-        Asphalt->SetWorldRotation(FRotationMatrix::MakeFromX(B - A).Rotator());
+        FTransform AsphaltTransform;
+        AsphaltTransform.SetLocation((A + B) * 0.5f + FVector(0.f, 0.f, RoadHeight * 0.5f));
+        AsphaltTransform.SetRotation(FQuat(FRotationMatrix::MakeFromX(B - A).Rotator()));
+        AsphaltTransform.SetScale3D(FVector(Width * 0.01f, (B - A).Size() * 0.01f, RoadHeight * 0.01f));
+        RoadISM->AddInstance(AsphaltTransform, true);
 
         const int32 LaneCount = FMath::Max(1, FMath::RoundToInt(Width / (LaneWidth * 2.f)));
         for (int32 Lane = 0; Lane < LaneCount; ++Lane)
         {
             const float Offset = (Lane - (LaneCount - 1) * 0.5f) * (LaneWidth * 2.f);
             const FVector MarkerPos = (A + B) * 0.5f + Dir * (Offset * 0.5f) + FVector(0.f, 0.f, RoadHeight + 0.2f);
-            UStaticMeshComponent* LaneMarker = NewObject<UStaticMeshComponent>(Owner);
-            LaneMarker->RegisterComponent();
-            LaneMarker->AttachToComponent(Owner->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-            LaneMarker->SetStaticMesh(LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/EngineMeshes/SM_Cube.SM_Cube")));
-            LaneMarker->SetMaterial(0, LoadObject<UMaterialInterface>(nullptr, TEXT("/Engine/EngineMaterials/DefaultMaterial.DefaultMaterial")));
-            LaneMarker->SetWorldScale3D(FVector(CenterLineWidth, (B - A).Size() * 0.01f, 0.05f));
-            LaneMarker->SetWorldLocation(MarkerPos);
-            LaneMarker->SetWorldRotation(FRotationMatrix::MakeFromX(B - A).Rotator());
+            FTransform LaneTransform;
+            LaneTransform.SetLocation(MarkerPos);
+            LaneTransform.SetRotation(FQuat(FRotationMatrix::MakeFromX(B - A).Rotator()));
+            LaneTransform.SetScale3D(FVector(CenterLineWidth, (B - A).Size() * 0.01f, 0.05f));
+            RoadISM->AddInstance(LaneTransform, true);
         }
 
         const FVector ZebraStart = A + Dir * 120.f;
@@ -620,22 +635,19 @@ void UAlsasuaGeoWorldBuilderSubsystem::BuildRoadMesh(AActor* Owner, const TArray
             for (int32 Step = 0; Step < 3; ++Step)
             {
                 const FVector ZebraPos = FMath::Lerp(ZebraStart, ZebraEnd, (Step + 1) / 4.f);
-                UStaticMeshComponent* Zebra = NewObject<UStaticMeshComponent>(Owner);
-                Zebra->RegisterComponent();
-                Zebra->AttachToComponent(Owner->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-                Zebra->SetStaticMesh(LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/EngineMeshes/SM_Cube.SM_Cube")));
-                Zebra->SetMaterial(0, LoadObject<UMaterialInterface>(nullptr, TEXT("/Engine/EngineMaterials/DefaultMaterial.DefaultMaterial")));
-                Zebra->SetWorldScale3D(FVector(4.f, 22.f, 0.05f));
-                Zebra->SetWorldLocation(ZebraPos + FVector(0.f, 0.f, RoadHeight + 0.1f));
-                Zebra->SetWorldRotation(FRotationMatrix::MakeFromX(B - A).Rotator());
+                FTransform ZebraTransform;
+                ZebraTransform.SetLocation(ZebraPos + FVector(0.f, 0.f, RoadHeight + 0.1f));
+                ZebraTransform.SetRotation(FQuat(FRotationMatrix::MakeFromX(B - A).Rotator()));
+                ZebraTransform.SetScale3D(FVector(4.f, 22.f, 0.05f));
+                RoadISM->AddInstance(ZebraTransform, true);
             }
         }
     }
 }
 
-void UAlsasuaGeoWorldBuilderSubsystem::BuildRailMesh(AActor* Owner, const TArray<FVector>& Points, float Width)
+void UAlsasuaGeoWorldBuilderSubsystem::BuildRailMesh(AActor* Owner, const TArray<FVector>& Points, float Width, UInstancedStaticMeshComponent* RoadISM)
 {
-    if (!Owner || Points.Num() < 2)
+    if (!Owner || !RoadISM || Points.Num() < 2)
     {
         return;
     }
@@ -644,27 +656,17 @@ void UAlsasuaGeoWorldBuilderSubsystem::BuildRailMesh(AActor* Owner, const TArray
     {
         FVector A = Points[i];
         FVector B = Points[i + 1];
-        FVector Dir = (B - A).GetSafeNormal();
-        FVector Right = FVector::CrossProduct(FVector(0.f, 0.f, 1.f), Dir).GetSafeNormal() * Width;
-        FVector P1 = A + Right;
-        FVector P2 = A - Right;
-        FVector P3 = B + Right;
-        FVector P4 = B - Right;
-
-        UStaticMeshComponent* Segment = NewObject<UStaticMeshComponent>(Owner);
-        Segment->RegisterComponent();
-        Segment->AttachToComponent(Owner->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-        Segment->SetStaticMesh(LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/EngineMeshes/SM_Cube.SM_Cube")));
-        Segment->SetMaterial(0, LoadObject<UMaterialInterface>(nullptr, TEXT("/Engine/EngineMaterials/DefaultMaterial.DefaultMaterial")));
-        Segment->SetWorldScale3D(FVector(Width * 0.01f, (B - A).Size() * 0.01f, 3.f));
-        Segment->SetWorldLocation((A + B) * 0.5f + FVector(0.f, 0.f, 1.5f));
-        Segment->SetWorldRotation(FRotationMatrix::MakeFromX(B - A).Rotator());
+        FTransform SegmentTransform;
+        SegmentTransform.SetLocation((A + B) * 0.5f + FVector(0.f, 0.f, 1.5f));
+        SegmentTransform.SetRotation(FQuat(FRotationMatrix::MakeFromX(B - A).Rotator()));
+        SegmentTransform.SetScale3D(FVector(Width * 0.01f, (B - A).Size() * 0.01f, 3.f));
+        RoadISM->AddInstance(SegmentTransform, true);
     }
 }
 
-void UAlsasuaGeoWorldBuilderSubsystem::BuildBuildings(AActor* Owner)
+void UAlsasuaGeoWorldBuilderSubsystem::BuildBuildings(AActor* Owner, UInstancedStaticMeshComponent* BuildingISM)
 {
-    if (!Owner)
+    if (!Owner || !BuildingISM)
     {
         return;
     }
@@ -691,22 +693,18 @@ void UAlsasuaGeoWorldBuilderSubsystem::BuildBuildings(AActor* Owner)
             {
                 FVector Position = Center + FVector((col - 1.5f) * 240.f, (row - 1.5f) * 220.f, 0.f);
                 FVector Extents(110.f * Scale + col * 8.f, 80.f * Scale + row * 6.f, 140.f + (row + col) * 20.f);
-
-                UStaticMeshComponent* Mesh = NewObject<UStaticMeshComponent>(Owner);
-                Mesh->RegisterComponent();
-                Mesh->AttachToComponent(Owner->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-                Mesh->SetStaticMesh(LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/EngineMeshes/SM_Cube.SM_Cube")));
-                Mesh->SetWorldScale3D(Extents * 0.5f);
-                Mesh->SetWorldLocation(Position + FVector(0.f, 0.f, Extents.Z));
-                Mesh->SetMaterial(0, LoadObject<UMaterialInterface>(nullptr, TEXT("/Engine/EngineMaterials/DefaultMaterial.DefaultMaterial")));
+                FTransform BuildingTransform;
+                BuildingTransform.SetLocation(Position + FVector(0.f, 0.f, Extents.Z));
+                BuildingTransform.SetScale3D(Extents * 0.5f);
+                BuildingISM->AddInstance(BuildingTransform, true);
             }
         }
     }
 }
 
-void UAlsasuaGeoWorldBuilderSubsystem::BuildForest(AActor* Owner)
+void UAlsasuaGeoWorldBuilderSubsystem::BuildForest(AActor* Owner, UInstancedStaticMeshComponent* ForestISM)
 {
-    if (!Owner)
+    if (!Owner || !ForestISM)
     {
         return;
     }
@@ -723,26 +721,20 @@ void UAlsasuaGeoWorldBuilderSubsystem::BuildForest(AActor* Owner)
         for (int32 i = 0; i < 48; ++i)
         {
             FVector Position = Origin + FVector(-1400.f + i * 90.f, -1000.f + ((i % 8) * 220.f), 0.f);
-            UStaticMeshComponent* Mesh = NewObject<UStaticMeshComponent>(Owner);
-            Mesh->RegisterComponent();
-            Mesh->AttachToComponent(Owner->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-            Mesh->SetStaticMesh(LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/EngineMeshes/SM_Cube.SM_Cube")));
-            Mesh->SetWorldScale3D(FVector(28.f, 28.f, 160.f));
-            Mesh->SetWorldLocation(Position + FVector(0.f, 0.f, 80.f));
-            Mesh->SetMaterial(0, LoadObject<UMaterialInterface>(nullptr, TEXT("/Engine/EngineMaterials/DefaultMaterial.DefaultMaterial")));
+            FTransform TreeTransform;
+            TreeTransform.SetLocation(Position + FVector(0.f, 0.f, 80.f));
+            TreeTransform.SetScale3D(FVector(28.f, 28.f, 160.f));
+            ForestISM->AddInstance(TreeTransform, true);
         }
     }
 }
 
-void UAlsasuaGeoWorldBuilderSubsystem::BuildGeoBuilding(AActor* Owner, const TArray<FGeoPoint>& Points, const FGeoLayerData& GeoData)
+void UAlsasuaGeoWorldBuilderSubsystem::BuildGeoBuilding(AActor* Owner, const TArray<FGeoPoint>& Points, const FGeoLayerData& GeoData, UInstancedStaticMeshComponent* BuildingISM)
 {
-    if (!Owner || Points.Num() < 3)
+    if (!Owner || !BuildingISM || Points.Num() < 3)
     {
         return;
     }
-
-    TArray<FVector> WorldPoints;
-    WorldPoints.Reserve(Points.Num());
 
     FVector Center = FVector::ZeroVector;
     float MinX = TNumericLimits<float>::Max();
@@ -753,7 +745,6 @@ void UAlsasuaGeoWorldBuilderSubsystem::BuildGeoBuilding(AActor* Owner, const TAr
     for (const FGeoPoint& Point : Points)
     {
         const FVector WorldPoint = ConvertGeoToWorld(Point, GeoData);
-        WorldPoints.Add(WorldPoint);
         Center += WorldPoint;
         MinX = FMath::Min(MinX, WorldPoint.X);
         MaxX = FMath::Max(MaxX, WorldPoint.X);
@@ -767,18 +758,15 @@ void UAlsasuaGeoWorldBuilderSubsystem::BuildGeoBuilding(AActor* Owner, const TAr
     const float Height = 24.f + FMath::Clamp(Points.Num(), 3, 12) * 10.f;
     const FVector Extents(FootprintWidth * 0.5f, FootprintLength * 0.5f, Height * 0.5f);
 
-    UStaticMeshComponent* Mesh = NewObject<UStaticMeshComponent>(Owner);
-    Mesh->RegisterComponent();
-    Mesh->AttachToComponent(Owner->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-    Mesh->SetStaticMesh(LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/EngineMeshes/SM_Cube.SM_Cube")));
-    Mesh->SetWorldScale3D(FVector(Extents.X / 100.f, Extents.Y / 100.f, Extents.Z / 100.f));
-    Mesh->SetWorldLocation(Center + FVector(0.f, 0.f, Extents.Z));
-    Mesh->SetMaterial(0, LoadObject<UMaterialInterface>(nullptr, TEXT("/Engine/EngineMaterials/DefaultMaterial.DefaultMaterial")));
+    FTransform BuildingTransform;
+    BuildingTransform.SetLocation(Center + FVector(0.f, 0.f, Extents.Z));
+    BuildingTransform.SetScale3D(FVector(Extents.X / 100.f, Extents.Y / 100.f, Extents.Z / 100.f));
+    BuildingISM->AddInstance(BuildingTransform, true);
 }
 
-void UAlsasuaGeoWorldBuilderSubsystem::BuildGeoForest(AActor* Owner, const TArray<FGeoPoint>& Points, const FGeoLayerData& GeoData)
+void UAlsasuaGeoWorldBuilderSubsystem::BuildGeoForest(AActor* Owner, const TArray<FGeoPoint>& Points, const FGeoLayerData& GeoData, UInstancedStaticMeshComponent* ForestISM)
 {
-    if (!Owner || Points.Num() < 3)
+    if (!Owner || !ForestISM || Points.Num() < 3)
     {
         return;
     }
@@ -799,13 +787,10 @@ void UAlsasuaGeoWorldBuilderSubsystem::BuildGeoForest(AActor* Owner, const TArra
         const float Width = 18.f + (i % 4) * 6.f;
         const float Height = 140.f + (i % 6) * 20.f;
 
-        UStaticMeshComponent* Mesh = NewObject<UStaticMeshComponent>(Owner);
-        Mesh->RegisterComponent();
-        Mesh->AttachToComponent(Owner->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-        Mesh->SetStaticMesh(LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/EngineMeshes/SM_Cube.SM_Cube")));
-        Mesh->SetWorldScale3D(FVector(Width, Width, Height));
-        Mesh->SetWorldLocation(Center + Offset + FVector(0.f, 0.f, Height * 0.5f));
-        Mesh->SetMaterial(0, LoadObject<UMaterialInterface>(nullptr, TEXT("/Engine/EngineMaterials/DefaultMaterial.DefaultMaterial")));
+        FTransform TreeTransform;
+        TreeTransform.SetLocation(Center + Offset + FVector(0.f, 0.f, Height * 0.5f));
+        TreeTransform.SetScale3D(FVector(Width, Width, Height));
+        ForestISM->AddInstance(TreeTransform, true);
     }
 }
 

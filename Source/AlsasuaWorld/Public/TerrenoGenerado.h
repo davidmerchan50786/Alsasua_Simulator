@@ -17,6 +17,7 @@ public:
 
 	void GenerarDesdeRAW(const FString& RutaR16, int32 Resolucion,
 		double EscalaXY_cm, double EscalaZ, double LocZ_cm, FVector CentroXY_cm);
+	void GenerarTodoAhora();
 
 	float AlturaEnMundo(float X, float Y) const;
 	FVector NormalEnMundo(float X, float Y) const;

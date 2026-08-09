@@ -21,7 +21,10 @@ static UMaterialInterface* CargarMaterialAgua()
 }
 static UMaterialInterface* CargarMaterialSueloVias()
 {
-	return LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Edificio.M_Edificio"));
+	return CargarMaterialConFallbackSeguro(
+		TEXT("/Game/Materiales/M_Edificio.M_Edificio"),
+		TEXT("/Game/Materiales/M_Edificio.M_Edificio"),
+		TEXT("/Game/Materiales/M_Edificio.M_Edificio"));
 }
 static UMaterialInterface* CargarMaterialAcera()
 {
@@ -34,7 +37,7 @@ static UMaterialInterface* CargarMaterialAcera()
 void UCargadorVias::OnWorldBeginPlay(UWorld& InWorld)
 {
 	Super::OnWorldBeginPlay(InWorld);
-	if (bAutoCargar && !ArranqueMundo::HayDirector) Cargar();
+	// Las construye ADirectorArranque tras generar el terreno.
 }
 
 void UCargadorVias::Encolar(const FString& RutaRel, FName Tag, float EpsilonCm,

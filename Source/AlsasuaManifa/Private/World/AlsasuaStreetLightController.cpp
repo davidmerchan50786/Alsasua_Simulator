@@ -109,7 +109,7 @@ void UAlsasuaStreetLightController::UpdateLightState(float DeltaTime)
 	{
 		bBurnedOut = true;
 		UE_LOG(LogTemp, Log, TEXT("StreetLight: Farola quemada en %s"),
-			*GetOwner()->GetActorLabel());
+			*GetOwner()->GetName());
 	}
 }
 

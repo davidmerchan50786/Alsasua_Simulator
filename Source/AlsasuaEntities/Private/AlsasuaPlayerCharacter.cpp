@@ -23,16 +23,24 @@ AAlsasuaPlayerCharacter::AAlsasuaPlayerCharacter()
 
 	GetCapsuleComponent()->InitCapsuleSize(40.f, 90.f);
 
-	// Cuerpo: Mannequin de UE5 (importado de altsasu_gtavi). Falla con gracia si no está el asset.
+	// Cuerpo: usa mesh/anim BP del proyecto si existen; si no, deja el fallback del Character.
 	if (USkeletalMeshComponent* M = GetMesh())
 	{
 		M->SetRelativeLocationAndRotation(FVector(0.f, 0.f, -90.f), FRotator(0.f, -90.f, 0.f));
+
 		static ConstructorHelpers::FObjectFinder<USkeletalMesh> SkelMesh(
 			TEXT("/Game/Characters/Mannequins/Meshes/SK_Mannequin.SK_Mannequin"));
-		if (SkelMesh.Succeeded()) M->SetSkeletalMeshAsset(SkelMesh.Object);
+		if (SkelMesh.Succeeded())
+		{
+			M->SetSkeletalMesh(SkelMesh.Object);
+		}
+
 		static ConstructorHelpers::FClassFinder<UAnimInstance> AnimBP(
 			TEXT("/Game/Characters/Mannequins/Anims/Unarmed/ABP_Unarmed"));
-		if (AnimBP.Succeeded()) M->SetAnimInstanceClass(AnimBP.Class);
+		if (AnimBP.Succeeded())
+		{
+			M->SetAnimInstanceClass(AnimBP.Class);
+		}
 	}
 
 	// Movimiento AAA: el personaje orienta hacia el avance; cámara lleva el yaw; puede agacharse.
