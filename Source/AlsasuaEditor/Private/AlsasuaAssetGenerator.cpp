@@ -26,6 +26,7 @@
 #include "AlsasuaRiverMeshGenerator.h"
 #include "AlsasuaBridgeGenerator.h"
 #include "AlsasuaFoliageLoader.h"
+#include "CreadorMallaMobiliario.h"
 #include "AssetToolsModule.h"
 #include "IAssetTools.h"
 #include "AssetImportTask.h"
@@ -182,8 +183,8 @@ bool UAlsasuaAssetGenerator::GenerarMeshesArboles()
 
 bool UAlsasuaAssetGenerator::GenerarMobiliarioUrbano()
 {
-	UE_LOG(LogTemp, Warning, TEXT("[Assets] Mobiliario procedural: sin implementar (necesita FStaticMeshAttributes)."));
-	return false;
+	// Ocho formas que cubren ~180 de las 220 piezas de street_furniture.json.
+	return UCreadorMallaMobiliario::GenerarTodas() > 0;
 }
 
 bool UAlsasuaAssetGenerator::GenerarLandmarks()
@@ -212,6 +213,7 @@ bool UAlsasuaAssetGenerator::GenerarTodosLosAssets()
 	const bool bPBR = CrearMaterialesPBR();
 
 	// 4. Geometría, que asigna esos materiales.
+	const bool bMobiliario = GenerarMobiliarioUrbano();
 	const bool bRios = GenerarRios();
 	const bool bPuentes = GenerarPuentes();
 
@@ -221,10 +223,11 @@ bool UAlsasuaAssetGenerator::GenerarTodosLosAssets()
 	UE_LOG(LogTemp, Log, TEXT("[Assets] ---------------- Resumen ----------------"));
 	UE_LOG(LogTemp, Log, TEXT("[Assets]  Materiales base : %s"), bBase    ? TEXT("OK") : TEXT("con fallos"));
 	UE_LOG(LogTemp, Log, TEXT("[Assets]  Superficies PBR : %s"), bPBR     ? TEXT("OK") : TEXT("con fallos"));
+	UE_LOG(LogTemp, Log, TEXT("[Assets]  Mobiliario      : %s"), bMobiliario ? TEXT("OK") : TEXT("con fallos"));
 	UE_LOG(LogTemp, Log, TEXT("[Assets]  Ríos            : %s"), bRios    ? TEXT("OK") : TEXT("con fallos"));
 	UE_LOG(LogTemp, Log, TEXT("[Assets]  Puentes         : %s"), bPuentes ? TEXT("OK") : TEXT("con fallos"));
 	UE_LOG(LogTemp, Log, TEXT("[Assets]  Foliage de Fab  : %s"), bFoliage ? TEXT("OK") : TEXT("nada bajado"));
-	UE_LOG(LogTemp, Log, TEXT("[Assets] Pendiente a mano: árboles, mobiliario y landmarks procedurales."));
+	UE_LOG(LogTemp, Log, TEXT("[Assets] Pendiente: árboles y landmarks procedurales (usa Fab para los árboles)."));
 	UE_LOG(LogTemp, Log, TEXT("[Assets] ====================================================="));
 
 	// Materiales y superficies son lo imprescindible para que el pueblo no
