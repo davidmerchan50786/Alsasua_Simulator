@@ -130,7 +130,7 @@ int32 UAlsasuaAwningShutterSystem::ColocarToldosYPersianas()
                 ToldoActor->SetActorScale3D(FVector(SX, SZ, 0.05f));
 
                 UStaticMesh* PlaneMesh = LoadObject<UStaticMesh>(nullptr,
-                    TEXT("/Game/EngineBasicShapes/Plane"));
+                    TEXT("/Engine/BasicShapes/Plane.Plane"));
                 if (PlaneMesh)
                     ToldoActor->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
             }
@@ -168,7 +168,7 @@ int32 UAlsasuaAwningShutterSystem::ColocarToldosYPersianas()
                 PersianaActor->SetActorScale3D(FVector(SX, 0.05f, SZ));
 
                 UStaticMesh* PlaneMesh = LoadObject<UStaticMesh>(nullptr,
-                    TEXT("/Game/EngineBasicShapes/Plane"));
+                    TEXT("/Engine/BasicShapes/Plane.Plane"));
                 if (PlaneMesh)
                     PersianaActor->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
             }

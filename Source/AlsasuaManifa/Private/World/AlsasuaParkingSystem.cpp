@@ -121,7 +121,7 @@ int32 UAlsasuaParkingSystem::GenerarPlazasAparcamiento()
             SpotActor->SetActorScale3D(FVector(4.5f, 2.5f, 0.05f));
 
             UStaticMesh* PlaneMesh = LoadObject<UStaticMesh>(nullptr,
-                TEXT("/Game/EngineBasicShapes/Plane"));
+                TEXT("/Engine/BasicShapes/Plane.Plane"));
             if (PlaneMesh)
                 SpotActor->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
 
@@ -165,7 +165,7 @@ int32 UAlsasuaParkingSystem::GenerarPlazasAparcamiento()
             GarajeActor->SetActorScale3D(FVector(5.0f, 6.0f, 3.0f));
 
             UStaticMesh* CubeMesh = LoadObject<UStaticMesh>(nullptr,
-                TEXT("/Game/EngineBasicShapes/Cube"));
+                TEXT("/Engine/BasicShapes/Cube.Cube"));
             if (CubeMesh)
                 GarajeActor->GetStaticMeshComponent()->SetStaticMesh(CubeMesh);
 

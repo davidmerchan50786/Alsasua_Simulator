@@ -80,7 +80,7 @@ int32 UAlsasuaRoadMarkingsSystem::GenerarMarcas()
         OutComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
         OutComp->SetCanEverAffectNavigation(false);
         OutComp->CastShadow = true;
-        OutComp->SetStaticMesh(LoadObject<UStaticMesh>(nullptr, TEXT("/Game/EngineBasicShapes/Plane")));
+        OutComp->SetStaticMesh(LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Plane.Plane")));
         UMaterialInterface* WhiteMat = CargarMaterialMarcas();
         if (WhiteMat) OutComp->SetMaterial(0, WhiteMat);
         OutComp->SetFlags(RF_Transactional);

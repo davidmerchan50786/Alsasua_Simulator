@@ -92,7 +92,7 @@ int32 UAlsasuaShopFrontSystem::ColocarTiendasEnMundo()
         ShopActor->SetActorScale3D(FVector(ScaleX / 100.0f, 1.0f, ScaleZ / 100.0f));
 
         UStaticMesh* CubeMesh = LoadObject<UStaticMesh>(nullptr,
-            TEXT("/Game/EngineBasicShapes/Cube"));
+            TEXT("/Engine/BasicShapes/Cube.Cube"));
         if (CubeMesh)
             ShopActor->GetStaticMeshComponent()->SetStaticMesh(CubeMesh);
 

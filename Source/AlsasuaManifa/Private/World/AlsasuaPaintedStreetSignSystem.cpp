@@ -82,7 +82,7 @@ int32 UAlsasuaPaintedStreetSignSystem::ColocarRotulosPintados()
             RotuloActor->SetActorScale3D(FVector(SX, 0.03f, SZ));
 
             UStaticMesh* PlaneMesh = LoadObject<UStaticMesh>(nullptr,
-                TEXT("/Game/EngineBasicShapes/Plane"));
+                TEXT("/Engine/BasicShapes/Plane.Plane"));
             if (PlaneMesh)
                 RotuloActor->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
 

@@ -106,7 +106,7 @@ int32 UAlsasuaDoorEntranceSystem::ColocarPuertas()
             PuertaActor->SetActorScale3D(FVector(1.0f, 0.1f, 2.2f));
 
             UStaticMesh* CubeMesh = LoadObject<UStaticMesh>(nullptr,
-                TEXT("/Game/EngineBasicShapes/Cube"));
+                TEXT("/Engine/BasicShapes/Cube.Cube"));
             if (CubeMesh)
                 PuertaActor->GetStaticMeshComponent()->SetStaticMesh(CubeMesh);
 
@@ -137,7 +137,7 @@ int32 UAlsasuaDoorEntranceSystem::ColocarPuertas()
                 ToldoActor->SetActorScale3D(FVector(2.0f, 1.0f, 0.05f));
 
                 UStaticMesh* PlaneMesh = LoadObject<UStaticMesh>(nullptr,
-                    TEXT("/Game/EngineBasicShapes/Plane"));
+                    TEXT("/Engine/BasicShapes/Plane.Plane"));
                 if (PlaneMesh)
                     ToldoActor->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
 
