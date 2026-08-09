@@ -11,10 +11,13 @@ Ejecutar en el editor UE5:  Tools > Execute Python Script
 import unreal
 
 MPC_PATH = "/Game/Materials/MPC_AlsasuaGlobal"
-GRASS_TEXTURE = "/Game/Textures/T_Grass_01_D"
-DIRT_TEXTURE = "/Game/Textures/T_Rock_05_D"
-ROCK_TEXTURE = "/Game/Textures/T_StoneWall_02_D"
-SNOW_TEXTURE = "/Game/Textures/T_Ground_01_D"
+# Nombres reales de Content/Textures (los pone Tools/DownloadTextures.py).
+# Antes apuntaban a T_Grass_01_D, T_Rock_05_D, T_StoneWall_02_D y T_Ground_01_D,
+# que no existen: el material salia sin ninguna textura.
+GRASS_TEXTURE = "/Game/Textures/T_Grass_Color"
+DIRT_TEXTURE = "/Game/Textures/T_Ground_Color"
+ROCK_TEXTURE = "/Game/Textures/T_StoneWall_Color"
+SNOW_TEXTURE = "/Game/Textures/T_Concrete_Color"
 
 
 def create_terrain_material():

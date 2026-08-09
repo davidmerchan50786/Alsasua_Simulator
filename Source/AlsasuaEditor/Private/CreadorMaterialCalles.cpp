@@ -55,6 +55,20 @@ bool UCreadorMaterialCalles::CrearMaterialAcera()
 	return true;
 }
 
+bool UCreadorMaterialCalles::CrearMaterialHierba()
+{
+	// Césped: teselado 1 m. Mojado apenas brilla, la hierba absorbe el agua.
+	CrearSuelo(TEXT("M_Terreno_Hierba"), TEXT("Grass"), 100.f, 0.55f, TEXT("Hierba"));
+	return true;
+}
+
+bool UCreadorMaterialCalles::CrearMaterialTierra()
+{
+	// Tierra y grava de sendas: teselado 1.5 m. Encharcada sí refleja.
+	CrearSuelo(TEXT("M_Terreno_Tierra"), TEXT("Ground"), 150.f, 0.2f, TEXT("Tierra"));
+	return true;
+}
+
 bool UCreadorMaterialCalles::CrearMaterialMarcaBlanca()
 {
 	const FString Nombre = TEXT("M_Marca_Blanca");

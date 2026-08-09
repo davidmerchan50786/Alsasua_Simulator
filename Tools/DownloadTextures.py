@@ -30,10 +30,13 @@ ASSETS = {
     "MetalPlate":   "Metal063",
 }
 
-# Maps to extract from each ZIP
+# Maps to extract from each ZIP.
+# ambientCG ships both _NormalGL (OpenGL) and _NormalDX (DirectX). UE5 expects
+# the DirectX convention, so only that one is kept as T_<name>_Normal; the GL
+# variant is the same map with the green channel flipped and nothing can use it.
 MAP_NAMES = {
     "Color":     ["Color.jpg", "color.jpg"],
-    "NormalGL":  ["NormalGL.jpg", "normalgl.jpg", "Normal.jpg", "normal.jpg"],
+    "Normal":    ["NormalDX.jpg", "normaldx.jpg", "Normal.jpg", "normal.jpg"],
     "Roughness": ["Roughness.jpg", "roughness.jpg"],
     "AO":        ["AmbientOcclusion.jpg", "ambientocclusion.jpg", "AO.jpg", "ao.jpg"],
 }
@@ -82,7 +85,7 @@ def download_and_extract_zip(asset_id, asset_name):
             if "_color" in f_lower:
                 ue_name = f"T_{asset_name}_Color.png"
             elif "_normalgl" in f_lower or "_normal_gl" in f_lower:
-                ue_name = f"T_{asset_name}_NormalGL.png"
+                continue    # convencion OpenGL: UE usa la DX
             elif "_normal" in f_lower:
                 ue_name = f"T_{asset_name}_Normal.png"
             elif "_roughness" in f_lower:
