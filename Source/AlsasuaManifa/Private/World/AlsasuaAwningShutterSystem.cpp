@@ -100,7 +100,9 @@ int32 UAlsasuaAwningShutterSystem::ColocarToldosYPersianas()
         }
         CX /= VertsArr->Num();
         CZ /= VertsArr->Num();
-        FVector Center = UAlsasuaGeoData::RelLocalToUE5(FVector(CX, 0.0f, CZ));
+        // La cota sale del terreno: antes era 0 y los toldos y persianas de los
+        // 1030 edificios quedaban medio kilómetro bajo el pueblo (está a 531 m).
+        FVector Center = UAlsasuaGeoData::RelLocalASueloUE5(GetWorld(), FVector(CX, 0.0f, CZ));
 
         bool bHasAwning = false;
         if (bool* Found = TieneToldo.Find(Id)) bHasAwning = *Found;

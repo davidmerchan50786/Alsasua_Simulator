@@ -56,7 +56,7 @@ int32 UAlsasuaBuildingInteriorSystem::GenerarInteriores()
         CX /= VertsArr->Num();
         CZ /= VertsArr->Num();
 
-        FVector Center = UAlsasuaGeoData::RelLocalToUE5(FVector(CX, 0.0f, CZ));
+        FVector Center = UAlsasuaGeoData::RelLocalASueloUE5(GetWorld(), FVector(CX, 0.0f, CZ));
         int32 NumPlantas = FMath::Max(1, FMath::CeilToInt(Height / 3.0f));
 
         FBuildingInterior Interior;

@@ -14,7 +14,9 @@ void UAlsasuaDynamicTrafficSystem::Initialize(FSubsystemCollectionBase& Collecti
 {
     Super::Initialize(Collection);
     bInicializado = true;
-    CargarCallejero();
+    // El callejero se carga al usarlo, no aquí: en Initialize de un
+    // subsistema de GameInstance todavía no hay terreno, y los puntos de
+    // ruta se quedarían todos a la cota de la plaza en vez de sobre su calle.
 }
 
 void UAlsasuaDynamicTrafficSystem::CargarCallejero()
@@ -57,7 +59,8 @@ void UAlsasuaDynamicTrafficSystem::CargarCallejero()
         {
             const TSharedPtr<FJsonObject>& Pt = (*PointsArr)[i]->AsObject();
             if (!Pt) continue;
-            PuntosCalle.Add(UAlsasuaGeoData::RelLocalToUE5(FVector(Pt->GetNumberField(TEXT("x")), 0.0f, Pt->GetNumberField(TEXT("z")))));
+            PuntosCalle.Add(UAlsasuaGeoData::RelLocalASueloUE5(GetWorld(),
+                FVector(Pt->GetNumberField(TEXT("x")), 0.0f, Pt->GetNumberField(TEXT("z")))));
         }
 
         if (PuntosCalle.Num() >= 2)
@@ -71,6 +74,8 @@ void UAlsasuaDynamicTrafficSystem::CargarCallejero()
 
 void UAlsasuaDynamicTrafficSystem::IniciarTrafico()
 {
+    if (CallesDisponibles.Num() == 0) CargarCallejero();
+
     if (!bInicializado) return;
 
     Vehiculos.Empty();
@@ -244,5 +249,7 @@ FVector UAlsasuaDynamicTrafficSystem::ObtenerPuntoInicio() const
             return Calle[0];
     }
 
-    return UAlsasuaGeoData::AbsLocalToUE5(UAlsasuaGeoData::BarrioCenter(TEXT("Herriko")));
+    FVector P = UAlsasuaGeoData::AbsLocalToUE5(UAlsasuaGeoData::BarrioCenter(TEXT("Herriko")));
+    P.Z = UAlsasuaGeoData::AlturaSueloUE5(GetWorld(), P.X, P.Y);
+    return P;
 }

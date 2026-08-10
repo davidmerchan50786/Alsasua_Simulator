@@ -11,8 +11,8 @@
 void UAlsasuaTrafficSystem::Initialize(FSubsystemCollectionBase& Collection)
 {
     Super::Initialize(Collection);
-    GenerarCochesDesdeCalles();
-    GenerarSenalesDesdeCalles();
+    // Los coches y las señales se calculan al colocarlos, no aquí: en
+    // Initialize todavía no hay terreno sobre el que apoyarlos.
 }
 
 void UAlsasuaTrafficSystem::Deinitialize()
@@ -63,7 +63,7 @@ void UAlsasuaTrafficSystem::GenerarCochesDesdeCalles()
         const float X = RawX + UAlsasuaGeoData::OX;
         const float Z = RawZ + UAlsasuaGeoData::OZ;
 
-        FVector Loc = UAlsasuaGeoData::RelLocalToUE5(FVector(RawX, 0.0f, RawZ));
+        FVector Loc = UAlsasuaGeoData::RelLocalASueloUE5(GetWorld(), FVector(RawX, 0.0f, RawZ));
 
         int32 NumCoches = (AnchoVia > 10.0f) ? 2 : 1;
         for (int32 i = 0; i < NumCoches; i++)
@@ -145,6 +145,8 @@ int32 UAlsasuaTrafficSystem::ColocarCocheAparcado()
     UWorld* World = GetWorld();
     if (!World) return 0;
 
+    if (Coches.Num() == 0) GenerarCochesDesdeCalles();
+
     int32 Placed = 0;
     for (const FParkedCar& Car : Coches)
     {
@@ -179,6 +181,8 @@ int32 UAlsasuaTrafficSystem::ColocarSenalesTrafico()
 {
     UWorld* World = GetWorld();
     if (!World) return 0;
+
+    if (SenalesTrafico.Num() == 0) GenerarSenalesDesdeCalles();
 
     int32 Placed = 0;
     for (const FTrafficSign& Sign : SenalesTrafico)
