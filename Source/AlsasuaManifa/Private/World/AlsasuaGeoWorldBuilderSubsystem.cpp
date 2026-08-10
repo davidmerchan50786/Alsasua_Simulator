@@ -11,6 +11,7 @@
 #include "Misc/Paths.h"
 #include "Logging/LogMacros.h"
 #include "HAL/ConsoleManager.h"
+#include "GeoDataAlsasua.h"
 
 static TAutoConsoleVariable<int32> CVarSkipGeoWorldBuild(
     TEXT("alsasua.SkipGeoWorldBuild"),
@@ -67,14 +68,18 @@ namespace
         return FPaths::ConvertRelativePathToFull(Path);
     }
 
-    FVector ConvertGeoToWorld(const FGeoPoint& Point, const FGeoLayerData& GeoData)
+    /**
+     * Lat/lon a coordenadas del mundo con la misma conversión que usa todo lo
+     * demás (UTM 30N de UAlsasuaGeoData).
+     *
+     * Antes lo hacía con una equirectangular propia y un origen 42.84/−2.46,
+     * que no es Alsasua sino un punto 25 km al oeste, y además dividía metros
+     * por ScaleMetersPerUnit=1 para dar centímetros de Unreal: cualquier dato
+     * que entrara por aquí caía fuera del pueblo y a 1/100 de su tamaño.
+     */
+    FVector ConvertGeoToWorld(const FGeoPoint& Point)
     {
-        const double DegreesPerMeter = 111320.0;
-        const double LatitudeScale = DegreesPerMeter;
-        const double LongitudeScale = DegreesPerMeter * FMath::Cos(FMath::DegreesToRadians(GeoData.OriginLatitude));
-        const double DeltaLatMeters = (Point.Latitude - GeoData.OriginLatitude) * LatitudeScale;
-        const double DeltaLonMeters = (Point.Longitude - GeoData.OriginLongitude) * LongitudeScale;
-        return FVector(static_cast<float>(DeltaLonMeters / GeoData.ScaleMetersPerUnit), static_cast<float>(DeltaLatMeters / GeoData.ScaleMetersPerUnit), static_cast<float>(Point.Altitude));
+        return UAlsasuaGeoData::LatLonToUE5(Point.Latitude, Point.Longitude, Point.Altitude);
     }
 
     void AddFeatureToGeoData(const FString& Layer, const FString& KindName, const FString& Name, const TArray<FGeoPoint>& Points, FGeoLayerData& OutData)
@@ -132,20 +137,9 @@ namespace
             return false;
         }
 
-        if (RootObject->HasField(TEXT("originLatitude")))
-        {
-            OutData.OriginLatitude = RootObject->GetNumberField(TEXT("originLatitude"));
-        }
-
-        if (RootObject->HasField(TEXT("originLongitude")))
-        {
-            OutData.OriginLongitude = RootObject->GetNumberField(TEXT("originLongitude"));
-        }
-
-        if (RootObject->HasField(TEXT("scaleMetersPerUnit")))
-        {
-            OutData.ScaleMetersPerUnit = FMath::Max(RootObject->GetNumberField(TEXT("scaleMetersPerUnit")), 0.1);
-        }
+        // originLatitude/originLongitude/scaleMetersPerUnit ya no se leen: el
+        // anclaje del mundo lo fija UAlsasuaGeoData, y un origen distinto por
+        // fichero sólo puede dejar estas capas descolocadas del resto.
 
         const TArray<TSharedPtr<FJsonValue>>* Features = nullptr;
         if (!RootObject->TryGetArrayField(TEXT("features"), Features))
@@ -477,12 +471,24 @@ void UAlsasuaGeoWorldBuilderSubsystem::BuildWorld()
         return;
     }
 
+    // Los datos primero: sin GeoJSON oficial este subsistema no tiene nada que
+    // construir y no debe dejar nada en el mundo. Antes spawneaba el actor y un
+    // terreno de relleno (una losa de 1,4 km y doce tiras de "montes" con la
+    // malla y el material por defecto del motor) en todos los mundos, encima
+    // del terreno real que ya genera ATerrenoGenerado con el heightmap del IGN.
+    FGeoLayerData GeoData;
+    if (!TryLoadGeoSpatialData(GeoData))
+    {
+        UE_LOG(LogTemp, Log,
+            TEXT("[Geo] sin datos oficiales en Datos/AlsasuaGeoSources.json; el mundo lo construyen los cargadores de Datos/*_unity.json"));
+        return;
+    }
+
     AActor* BuilderActor = GetWorld()->SpawnActor<AActor>(AActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator);
 #if WITH_EDITOR
     BuilderActor->SetActorLabel(TEXT("GeoWorldBuilder"));
 #endif
 
-    UInstancedStaticMeshComponent* TerrainISM = nullptr;
     UInstancedStaticMeshComponent* RoadISM = nullptr;
     UInstancedStaticMeshComponent* BuildingISM = nullptr;
     UInstancedStaticMeshComponent* ForestISM = nullptr;
@@ -497,101 +503,62 @@ void UAlsasuaGeoWorldBuilderSubsystem::BuildWorld()
         OutComp->SetMobility(EComponentMobility::Static);
         OutComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
         OutComp->SetCanEverAffectNavigation(false);
-        OutComp->SetStaticMesh(LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/EngineMeshes/SM_Cube.SM_Cube")));
+        // /Engine/EngineMeshes/SM_Cube no existe: era otro LoadObject a null,
+        // y estos ISM se quedaban sin malla sin decir nada.
+        OutComp->SetStaticMesh(LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube.Cube")));
         OutComp->SetMaterial(0, LoadObject<UMaterialInterface>(nullptr, TEXT("/Engine/EngineMaterials/DefaultMaterial.DefaultMaterial")));
     };
 
-    CreateISM(TEXT("GeoTerrainISM"), TerrainISM);
     CreateISM(TEXT("GeoRoadISM"), RoadISM);
     CreateISM(TEXT("GeoBuildingISM"), BuildingISM);
     CreateISM(TEXT("GeoForestISM"), ForestISM);
 
-    BuildTerrainMesh(BuilderActor, TerrainISM);
-
-    FGeoLayerData GeoData;
-    const bool bHasGeoData = TryLoadGeoSpatialData(GeoData);
-
-    if (bHasGeoData)
+    for (const TArray<FGeoPoint>& Points : GeoData.Roads)
     {
-        for (const TArray<FGeoPoint>& Points : GeoData.Roads)
+        TArray<FVector> WorldPoints;
+        WorldPoints.Reserve(Points.Num());
+        for (const FGeoPoint& Point : Points)
         {
-            TArray<FVector> WorldPoints;
-            WorldPoints.Reserve(Points.Num());
-            for (const FGeoPoint& Point : Points)
-            {
-                WorldPoints.Add(ConvertGeoToWorld(Point, GeoData));
-            }
-            BuildRoadMesh(BuilderActor, WorldPoints, 320.f, RoadISM);
+            WorldPoints.Add(ConvertGeoToWorld(Point));
         }
-
-        for (const TArray<FGeoPoint>& Points : GeoData.Railways)
-        {
-            TArray<FVector> WorldPoints;
-            WorldPoints.Reserve(Points.Num());
-            for (const FGeoPoint& Point : Points)
-            {
-                WorldPoints.Add(ConvertGeoToWorld(Point, GeoData));
-            }
-            BuildRailMesh(BuilderActor, WorldPoints, 70.f, RoadISM);
-        }
-
-        for (const TArray<FGeoPoint>& Points : GeoData.Buildings)
-        {
-            BuildGeoBuilding(BuilderActor, Points, GeoData, BuildingISM);
-        }
-
-        for (const FGeoNamedFeature& Road : GeoData.NamedRoads)
-        {
-            BuildNamedRoadLabel(BuilderActor, Road, GeoData);
-        }
-
-        for (const FGeoNamedFeature& Plaza : GeoData.NamedPlazas)
-        {
-            BuildNamedPlazaLabel(BuilderActor, Plaza, GeoData);
-        }
-
-        for (const FGeoNamedFeature& Neighborhood : GeoData.NamedNeighborhoods)
-        {
-            BuildNamedNeighborhoodLabel(BuilderActor, Neighborhood, GeoData);
-        }
-
-        for (const TArray<FGeoPoint>& Points : GeoData.Forests)
-        {
-            BuildGeoForest(BuilderActor, Points, GeoData, ForestISM);
-        }
-    }
-    else
-    {
-        UE_LOG(LogTemp, Warning, TEXT("No official geo data was accepted for Alsasua; the world will remain terrain-only until verified official datasets are provided."));
-    }
-}
-
-void UAlsasuaGeoWorldBuilderSubsystem::BuildTerrainMesh(AActor* Owner, UInstancedStaticMeshComponent* TerrainISM)
-{
-    if (!Owner || !TerrainISM)
-    {
-        return;
+        BuildRoadMesh(BuilderActor, WorldPoints, 320.f, RoadISM);
     }
 
-    FTransform BaseTransform;
-    BaseTransform.SetLocation(FVector(0.f, 0.f, -110.f));
-    BaseTransform.SetScale3D(FVector(14000.f, 14000.f, 220.f));
-    TerrainISM->AddInstance(BaseTransform, true);
-
-    for (int32 i = 0; i < 12; ++i)
+    for (const TArray<FGeoPoint>& Points : GeoData.Railways)
     {
-        FVector Position(-11000.f + i * 1900.f, 0.f, 0.f);
-        float Elevation = 10.f + (i % 4) * 8.f + (i > 6 ? 8.f : 0.f);
-        FTransform StripTransform;
-        StripTransform.SetLocation(Position + FVector(0.f, 0.f, Elevation));
-        StripTransform.SetScale3D(FVector(1300.f, 14000.f, 24.f));
-        TerrainISM->AddInstance(StripTransform, true);
+        TArray<FVector> WorldPoints;
+        WorldPoints.Reserve(Points.Num());
+        for (const FGeoPoint& Point : Points)
+        {
+            WorldPoints.Add(ConvertGeoToWorld(Point));
+        }
+        BuildRailMesh(BuilderActor, WorldPoints, 70.f, RoadISM);
     }
 
-    FTransform RiverTransform;
-    RiverTransform.SetLocation(FVector(-500.f, 0.f, 3.f));
-    RiverTransform.SetScale3D(FVector(3000.f, 14000.f, 12.f));
-    TerrainISM->AddInstance(RiverTransform, true);
+    for (const TArray<FGeoPoint>& Points : GeoData.Buildings)
+    {
+        BuildGeoBuilding(BuilderActor, Points, BuildingISM);
+    }
+
+    for (const FGeoNamedFeature& Road : GeoData.NamedRoads)
+    {
+        BuildNamedRoadLabel(BuilderActor, Road);
+    }
+
+    for (const FGeoNamedFeature& Plaza : GeoData.NamedPlazas)
+    {
+        BuildNamedPlazaLabel(BuilderActor, Plaza);
+    }
+
+    for (const FGeoNamedFeature& Neighborhood : GeoData.NamedNeighborhoods)
+    {
+        BuildNamedNeighborhoodLabel(BuilderActor, Neighborhood);
+    }
+
+    for (const TArray<FGeoPoint>& Points : GeoData.Forests)
+    {
+        BuildGeoForest(BuilderActor, Points, ForestISM);
+    }
 }
 
 void UAlsasuaGeoWorldBuilderSubsystem::BuildRoadMesh(AActor* Owner, const TArray<FVector>& Points, float Width, UInstancedStaticMeshComponent* RoadISM)
@@ -664,72 +631,7 @@ void UAlsasuaGeoWorldBuilderSubsystem::BuildRailMesh(AActor* Owner, const TArray
     }
 }
 
-void UAlsasuaGeoWorldBuilderSubsystem::BuildBuildings(AActor* Owner, UInstancedStaticMeshComponent* BuildingISM)
-{
-    if (!Owner || !BuildingISM)
-    {
-        return;
-    }
-
-    const TArray<FVector> UrbanDistricts = {
-        FVector(-1800.f, -400.f, 0.f),
-        FVector(-1800.f, 1200.f, 0.f),
-        FVector(400.f, -400.f, 0.f),
-        FVector(400.f, 1200.f, 0.f),
-        FVector(2600.f, 1200.f, 0.f),
-        FVector(3600.f, 2600.f, 0.f)
-    };
-
-    const TArray<float> DistrictScales = {1.20f, 0.95f, 1.00f, 0.85f, 0.80f, 1.35f};
-
-    for (int32 d = 0; d < UrbanDistricts.Num(); ++d)
-    {
-        FVector Center = UrbanDistricts[d];
-        float Scale = DistrictScales[d];
-
-        for (int32 row = 0; row < 4; ++row)
-        {
-            for (int32 col = 0; col < 4; ++col)
-            {
-                FVector Position = Center + FVector((col - 1.5f) * 240.f, (row - 1.5f) * 220.f, 0.f);
-                FVector Extents(110.f * Scale + col * 8.f, 80.f * Scale + row * 6.f, 140.f + (row + col) * 20.f);
-                FTransform BuildingTransform;
-                BuildingTransform.SetLocation(Position + FVector(0.f, 0.f, Extents.Z));
-                BuildingTransform.SetScale3D(Extents * 0.5f);
-                BuildingISM->AddInstance(BuildingTransform, true);
-            }
-        }
-    }
-}
-
-void UAlsasuaGeoWorldBuilderSubsystem::BuildForest(AActor* Owner, UInstancedStaticMeshComponent* ForestISM)
-{
-    if (!Owner || !ForestISM)
-    {
-        return;
-    }
-
-    const TArray<FVector> ForestBands = {
-        FVector(-5800.f, -3300.f, 0.f),
-        FVector(-4200.f, 3200.f, 0.f),
-        FVector(5000.f, 2400.f, 0.f)
-    };
-
-    for (int32 b = 0; b < ForestBands.Num(); ++b)
-    {
-        FVector Origin = ForestBands[b];
-        for (int32 i = 0; i < 48; ++i)
-        {
-            FVector Position = Origin + FVector(-1400.f + i * 90.f, -1000.f + ((i % 8) * 220.f), 0.f);
-            FTransform TreeTransform;
-            TreeTransform.SetLocation(Position + FVector(0.f, 0.f, 80.f));
-            TreeTransform.SetScale3D(FVector(28.f, 28.f, 160.f));
-            ForestISM->AddInstance(TreeTransform, true);
-        }
-    }
-}
-
-void UAlsasuaGeoWorldBuilderSubsystem::BuildGeoBuilding(AActor* Owner, const TArray<FGeoPoint>& Points, const FGeoLayerData& GeoData, UInstancedStaticMeshComponent* BuildingISM)
+void UAlsasuaGeoWorldBuilderSubsystem::BuildGeoBuilding(AActor* Owner, const TArray<FGeoPoint>& Points, UInstancedStaticMeshComponent* BuildingISM)
 {
     if (!Owner || !BuildingISM || Points.Num() < 3)
     {
@@ -744,7 +646,7 @@ void UAlsasuaGeoWorldBuilderSubsystem::BuildGeoBuilding(AActor* Owner, const TAr
 
     for (const FGeoPoint& Point : Points)
     {
-        const FVector WorldPoint = ConvertGeoToWorld(Point, GeoData);
+        const FVector WorldPoint = ConvertGeoToWorld(Point);
         Center += WorldPoint;
         MinX = FMath::Min(MinX, WorldPoint.X);
         MaxX = FMath::Max(MaxX, WorldPoint.X);
@@ -764,7 +666,7 @@ void UAlsasuaGeoWorldBuilderSubsystem::BuildGeoBuilding(AActor* Owner, const TAr
     BuildingISM->AddInstance(BuildingTransform, true);
 }
 
-void UAlsasuaGeoWorldBuilderSubsystem::BuildGeoForest(AActor* Owner, const TArray<FGeoPoint>& Points, const FGeoLayerData& GeoData, UInstancedStaticMeshComponent* ForestISM)
+void UAlsasuaGeoWorldBuilderSubsystem::BuildGeoForest(AActor* Owner, const TArray<FGeoPoint>& Points, UInstancedStaticMeshComponent* ForestISM)
 {
     if (!Owner || !ForestISM || Points.Num() < 3)
     {
@@ -774,7 +676,7 @@ void UAlsasuaGeoWorldBuilderSubsystem::BuildGeoForest(AActor* Owner, const TArra
     FVector Center = FVector::ZeroVector;
     for (const FGeoPoint& Point : Points)
     {
-        Center += ConvertGeoToWorld(Point, GeoData);
+        Center += ConvertGeoToWorld(Point);
     }
     Center /= Points.Num();
 
@@ -794,40 +696,40 @@ void UAlsasuaGeoWorldBuilderSubsystem::BuildGeoForest(AActor* Owner, const TArra
     }
 }
 
-void UAlsasuaGeoWorldBuilderSubsystem::BuildNamedRoadLabel(AActor* Owner, const FGeoNamedFeature& Feature, const FGeoLayerData& GeoData)
+void UAlsasuaGeoWorldBuilderSubsystem::BuildNamedRoadLabel(AActor* Owner, const FGeoNamedFeature& Feature)
 {
     if (!Owner || Feature.Points.Num() < 2) return;
 
     FVector Center = FVector::ZeroVector;
     for (const FGeoPoint& Point : Feature.Points)
     {
-        Center += ConvertGeoToWorld(Point, GeoData);
+        Center += ConvertGeoToWorld(Point);
     }
     Center /= Feature.Points.Num();
     AddLabel(Owner, Center + FVector(0.f, 0.f, 45.f), Feature.Name, 14.f, FColor::White);
 }
 
-void UAlsasuaGeoWorldBuilderSubsystem::BuildNamedPlazaLabel(AActor* Owner, const FGeoNamedFeature& Feature, const FGeoLayerData& GeoData)
+void UAlsasuaGeoWorldBuilderSubsystem::BuildNamedPlazaLabel(AActor* Owner, const FGeoNamedFeature& Feature)
 {
     if (!Owner || Feature.Points.Num() < 3) return;
 
     FVector Center = FVector::ZeroVector;
     for (const FGeoPoint& Point : Feature.Points)
     {
-        Center += ConvertGeoToWorld(Point, GeoData);
+        Center += ConvertGeoToWorld(Point);
     }
     Center /= Feature.Points.Num();
     AddLabel(Owner, Center + FVector(0.f, 0.f, 80.f), Feature.Name, 18.f, FColor::Yellow);
 }
 
-void UAlsasuaGeoWorldBuilderSubsystem::BuildNamedNeighborhoodLabel(AActor* Owner, const FGeoNamedFeature& Feature, const FGeoLayerData& GeoData)
+void UAlsasuaGeoWorldBuilderSubsystem::BuildNamedNeighborhoodLabel(AActor* Owner, const FGeoNamedFeature& Feature)
 {
     if (!Owner || Feature.Points.Num() < 3) return;
 
     FVector Center = FVector::ZeroVector;
     for (const FGeoPoint& Point : Feature.Points)
     {
-        Center += ConvertGeoToWorld(Point, GeoData);
+        Center += ConvertGeoToWorld(Point);
     }
     Center /= Feature.Points.Num();
     AddLabel(Owner, Center + FVector(0.f, 0.f, 120.f), Feature.Name, 16.f, FColor::Cyan);
@@ -848,84 +750,3 @@ void UAlsasuaGeoWorldBuilderSubsystem::AddLabel(AActor* Owner, const FVector& Lo
     Label->SetVerticalAlignment(EVRTA_TextCenter);
 }
 
-void UAlsasuaGeoWorldBuilderSubsystem::AddBoxToMeshData(
-    TArray<FVector>& Vertices,
-    TArray<int32>& Triangles,
-    TArray<FVector>& Normals,
-    TArray<FVector2D>& UVs,
-    TArray<FColor>& Colors,
-    const FVector& Center,
-    const FVector& Extents,
-    const FColor& Color,
-    int32& StartIndex)
-{
-    // 8 corners of the box.
-    const FVector V[8] = {
-        Center + FVector(-Extents.X, -Extents.Y, -Extents.Z),
-        Center + FVector( Extents.X, -Extents.Y, -Extents.Z),
-        Center + FVector( Extents.X,  Extents.Y, -Extents.Z),
-        Center + FVector(-Extents.X,  Extents.Y, -Extents.Z),
-        Center + FVector(-Extents.X, -Extents.Y,  Extents.Z),
-        Center + FVector( Extents.X, -Extents.Y,  Extents.Z),
-        Center + FVector( Extents.X,  Extents.Y,  Extents.Z),
-        Center + FVector(-Extents.X,  Extents.Y,  Extents.Z),
-    };
-
-    const FVector N[6] = {
-        FVector(0, 0, -1), FVector(0, 0, 1),
-        FVector(0, -1, 0), FVector(0, 1, 0),
-        FVector(-1, 0, 0), FVector(1, 0, 0),
-    };
-
-    const int32 FaceIndices[6][4] = {
-        {0, 3, 2, 1}, {4, 5, 6, 7},
-        {0, 1, 5, 4}, {2, 3, 7, 6},
-        {0, 4, 7, 3}, {1, 2, 6, 5},
-    };
-
-    const FVector2D UVCoords[4] = {
-        FVector2D(0, 0), FVector2D(1, 0), FVector2D(1, 1), FVector2D(0, 1)
-    };
-
-    for (int32 Face = 0; Face < 6; ++Face)
-    {
-        int32 Base = StartIndex;
-        for (int32 i = 0; i < 4; ++i)
-        {
-            Vertices.Add(V[FaceIndices[Face][i]]);
-            Normals.Add(N[Face]);
-            UVs.Add(UVCoords[i]);
-            Colors.Add(Color);
-        }
-
-        Triangles.Add(Base);     Triangles.Add(Base + 1); Triangles.Add(Base + 2);
-        Triangles.Add(Base);     Triangles.Add(Base + 2); Triangles.Add(Base + 3);
-        StartIndex += 4;
-    }
-}
-
-void UAlsasuaGeoWorldBuilderSubsystem::AddQuadToMeshData(
-    TArray<FVector>& Vertices,
-    TArray<int32>& Triangles,
-    TArray<FVector>& Normals,
-    TArray<FVector2D>& UVs,
-    TArray<FColor>& Colors,
-    const FVector& A,
-    const FVector& B,
-    const FVector& C,
-    const FVector& D,
-    const FColor& Color,
-    int32& StartIndex)
-{
-    FVector Normal = FVector::CrossProduct(B - A, D - A).GetSafeNormal();
-
-    int32 Base = StartIndex;
-    Vertices.Add(A); Vertices.Add(B); Vertices.Add(C); Vertices.Add(D);
-    Normals.Add(Normal); Normals.Add(Normal); Normals.Add(Normal); Normals.Add(Normal);
-    UVs.Add(FVector2D(0, 0)); UVs.Add(FVector2D(1, 0)); UVs.Add(FVector2D(1, 1)); UVs.Add(FVector2D(0, 1));
-    Colors.Add(Color); Colors.Add(Color); Colors.Add(Color); Colors.Add(Color);
-
-    Triangles.Add(Base);     Triangles.Add(Base + 1); Triangles.Add(Base + 2);
-    Triangles.Add(Base);     Triangles.Add(Base + 2); Triangles.Add(Base + 3);
-    StartIndex += 4;
-}
