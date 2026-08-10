@@ -76,7 +76,17 @@ namespace
 		{ TEXT("ventana"),           TEXT("stucco_window_single|stucco_window_double|kit_window|ventana_basca|window") },
 		{ TEXT("muro_piedra"),       TEXT("stone_wall|piedra_muro|stone_arch") },
 		{ TEXT("tejado_pieza"),      TEXT("roof_straight_side|roof_concave_side|roof_convex_side") },
-		{ TEXT("chimenea"),          TEXT("roof_prop_chimney|chimenea_piedra|chimney") },
+		{ TEXT("chimenea"),          TEXT("roof_prop_chimney_stone|roof_prop_chimney|chimenea_piedra|chimney") },
+
+		// Piezas de remate que ensambla UAlsasuaTejadoModular. Sólo la familia
+		// Straight: en este kit Concave/Convex son variantes de planta curva, y
+		// los footprints del LIDAR son polígonos de lados rectos.
+		{ TEXT("tejado_alero"),         TEXT("roof_straight_side_eave|roof_straight_side") },
+		{ TEXT("tejado_esquina_ext"),   TEXT("roof_straight_corner_outer_eave|roof_straight_corner_outer") },
+		{ TEXT("tejado_esquina_int"),   TEXT("roof_straight_corner_inner") },
+		{ TEXT("tejado_cumbrera"),      TEXT("roof_accent_ridge") },
+		{ TEXT("tejado_cumbrera_fin"),  TEXT("roof_accent_ridge_end") },
+		{ TEXT("tejado_limatesa"),      TEXT("roof_accent_rake_straight|roof_accent_rake_eave") },
 		{ TEXT("pilar"),             TEXT("stone_pillar|stucco_prop_support_pillar|wood_post") },
 		{ TEXT("escalera"),          TEXT("stone_steps|wood_steps|stairs|steps") },
 		{ TEXT("barril"),            TEXT("prop_barrel|barrel") },
@@ -262,6 +272,22 @@ namespace
 		EscanearFab();
 
 		const FString Claves(Entrada->Claves);
+
+		// Primero nombre exacto, clave por clave y en el orden escrito. Sin
+		// esto una clave que es prefijo de otra se lleva la malla equivocada
+		// según el orden del registro: "roof_accent_ridge" también está dentro
+		// de Roof_Accent_Ridge_End, y la cumbrera salía siendo la tapa final.
+		TArray<FString> Lista;
+		Claves.ParseIntoArray(Lista, TEXT("|"), true);
+		for (const FString& Clave : Lista)
+		{
+			for (const FAssetData& Datos : MallasFab)
+			{
+				if (Datos.AssetName.ToString().ToLower() != Clave) continue;
+				if (UStaticMesh* Malla = Cast<UStaticMesh>(Datos.GetAsset())) return Malla;
+			}
+		}
+
 		for (const FAssetData& Datos : MallasFab)
 		{
 			const FString Nombre = Datos.AssetName.ToString().ToLower();
