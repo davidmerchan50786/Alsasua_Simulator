@@ -2,6 +2,7 @@
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "Engine/StaticMeshActor.h"
+#include "World/AlsasuaMallaFab.h"
 #include "Components/StaticMeshComponent.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -49,14 +50,14 @@ void UAlsasuaDetailDressingSystem::CargarMueblesReales(UWorld* World)
     };
 
     const TMap<FString, FMuebleDef> Defs = {
-        {TEXT("banco"),           {TEXT("banco"),        TEXT("/Game/EngineBasicShapes/Cube"),     FVector(1.2f, 0.5f, 0.8f),  FLinearColor(0.4f, 0.6f, 0.2f)}},
-        {TEXT("bollard"),         {TEXT("bollard"),      TEXT("/Game/EngineBasicShapes/Cylinder"), FVector(0.15f, 0.15f, 0.6f), FLinearColor(0.3f, 0.3f, 0.3f)}},
-        {TEXT("buzon_correos"),   {TEXT("buzon_correos"),TEXT("/Game/EngineBasicShapes/Cube"),     FVector(0.4f, 0.4f, 1.0f),  FLinearColor(0.8f, 0.1f, 0.1f)}},
-        {TEXT("boca_incendio"),   {TEXT("boca_incendio"),TEXT("/Game/EngineBasicShapes/Cylinder"), FVector(0.2f, 0.2f, 0.6f),  FLinearColor(0.9f, 0.15f, 0.05f)}},
-        {TEXT("parada_bus"),      {TEXT("parada_bus"),   TEXT("/Game/EngineBasicShapes/Cube"),     FVector(0.2f, 2.0f, 2.5f),  FLinearColor(0.1f, 0.3f, 0.8f)}},
-        {TEXT("senal_stop"),     {TEXT("senal_stop"),   TEXT("/Game/EngineBasicShapes/Cube"),     FVector(0.6f, 0.05f, 0.8f), FLinearColor(0.9f, 0.2f, 0.0f)}},
-        {TEXT("espejo_seguridad"),{TEXT("espejo_seguridad"),TEXT("/Game/EngineBasicShapes/Sphere"),FVector(0.3f, 0.3f, 0.3f),  FLinearColor(0.7f, 0.7f, 0.8f)}},
-        {TEXT("bici_arbol"),      {TEXT("bici_arbol"),   TEXT("/Game/EngineBasicShapes/Cube"),     FVector(0.15f, 1.0f, 1.5f), FLinearColor(0.2f, 0.6f, 0.15f)}},
+        {TEXT("banco"),           {TEXT("banco"),        TEXT("/Engine/BasicShapes/Cube.Cube"),     FVector(1.2f, 0.5f, 0.8f),  FLinearColor(0.4f, 0.6f, 0.2f)}},
+        {TEXT("bollard"),         {TEXT("bollard"),      TEXT("/Engine/BasicShapes/Cylinder.Cylinder"), FVector(0.15f, 0.15f, 0.6f), FLinearColor(0.3f, 0.3f, 0.3f)}},
+        {TEXT("buzon_correos"),   {TEXT("buzon_correos"),TEXT("/Engine/BasicShapes/Cube.Cube"),     FVector(0.4f, 0.4f, 1.0f),  FLinearColor(0.8f, 0.1f, 0.1f)}},
+        {TEXT("boca_incendio"),   {TEXT("boca_incendio"),TEXT("/Engine/BasicShapes/Cylinder.Cylinder"), FVector(0.2f, 0.2f, 0.6f),  FLinearColor(0.9f, 0.15f, 0.05f)}},
+        {TEXT("parada_bus"),      {TEXT("parada_bus"),   TEXT("/Engine/BasicShapes/Cube.Cube"),     FVector(0.2f, 2.0f, 2.5f),  FLinearColor(0.1f, 0.3f, 0.8f)}},
+        {TEXT("señal_stop"),     {TEXT("señal_stop"),   TEXT("/Engine/BasicShapes/Cube.Cube"),     FVector(0.6f, 0.05f, 0.8f), FLinearColor(0.9f, 0.2f, 0.0f)}},
+        {TEXT("espejo_seguridad"),{TEXT("espejo_seguridad"),TEXT("/Engine/BasicShapes/Sphere.Sphere"),FVector(0.3f, 0.3f, 0.3f),  FLinearColor(0.7f, 0.7f, 0.8f)}},
+        {TEXT("bici_arbol"),      {TEXT("bici_arbol"),   TEXT("/Engine/BasicShapes/Cube.Cube"),     FVector(0.15f, 1.0f, 1.5f), FLinearColor(0.2f, 0.6f, 0.15f)}},
     };
 
     int32 Placed = 0;
@@ -65,7 +66,13 @@ void UAlsasuaDetailDressingSystem::CargarMueblesReales(UWorld* World)
         const TSharedPtr<FJsonObject>& Obj = Val->AsObject();
         if (!Obj) continue;
 
-        const FString Tipo = Obj->GetStringField(TEXT("tipo"));
+        // El campo del JSON es "type". Leyendo "tipo" salía cadena vacía,
+        // Defs.Find() fallaba en las 220 piezas y no se colocaba ninguna.
+        FString Tipo;
+        if (!Obj->TryGetStringField(TEXT("type"), Tipo))
+        {
+            Obj->TryGetStringField(TEXT("tipo"), Tipo);
+        }
         const FMuebleDef* Def = Defs.Find(Tipo);
         if (!Def) continue;
 
@@ -75,19 +82,41 @@ void UAlsasuaDetailDressingSystem::CargarMueblesReales(UWorld* World)
 
         const FVector Pos = UAlsasuaGeoData::RelLocalToUE5(FVector(X, Y, Z));
 
+        // street_furniture.json trae "rotacion" por pieza y se estaba ignorando:
+        // los 24 bancos y las 12 marquesinas quedaban todos mirando al norte.
+        double Yaw = 0.0;
+        Obj->TryGetNumberField(TEXT("rotacion"), Yaw);
+
         AStaticMeshActor* Actor = World->SpawnActor<AStaticMeshActor>(
-            AStaticMeshActor::StaticClass(), Pos, FRotator::ZeroRotator);
+            AStaticMeshActor::StaticClass(), Pos, FRotator(0.f, (float)Yaw, 0.f));
         if (!Actor) continue;
 
         Actor->SetMobility(EComponentMobility::Static);
-        Actor->SetActorScale3D(Def->Scale);
 
-        UStaticMesh* Mesh = CargarMeshRapido(*Def->Mesh);
-        if (Mesh) Actor->GetStaticMeshComponent()->SetStaticMesh(Mesh);
- 
-        UMaterialInterface* Mat = CargarMaterialRapido(TEXT("/Engine/EngineMaterials/DefaultMaterial.DefaultMaterial"));
+        // Fab si está bajado, si no la malla propia de /Game/Mobiliario, y como
+        // último recurso la forma básica del motor.
+        UStaticMesh* Mesh = AlsasuaMallaFab::Resolver(Tipo, *Def->Mesh);
+        const bool bMallaReal = Mesh && !Mesh->GetPathName().StartsWith(TEXT("/Engine/BasicShapes"));
 
-        if (Mat) Actor->GetStaticMeshComponent()->SetMaterial(0, Mat);
+        if (Mesh)
+        {
+            Actor->GetStaticMeshComponent()->SetStaticMesh(Mesh);
+        }
+
+        // Def->Scale existe para estirar un cubo hasta parecer un banco. Las
+        // mallas de Fab y las propias ya vienen a tamaño real: escalarlas las
+        // deformaría.
+        Actor->SetActorScale3D(bMallaReal ? FVector::OneVector : Def->Scale);
+
+        // Y esas mallas traen su material; forzar DefaultMaterial encima les
+        // quitaba el PBR de M_Mobiliario y M_Metal.
+        if (!bMallaReal)
+        {
+            if (UMaterialInterface* Mat = CargarMaterialRapido(TEXT("/Engine/EngineMaterials/DefaultMaterial.DefaultMaterial")))
+            {
+                Actor->GetStaticMeshComponent()->SetMaterial(0, Mat);
+            }
+        }
 
 #if WITH_EDITOR
         Actor->Rename(*FString::Printf(TEXT("Mueble_%s_%d"), *Tipo, Placed));
@@ -199,7 +228,7 @@ void UAlsasuaDetailDressingSystem::ColocarMacetas(UWorld* World)
 
         FString Label = FString::Printf(TEXT("Maceta_%s_%d"), *Barrio.Left(8), i);
         AActor* Actor = CrearActor(World, Pos, Rot, Escala,
-            TEXT("/Game/EngineBasicShapes/Cylinder"),
+            TEXT("/Engine/BasicShapes/Cylinder.Cylinder"),
             TEXT("/Game/Materiales/M_Piedra"), Label);
 
         if (Actor)
@@ -237,7 +266,7 @@ void UAlsasuaDetailDressingSystem::ColocarBuzones(UWorld* World)
 
         FString Label = FString::Printf(TEXT("Buzon_%s_%d"), *Calle.Left(10), i);
         CrearActor(World, Pos, Item.Rotacion, 0.7f,
-            TEXT("/Game/EngineBasicShapes/Cube"),
+            TEXT("/Engine/BasicShapes/Cube.Cube"),
             TEXT("/Game/Materiales/M_Metal_Azul"), Label);
 
         Detalles.Add(Item);
@@ -270,7 +299,7 @@ void UAlsasuaDetailDressingSystem::ColocarPapeleiras(UWorld* World)
 
         FString Label = FString::Printf(TEXT("Papelera_%s_%d"), *Barrio.Left(8), i);
         CrearActor(World, Pos, Item.Rotacion, 0.6f,
-            TEXT("/Game/EngineBasicShapes/Cube"),
+            TEXT("/Engine/BasicShapes/Cube.Cube"),
             TEXT("/Game/Materiales/M_Verde_Oscuro"), Label);
 
         Detalles.Add(Item);
@@ -295,7 +324,7 @@ void UAlsasuaDetailDressingSystem::ColocarBancos(UWorld* World)
 
         FString Label = FString::Printf(TEXT("Banco_%d"), i);
         AActor* Actor = CrearActor(World, Pos, Item.Rotacion, 1.0f,
-            TEXT("/Game/EngineBasicShapes/Cube"),
+            TEXT("/Engine/BasicShapes/Cube.Cube"),
             TEXT("/Game/Materiales/M_Madera"), Label);
 
         if (Actor)
@@ -330,7 +359,7 @@ void UAlsasuaDetailDressingSystem::ColocarVallasVerdes(UWorld* World)
 
         FString Label = FString::Printf(TEXT("VallaVerde_%s_%d"), *Barrio.Left(8), i);
         AActor* Actor = CrearActor(World, Pos, Item.Rotacion, 1.2f,
-            TEXT("/Game/EngineBasicShapes/Cube"),
+            TEXT("/Engine/BasicShapes/Cube.Cube"),
             TEXT("/Game/Materiales/M_Seto"), Label);
 
         if (Actor)

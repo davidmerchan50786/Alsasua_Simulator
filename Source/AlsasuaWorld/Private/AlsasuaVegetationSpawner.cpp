@@ -35,7 +35,12 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 		return 0;
 	}
 
-	UMaterialInterface* MatHierba = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Arbol.M_Arbol"));
+	// El césped tiene su material con el set Grass (color, normal, roughness y
+	// AO); antes usaba el de árbol, que es hoja de copa y se veía plano en el
+	// suelo. Si no está creado todavía, cae al de árbol como antes.
+	UMaterialInterface* MatHierba = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Terreno_Hierba.M_Terreno_Hierba"));
+	if (!MatHierba) MatHierba = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Arbol.M_Arbol"));
+
 	UMaterialInterface* MatArbusto = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Arbol.M_Arbol"));
 
 	// Collect all greenspace polygons

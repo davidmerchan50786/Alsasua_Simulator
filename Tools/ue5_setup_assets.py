@@ -1,4 +1,4 @@
-"""
+r"""
 UE5 Materials & Assets Setup Script
 Ejecutar DENTRO de UE5 con Python Script Plugin habilitado:
   Window > Developer Tools > Output Log > 

@@ -164,7 +164,7 @@ void UAlsasuaDynamicTrafficSystem::SpawnVehiculoEnCalle()
     VehActor->SetMobility(EComponentMobility::Movable);
 
     UStaticMesh* CubeMesh = LoadObject<UStaticMesh>(nullptr,
-        TEXT("/Game/EngineBasicShapes/Cube"));
+        TEXT("/Engine/BasicShapes/Cube.Cube"));
     if (CubeMesh)
         VehActor->GetStaticMeshComponent()->SetStaticMesh(CubeMesh);
 
@@ -188,7 +188,7 @@ void UAlsasuaDynamicTrafficSystem::SpawnVehiculoEnCalle()
     if (!BaseMat)
     {
         BaseMat = LoadObject<UMaterialInterface>(nullptr,
-            TEXT("/Game/EngineBasicShapes/BasicShapeMaterial"));
+            TEXT("/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"));
     }
 
     if (BaseMat)

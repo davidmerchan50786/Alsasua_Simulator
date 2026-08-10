@@ -7,6 +7,7 @@
 #include "CargadorCalles.h"
 #include "CargadorPoligonos.h"
 #include "CargadorEdificios.h"
+#include "AlsasuaTejadoModular.h"
 #include "HerrikoPlazaGenerator.h"
 #include "CargadorPuentes.h"
 #include "CargadorPOI.h"
@@ -128,6 +129,16 @@ void ADirectorArranque::IniciarConstruccion()
     {
         Edificios->Cargar();
         UE_LOG(LogTemp, Log, TEXT("DirectorArranque: Edificios cargados (LIDAR real)."));
+    }
+
+    // --- 5b. Remate de tejados con el kit modular (piezas Roof_ de Village) ---
+    // Tiene que ir después de los edificios: lee los AEdificioGenerado ya
+    // construidos para colocar las piezas en su propio alero y su cumbrera.
+    UAlsasuaTejadoModular* Tejados = World->GetSubsystem<UAlsasuaTejadoModular>();
+    if (Tejados)
+    {
+        const int32 NumPiezas = Tejados->Cargar();
+        UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d piezas de tejado modular."), NumPiezas);
     }
 
     // --- 6. Herriko Plaza (plaza real con mobiliario) ---

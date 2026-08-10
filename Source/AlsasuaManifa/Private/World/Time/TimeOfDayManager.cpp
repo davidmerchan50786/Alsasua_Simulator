@@ -14,11 +14,28 @@ void UTimeOfDayManager::Deinitialize()
     Super::Deinitialize();
 }
 
+void UTimeOfDayManager::Tick(float DeltaTime)
+{
+    const UWorld* W = GetWorld();
+    if (!W || W->WorldType == EWorldType::Editor) return;
+
+    if (bAutoAdvance)
+    {
+        UpdateTime(DeltaTime);
+    }
+}
+
 void UTimeOfDayManager::UpdateTime(float DeltaTime)
 {
-    CurrentTime += DeltaTime * TimeSpeed;
-    if (CurrentTime >= 24.0f) CurrentTime -= 24.0f;
+    CurrentTime = FMath::Fmod(CurrentTime + DeltaTime * TimeSpeed, 24.0f);
+    BroadcastTransitions();
+}
 
+// ─────────────────────────────────────────────────────────────────────────────
+//  BroadcastTransitions: hora / noche / período. Compartido por Tick y SetTime.
+// ─────────────────────────────────────────────────────────────────────────────
+void UTimeOfDayManager::BroadcastTransitions()
+{
     const int32 CurrentHour = FMath::FloorToInt(CurrentTime);
     if (CurrentHour != LastHour)
     {
@@ -145,25 +162,5 @@ void UTimeOfDayManager::SetTime(float NewTime)
     CurrentTime = FMath::Fmod(NewTime, 24.0f);
     if (CurrentTime < 0.f) CurrentTime += 24.0f;
 
-    const int32 CurrentHour = FMath::FloorToInt(CurrentTime);
-    if (CurrentHour != LastHour)
-    {
-        LastHour = CurrentHour;
-        OnHourChanged.Broadcast(CurrentHour);
-    }
-
-    const bool bIsNightNow = IsNight();
-    if (bIsNightNow != bWasNight)
-    {
-        bWasNight = bIsNightNow;
-        OnNightStarted.Broadcast(bIsNightNow);
-    }
-
-    const ETimePeriod NewPeriod = GetCurrentPeriod();
-    if (NewPeriod != LastPeriod)
-    {
-        LastPeriod = NewPeriod;
-        static const FName PeriodNames[] = { TEXT("Morning"), TEXT("Day"), TEXT("Evening"), TEXT("Night") };
-        OnPeriodChanged.Broadcast(PeriodNames[(int32)NewPeriod]);
-    }
+    BroadcastTransitions();
 }

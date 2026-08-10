@@ -23,12 +23,6 @@ public:
     float TransitionDuration = 0.5f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Night|Lights")
-    float FarolaIntensity = 5000.0f;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Night|Lights")
-    FLinearColor FarolaColor = FLinearColor(1.0f, 0.85f, 0.6f);
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Night|Lights")
     float WindowEmissiveMin = 0.3f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Night|Lights")
@@ -52,12 +46,10 @@ public:
 private:
     float NightFactor = 0.0f;
     float CurrentHour = 12.0f;
-    TArray<AActor*> Farolas;
     TArray<AActor*> Edificios;
-    bool bFarolasCached = false;
+    bool bEdificiosCached = false;
 
     void UpdateNightFactor();
     void CacheNightActors();
-    void UpdateFarolas();
     void UpdateEdificios();
 };

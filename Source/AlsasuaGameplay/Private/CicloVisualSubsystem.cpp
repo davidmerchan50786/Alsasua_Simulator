@@ -11,6 +11,7 @@
 #include "Engine/World.h"
 #include "Engine/GameInstance.h"
 #include "EngineUtils.h"   // TActorIterator
+#include "World/AlsasuaAtmosphereController.h"
 
 template<typename T>
 static T* PrimeroONulo(UWorld* W)
@@ -110,6 +111,11 @@ void UCicloVisualSubsystem::Tick(float DeltaTime)
 {
 	UWorld* W = GetWorld() ? GetWorld() : (GetGameInstance() ? GetGameInstance()->GetWorld() : nullptr);
 	if (!W || W->WorldType == EWorldType::Editor) return;
+
+	// Un solo dueño del cielo. UAlsasuaAtmosphereController agarra la misma
+	// ADirectionalLight y le escribe rotación, color e intensidad desde otro
+	// reloj: con los dos activos el sol daba saltos y el color parpadeaba.
+	if (W->GetSubsystem<UAlsasuaAtmosphereController>()) return;
 
 	if (!bCreado)
 	{

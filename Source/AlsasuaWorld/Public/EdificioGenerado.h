@@ -13,6 +13,41 @@ class UProceduralMeshComponent;
 UENUM()
 enum class EFormaTejado : uint8 { Plano, Cuatro_Aguas, Dos_Aguas };
 
+/** Alto del faldón y cota del alero de un tejado. */
+struct FMetricasTejado
+{
+	float RoofH = 0.f;   // alto del faldón, del alero a la cumbrera
+	float Alero = 0.f;   // cota a la que remata el muro
+};
+
+/**
+ * Métricas del tejado a partir del footprint y la altura.
+ *
+ * Estaba calculado igual en dos sitios de EdificioGenerado.cpp. Se comparte
+ * porque el remate modular (UAlsasuaTejadoModular) tiene que colocar las
+ * piezas exactamente en el alero de esta geometría: si las dos fórmulas se
+ * separan, el remate flota o se hunde en el faldón.
+ */
+ALSASUAWORLD_API FMetricasTejado CalcularMetricasTejado(
+	const TArray<FVector2D>& Poligono, float AlturaCm, EFormaTejado Forma, float EscalaTejado);
+
+/**
+ * Lo que se construyó de tejado, anotado por el propio edificio.
+ *
+ * El remate modular necesita el polígono ya limpio (sin vértice de cierre) y
+ * los mismos parámetros que se usaron: si lo volviera a leer del JSON tendría
+ * que repetir la conversión de coordenadas y el muestreo de terreno, y
+ * cualquier diferencia de un centímetro se ve como piezas flotando.
+ */
+struct FTejadoConstruido
+{
+	TArray<FVector2D> Poligono;   // XY locales al actor, en cm
+	float AlturaCm = 0.f;         // hasta la cumbrera
+	EFormaTejado Forma = EFormaTejado::Cuatro_Aguas;
+	FVector2D Eje = FVector2D(1, 0);
+	float Escala = 1.f;
+};
+
 USTRUCT(BlueprintType)
 struct FFachadaConfig
 {
@@ -113,5 +148,8 @@ public:
 	UPROPERTY(EditAnywhere, Category="Edificio") FString NombreEdificio;
 	UPROPERTY(EditAnywhere, Category="Edificio") int32 Plantas = 1;
 	UPROPERTY(EditAnywhere, Category="Edificio") bool bDetalleActivo = false;
+
+	/** Ficha del tejado construido, para UAlsasuaTejadoModular. */
+	FTejadoConstruido Tejado;
 	UPROPERTY(EditAnywhere, Category="Edificio") FFachadaConfig ConfigFachada;
 };

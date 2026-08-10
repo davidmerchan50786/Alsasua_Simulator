@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
+#include "Tickable.h"
 #include "TimeOfDayManager.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHourChanged, int32, CurrentHour);
@@ -30,7 +31,7 @@ enum class ETimePeriod : uint8
  * y notifica a otros sistemas de cambios de período.
  */
 UCLASS()
-class ALSASUAMANIFA_API UTimeOfDayManager : public UWorldSubsystem
+class ALSASUAMANIFA_API UTimeOfDayManager : public UWorldSubsystem, public FTickableGameObject
 {
     GENERATED_BODY()
 
@@ -38,15 +39,21 @@ public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
     virtual void Deinitialize() override;
 
+    // Reloj único del mundo: el sol, la niebla, el alumbrado, las ventanas y el
+    // post-proceso leen CurrentTime. Sin este Tick se quedaba clavado a las 8:00.
+    virtual void Tick(float DeltaTime) override;
+    virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(UTimeOfDayManager, STATGROUP_Tickables); }
+    virtual bool IsTickable() const override { return !IsTemplate(); }
+
     // ── Tiempo ─────────────────────────────────────────────────────────────
 
     /** Hora actual (0.0 - 24.0). */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Time")
     float CurrentTime = 8.0f;
 
-    /** Velocidad del tiempo (1.0 = 1 segundo real = 1 minuto juego). */
+    /** Horas de juego por segundo real (0.01667 ≈ un día cada 24 min). */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Time", meta = (ClampMin = "0.0"))
-    float TimeSpeed = 0.1f;
+    float TimeSpeed = 0.01667f;
 
     /** ¿El tiempo avanza automáticamente? */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Time")
@@ -125,4 +132,5 @@ private:
     ETimePeriod LastPeriod = ETimePeriod::Day;
 
     void UpdateTime(float DeltaTime);
+    void BroadcastTransitions();
 };

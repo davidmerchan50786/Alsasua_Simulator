@@ -84,7 +84,7 @@ int32 UAlsasuaStreetArtSystem::ColocarArteCallejero()
             MuralActor->SetActorScale3D(FVector(SX, 0.05f, SZ));
 
             UStaticMesh* PlaneMesh = LoadObject<UStaticMesh>(nullptr,
-                TEXT("/Game/EngineBasicShapes/Plane"));
+                TEXT("/Engine/BasicShapes/Plane.Plane"));
             if (PlaneMesh)
                 MuralActor->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
 
@@ -138,7 +138,7 @@ int32 UAlsasuaStreetArtSystem::ColocarArteCallejero()
             GrafitiActor->SetActorScale3D(FVector(SX, 0.03f, SZ));
 
             UStaticMesh* PlaneMesh = LoadObject<UStaticMesh>(nullptr,
-                TEXT("/Game/EngineBasicShapes/Plane"));
+                TEXT("/Engine/BasicShapes/Plane.Plane"));
             if (PlaneMesh)
                 GrafitiActor->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
 

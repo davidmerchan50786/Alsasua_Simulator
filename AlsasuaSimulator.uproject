@@ -71,6 +71,14 @@
 			"Enabled": true
 		},
 		{
+			"Name": "Fab",
+			"Enabled": true
+		},
+		{
+			"Name": "InterchangeEditor",
+			"Enabled": true
+		},
+		{
 			"Name": "PythonScriptPlugin",
 			"Enabled": true
 		},

@@ -1,4 +1,5 @@
 #include "World/AlsasuaTreePlacer.h"
+#include "World/AlsasuaMallaFab.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "Engine/StaticMeshActor.h"
@@ -22,6 +23,26 @@ void UAlsasuaTreePlacer::Deinitialize()
     Super::Deinitialize();
 }
 
+/**
+ * Género del nombre científico -> arquetipo de malla. Los nombres del censo y
+ * de las especies vienen completos ("Fagus sylvatica", "Alnus glutinosa") y las
+ * mallas están indexadas por género.
+ */
+static FString ArquetipoDeCientifico(const FString& Cientifico)
+{
+    if (Cientifico.StartsWith(TEXT("Quercus")))  return TEXT("QuercusRobur");
+    if (Cientifico.StartsWith(TEXT("Pinus")))    return TEXT("Pinus");
+    if (Cientifico.StartsWith(TEXT("Fagus")))    return TEXT("Fagus");
+    if (Cientifico.StartsWith(TEXT("Betula")))   return TEXT("Betula");
+    if (Cientifico.StartsWith(TEXT("Populus")))  return TEXT("Populus");
+    if (Cientifico.StartsWith(TEXT("Salix")))    return TEXT("Salix");
+    if (Cientifico.StartsWith(TEXT("Prunus")))   return TEXT("Prunus");
+    if (Cientifico.StartsWith(TEXT("Platanus"))) return TEXT("Platanus");
+    if (Cientifico.StartsWith(TEXT("Acer")))     return TEXT("Acer");
+    // Aliso y níspero no tienen malla propia; comparten porte con el tilo.
+    return TEXT("Tilia");
+}
+
 void UAlsasuaTreePlacer::InicializarEspecies()
 {
     Especies.Empty(10);
@@ -33,7 +54,7 @@ void UAlsasuaTreePlacer::InicializarEspecies()
     Aliso.AlturaMedia = 15.0f;
     Aliso.RadioCopa = 6.0f;
     Aliso.ColorFollaje = TEXT("Verde oscuro");
-    Aliso.AssetPath = TEXT("/Game/AssetsImportados/Arboles/Aliso_Negro/Tree_Black_Alder_01_A");
+    Aliso.AssetPath = TEXT("");   // no se descargó: cae a la malla procedural
     Especies.Add(Aliso);
 
     FTreeSpecies Haya;
@@ -43,7 +64,7 @@ void UAlsasuaTreePlacer::InicializarEspecies()
     Haya.AlturaMedia = 25.0f;
     Haya.RadioCopa = 10.0f;
     Haya.ColorFollaje = TEXT("Verde brillante");
-    Haya.AssetPath = TEXT("/Game/AssetsImportados/Arboles/Haya_Europea/Tree_European_Beech_01_A");
+    Haya.AssetPath = TEXT("/Game/AssetsImportados/MeshyAI/Arbol_Haya.Arbol_Haya");
     Especies.Add(Haya);
 
     FTreeSpecies Abedul;
@@ -53,7 +74,7 @@ void UAlsasuaTreePlacer::InicializarEspecies()
     Abedul.AlturaMedia = 18.0f;
     Abedul.RadioCopa = 5.0f;
     Abedul.ColorFollaje = TEXT("Verde claro");
-    Abedul.AssetPath = TEXT("/Game/AssetsImportados/Arboles/Abedul/Tree_Silver_Birch_01_A");
+    Abedul.AssetPath = TEXT("/Game/AssetsImportados/MeshyAI/Arbol_Abedul.Arbol_Abedul");
     Especies.Add(Abedul);
 
     FTreeSpecies Sauce;
@@ -63,7 +84,7 @@ void UAlsasuaTreePlacer::InicializarEspecies()
     Sauce.AlturaMedia = 12.0f;
     Sauce.RadioCopa = 7.0f;
     Sauce.ColorFollaje = TEXT("Verde claro");
-    Sauce.AssetPath = TEXT("/Game/AssetsImportados/Arboles/Sauce/Tree_Goat_Willow_01_A");
+    Sauce.AssetPath = TEXT("");   // no se descargó: cae a la malla procedural
     Especies.Add(Sauce);
 
     FTreeSpecies PinoCarrasco;
@@ -73,7 +94,7 @@ void UAlsasuaTreePlacer::InicializarEspecies()
     PinoCarrasco.AlturaMedia = 12.0f;
     PinoCarrasco.RadioCopa = 4.0f;
     PinoCarrasco.ColorFollaje = TEXT("Verde oscuro perenne");
-    PinoCarrasco.AssetPath = TEXT("/Game/AssetsImportados/Arboles/Pino_Carrasco/Tree_Aleppo_Pine_01_A");
+    PinoCarrasco.AssetPath = TEXT("/Game/AssetsImportados/Mundo/pine/snow_pine_tree.snow_pine_tree");
     Especies.Add(PinoCarrasco);
 
     FTreeSpecies PinoBaltico;
@@ -83,7 +104,7 @@ void UAlsasuaTreePlacer::InicializarEspecies()
     PinoBaltico.AlturaMedia = 20.0f;
     PinoBaltico.RadioCopa = 5.0f;
     PinoBaltico.ColorFollaje = TEXT("Verde azulado perenne");
-    PinoBaltico.AssetPath = TEXT("/Game/AssetsImportados/Arboles/Pino_Baltico/Tree_Baltic_Pine_01_A");
+    PinoBaltico.AssetPath = TEXT("/Game/AssetsImportados/Mundo/pine/snow_pine_tree.snow_pine_tree");
     Especies.Add(PinoBaltico);
 
     FTreeSpecies Roble;
@@ -93,7 +114,7 @@ void UAlsasuaTreePlacer::InicializarEspecies()
     Roble.AlturaMedia = 22.0f;
     Roble.RadioCopa = 8.0f;
     Roble.ColorFollaje = TEXT("Verde oscuro");
-    Roble.AssetPath = TEXT("/Game/AssetsImportados/Arboles/Roble/models/oak");
+    Roble.AssetPath = TEXT("/Game/AssetsImportados/MeshyAI/Arbol_Roble.Arbol_Roble");
     Especies.Add(Roble);
 
     FTreeSpecies Alamo;
@@ -103,7 +124,7 @@ void UAlsasuaTreePlacer::InicializarEspecies()
     Alamo.AlturaMedia = 20.0f;
     Alamo.RadioCopa = 6.0f;
     Alamo.ColorFollaje = TEXT("Verde claro");
-    Alamo.AssetPath = TEXT("/Game/AssetsImportados/Arboles/Alamo_Temblon/Tree_European_Aspen_01_A");
+    Alamo.AssetPath = TEXT("");   // no se descargó: cae a la malla procedural
     Especies.Add(Alamo);
 
     FTreeSpecies Nispero;
@@ -113,7 +134,7 @@ void UAlsasuaTreePlacer::InicializarEspecies()
     Nispero.AlturaMedia = 6.0f;
     Nispero.RadioCopa = 3.0f;
     Nispero.ColorFollaje = TEXT("Verde oscuro");
-    Nispero.AssetPath = TEXT("/Game/AssetsImportados/Arboles/Nispero/Tree_Japanese_Medlar_01_A");
+    Nispero.AssetPath = TEXT("");   // no se descargó: cae a la malla procedural
     Especies.Add(Nispero);
 }
 
@@ -186,7 +207,19 @@ int32 UAlsasuaTreePlacer::ColocarArbolesReales()
     TMap<FString, UStaticMesh*> SpecieMeshes;
     for (const FTreeSpecies& Sp : Especies)
     {
-        UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, *Sp.AssetPath);
+        // Cuatro de las nueve especies no se llegaron a descargar (aliso,
+        // sauce, álamo y níspero: no están en Datos/asset_manifest.json), y las
+        // que sí están tienen otro nombre del que pedía el código. Las que
+        // falten caen a la malla procedural de su género.
+        UStaticMesh* Mesh = nullptr;
+        if (!Sp.AssetPath.IsEmpty())
+        {
+            Mesh = LoadObject<UStaticMesh>(nullptr, *Sp.AssetPath);
+        }
+        if (!Mesh)
+        {
+            Mesh = AlsasuaMallaFab::Resolver(ArquetipoDeCientifico(Sp.NombreCientifico), nullptr);
+        }
         SpecieMeshes.Add(Sp.NombreCientifico, Mesh);
     }
 

@@ -44,6 +44,29 @@ float UCargadorArboles::AlturaSuelo(const FVector2D& XY) const
 	return 0.f;
 }
 
+/**
+ * trees_unity.json trae el nombre científico completo ("Quercus robur",
+ * "Pinus sylvestris", "Fagus sylvatica") y las mallas están indexadas por
+ * arquetipo ("QuercusRobur", "Pinus", "Fagus"), así que Find() con la cadena
+ * cruda no acertaba nunca y las 2783 instancias salían cilíndricas.
+ */
+static FString ArquetipoDe(const FString& Especie)
+{
+	if (Especie.StartsWith(TEXT("Quercus")))  return TEXT("QuercusRobur");
+	if (Especie.StartsWith(TEXT("Pinus")))    return TEXT("Pinus");
+	if (Especie.StartsWith(TEXT("Fagus")))    return TEXT("Fagus");
+	if (Especie.StartsWith(TEXT("Betula")))   return TEXT("Betula");
+	if (Especie.StartsWith(TEXT("Populus")))  return TEXT("Populus");
+	if (Especie.StartsWith(TEXT("Salix")))    return TEXT("Salix");
+	if (Especie.StartsWith(TEXT("Prunus")))   return TEXT("Prunus");
+	if (Especie.StartsWith(TEXT("Platanus"))) return TEXT("Platanus");
+	if (Especie.StartsWith(TEXT("Acer")))     return TEXT("Acer");
+	// El fresno no tiene malla propia; comparte porte con el tilo.
+	if (Especie.StartsWith(TEXT("Fraxinus"))) return TEXT("Tilia");
+	if (Especie.StartsWith(TEXT("Tilia")))    return TEXT("Tilia");
+	return TEXT("Tilia");
+}
+
 UHierarchicalInstancedStaticMeshComponent* UCargadorArboles::ComponenteDe(const FString& Especie)
 {
 	if (UHierarchicalInstancedStaticMeshComponent** F = PorEspecie.Find(Especie)) return *F;
@@ -51,7 +74,7 @@ UHierarchicalInstancedStaticMeshComponent* UCargadorArboles::ComponenteDe(const 
 		NewObject<UHierarchicalInstancedStaticMeshComponent>(Host);
 
 	// Usar mesh de especie si existe, fallback al cilindro.
-	if (UStaticMesh** SpMesh = MallasPorEspecie.Find(Especie))
+	if (UStaticMesh** SpMesh = MallasPorEspecie.Find(ArquetipoDe(Especie)))
 	{
 		C->SetStaticMesh(*SpMesh);
 	}
@@ -93,7 +116,10 @@ void UCargadorArboles::PrepararCarga()
 		TEXT("Salix"), TEXT("Prunus"), TEXT("Acer")};
 	for (const FString& Sp : Especies)
 	{
-		FString Ruta = RutaMeshes + TEXT("SM_") + Sp + TEXT(".") + Sp;
+		// El objeto repite el nombre del paquete: SM_Tilia.SM_Tilia. Con
+		// SM_Tilia.Tilia LoadObject devolvía null y todas las especies caían
+		// al cilindro del motor.
+		const FString Ruta = RutaMeshes + TEXT("SM_") + Sp + TEXT(".SM_") + Sp;
 		if (UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, *Ruta))
 		{
 			MallasPorEspecie.Add(Sp, Mesh);
@@ -139,7 +165,11 @@ void UCargadorArboles::SembrarUno(const TSharedPtr<FJsonObject>& O)
 	FTransform T;
 	T.SetLocation(FVector(XY.X, XY.Y, Suelo));
 	T.SetRotation(FQuat(FRotator(0, Yaw, 0)));
-	T.SetScale3D(FVector(Escala * 0.4f, Escala * 0.4f, Escala));
+	// El 0.4 en XY existía para adelgazar el cilindro de respaldo y que
+	// pareciera un tronco. Con malla real de especie hay que escalar uniforme
+	// o el árbol sale aplastado.
+	const bool bMallaReal = MallasPorEspecie.Contains(ArquetipoDe(Especie));
+	T.SetScale3D(bMallaReal ? FVector(Escala) : FVector(Escala * 0.4f, Escala * 0.4f, Escala));
 
 	ComponenteDe(Especie)->AddInstance(T, /*bWorldSpace=*/true);
 	++Sembrados;

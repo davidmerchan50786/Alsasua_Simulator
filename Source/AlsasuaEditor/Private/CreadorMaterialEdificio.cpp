@@ -2,6 +2,7 @@
 // Crea el MPC_Clima (escalar "Wetness") y el material vertex-color M_Edificio que
 // lo lee: con lluvia, el suelo se oscurece y baja su rugosidad (aspecto mojado).
 #include "CreadorMaterialEdificio.h"
+#include "CreadorPBRComun.h"
 #include "AssetToolsModule.h"
 #include "IAssetTools.h"
 #include "Factories/MaterialFactoryNew.h"
@@ -97,22 +98,34 @@ bool UCreadorMaterialEdificio::CrearMaterialEdificio()
 	ML::ConnectMaterialExpressions(Oscuro, TEXT(""), LerpC, TEXT("B"));
 	ML::ConnectMaterialExpressions(Wet,    TEXT(""), LerpC, TEXT("Alpha"));
 
-	// BaseColor = VertexColor * factor.
+	// Tinte = VertexColor * factor de mojado.
 	UMaterialExpressionMultiply* Mul = Cast<UMaterialExpressionMultiply>(
 		ML::CreateMaterialExpression(Mat, UMaterialExpressionMultiply::StaticClass(), -150, -50));
 	ML::ConnectMaterialExpressions(VC,    TEXT(""), Mul, TEXT("A"));
 	ML::ConnectMaterialExpressions(LerpC, TEXT(""), Mul, TEXT("B"));
-	ML::ConnectMaterialProperty(Mul, TEXT(""), MP_BaseColor);
 
-	// Roughness = lerp(0.78 seco, 0.15 mojado, Wetness).
-	UMaterialExpressionConstant* RSeco = Cast<UMaterialExpressionConstant>(ML::CreateMaterialExpression(Mat, UMaterialExpressionConstant::StaticClass(), -400, 360)); RSeco->R = 0.78f;
-	UMaterialExpressionConstant* RMoj  = Cast<UMaterialExpressionConstant>(ML::CreateMaterialExpression(Mat, UMaterialExpressionConstant::StaticClass(), -400, 440)); RMoj->R = 0.15f;
-	UMaterialExpressionLinearInterpolate* LerpR = Cast<UMaterialExpressionLinearInterpolate>(
-		ML::CreateMaterialExpression(Mat, UMaterialExpressionLinearInterpolate::StaticClass(), -150, 380));
-	ML::ConnectMaterialExpressions(RSeco, TEXT(""), LerpR, TEXT("A"));
-	ML::ConnectMaterialExpressions(RMoj,  TEXT(""), LerpR, TEXT("B"));
-	ML::ConnectMaterialExpressions(Wet,   TEXT(""), LerpR, TEXT("Alpha"));
-	ML::ConnectMaterialProperty(LerpR, TEXT(""), MP_Roughness);
+	// Fábrica de ladrillo con el color del barrio como tinte. T_Brick_* estaba
+	// descargado y sin usar, y este material genérico de edificio no tenía
+	// ninguna textura: color liso, sin junta ni relieve ni AO.
+	AlsasuaPBR::FOpciones Op;
+	Op.Set = TEXT("Brick");
+	Op.TileCm = 200.f;
+	Op.RoughnessMojado = 0.3f;
+	Op.Tinte = Mul;
+	if (!AlsasuaPBR::Cablear(Mat, Op))
+	{
+		ML::ConnectMaterialProperty(Mul, TEXT(""), MP_BaseColor);
+
+		// Roughness = lerp(0.78 seco, 0.15 mojado, Wetness).
+		UMaterialExpressionConstant* RSeco = Cast<UMaterialExpressionConstant>(ML::CreateMaterialExpression(Mat, UMaterialExpressionConstant::StaticClass(), -400, 360)); RSeco->R = 0.78f;
+		UMaterialExpressionConstant* RMoj  = Cast<UMaterialExpressionConstant>(ML::CreateMaterialExpression(Mat, UMaterialExpressionConstant::StaticClass(), -400, 440)); RMoj->R = 0.15f;
+		UMaterialExpressionLinearInterpolate* LerpR = Cast<UMaterialExpressionLinearInterpolate>(
+			ML::CreateMaterialExpression(Mat, UMaterialExpressionLinearInterpolate::StaticClass(), -150, 380));
+		ML::ConnectMaterialExpressions(RSeco, TEXT(""), LerpR, TEXT("A"));
+		ML::ConnectMaterialExpressions(RMoj,  TEXT(""), LerpR, TEXT("B"));
+		ML::ConnectMaterialExpressions(Wet,   TEXT(""), LerpR, TEXT("Alpha"));
+		ML::ConnectMaterialProperty(LerpR, TEXT(""), MP_Roughness);
+	}
 
 	Mat->PostEditChange();
 	ML::RecompileMaterial(Mat);

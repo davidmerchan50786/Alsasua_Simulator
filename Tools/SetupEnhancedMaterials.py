@@ -50,10 +50,10 @@ def create_puddle_street_material():
     roughness = new_material_expression_lerp(roughness_dry, roughness_wet, puddle_node)
 
     # Normal: flat puddles
-    puddle_normal = new_material_expression_texture(-200, 400, "/Game/Textures/T_Normal_Default")
+    puddle_normal = new_material_expression_texture(-200, 400, "/Game/Textures/T_Asphalt_Normal")
 
     # Color: darken when wet
-    base_color = new_material_expression_texture(0, 0, "/Game/Textures/T_Asphalt_01_D")
+    base_color = new_material_expression_texture(0, 0, "/Game/Textures/T_Asphalt_Color")
     wet_darken = new_material_expression_constant(200, 0, 0.6)
     color = new_material_expression_multiply(base_color, wet_darken)
 
@@ -105,7 +105,7 @@ def create_window_emissive_material():
     emissive = new_material_expression_multiply(emissive_color_node, emissive_intensity)
 
     # Base color (dark facade)
-    facade_color = new_material_expression_texture(0, 0, "/Game/Textures/T_Brick_01_D")
+    facade_color = new_material_expression_texture(0, 0, "/Game/Textures/T_Brick_Color")
     dark_facade = new_material_expression_multiply(facade_color, new_material_expression_constant(200, 0, 0.3))
 
     mat.recompile()

@@ -104,15 +104,9 @@ int32 UAlsasuaRooftopDetailSystem::ColocarDetallesCubierta()
                 0.05f, 0.05f, 3.0f, OffX, OffZ);
         }
 
-        if (bPitchedRoof && FMath::FRand() < 0.6f)
-        {
-            float OffX = FMath::RandRange(-150.0f, 150.0f);
-            float OffZ = FMath::RandRange(-150.0f, 150.0f);
-            CrearItem(TEXT("chimenea"),
-                TEXT("/Engine/EngineMeshes/Cube"),
-                TEXT("/Engine/EngineMaterials/DefaultMaterial"),
-                0.5f, 0.5f, 1.2f, OffX, OffZ);
-        }
+        // Las chimeneas las pone UAlsasuaTejadoModular con la pieza del kit
+        // (Roof_Prop_Chimney_Stone) apoyada en la cumbrera real del edificio.
+        // Aquí eran un cubo del motor en un punto al azar de la cubierta.
 
         if (bFlatRoof && FMath::FRand() < 0.3f)
         {

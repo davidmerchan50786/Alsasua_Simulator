@@ -1,4 +1,5 @@
 #include "World/AlsasuaSidewalkSystem.h"
+#include "World/AlsasuaMallaFab.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "Engine/StaticMeshActor.h"
@@ -80,8 +81,8 @@ int32 UAlsasuaSidewalkSystem::GenerarAceras()
                 SidewalkActor->SetMobility(EComponentMobility::Static);
                 SidewalkActor->SetActorScale3D(FVector(Largo / 100.0f, AnchoAceras / 100.0f, 0.15f));
 
-                UStaticMesh* PlaneMesh = LoadObject<UStaticMesh>(nullptr,
-                    TEXT("/Game/EngineBasicShapes/Plane"));
+                UStaticMesh* PlaneMesh = AlsasuaMallaFab::Resolver(TEXT("acera_pieza"),
+                    TEXT("/Engine/BasicShapes/Plane.Plane"));
                 if (PlaneMesh)
                     SidewalkActor->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
 

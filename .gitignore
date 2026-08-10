@@ -23,6 +23,14 @@ Content/External/
 Content/CitySample/
 Content/Materiales/
 Content/Road/
+
+# Descargas de Fab / biblioteca de Epic (Megascans, packs del launcher).
+# Son decenas de GB de .uasset: cada quien las baja con el plugin Fab.
+Content/Megascans/
+Content/MSPresets/
+Content/Fab/
+Content/GASP/
+Content/Characters/Megascans/
 Content/Maps/*.umap
 Content/Maps/*.uasset
 Content/__ExternalActors__/

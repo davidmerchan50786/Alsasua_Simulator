@@ -77,7 +77,7 @@ int32 UAlsasuaOverheadCableSystem::ColocarCables()
             CableActor->SetActorScale3D(FVector(Largo / 100.0f, 0.02f, 0.02f));
 
             UStaticMesh* CubeMesh = LoadObject<UStaticMesh>(nullptr,
-                TEXT("/Game/EngineBasicShapes/Cube"));
+                TEXT("/Engine/BasicShapes/Cube.Cube"));
             if (CubeMesh)
                 CableActor->GetStaticMeshComponent()->SetStaticMesh(CubeMesh);
 
@@ -100,7 +100,7 @@ int32 UAlsasuaOverheadCableSystem::ColocarCables()
                     PostActor->SetActorScale3D(FVector(0.12f, 0.12f, AlturaCables / 100.0f));
 
                     UStaticMesh* CylinderMesh = LoadObject<UStaticMesh>(nullptr,
-                        TEXT("/Game/EngineBasicShapes/Cylinder"));
+                        TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
                     if (CylinderMesh)
                         PostActor->GetStaticMeshComponent()->SetStaticMesh(CylinderMesh);
 

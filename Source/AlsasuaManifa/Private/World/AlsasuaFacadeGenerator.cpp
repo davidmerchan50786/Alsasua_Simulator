@@ -1,4 +1,5 @@
 #include "World/AlsasuaFacadeGenerator.h"
+#include "World/AlsasuaMallaFab.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "Engine/StaticMeshActor.h"
@@ -364,14 +365,22 @@ int32 UAlsasuaFacadeGenerator::ColocarLandmarksReales()
         if (!Actor) continue;
 
         Actor->SetMobility(EComponentMobility::Static);
-        Actor->SetActorScale3D(FVector(4.0f, 4.0f, 5.0f));
 
-        UStaticMesh* Cube = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/EngineMeshes/Cube"));
-        if (Cube) Actor->GetStaticMeshComponent()->SetStaticMesh(Cube);
+        // El "tipo" del JSON se leía y no se usaba: los 19 landmarks salían
+        // como el mismo cubo gris de 4x4x5 m, una iglesia igual que una
+        // ikastola y a 4 m de ancho. Ahora cada tipo tiene su arquetipo, y si
+        // hay algo bajado de Fab para ese tipo, se prefiere.
+        UStaticMesh* Malla = AlsasuaMallaFab::Resolver(Tipo, nullptr);
+        if (!Malla)
+        {
+            // "parque" no es un edificio y no le corresponde malla.
+            Actor->Destroy();
+            continue;
+        }
 
-        UMaterialInterface* Mat = LoadObject<UMaterialInterface>(nullptr,
-            TEXT("/Engine/EngineMaterials/DefaultMaterial.DefaultMaterial"));
-        if (Mat) Actor->GetStaticMeshComponent()->SetMaterial(0, Mat);
+        Actor->GetStaticMeshComponent()->SetStaticMesh(Malla);
+        // Los arquetipos ya vienen a tamaño real, en centímetros: sin escalar.
+        Actor->SetActorScale3D(FVector::OneVector);
 
 #if WITH_EDITOR
         Actor->SetActorLabel(*FString::Printf(TEXT("LMK_%s"), *Nombre));

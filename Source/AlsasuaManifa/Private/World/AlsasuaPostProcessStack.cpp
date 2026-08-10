@@ -1,5 +1,4 @@
 #include "World/AlsasuaPostProcessStack.h"
-#include "World/Time/TimeOfDayManager.h"
 #include "World/AlsasuaVisualEffectsManager.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
@@ -27,24 +26,13 @@ void UAlsasuaPostProcessStack::UpdatePostProcess(float DeltaTime)
 	UWorld* W = GetWorld();
 	if (!W) return;
 
-	UTimeOfDayManager* TimeMgr = W->GetSubsystem<UTimeOfDayManager>();
 	UAlsasuaVisualEffectsManager* VFXMgr = W->GetSubsystem<UAlsasuaVisualEffectsManager>();
-
-	const float Hour = TimeMgr ? TimeMgr->CurrentTime : 12.f;
 	const float Rain = VFXMgr ? VFXMgr->GlobalWetness : 0.f;
 
-	// Day/night factor
-	float DayFactor = 1.f;
-	if (Hour >= 6.f && Hour <= 20.f)
-	{
-		const float MidDay = 13.f;
-		DayFactor = 1.f - FMath::Clamp(FMath::Abs(Hour - MidDay) / 7.f, 0.f, 1.f) * 0.3f;
-	}
-	else
-	{
-		DayFactor = 0.f;
-	}
-
+	// Viñeta, aberración cromática y bloom los lleva
+	// UAlsasuaEnhancedPostProcessComponent. Los dos escribían los mismos
+	// campos de los mismos volúmenes con valores distintos cada 0.15 s y
+	// 0.1 s: la imagen parpadeaba al ritmo del que ticaba último.
 	TArray<AActor*> PPVolumes;
 	UGameplayStatics::GetAllActorsOfClass(W, APostProcessVolume::StaticClass(), PPVolumes);
 
@@ -55,34 +43,28 @@ void UAlsasuaPostProcessStack::UpdatePostProcess(float DeltaTime)
 
 		FPostProcessSettings& S = PPV->Settings;
 
-		if (bEnableVignette)
-		{
-			S.bOverride_VignetteIntensity = true;
-			S.VignetteIntensity = FMath::Lerp(VignetteIntensity * 1.3f, VignetteIntensity, DayFactor);
-		}
-
 		if (bEnableFilmGrain)
 		{
 			S.bOverride_FilmGrainIntensity = true;
 			S.FilmGrainIntensity = FMath::Lerp(GrainIntensity, GrainIntensity * 2.f, Rain);
 		}
 
-		if (bEnableChromaticAberration)
-		{
-			S.bOverride_SceneFringeIntensity = true;
-			S.SceneFringeIntensity = FMath::Lerp(ChromaticIntensity * 1.5f, ChromaticIntensity, DayFactor);
-		}
-
-		S.bOverride_BloomIntensity = true;
-		S.BloomIntensity = FMath::Lerp(BloomIntensity * 1.5f, BloomIntensity, DayFactor);
-
 		S.bOverride_BloomThreshold = true;
 		S.BloomThreshold = BloomThreshold;
 
+		// Rango de adaptación estrecho. Con 0.1-10 el auto-exposure recuperaba
+		// dos órdenes de magnitud y la noche acababa igual de clara que el día.
 		S.bOverride_AutoExposureMinBrightness = true;
 		S.AutoExposureMinBrightness = ExposureMinBrightness;
 
 		S.bOverride_AutoExposureMaxBrightness = true;
 		S.AutoExposureMaxBrightness = ExposureMaxBrightness;
+
+		// Adaptación del ojo: rápida al deslumbrarse, lenta al oscuro.
+		S.bOverride_AutoExposureSpeedUp = true;
+		S.AutoExposureSpeedUp = ExposureSpeed * 1.5f;
+
+		S.bOverride_AutoExposureSpeedDown = true;
+		S.AutoExposureSpeedDown = ExposureSpeed * 0.5f;
 	}
 }
