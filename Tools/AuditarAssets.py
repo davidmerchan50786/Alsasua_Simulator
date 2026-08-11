@@ -188,7 +188,13 @@ def main():
             ok.append(ruta); continue
         if os.path.basename(ruta).lower() in manifest:
             ok.append(ruta); continue
-        if ruta in generadas or carpeta in carpetas_generadas:
+        # La carpeta cuenta como generada si el generador la nombra a ella
+        # ("/Game/Mobiliario" en CreadorMallaMobiliario) aunque componga el
+        # nombre del asset aparte. Antes sólo se miraba carpetas_generadas, que
+        # son los PADRES de las rutas generadas, así que /Game/Mobiliario/SM_Banco
+        # no casaba con nada y salían 57 alarmas falsas. Una auditoría que grita
+        # sin motivo es peor que no tenerla: se deja de mirar.
+        if ruta in generadas or carpeta in generadas or carpeta in carpetas_generadas:
             gen.append(ruta); continue
         if ruta.startswith(PACKS_EXTERNOS):
             externas.append(ruta); continue

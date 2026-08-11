@@ -74,6 +74,11 @@ namespace
 		{ TEXT("cruce_peatonal"),      TEXT("cruce_peatonal|paso_cebra|crosswalk|zebra_crossing") },
 		{ TEXT("bici_arbol"),          TEXT("aparcabicis|bicicletero|bike_rack|bicycle_rack") },
 
+		// Pancartas de manifestación (AlsasuaPropGenerator). Sin entrada, ese
+		// sistema sólo sabía pedir /Game/Props/Banners/Banner_01, que no lo crea
+		// nadie; por aquí coge lo que haya de Fab y si no, su plano procedural.
+		{ TEXT("pancarta"),            TEXT("pancarta|banderola|banner|flag|bandera|protest_sign") },
+
 		// Landmarks de landmarks_real.json. Meshy generó los cuatro
 		// singulares del pueblo con su nombre propio.
 		{ TEXT("iglesia"),           TEXT("iglesia_jasokundeko|iglesia|eliza|church|chapel") },

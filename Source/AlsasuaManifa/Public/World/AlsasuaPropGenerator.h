@@ -1,13 +1,11 @@
 // AlsasuaPropGenerator.h (capa MANIFA)
-// Coloca pancartas sobre actores. DORMIDO: no lo llama nadie, y sus rutas
-// (/Game/Props/Banners/Banner_01, /Game/Props/Materials/BannerMat_01) son de
-// ejemplo — no las genera ningún CreadorMalla* ni vienen en ningún pack del
-// asset_manifest, así que no existen en el proyecto.
-//
-// Si algún día se despierta: o se crean esos assets, o se le enchufa
-// AlsasuaMallaFab como hace el resto del mundo, que resuelve por palabra clave
-// y degrada solo. Mientras tanto LoadAssets() ya no mete nulls en las listas,
-// para que el fallo se vea en el log en vez de dejar pancartas invisibles.
+// Coloca pancartas sobre actores. Sigue sin tener llamantes — quién reparte
+// pancartas y a qué actores es una decisión de gameplay, no de este fichero —,
+// pero ya está listo para cuando alguien lo llame: sus rutas de ejemplo
+// (/Game/Props/Banners/Banner_01…) no las crea nadie, así que si no están tira
+// de AlsasuaMallaFab, que busca una pancarta entre lo bajado de Fab y cae a un
+// plano del motor. Produce algo en vez de nada, y se sustituye solo en cuanto
+// haya malla buena.
 #pragma once
 
 #include "CoreMinimal.h"

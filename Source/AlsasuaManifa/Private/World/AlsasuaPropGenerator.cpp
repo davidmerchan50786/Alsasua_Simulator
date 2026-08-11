@@ -2,6 +2,8 @@
 #include "Engine/StreamableManager.h"
 #include "Engine/AssetManager.h"
 #include "Components/StaticMeshComponent.h"
+#include "World/AlsasuaMallaFab.h"
+#include "Engine/StaticMesh.h"
 
 void UAlsasuaPropGenerator::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -27,6 +29,20 @@ void UAlsasuaPropGenerator::LoadAssets()
     {
         if (UStaticMesh* M = Cast<UStaticMesh>(Streamable.LoadSynchronous(FSoftObjectPath(R))))
             BannerMeshes.Add(M);
+    }
+
+    // Si esas rutas de ejemplo no existen — que es lo normal, no las crea nadie —
+    // se tira del resolvedor del proyecto, que busca una pancarta entre lo bajado
+    // de Fab y cae a un plano del motor como último recurso. Así el sistema
+    // produce algo en vez de nada: una pancarta plana con su material es mejor
+    // punto de partida que ninguna, y se sustituye sola en cuanto haya malla.
+    if (BannerMeshes.Num() == 0)
+    {
+        if (UStaticMesh* M = AlsasuaMallaFab::Resolver(
+                TEXT("pancarta"), TEXT("/Engine/BasicShapes/Plane.Plane")))
+        {
+            BannerMeshes.Add(M);
+        }
     }
 
     const TCHAR* RutasMat[] = {
