@@ -187,7 +187,10 @@ Donato/Andía (1410 m a 15,1 km), al norte Aralar, al sur Urbasa/Lokiz.
 - **Datos**: `Tools/DescargarRelieveLejano.py` baja el MDT25 y el PNOA del IGN
   (verificado por round-trip, corr 1.000) → `alsasua_relieve_lejano_2048.r16` +
   `_meta.json` + `_4096.png`. La caja y la codificación viven en el meta, no en
-  el C++.
+  el C++. El `.r16` se versiona; **el PNG de 29 MB no**, porque el presupuesto de
+  Git LFS de la cuenta está agotado y el push lo rechaza — hay que ejecutar el
+  script una vez tras clonar (~80 s). Sin él, el anillo se ve con el color
+  procedural y `ImportSatellite.py` avisa en vez de fallar.
 - **Cota**: el mundo usa `worldZ_cm = alt_m*100 − 51133`, no metros sobre el mar.
   El `.r16` del anillo guarda altitud real, así que hay que restar esa base
   (`CotaBaseCm`); sin ella el relieve flota 511 m. La codificación del heightmap
