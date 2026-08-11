@@ -141,7 +141,8 @@ int32 UAlsasuaContainerSystem::ColocarContenedoresFallback()
         {
             ContActor->SetMobility(EComponentMobility::Static);
             ContActor->SetActorScale3D(FVector(1.2f, 0.8f, 1.0f));
-            UStaticMesh* TrashcanMesh = LoadObject<UStaticMesh>(nullptr,
+            // Ruta constante: se resuelve una vez y no por contenedor.
+            static UStaticMesh* const TrashcanMesh = LoadObject<UStaticMesh>(nullptr,
                 TEXT("/Game/CitySample/Prop/Kit_Trashcan_A/Mesh/SM_Trashcan_A_01"));
             if (TrashcanMesh) ContActor->GetStaticMeshComponent()->SetStaticMesh(TrashcanMesh);
 #if WITH_EDITOR

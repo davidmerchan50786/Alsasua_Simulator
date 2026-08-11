@@ -7,6 +7,7 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "GeoDataAlsasua.h"
+#include "World/AlsasuaMallaFab.h"
 
 void UAlsasuaTrafficSystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -145,6 +146,16 @@ int32 UAlsasuaTrafficSystem::ColocarCocheAparcado()
     UWorld* World = GetWorld();
     if (!World) return 0;
 
+    // Una sola resolución para todos los coches, fuera del bucle: antes se hacía un
+    // LoadObject por coche de una ruta constante. Y sobre todo, esa ruta era
+    // /Game/AssetsImportados/Casas/HousePack/House1 — cada coche aparcado del pueblo
+    // era una CASA. Viene de arrastrar la ruta del sistema de casas; el comentario
+    // que había sólo corregía la ruta, no que fuese el asset equivocado.
+    // AlsasuaMallaFab busca un coche por palabra clave y cae a forma básica si no
+    // hay ninguno, que es el patrón de degradación del proyecto.
+    UStaticMesh* CocheMesh = AlsasuaMallaFab::Resolver(
+        TEXT("coche"), TEXT("/Engine/BasicShapes/Cube.Cube"));
+
     int32 Placed = 0;
     for (const FParkedCar& Car : Coches)
     {
@@ -157,12 +168,7 @@ int32 UAlsasuaTrafficSystem::ColocarCocheAparcado()
             CarActor->SetMobility(EComponentMobility::Movable);
             CarActor->SetActorScale3D(FVector(1.0f));
 
-            UStaticMesh* CarMesh = LoadObject<UStaticMesh>(nullptr,
-                // Tres errores en esta ruta: /Game ya ES Content (sobra el prefijo), la
-                // carpeta del pack se llama HousePack, y las mallas son House1..14.
-                // Nombres reales según Datos/asset_manifest.json.
-                TEXT("/Game/AssetsImportados/Casas/HousePack/House1.House1"));
-            if (CarMesh) CarActor->GetStaticMeshComponent()->SetStaticMesh(CarMesh);
+            if (CocheMesh) CarActor->GetStaticMeshComponent()->SetStaticMesh(CocheMesh);
 
 #if WITH_EDITOR
             CarActor->SetActorLabel(*FString::Printf(TEXT("Coche_%s_%s"), *Car.Color, *Car.Tipo));

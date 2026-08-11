@@ -20,6 +20,10 @@ namespace
 // 1155,328 m -> 64399,8 cm) y PRIMER_COMPILADO_5_8 (plaza 531,94 m -> 2061 cm).
 // Sin restarlo, el anillo entero flotaría 511 m por encima del pueblo.
 constexpr double CotaBaseCm = 51133.0;
+
+// Cuánto se hunde el anillo en la franja que solapa con el terreno jugable.
+// 2 m basta para ganar el z-fight y sigue estando muy por debajo de lo que se ve.
+constexpr double SolapeBajoTerrenoCm = 200.0;
 }
 
 ATerrenoLejano::ATerrenoLejano()
@@ -34,7 +38,7 @@ ATerrenoLejano::ATerrenoLejano()
 	// trace en cuanto alguien mirase fuera del pueblo.
 	Malla->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	Malla->SetCastShadow(false);
-	Malla->bUseAsyncCooking = true;
+	// Sin bUseAsyncCooking: sólo sirve para cocinar colisión, y aquí no hay.
 }
 
 void ATerrenoLejano::BeginPlay()
@@ -159,10 +163,24 @@ int32 ATerrenoLejano::Construir()
 	const double X0 = CentroX - SemiladoCm;
 	const double Y0 = CentroY - SemiladoCm;
 
-	// Índice de celda donde empieza y acaba el agujero. Redondeamos hacia fuera para
-	// no dejar una franja de anillo por debajo del terreno jugable.
-	const int32 HuecoIni = FMath::FloorToInt((SemiladoCm - HuecoCm) / CeldaCm);
+	// Índice de celda donde empieza el agujero. Redondeamos HACIA ARRIBA a
+	// propósito: así el agujero queda igual o más pequeño que el terreno jugable y
+	// el anillo se mete por debajo de él. Con floor pasaba lo contrario — si
+	// CeldaM no divide exacto al semilado del hueco, el agujero salía más grande
+	// que el terreno y quedaba un anillo de vacío alrededor del pueblo, que es
+	// justo el agujero que este actor existe para tapar. Un solape se esconde bajo
+	// el terreno; un hueco se ve.
+	const double BordeEnCeldas = (SemiladoCm - HuecoCm) / CeldaCm;
+	const int32 HuecoIni = FMath::CeilToInt(BordeEnCeldas);
 	const int32 HuecoFin = NCeldas - HuecoIni;   // simétrico
+
+	if (!FMath::IsNearlyEqual(BordeEnCeldas, (double)HuecoIni, 1e-6))
+	{
+		UE_LOG(LogTemp, Warning,
+			TEXT("TerrenoLejano: CeldaM=%.0f no divide exacto el borde del terreno (%.3f celdas); ")
+			TEXT("el anillo solapa %.0f m bajo el terreno. Usa 100, 150, 200 o 300 para que caiga justo."),
+			CeldaM, BordeEnCeldas, (HuecoIni - BordeEnCeldas) * CeldaCm / 100.0);
+	}
 
 	const float BandaCm = FMath::Max(1.f, BandaFusionM) * 100.f;
 
@@ -188,7 +206,15 @@ int32 ATerrenoLejano::Construir()
 			const double dx = WX - CentroX;
 			const double dy = WY - CentroY;
 			const double Cheb = FMath::Max(FMath::Abs(dx), FMath::Abs(dy));
-			if (Cerca && Cheb > KINDA_SMALL_NUMBER && Cheb < HuecoCm + BandaCm)
+			if (Cerca && Cheb <= HuecoCm)
+			{
+				// Franja de solape bajo el terreno jugable (la deja el redondeo
+				// hacia arriba del agujero). Va pegada a la superficie real pero
+				// por debajo: si quedaran coplanares se verían parpadear una contra
+				// otra, y este trozo no debe verse nunca.
+				Z = Cerca->AlturaEnMundo((float)WX, (float)WY) - SolapeBajoTerrenoCm;
+			}
+			else if (Cerca && Cheb > KINDA_SMALL_NUMBER && Cheb < HuecoCm + BandaCm)
 			{
 				const double k = HuecoCm / Cheb;               // lleva el punto al borde
 				const float ZBorde = Cerca->AlturaEnMundo((float)(CentroX + dx * k),
@@ -242,6 +268,11 @@ int32 ATerrenoLejano::Construir()
 	// del RESUMEN_TECNICO — aquí es fácil respetarla y no hay motivo para trocear.
 	Malla->CreateMeshSection(0, Verts, Tris, Normales, UVs,
 		TArray<FColor>(), TArray<FProcMeshTangent>(), /*bCreateCollision*/ false);
+
+	// El heightmap ya está volcado en la malla y el anillo no se reconstruye en
+	// runtime: soltamos los 8 MB del .r16 en vez de dejarlos residentes toda la
+	// sesión. Si alguien vuelve a llamar a Construir(), CargarDatos() los relee.
+	Alturas.Empty();
 
 	if (UMaterialInterface* Mat = CargarMaterialConFallbackSeguro(
 			TEXT("/Game/Materiales/M_Relieve_Lejano.M_Relieve_Lejano"),
