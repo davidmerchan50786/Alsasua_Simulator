@@ -6,7 +6,9 @@ import json
 import os
 import random
 
-BASE = r"F:\Epic Games\UE_5.7\altsasu_gtavii\UnrealProject"
+# Raiz derivada de donde vive este fichero. Antes fija a la maquina original
+# ("F:/Epic Games/UE_5.7/altsasu_gtavii/UnrealProject"), asi que solo corria alli.
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATOS = os.path.join(BASE, "Content", "Datos")
 
 def main():

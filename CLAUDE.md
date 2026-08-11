@@ -223,11 +223,14 @@ esos parámetros en runtime. Crear un material que lea el MPC antes de que exist
   `DownloadTextures.py`, `enrich_*.py`, `asset_manifest.py`…) — Python 3 normal,
   algunos con `numpy`/`requests`.
 
-**Deuda conocida**: varios scripts (`asset_manifest.py`, `ue5_setup_assets.py`,
-`SetupAlsasuaProject.ps1`, `startup_cmds.txt`) llevan **rutas absolutas hardcodeadas**
-de la máquina original (`F:\Epic Games\UE_5.7\altsasu_gtavii\...`) y de UE 5.7.
-Si tocas uno de ellos, deriva la ruta de `unreal.Paths.project_dir()` /
-`os.path.dirname(__file__)` como ya hace `RunAll.py`.
+**Regla de rutas**: ningún script puede llevar rutas absolutas de una máquina
+concreta. Los standalone derivan la raíz de su propia ubicación
+(`os.path.dirname(os.path.dirname(os.path.abspath(__file__)))`, están en `Tools/`)
+y los de editor usan `unreal.Paths.project_dir()`. Los 11 ficheros que quedaban
+con `F:\Epic Games\UE_5.7\altsasu_gtavii\...` ya están migrados; si añades uno,
+sigue el patrón. Única excepción legítima: rutas a instalaciones externas al repo
+(CitySample, Blender), que van como parámetro con valor por defecto —
+ver `SetupAlsasuaProject.ps1`.
 
 ---
 
