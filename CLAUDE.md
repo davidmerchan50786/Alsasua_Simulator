@@ -148,6 +148,7 @@ comentadas**, en orden de dependencia, publicando progreso en
 
 1. `ATerrenoGenerado` — heightmap real `Content/Terreno/alsasua_landscape_4033.r16`
    (4033², procedural mesh; en `-game` no se usa Landscape).
+1b. `UCargadorPoligonos` — 5 plazas + 273 zonas verdes como superficies drapeadas.
 2. `UCargadorArboles` (LiDAR) → `UCargadorVias` (ferrocarril, caminos, túneles;
    también genera los ríos como cintas drapeadas) → `UCargadorCalles` →
    `UCargadorEdificios` → tejado modular → Herriko Plaza → `UCargadorPuentes` →
@@ -160,10 +161,19 @@ Si añades una fase, ponla **donde toque en la cadena** y mantén la numeración
 el `Progreso`. El terreno va siempre primero: el resto hace raycast contra él
 para apoyarse (`MuestreadorAltura`, `GeoDataAlsasua::TraceUp/TraceDown`).
 
-Detalle: `UCargadorPoligonos` está **dormido** — nadie llama a `Cargar()`, así que
-las superficies de las 5 plazas y las 273 zonas verdes no se construyen y
-`plazas_unity.json` no tiene ningún consumidor. Es deliberado: pintaría color
-plano sobre la ortofoto PNOA del terreno. Ver la nota en su cabecera.
+**Cuidado con el orden y los raycast de altura.** Varios cargadores muestrean Z
+con `LineTraceSingleByChannel(ECC_Visibility)` **sin filtrar por actor** (lo hacen
+`APoligonoSuelo` y `UCargadorArboles`): cogen lo más alto que haya debajo. Por eso
+`UCargadorPoligonos` va en la fase **1b**, pegado al terreno y antes de árboles,
+calles y edificios — detrás de los árboles, un vértice de zona verde bajo una copa
+drapearía a la altura de la copa. Si añades algo que se apoye por raycast,
+colócalo antes de lo que pueda taparle el suelo.
+
+Coste: `UCargadorPoligonos` son 278 actores, uno por polígono, cada uno con su
+sección de `ProceduralMesh` → 278 draw calls sobre los ~819 de referencia del
+`RESUMEN_TECNICO.md`. Y pinta color plano sobre la ortofoto PNOA del terreno; si
+hace falta ver la foto debajo, se tiñe la ortofoto por zona en el material, no se
+sube el epsilon.
 
 ### Datos (`Content/Datos/*.json`)
 

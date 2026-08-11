@@ -5,6 +5,7 @@
 #include "CargadorArboles.h"
 #include "CargadorVias.h"
 #include "CargadorCalles.h"
+#include "CargadorPoligonos.h"
 #include "CargadorEdificios.h"
 #include "AlsasuaTejadoModular.h"
 #include "HerrikoPlazaGenerator.h"
@@ -90,6 +91,20 @@ void ADirectorArranque::IniciarConstruccion()
         Terreno->SetActorLabel(TEXT("Alsasua_TerrenoProcedural"));
 #endif
         UE_LOG(LogTemp, Log, TEXT("DirectorArranque: Terreno procedural spawneado."));
+    }
+
+    // --- 1b. Suelos poligonales: 5 plazas + 273 zonas verdes ---
+    // Va aquí, pegado al terreno y ANTES que árboles/calles/edificios, porque
+    // APoligonoSuelo muestrea Z con un LineTrace por ECC_Visibility que no filtra
+    // por actor: coge lo más alto que encuentre. Con el terreno solo, drapea sobre
+    // el terreno; detrás de los árboles, un vértice de zona verde bajo una copa
+    // drapearía a la altura de la copa. La colisión del terreno ya está lista a
+    // estas alturas: los árboles usan este mismo trace en la fase siguiente.
+    UCargadorPoligonos* Suelos = World->GetSubsystem<UCargadorPoligonos>();
+    if (Suelos)
+    {
+        const int32 NumSuelos = Suelos->Cargar();
+        UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d suelos poligonales (plazas + zonas verdes)."), NumSuelos);
     }
 
     ArranqueMundo::Progreso = 0.3f;
