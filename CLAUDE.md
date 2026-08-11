@@ -149,6 +149,8 @@ comentadas**, en orden de dependencia, publicando progreso en
 1. `ATerrenoGenerado` — heightmap real `Content/Terreno/alsasua_landscape_4033.r16`
    (4033², procedural mesh; en `-game` no se usa Landscape).
 1b. `UCargadorPoligonos` — 5 plazas + 273 zonas verdes como superficies drapeadas.
+1c. `ATerrenoLejano` — anillo de relieve de 60×60 km con el hueco del terreno
+   jugable, para que el mundo no se corte en seco a 3,6 km (ver §5b).
 2. `UCargadorArboles` (LiDAR) → `UCargadorVias` (ferrocarril, caminos, túneles;
    también genera los ríos como cintas drapeadas) → `UCargadorCalles` →
    `UCargadorEdificios` → tejado modular → Herriko Plaza → `UCargadorPuentes` →
@@ -174,6 +176,29 @@ sección de `ProceduralMesh` → 278 draw calls sobre los ~819 de referencia del
 `RESUMEN_TECNICO.md`. Y pinta color plano sobre la ortofoto PNOA del terreno; si
 hace falta ver la foto debajo, se tiñe la ortofoto por zona en el material, no se
 sube el epsilon.
+
+### 5b. Relieve lejano (`ATerrenoLejano`)
+
+El terreno jugable son 7200×7200 m y acaba en seco. `ATerrenoLejano` dibuja
+detrás un cuadrado de 60×60 km con un **agujero del tamaño exacto** del terreno,
+así que no se solapan: al oeste Aizkorri (1543 m a 14,8 km), al este San
+Donato/Andía (1410 m a 15,1 km), al norte Aralar, al sur Urbasa/Lokiz.
+
+- **Datos**: `Tools/DescargarRelieveLejano.py` baja el MDT25 y el PNOA del IGN
+  (verificado por round-trip, corr 1.000) → `alsasua_relieve_lejano_2048.r16` +
+  `_meta.json` + `_4096.png`. La caja y la codificación viven en el meta, no en
+  el C++.
+- **Cota**: el mundo usa `worldZ_cm = alt_m*100 − 51133`, no metros sobre el mar.
+  El `.r16` del anillo guarda altitud real, así que hay que restar esa base
+  (`CotaBaseCm`); sin ella el relieve flota 511 m. La codificación del heightmap
+  principal (`495 + q/64`) **no vale aquí**: topa en 1518,98 m y Aizkorri pasa de
+  1520, así que el anillo usa datum y paso propios.
+- **Costura**: las alturas se funden del borde del terreno jugable a las del MDT
+  a lo largo de `BandaFusionM`, con proyección radial en Chebyshev, para que en
+  el borde exacto ambas superficies coincidan y no quede escalón.
+- **Es decorado**: sin colisión (si la tuviera, los `LineTrace` de altura de
+  árboles y suelos se engancharían a él) y sin sombras dinámicas. Una sola
+  sección de malla = un draw call para los 60 km.
 
 ### Datos (`Content/Datos/*.json`)
 

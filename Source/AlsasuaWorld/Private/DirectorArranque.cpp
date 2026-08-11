@@ -1,6 +1,7 @@
 #include "DirectorArranque.h"
 #include "ArranqueMundo.h"
 #include "TerrenoGenerado.h"
+#include "TerrenoLejano.h"
 #include "MuestreadorAltura.h"
 #include "CargadorArboles.h"
 #include "CargadorVias.h"
@@ -105,6 +106,22 @@ void ADirectorArranque::IniciarConstruccion()
     {
         const int32 NumSuelos = Suelos->Cargar();
         UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d suelos poligonales (plazas + zonas verdes)."), NumSuelos);
+    }
+
+    // --- 1c. Relieve lejano: anillo de 60 km alrededor del terreno jugable ---
+    // Para que el mundo no se corte en seco a 3,6 km. Necesita el terreno ya
+    // spawneado, porque le pregunta dónde acaba para dejar ahí su agujero y funde
+    // las alturas contra su borde. No tiene colisión, así que no estorba a los
+    // muestreos de suelo por LineTrace de las fases siguientes.
+    ATerrenoLejano* Lejano = World->SpawnActor<ATerrenoLejano>(
+        ATerrenoLejano::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator);
+    if (Lejano)
+    {
+#if WITH_EDITOR
+        Lejano->SetActorLabel(TEXT("Alsasua_RelieveLejano"));
+#endif
+        const int32 NumTris = Lejano->Construir();
+        UE_LOG(LogTemp, Log, TEXT("DirectorArranque: relieve lejano con %d triangulos."), NumTris);
     }
 
     ArranqueMundo::Progreso = 0.3f;
