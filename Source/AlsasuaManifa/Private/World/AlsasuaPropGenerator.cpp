@@ -11,18 +11,47 @@ void UAlsasuaPropGenerator::Initialize(FSubsystemCollectionBase& Collection)
 
 void UAlsasuaPropGenerator::LoadAssets()
 {
-    // Cargar de manera perezosa algunos meshes y materiales (rutas de ejemplo)
+    // Rutas de ejemplo que no existen en el proyecto (ver la nota de la cabecera).
+    // Antes se añadía el resultado del Load a la lista pasara lo que pasara, así
+    // que las listas se llenaban de nulls: AssignPropToActor sorteaba un índice
+    // "válido", asignaba un mesh nulo y la pancarta salía invisible sin una sola
+    // línea de log. Ahora sólo entra lo que ha cargado, y si no carga nada se
+    // dice una vez.
     FStreamableManager& Streamable = UAssetManager::GetStreamableManager();
-    BannerMeshes.Add(Cast<UStaticMesh>(Streamable.LoadSynchronous(FSoftObjectPath("/Game/Props/Banners/Banner_01.Banner_01"))));
-    BannerMeshes.Add(Cast<UStaticMesh>(Streamable.LoadSynchronous(FSoftObjectPath("/Game/Props/Banners/Banner_02.Banner_02"))));
 
-    BannerMaterials.Add(Cast<UMaterialInterface>(Streamable.LoadSynchronous(FSoftObjectPath("/Game/Props/Materials/BannerMat_01.BannerMat_01"))));
-    BannerMaterials.Add(Cast<UMaterialInterface>(Streamable.LoadSynchronous(FSoftObjectPath("/Game/Props/Materials/BannerMat_02.BannerMat_02"))));
+    const TCHAR* RutasMalla[] = {
+        TEXT("/Game/Props/Banners/Banner_01.Banner_01"),
+        TEXT("/Game/Props/Banners/Banner_02.Banner_02"),
+    };
+    for (const TCHAR* R : RutasMalla)
+    {
+        if (UStaticMesh* M = Cast<UStaticMesh>(Streamable.LoadSynchronous(FSoftObjectPath(R))))
+            BannerMeshes.Add(M);
+    }
+
+    const TCHAR* RutasMat[] = {
+        TEXT("/Game/Props/Materials/BannerMat_01.BannerMat_01"),
+        TEXT("/Game/Props/Materials/BannerMat_02.BannerMat_02"),
+    };
+    for (const TCHAR* R : RutasMat)
+    {
+        if (UMaterialInterface* M = Cast<UMaterialInterface>(Streamable.LoadSynchronous(FSoftObjectPath(R))))
+            BannerMaterials.Add(M);
+    }
+
+    if (BannerMeshes.Num() == 0)
+    {
+        UE_LOG(LogTemp, Warning,
+            TEXT("AlsasuaPropGenerator: sin mallas de pancarta en /Game/Props/Banners; no hay pancartas."));
+    }
 }
 
 void UAlsasuaPropGenerator::AssignPropToActor(AActor* Actor)
 {
     if (!Actor) return;
+    // Sin mallas no hay nada que colocar, y además RandRange(0, -1) con la lista
+    // vacía no tiene sentido. Se sale antes de crear un componente huérfano.
+    if (BannerMeshes.Num() == 0) return;
 
     UStaticMeshComponent* MeshComp = NewObject<UStaticMeshComponent>(Actor);
     MeshComp->RegisterComponent();

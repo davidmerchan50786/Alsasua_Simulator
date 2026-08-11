@@ -192,6 +192,11 @@ def main():
             gen.append(ruta); continue
         if ruta.startswith(PACKS_EXTERNOS):
             externas.append(ruta); continue
+        if ruta.endswith("_"):
+            # Prefijo de una ruta que el código compone en tiempo de ejecución,
+            # como "/Game/Meshes/Arboles/SM_%s" con Printf. No es una ruta real,
+            # así que marcarla como rota es dar la alarma en falso.
+            ok.append(ruta); continue
         rotas[ruta] = usos
 
     if "--json" in sys.argv:
