@@ -7,6 +7,13 @@ Requiere que los meshes estén en /Game/Meshes/Foliage/
 """
 
 import unreal
+
+# La API de editor de 5.8 pasa por aquí: subsistemas en vez de las
+# librerías obsoletas, y los nombres que no existían. Ver ue5_compat.py.
+import sys as _sys, os as _os
+_sys.path.append(_os.path.join(unreal.Paths.project_dir(), "Tools"))
+import ue5_compat as compat
+
 import os
 
 FOLIAGE_DIR = "/Game/Meshes/Foliage"
@@ -70,7 +77,7 @@ BUSH_MESHES = [
 
 
 def find_foliage_meshes(pattern):
-    all_meshes = unreal.EditorAssetLibrary.list_assets(FOLIAGE_DIR, True, True)
+    all_meshes = compat.assets().list_assets(FOLIAGE_DIR, True, True)
     matching = []
     for path in all_meshes:
         name = path.split("/")[-1].split(".")[0]
@@ -80,15 +87,15 @@ def find_foliage_meshes(pattern):
 
 
 def create_foliage_type_asset(name, mesh_path, config):
-    if not unreal.EditorAssetLibrary.does_asset_exist(FOLIAGE_TYPE_DIR):
-        unreal.EditorAssetLibrary.make_directory(FOLIAGE_TYPE_DIR)
+    if not compat.assets().does_asset_exist(FOLIAGE_TYPE_DIR):
+        compat.assets().make_directory(FOLIAGE_TYPE_DIR)
 
     asset_path = f"{FOLIAGE_TYPE_DIR}/FT_{name}"
-    if unreal.EditorAssetLibrary.does_asset_exist(asset_path):
+    if compat.assets().does_asset_exist(asset_path):
         unreal.log(f"[MegascansFoliage] FoliageType ya existe: {asset_path}")
         return asset_path
 
-    mesh = unreal.EditorAssetLibrary.load_asset(mesh_path)
+    mesh = compat.assets().load_asset(mesh_path)
     if not mesh:
         unreal.log_warning(f"[MegascansFoliage] Mesh no encontrado: {mesh_path}")
         return None
@@ -108,7 +115,7 @@ def create_foliage_type_asset(name, mesh_path, config):
     foliage_type.set_editor_property("collision_with_world", True)
     foliage_type.set_editor_property("collision_with_others", False)
 
-    unreal.EditorAssetLibrary.save_asset(asset_path)
+    compat.assets().save_asset(asset_path)
     unreal.log(f"[MegascansFoliage] Creado: {asset_path}")
     return asset_path
 
@@ -179,20 +186,20 @@ def setup_foliage_instances():
     unreal.log("[MegascansFoliage] === Configurando Foliage instances ===")
 
     foliage_actor = None
-    world = unreal.EditorLevelLibrary.get_editor_world()
+    world = compat.mundo()
     all_actors = unreal.GameplayStatics.get_all_actors_of_class(world, unreal.FoliageType)
     for actor in all_actors:
         foliage_actor = actor
         break
 
     if not foliage_actor:
-        foliage_actor = unreal.EditorLevelLibrary.spawn_actor_from_class(
+        foliage_actor = compat.actores().spawn_actor_from_class(
             unreal.Actor, unreal.Vector(0, 0, 0))
         if foliage_actor:
             foliage_actor.set_actor_label("Alsasua_Foliage")
             foliage_actor.set_actor_mobility(unreal.ComponentMobility.STATIC)
 
-    ft_paths = unreal.EditorAssetLibrary.list_assets(FOLIAGE_TYPE_DIR, True, True)
+    ft_paths = compat.assets().list_assets(FOLIAGE_TYPE_DIR, True, True)
     ft_count = 0
     for path in ft_paths:
         if path.endswith(".FoliageType"):

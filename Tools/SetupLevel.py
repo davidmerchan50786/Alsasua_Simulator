@@ -11,6 +11,11 @@ Crea:
 """
 import unreal
 
+# La API de editor de 5.8 pasa por aquí: subsistemas en vez de las
+# librerías obsoletas, y los nombres que no existían. Ver ue5_compat.py.
+import sys as _sys, os as _os
+_sys.path.append(_os.path.join(unreal.Paths.project_dir(), "Tools"))
+import ue5_compat as compat
 
 MAPS_DIR = "/Game/Maps"
 LEVEL_NAME = "L_Alsasua"
@@ -18,8 +23,8 @@ LEVEL_PATH = f"{MAPS_DIR}/{LEVEL_NAME}"
 
 
 def ensure_folder():
-    if not unreal.EditorAssetLibrary.does_asset_exist(MAPS_DIR):
-        unreal.EditorAssetLibrary.make_directory(MAPS_DIR)
+    if not compat.assets().does_asset_exist(MAPS_DIR):
+        compat.assets().make_directory(MAPS_DIR)
         unreal.log("Creada carpeta /Game/Maps")
 
 
@@ -28,21 +33,21 @@ def create_level():
     unreal.log("=== SetupLevel: Iniciando ===")
 
     # Verificar si ya existe
-    if unreal.EditorAssetLibrary.does_asset_exist(LEVEL_PATH):
+    if compat.assets().does_asset_exist(LEVEL_PATH):
         unreal.log(f"Nivel {LEVEL_NAME} ya existe, cargando...")
-        unreal.EditorLevelLibrary.load_level(LEVEL_PATH)
+        compat.nivel().load_level(LEVEL_PATH)
         return True
 
     # Crear nivel vacío
     unreal.log("Creando nivel vacío L_Alsasua...")
-    unreal.EditorLevelLibrary.new_level(LEVEL_PATH)
+    compat.nivel().new_level(LEVEL_PATH)
 
-    if not unreal.EditorAssetLibrary.does_asset_exist(LEVEL_PATH):
+    if not compat.assets().does_asset_exist(LEVEL_PATH):
         # Intento alternativo: crear directamente
-        world = unreal.EditorLevelLibrary.get_editor_world()
+        world = compat.mundo()
         if world:
             unreal.log("Nivel creado (guardando)...")
-            unreal.EditorLevelLibrary.save_current_level()
+            compat.nivel().save_current_level()
         else:
             unreal.log_error("No se pudo crear el nivel")
             return False
@@ -53,19 +58,19 @@ def create_level():
 
 def spawn_sky():
     """Crea iluminación base: Sun + SkyAtmosphere + SkyLight."""
-    world = unreal.EditorLevelLibrary.get_editor_world()
+    world = compat.mundo()
     if not world:
         return
 
     # Eliminar DirectionalLights existentes para evitar duplicados
-    actors = unreal.EditorLevelLibrary.get_all_level_actors()
+    actors = compat.actores().get_all_level_actors()
     for a in actors:
         if isinstance(a, unreal.DirectionalLight):
-            unreal.EditorLevelLibrary.destroy_actor(a)
+            compat.actores().destroy_actor(a)
             unreal.log(f"Eliminado DirectionalLight existente: {a.get_actor_label()}")
 
     # Spawn DirectionalLight (Sol)
-    sun = unreal.EditorLevelLibrary.spawn_actor_from_class(
+    sun = compat.actores().spawn_actor_from_class(
         unreal.DirectionalLight, unreal.Vector(0, 0, 500)
     )
     if sun:
@@ -80,7 +85,7 @@ def spawn_sky():
         unreal.log("Creado DirectionalLight (Sun) — Static mobility")
 
     # Spawn SkyAtmosphere
-    sky_atmo = unreal.EditorLevelLibrary.spawn_actor_from_class(
+    sky_atmo = compat.actores().spawn_actor_from_class(
         unreal.SkyAtmosphere, unreal.Vector(0, 0, 0)
     )
     if sky_atmo:
@@ -88,7 +93,7 @@ def spawn_sky():
         unreal.log("Creado SkyAtmosphere")
 
     # Spawn SkyLight
-    sky_light = unreal.EditorLevelLibrary.spawn_actor_from_class(
+    sky_light = compat.actores().spawn_actor_from_class(
         unreal.SkyLight, unreal.Vector(0, 0, 200)
     )
     if sky_light:
@@ -101,13 +106,13 @@ def spawn_sky():
 
 def spawn_fog():
     """Crea ExponentialHeightFog."""
-    actors = unreal.EditorLevelLibrary.get_all_level_actors()
+    actors = compat.actores().get_all_level_actors()
     for a in actors:
         if isinstance(a, unreal.ExponentialHeightFog):
-            unreal.EditorLevelLibrary.destroy_actor(a)
+            compat.actores().destroy_actor(a)
             unreal.log(f"Eliminado HeightFog existente: {a.get_actor_label()}")
 
-    fog = unreal.EditorLevelLibrary.spawn_actor_from_class(
+    fog = compat.actores().spawn_actor_from_class(
         unreal.ExponentialHeightFog, unreal.Vector(0, 0, 0)
     )
     if fog:
@@ -120,13 +125,13 @@ def spawn_fog():
 
 def spawn_post_process():
     """Crea PostProcessVolume con auto-exposure y Lumen."""
-    actors = unreal.EditorLevelLibrary.get_all_level_actors()
+    actors = compat.actores().get_all_level_actors()
     for a in actors:
         if isinstance(a, unreal.PostProcessVolume):
-            unreal.EditorLevelLibrary.destroy_actor(a)
+            compat.actores().destroy_actor(a)
             unreal.log(f"Eliminado PostProcessVolume existente: {a.get_actor_label()}")
 
-    pp = unreal.EditorLevelLibrary.spawn_actor_from_class(
+    pp = compat.actores().spawn_actor_from_class(
         unreal.PostProcessVolume, unreal.Vector(0, 0, 0)
     )
     if pp:
@@ -138,14 +143,14 @@ def spawn_post_process():
 
 def spawn_director_arranque():
     """Coloca ADirectorArranque en el nivel — orquesta los 51 sistemas."""
-    actors = unreal.EditorLevelLibrary.get_all_level_actors()
+    actors = compat.actores().get_all_level_actors()
     for a in actors:
         if a.get_actor_label() == "DirectorArranque":
-            unreal.EditorLevelLibrary.destroy_actor(a)
+            compat.actores().destroy_actor(a)
             unreal.log("DirectorArranque existente eliminado.")
 
     # Cargar clase del módulo AlsasuaWorld
-    director_class = unreal.EditorAssetLibrary.load_class(
+    director_class = compat.cargar_clase(
         "/Script/AlsasuaWorld.DirectorArranque"
     )
     if not director_class:
@@ -153,7 +158,7 @@ def spawn_director_arranque():
         return
 
     # Colocar en origen — el Director lee las coordenadas del mundo
-    actor = unreal.EditorLevelLibrary.spawn_actor_from_class(
+    actor = compat.actores().spawn_actor_from_class(
         director_class, unreal.Vector(0, 0, 0)
     )
     if actor:
@@ -165,9 +170,9 @@ def spawn_director_arranque():
 
 def set_gamemode():
     """Configura el GameMode del nivel."""
-    world_settings = unreal.EditorLevelLibrary.get_world_settings()
+    world_settings = compat.ajustes_mundo()
     if world_settings:
-        gm_class = unreal.EditorAssetLibrary.load_class(
+        gm_class = compat.cargar_clase(
             "/Script/AlsasuaGameplay.AlsasuaGameplayGameMode"
         )
         if gm_class:
@@ -186,7 +191,7 @@ def run():
     spawn_post_process()
     spawn_director_arranque()
     set_gamemode()
-    unreal.EditorLevelLibrary.save_current_level()
+    compat.nivel().save_current_level()
     unreal.log("=== SetupLevel: Nivel guardado ===")
     unreal.log("  SIGUIENTE PASO: Play (PIE) → DirectorArranque genera 51 sistemas")
 

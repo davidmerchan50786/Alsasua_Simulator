@@ -6,11 +6,16 @@ Ejecutar en editor:  Tools > Execute Python Script
 """
 import unreal
 
+# La API de editor de 5.8 pasa por aquí: subsistemas en vez de las
+# librerías obsoletas, y los nombres que no existían. Ver ue5_compat.py.
+import sys as _sys, os as _os
+_sys.path.append(_os.path.join(unreal.Paths.project_dir(), "Tools"))
+import ue5_compat as compat
 
 def create_rain_niagara_system():
     """Crea NS_Rain como sistema Niagara básico de partículas de lluvia."""
     pkg = "/Game/Effects/NS_Rain"
-    if unreal.EditorAssetLibrary.does_asset_exist(pkg):
+    if compat.assets().does_asset_exist(pkg):
         return
 
     asset_tools = unreal.AssetToolsHelpers.get_asset_tools()
@@ -24,7 +29,7 @@ def create_rain_niagara_system():
 def create_snow_niagara_system():
     """Crea NS_Snow como sistema Niagara básico de partículas de nieve."""
     pkg = "/Game/Effects/NS_Snow"
-    if unreal.EditorAssetLibrary.does_asset_exist(pkg):
+    if compat.assets().does_asset_exist(pkg):
         return
 
     asset_tools = unreal.AssetToolsHelpers.get_asset_tools()
@@ -38,7 +43,7 @@ def create_snow_niagara_system():
 def create_thunder_flash_system():
     """Crea NS_ThunderFlash como efecto de relámpago."""
     pkg = "/Game/Effects/NS_ThunderFlash"
-    if unreal.EditorAssetLibrary.does_asset_exist(pkg):
+    if compat.assets().does_asset_exist(pkg):
         return
 
     asset_tools = unreal.AssetToolsHelpers.get_asset_tools()
@@ -57,12 +62,12 @@ def add_rain_to_player():
         unreal.log_error("[RainParticles] No se pudo cargar UAlsasuaRainParticleComponent")
         return
 
-    pawns = unreal.EditorLevelLibrary.get_all_level_actors_of_class(
+    pawns = compat.actores().get_all_level_actors_of_class(
         unreal.Pawn)
     for pawn in pawns:
         existing = pawn.get_component_by_class(wind_class)
         if not existing:
-            comp = unreal.add_component_to_actor(pawn, wind_class)
+            comp = compat.anadir_componente(pawn, wind_class)
             if comp:
                 unreal.log(f"[RainParticles] Componente añadido a {pawn.get_actor_label()}")
 
@@ -74,12 +79,12 @@ def add_rain_to_player_controller():
     if not wind_class:
         return
 
-    controllers = unreal.EditorLevelLibrary.get_all_level_actors_of_class(
+    controllers = compat.actores().get_all_level_actors_of_class(
         unreal.PlayerController)
     for pc in controllers:
         existing = pc.get_component_by_class(wind_class)
         if not existing:
-            comp = unreal.add_component_to_actor(pc, wind_class)
+            comp = compat.anadir_componente(pc, wind_class)
             if comp:
                 unreal.log(f"[RainParticles] Componente añadido a {pc.get_actor_label()}")
 

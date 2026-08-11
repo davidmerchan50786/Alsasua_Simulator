@@ -18,7 +18,9 @@ El orden respeta dependencias reales, no es una lista cualquiera:
        (instancias de terreno, fachadas, ventanas nocturnas, decals...).
   5. Partículas y VFX.
   6. Foliage de Fab: lo descargado sustituye a lo procedural, así que va
-       después de haber generado lo procedural.
+       después de haber generado lo procedural. Y al final se adapta la
+       biblioteca a 5.8 (Nanite por malla), que necesita las mallas ya
+       importadas.
 
 Cada paso está aislado: si uno falla, se registra y el resto continúa. Al
 final imprime un resumen con lo que salió y lo que no.
@@ -71,6 +73,7 @@ PASOS_VFX = [
 
 PASOS_FAB = [
     ("SetupMegascansFoliage",   "Foliage de Fab / Megascans"),
+    ("AdaptarBiblioteca58",     "Nanite en la biblioteca importada"),
 ]
 
 

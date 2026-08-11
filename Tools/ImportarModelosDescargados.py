@@ -15,6 +15,12 @@ import os
 
 import unreal
 
+# La API de editor de 5.8 pasa por aquí: subsistemas en vez de las
+# librerías obsoletas, y los nombres que no existían. Ver ue5_compat.py.
+import sys as _sys, os as _os
+_sys.path.append(_os.path.join(unreal.Paths.project_dir(), "Tools"))
+import ue5_compat as compat
+
 ORIGEN = os.path.join(unreal.Paths.project_content_dir(), "ModelosDescargados")
 DESTINO = "/Game/ModelosDescargados"
 
@@ -22,7 +28,7 @@ DESTINO = "/Game/ModelosDescargados"
 def importar_uno(ruta_gltf, nombre):
     destino = f"{DESTINO}/{nombre}"
 
-    if unreal.EditorAssetLibrary.does_directory_exist(destino):
+    if compat.assets().does_directory_exist(destino):
         unreal.log(f"[Modelos] {nombre} ya importado")
         return True
 

@@ -1,9 +1,15 @@
 import unreal
 
+# La API de editor de 5.8 pasa por aquí: subsistemas en vez de las
+# librerías obsoletas, y los nombres que no existían. Ver ue5_compat.py.
+import sys as _sys, os as _os
+_sys.path.append(_os.path.join(unreal.Paths.project_dir(), "Tools"))
+import ue5_compat as compat
+
 NAME = "/Game/Materiales/M_Marca_Blanca"
 
-if unreal.EditorAssetLibrary.does_asset_exist(NAME):
-    unreal.EditorAssetLibrary.delete_asset(NAME)
+if compat.assets().does_asset_exist(NAME):
+    compat.assets().delete_asset(NAME)
 
 factory = unreal.MaterialFactoryNew()
 mat = unreal.AssetToolsHelpers.get_asset_tools().create_asset(
@@ -12,8 +18,8 @@ if not mat:
     unreal.log_error("No se pudo crear M_Marca_Blanca")
     raise SystemExit
 
-mat.set_editor_property("blend_mode", unreal.BlendMode.BLEND_OPAQUE)
-mat.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_DEFAULT_LIT)
+mat.set_editor_property("blend_mode", compat.OPACO)
+mat.set_editor_property("shading_model", compat.LIT)
 
 # White constant color
 const3 = unreal.MaterialEditingLibrary.create_material_expression(mat, unreal.MaterialExpressionConstant3Vector, 0, 0)
@@ -26,5 +32,5 @@ const1.set_editor_property("r", 0.8)
 unreal.MaterialEditingLibrary.connect_material_property(const1, "", unreal.MaterialProperty.MP_ROUGHNESS)
 
 unreal.MaterialEditingLibrary.recompile_material(mat)
-unreal.EditorAssetLibrary.save_asset(NAME)
+compat.assets().save_asset(NAME)
 unreal.log("Creado M_Marca_Blanca")

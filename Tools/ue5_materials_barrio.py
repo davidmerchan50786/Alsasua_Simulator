@@ -3,6 +3,13 @@ UE5 Material Setup - Creates all materials by barrio with real PBR textures
 Run inside UE5: exec(open(r"F:\...\Tools\ue5_materials_barrio.py").read())
 """
 import unreal
+
+# La API de editor de 5.8 pasa por aquí: subsistemas en vez de las
+# librerías obsoletas, y los nombres que no existían. Ver ue5_compat.py.
+import sys as _sys, os as _os
+_sys.path.append(_os.path.join(unreal.Paths.project_dir(), "Tools"))
+import ue5_compat as compat
+
 import os
 import json
 
@@ -10,13 +17,13 @@ ASSETS = "/Game/Content/AssetsImportados"
 MAT_BASE = "/Game/Materiales"
 
 def ensure_folder(path):
-    if not unreal.EditorAssetLibrary.does_directory_exist(path):
-        unreal.EditorAssetLibrary.make_directory(path)
+    if not compat.assets().does_directory_exist(path):
+        compat.assets().make_directory(path)
 
 def create_material_with_texture(name, texture_path, output_path, mat_domain="surface", 
                                   blend="opaque", two_sided=False, is_water=False):
     full = f"{output_path}/{name}"
-    if unreal.EditorAssetLibrary.does_asset_exist(full):
+    if compat.assets().does_asset_exist(full):
         return full
     
     mat = unreal.AssetToolsHelpers.get_asset_tools().create_asset(
@@ -27,17 +34,17 @@ def create_material_with_texture(name, texture_path, output_path, mat_domain="su
     
     mat.set_editor_property("material_domain", unreal.MaterialDomain.SURFACE)
     mat.set_editor_property("blend_mode", unreal.BlendMode.TRANSLUCENT if is_water else unreal.BlendMode.OPAQUE)
-    mat.set_editor_property("shading_model", unreal.ShadingModel.DEFAULT_LIT)
+    mat.set_editor_property("shading_model", compat.LIT)
     mat.set_editor_property("two_sided", two_sided)
     
-    tex = unreal.EditorAssetLibrary.load_asset(texture_path)
+    tex = compat.assets().load_asset(texture_path)
     if tex:
         expr = unreal.MaterialExpressionTextureSample()
         expr.texture = tex
         mat.add_editor_only_property("expressions", expr)
         mat.connect_material_property("Base Color", "RGB", expr, "RGB")
     
-    unreal.EditorAssetLibrary.save_asset(full)
+    compat.assets().save_asset(full)
     return full
 
 def main():
@@ -96,7 +103,7 @@ def main():
     }
     
     for barrio, mats in barrio_map.items():
-        wall_mat = unreal.EditorAssetLibrary.load_asset(f"{MAT_BASE}/{mats['wall']}")
+        wall_mat = compat.assets().load_asset(f"{MAT_BASE}/{mats['wall']}")
         if wall_mat:
             instance_name = f"MI_{barrio}_Wall"
             instance = unreal.AssetToolsHelpers.get_asset_tools().create_asset(
@@ -104,7 +111,7 @@ def main():
             )
             if instance:
                 instance.set_editor_property("parent", wall_mat)
-                unreal.EditorAssetLibrary.save_asset(f"{MAT_BASE}/{instance_name}")
+                compat.assets().save_asset(f"{MAT_BASE}/{instance_name}")
                 unreal.log(f"  Material instance: {instance_name}")
     
     unreal.log("=" * 60)
