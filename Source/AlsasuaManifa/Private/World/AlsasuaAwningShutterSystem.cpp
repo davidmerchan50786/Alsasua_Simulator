@@ -9,6 +9,7 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "GeoDataAlsasua.h"
+#include "AlturasLidarComun.h"
 
 void UAlsasuaAwningShutterSystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -85,7 +86,7 @@ int32 UAlsasuaAwningShutterSystem::ColocarToldosYPersianas()
         if (!Bld) continue;
 
         const int32 Id = Bld->GetIntegerField(TEXT("id"));
-        const float Height = Bld->HasField(TEXT("height")) ? Bld->GetNumberField(TEXT("height")) : 10.0f;
+        float Height = Bld->HasField(TEXT("height")) ? Bld->GetNumberField(TEXT("height")) : 10.0f;
 
         const TArray<TSharedPtr<FJsonValue>>* VertsArr;
         if (!Bld->TryGetArrayField(TEXT("vertices"), VertsArr) || !VertsArr || VertsArr->Num() < 3) continue;
@@ -101,6 +102,15 @@ int32 UAlsasuaAwningShutterSystem::ColocarToldosYPersianas()
         CX /= VertsArr->Num();
         CZ /= VertsArr->Num();
         FVector Center = UAlsasuaGeoData::RelLocalToUE5(FVector(CX, 0.0f, CZ));
+
+        // Misma altura medida que el resto: las persianas se reparten por planta
+        // (Height/3), así que con la altura de OSM faltaban las de arriba.
+        {
+            float AltLidar = 0.f;
+            int32 PlantasLidar = 0;
+            if (AlturasLidar::Buscar(FVector2D(Center.X, Center.Y), AltLidar, PlantasLidar))
+                Height = AltLidar;
+        }
 
         bool bHasAwning = false;
         if (bool* Found = TieneToldo.Find(Id)) bHasAwning = *Found;

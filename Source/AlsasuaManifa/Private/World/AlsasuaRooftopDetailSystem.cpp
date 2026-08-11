@@ -8,6 +8,7 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "GeoDataAlsasua.h"
+#include "AlturasLidarComun.h"
 
 void UAlsasuaRooftopDetailSystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -36,7 +37,7 @@ int32 UAlsasuaRooftopDetailSystem::ColocarDetallesCubierta()
         if (!Bld) continue;
 
         const int32 Id = Bld->GetIntegerField(TEXT("id"));
-        const float Height = Bld->HasField(TEXT("height")) ? Bld->GetNumberField(TEXT("height")) : 10.0f;
+        float Height = Bld->HasField(TEXT("height")) ? Bld->GetNumberField(TEXT("height")) : 10.0f;
         const FString Barrio = Bld->HasField(TEXT("barrio")) ? Bld->GetStringField(TEXT("barrio")) : TEXT("");
         const FString RoofTipo = Bld->HasField(TEXT("roof_tipo_real")) ? Bld->GetStringField(TEXT("roof_tipo_real")) : TEXT("desconocido");
 
@@ -55,6 +56,17 @@ int32 UAlsasuaRooftopDetailSystem::ColocarDetallesCubierta()
         CZ /= VertsArr->Num();
 
         FVector RoofCenter = UAlsasuaGeoData::RelLocalToUE5(FVector(CX, 0.0f, CZ));
+
+        // La misma altura medida que usan CargadorEdificios y el generador de
+        // fachadas. Si aquí se quedara la de OSM, que es ~3 m más baja, las
+        // chimeneas y antenas aparecerían enterradas dentro del tejado.
+        {
+            float AltLidar = 0.f;
+            int32 PlantasLidar = 0;
+            if (AlturasLidar::Buscar(FVector2D(RoofCenter.X, RoofCenter.Y), AltLidar, PlantasLidar))
+                Height = AltLidar;
+        }
+
         RoofCenter.Z += Height * 100.0f;
 
         const bool bFlatRoof = RoofTipo.Contains(TEXT("cemento"));
