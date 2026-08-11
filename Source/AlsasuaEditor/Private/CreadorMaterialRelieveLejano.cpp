@@ -11,14 +11,17 @@
 #include "Materials/MaterialExpressionConstant3Vector.h"
 #include "Materials/MaterialExpressionSubtract.h"
 #include "Materials/MaterialExpressionMultiply.h"
+#include "Materials/MaterialExpressionDivide.h"
 #include "Materials/MaterialExpressionAbs.h"
 #include "Materials/MaterialExpressionMax.h"
 #include "Materials/MaterialExpressionSaturate.h"
 #include "Materials/MaterialExpressionAppendVector.h"
 #include "Materials/MaterialExpressionLinearInterpolate.h"
 #include "Materials/MaterialExpressionTextureSampleParameter2D.h"
-#include "Materials/MaterialExpressionAdd.h"
 #include "Materials/MaterialExpressionVertexNormalWS.h"
+#include "Materials/MaterialExpressionPixelDepth.h"
+#include "Materials/MaterialExpressionScalarParameter.h"
+#include "Materials/MaterialExpressionVectorParameter.h"
 #include "Engine/Texture2D.h"
 #include "EditorAssetLibrary.h"
 #include "Modules/ModuleManager.h"
@@ -62,7 +65,7 @@ bool UCreadorMaterialRelieveLejano::CrearMaterialRelieveLejano()
 	auto Un    = [&](UClass* C, UMaterialExpression* X, int32 y){ UMaterialExpression* e = New(C, y); ML::ConnectMaterialExpressions(X, TEXT(""), e, TEXT("")); return e; };
 	auto Mul   = [&](UMaterialExpression* A, UMaterialExpression* B, int32 y){ return Bin(UMaterialExpressionMultiply::StaticClass(), A, B, y); };
 	auto Sub   = [&](UMaterialExpression* A, UMaterialExpression* B, int32 y){ return Bin(UMaterialExpressionSubtract::StaticClass(), A, B, y); };
-	auto Add   = [&](UMaterialExpression* A, UMaterialExpression* B, int32 y){ return Bin(UMaterialExpressionAdd::StaticClass(), A, B, y); };
+	auto Div   = [&](UMaterialExpression* A, UMaterialExpression* B, int32 y){ return Bin(UMaterialExpressionDivide::StaticClass(), A, B, y); };
 	auto MaxE  = [&](UMaterialExpression* A, UMaterialExpression* B, int32 y){ return Bin(UMaterialExpressionMax::StaticClass(), A, B, y); };
 	auto Abs   = [&](UMaterialExpression* X, int32 y){ return Un(UMaterialExpressionAbs::StaticClass(), X, y); };
 	auto Sat   = [&](UMaterialExpression* X, int32 y){ return Un(UMaterialExpressionSaturate::StaticClass(), X, y); };
@@ -126,7 +129,46 @@ bool UCreadorMaterialRelieveLejano::CrearMaterialRelieveLejano()
 	                      Const(1.f / (PROC_DESDE_CM - FOTO_HASTA_CM), 700), 700), 700);
 
 	auto* base = Lerp(tex, proc, tFoto, 60);
-	ML::ConnectMaterialProperty(base, TEXT(""), MP_BaseColor);
+
+	// ── Perspectiva aérea ──────────────────────────────────────────────────
+	// Lo que hace que en Google Earth la lejanía se lea como lejanía no es la
+	// resolución de la foto: es que el aire que hay en medio desatura y azulea
+	// las crestas, y más cuanto más lejos. Sin esto, un anillo de 60 km con la
+	// ortofoto encima se ve como un telón pintado pegado detrás del pueblo.
+	//
+	// Va como PARÁMETROS a propósito. El proyecto crea SkyAtmosphere en
+	// CicloVisualSubsystem, y la perspectiva aérea de UE ya aporta parte de este
+	// efecto sobre geometría opaca; si al probarlo resulta que basta con ella,
+	// esto se anula poniendo FuerzaNiebla a 0 en una instancia del material, sin
+	// tocar código ni recompilar. Mejor eso que aplicarlo dos veces y que los
+	// montes salgan lavados.
+	auto Escalar = [&](const TCHAR* Nombre, float Def, int32 y)
+	{
+		auto* p = Cast<UMaterialExpressionScalarParameter>(New(UMaterialExpressionScalarParameter::StaticClass(), y));
+		p->ParameterName = Nombre;
+		p->DefaultValue = Def;
+		return (UMaterialExpression*)p;
+	};
+
+	auto* colorNiebla = Cast<UMaterialExpressionVectorParameter>(New(UMaterialExpressionVectorParameter::StaticClass(), 880));
+	colorNiebla->ParameterName = TEXT("ColorNiebla");
+	// Azul grisáceo pálido: es el color al que tiende el horizonte de día, no
+	// blanco puro, que da aspecto de niebla de videojuego en vez de distancia.
+	colorNiebla->DefaultValue = FLinearColor(0.62f, 0.70f, 0.80f);
+
+	auto* depth = New(UMaterialExpressionPixelDepth::StaticClass(), 840);
+	auto* ini = Escalar(TEXT("NieblaInicioCm"), 400000.f, 900);      // 4 km: aún limpio
+	auto* fin = Escalar(TEXT("NieblaPlenaCm"), 3000000.f, 940);      // 30 km: borde del anillo
+	auto* fuerza = Escalar(TEXT("FuerzaNiebla"), 0.75f, 980);        // 0 = desactivada
+
+	// t = saturate((profundidad - inicio) / (plena - inicio)) * fuerza.
+	// El tope en 0.75 deja que la silueta siga leyéndose: con 1.0 las crestas
+	// lejanas se funden del todo con el cielo y vuelve a parecer que no hay nada.
+	auto* rango = Sub(fin, ini, 960);
+	auto* t = Sat(Mul(Sub(depth, ini, 1000), Div(Const(1.f, 1020), rango, 1020), 1040), 1040);
+	auto* haze = Mul(t, fuerza, 1060);
+
+	ML::ConnectMaterialProperty(Lerp(base, colorNiebla, haze, 1080), TEXT(""), MP_BaseColor);
 
 	// Mate y sin especular: es terreno a kilómetros, cualquier brillo canta como
 	// un plástico y encima delata que es una superficie plana con foto encima.
