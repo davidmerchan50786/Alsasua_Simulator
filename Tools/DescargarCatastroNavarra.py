@@ -152,6 +152,163 @@ def main():
     print("hecho en %.0f s" % (time.time() - t0))
 
 
+CAPA_ALTURAS = "IDENA:CARTO1_Txt_20AlturaEd"
+SALIDA_ALTURAS = os.path.join(RAIZ, "Content", "Datos", "catastro_navarra_alturas.json")
+
+# Notación cartográfica de alturas de IDENA (campo CADTEXT). Los romanos son
+# plantas sobre rasante, que es lo que se ve en fachada y lo que manda en cuántas
+# filas de ventanas hay. "S+"/"SS+" son sótanos: no suman altura visible. "Por" y
+# "Pr" son porches, sin plantas. "+T" es remate de torreón sobre la última.
+ROMANOS = {"I": 1, "II": 2, "III": 3, "IV": 4, "V": 5, "VI": 6, "VII": 7, "VIII": 8}
+
+
+def plantas_de_cadtext(txt):
+    """Plantas sobre rasante que declara un CADTEXT, o None si no las declara."""
+    t = (txt or "").strip().upper()
+    if not t or t.startswith(("POR", "PR")):
+        return None
+    t = re.sub(r"^S{1,2}\s*\+\s*", "", t)      # quita sótanos
+    t = re.sub(r"^P\s*\+\s*", "", t)           # porche + plantas
+    t = re.sub(r"\s*\+\s*T$", "", t)           # remate de torreón
+    t = t.strip()
+    if t in ROMANOS:
+        return ROMANOS[t]
+    m = re.match(r"^(\d+)$", t)
+    return int(m.group(1)) if m else None
+
+
+def descargar_alturas():
+    """Baja los puntos de altura de edificio y los deja con sus plantas ya leídas.
+
+    Va por teselas como la descarga de edificios, y no de una sola petición: el
+    servidor corta en 1000 features y devuelve el primer bloque en su orden de
+    almacenamiento, que resultó ser otra hoja (Olaza) en vez del casco de
+    Alsasua. Se detecta enseguida si se miran los rangos de coordenadas, y no se
+    detecta en absoluto si uno se fía del número de features devueltas.
+    """
+    e0, n0 = CENTRO_E - SEMILADO_M, CENTRO_N - SEMILADO_M
+    paso = (2 * SEMILADO_M) / TESELAS
+
+    puntos, vistos = [], set()
+    for j in range(TESELAS):
+        for i in range(TESELAS):
+            bb = (e0 + i * paso, n0 + j * paso, e0 + (i + 1) * paso, n0 + (j + 1) * paso)
+            url = ("%s?service=WFS&version=2.0.0&request=GetFeature&typenames=%s"
+                   "&bbox=%f,%f,%f,%f,EPSG:25830&count=1000"
+                   % (WFS, CAPA_ALTURAS, bb[0], bb[1], bb[2], bb[3]))
+            gml = _get(url)
+            for feat in re.findall(
+                    r"<IDENA:CARTO1_Txt_20AlturaEd[ >].*?</IDENA:CARTO1_Txt_20AlturaEd>",
+                    gml, re.S):
+                pos = re.search(r"<gml:pos[^>]*>([^<]+)</gml:pos>", feat)
+                cad = re.search(r"<IDENA:CADTEXT>([^<]*)</IDENA:CADTEXT>", feat)
+                alt = re.search(r"<IDENA:ALTITUD>([\d.]+)", feat)
+                if not pos:
+                    continue
+                xs = pos.group(1).split()
+                e, n = float(xs[0]), float(xs[1])
+                clave = (round(e, 2), round(n, 2))
+                if clave in vistos:
+                    continue
+                vistos.add(clave)
+                wx, wy = a_mundo_cm(e, n)
+                puntos.append({
+                    "cadtext": (cad.group(1).strip() if cad else ""),
+                    "plantas": plantas_de_cadtext(cad.group(1) if cad else ""),
+                    "altitud_m": float(alt.group(1)) if alt else None,
+                    "mundo_cm": [round(wx, 1), round(wy, 1)],
+                })
+            print("  tesela %2d/%d: %d puntos acumulados"
+                  % (j * TESELAS + i + 1, TESELAS * TESELAS, len(puntos)), flush=True)
+
+    doc = {
+        "_fuente": "IDENA - Gobierno de Navarra, capa %s (datos abiertos)" % CAPA_ALTURAS,
+        "_nota": ("CADTEXT en notación cartográfica: romanos = plantas sobre rasante, "
+                  "S+/SS+ = sótanos (no suman altura visible), Por/Pr = porche, "
+                  "+T = remate. 'plantas' ya viene interpretado."),
+        "puntos": puntos,
+    }
+    with open(SALIDA_ALTURAS, "w", encoding="utf-8") as fh:
+        json.dump(doc, fh, ensure_ascii=False)
+
+    con = sum(1 for p in puntos if p["plantas"])
+    print("%d puntos de altura (%d con plantas legibles) -> %s"
+          % (len(puntos), con, SALIDA_ALTURAS))
+    return puntos
+
+
+def verificar_alturas():
+    """Contrasta las plantas reales contra el campo levels de buildings_final."""
+    import statistics
+    from collections import Counter, defaultdict
+
+    if not os.path.exists(SALIDA_ALTURAS):
+        raise SystemExit("Falta %s: ejecuta antes --alturas." % SALIDA_ALTURAS)
+    puntos = [p for p in json.load(open(SALIDA_ALTURAS, encoding="utf-8"))["puntos"]
+              if p["plantas"]]
+    bf = json.load(open(os.path.join(RAIZ, "Content", "Datos", "buildings_final.json"),
+                        encoding="utf-8"))
+    OX, OZ = 1918.0, 8570.0
+
+    def centro(b):
+        v = b["vertices"]
+        pts = ([(p["x"], p.get("z", p.get("y"))) for p in v] if isinstance(v[0], dict)
+               else [(v[i], v[i + 1]) for i in range(0, len(v) - 1, 2)])
+        return ((sum(p[0] for p in pts) / len(pts) + OX) * 100.0,
+                (sum(p[1] for p in pts) / len(pts) + OZ) * 100.0)
+
+    CEL = 3000.0
+    rej = defaultdict(list)
+    for i, b in enumerate(bf):
+        x, y = centro(b)
+        rej[(int(x // CEL), int(y // CEL))].append((i, x, y))
+
+    difs, pares = [], 0
+    reales, nuestras = Counter(), Counter()
+    for p in puntos:
+        px, py = p["mundo_cm"]
+        mejor, md = None, float("inf")
+        cx, cy = int(px // CEL), int(py // CEL)
+        for ax in (-1, 0, 1):
+            for ay in (-1, 0, 1):
+                for i, bx, by in rej.get((cx + ax, cy + ay), ()):
+                    d = math.hypot(bx - px, by - py)
+                    if d < md:
+                        md, mejor = d, i
+        if mejor is None or md > 2000.0:      # más de 20 m: no es su edificio
+            continue
+        lv = bf[mejor].get("levels")
+        if not lv:
+            continue
+        pares += 1
+        difs.append(lv - p["plantas"])
+        reales[p["plantas"]] += 1
+        nuestras[lv] += 1
+
+    if not pares:
+        # No es el marco de coordenadas: está comprobado contra la capa catastral,
+        # que empareja con mediana 3,6 m. Es cobertura. Se dice con los números
+        # delante para que nadie vuelva a perseguir un fallo que no existe.
+        ys = [p["mundo_cm"][1] for p in puntos]
+        print("Ninguna pareja. NO es el marco de coordenadas:")
+        print("  puntos de altura   Y %.0f..%.0f cm" % (min(ys), max(ys)))
+        print("  Herriko Plaza está en Y 857000 cm")
+        print("  La serie CARTO1 (cartografía 1:1000) no cubre el casco de Alsasua:")
+        print("  sobre la plaza +-1 km devuelve 0 features, mientras que")
+        print("  CATAST_Pol_Edificacion devuelve 3796. Para plantas reales sobre el")
+        print("  pueblo hay que ir por LiDAR (DSM - DTM sobre las huellas), no por aquí.")
+        return
+    exactos = sum(1 for d in difs if d == 0)
+    cerca = sum(1 for d in difs if abs(d) <= 1)
+    print("Puntos de altura emparejados con edificio: %d" % pares)
+    print("  plantas exactas:        %4d  (%.1f%%)" % (exactos, 100.0 * exactos / pares))
+    print("  con +-1 planta:         %4d  (%.1f%%)" % (cerca, 100.0 * cerca / pares))
+    print("  sesgo medio (nuestro - real): %+.2f plantas   mediana %+.1f"
+          % (statistics.mean(difs), statistics.median(difs)))
+    print("  reparto real   :", dict(sorted(reales.items())))
+    print("  reparto nuestro:", dict(sorted(nuestras.items())))
+
+
 def verificar():
     """Contrasta buildings_final.json contra el catastro ya descargado.
 
@@ -232,7 +389,10 @@ def verificar():
 
 if __name__ == "__main__":
     import sys
-    if "--verificar" in sys.argv:
+    if "--alturas" in sys.argv:
+        descargar_alturas()
+        verificar_alturas()
+    elif "--verificar" in sys.argv:
         verificar()
     else:
         main()
