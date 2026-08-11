@@ -2,7 +2,7 @@
 	"FileVersion": 3,
 	"EngineAssociation": "5.8",
 	"Category": "",
-	"Description": "Alsasua Simulator - migracion de Altsasu Manifa a Unreal Engine 5.4.",
+	"Description": "Alsasua Simulator - migracion de Altsasu Manifa a Unreal Engine 5.8.",
 	"Modules": [
 		{
 			"Name": "AlsasuaManifa",

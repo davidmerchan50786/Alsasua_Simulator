@@ -318,10 +318,11 @@ posiciones cambian entre runs.
 
 ## 11. Trampas conocidas
 
-- El `.uproject` dice "migracion … a Unreal Engine 5.4" en `Description`, y
-  `RESUMEN_TECNICO.md` está escrito contra 5.4. **La versión real es 5.8**
-  (`EngineAssociation`), y el `README` y `Docs/PRIMER_COMPILADO_5_8.md` son la
-  referencia al día.
+- `RESUMEN_TECNICO.md` es el **acta de una sesión que corrió en 5.4**, con un
+  aviso al principio que lo dice. Sus medidas y sus rutas de motor son las de
+  aquel día; el diagnóstico y las reglas de §5 siguen vigentes. Para compilar y
+  lanzar hoy, `README.md` o este fichero. (El `.uproject` decía 5.4 en
+  `Description`; corregido a 5.8, que es lo que fija `EngineAssociation`.)
 - `UImportadorLandscape` **aborta** si el nivel es World Partition
   (`IsPartitionedWorld()`) en vez de crear un landscape roto. Para el primer
   arranque, usa un nivel **Empty**, o importa a mano por Landscape Mode con los
