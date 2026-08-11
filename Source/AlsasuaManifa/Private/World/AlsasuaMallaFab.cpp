@@ -53,6 +53,27 @@ namespace
 		{ TEXT("guarda_barandas"),   TEXT("barandilla_puente|barandilla|guardrail|railing") },
 		{ TEXT("semaforo"),          TEXT("semaforo_urbano|semaforo|traffic_light") },
 
+		// ── Vehículos ──────────────────────────────────────────────────────
+		// Meshy generó cuatro para este pueblo y no los usaba nadie: no había
+		// entrada, así que BuscarEnFab salía sin candidato y el coche acababa en
+		// la forma básica del motor con el Coche_Sedan ya descargado al lado.
+		{ TEXT("coche"),             TEXT("coche_sedan|coche|sedan|car|vehicle") },
+		{ TEXT("coche_policia"),     TEXT("coche_policia|police_car|police") },
+		{ TEXT("autobus"),           TEXT("autobus_urbano|autobus|bus|city_bus") },
+		{ TEXT("furgoneta"),         TEXT("furgoneta_secundaria|furgoneta|van|truck") },
+
+		// Tipos que trae street_furniture.json y que la tabla no conocía (17
+		// piezas en total): sin entrada caían a primitiva aunque hubiera malla.
+		// papelera_reciclaje tiene la suya propia de Meshy; el resto tira del
+		// catálogo en inglés de Fab. El nombre con espacio de "rejilla
+		// ventilacion" es el del dato, no un typo: tiene que casar literal.
+		{ TEXT("papelera_reciclaje"),  TEXT("contenedor_reciclaje|reciclaje|recycling|recycle_bin") },
+		{ TEXT("rejilla ventilacion"), TEXT("rejilla|ventilacion|vent_grate|grate|air_vent") },
+		{ TEXT("espejo_seguridad"),    TEXT("espejo_seguridad|espejo|traffic_mirror|convex_mirror") },
+		{ TEXT("resalto_vial"),        TEXT("resalto|baden|speed_bump|speed_hump") },
+		{ TEXT("cruce_peatonal"),      TEXT("cruce_peatonal|paso_cebra|crosswalk|zebra_crossing") },
+		{ TEXT("bici_arbol"),          TEXT("aparcabicis|bicicletero|bike_rack|bicycle_rack") },
+
 		// Landmarks de landmarks_real.json. Meshy generó los cuatro
 		// singulares del pueblo con su nombre propio.
 		{ TEXT("iglesia"),           TEXT("iglesia_jasokundeko|iglesia|eliza|church|chapel") },
