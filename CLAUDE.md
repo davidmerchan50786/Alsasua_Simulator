@@ -1,0 +1,336 @@
+# CLAUDE.md
+
+Guía para asistentes de IA que trabajen en este repositorio. Describe la
+arquitectura, los flujos de trabajo y las convenciones que hay que respetar.
+
+> **Estilo de respuesta**: `AGENTS.md` (Ponytail + Caveman) está activo y manda
+> sobre el estilo. Lazy senior dev + salida terse. Léelo antes de escribir código.
+
+---
+
+## 1. Qué es esto
+
+Simulador del pueblo de **Alsasua (Altsasu, Navarra)** en **Unreal Engine 5.8**,
+portado desde un prototipo Unity. El pueblo **no está autorado a mano**: se genera
+proceduralmente en runtime a partir de datos geográficos reales (LiDAR, catastro,
+OSM, ortofoto PNOA del IGN) y encima corre una simulación social (misiones,
+manifestaciones, multitudes, presión policial, economía).
+
+Idioma del proyecto: **castellano** en nombres de clases, comentarios, docs y
+mensajes de commit. Hay islas de inglés heredadas del port (`AlsasuaManifa`).
+Mantén el idioma del fichero que tocas; no traduzcas código existente.
+
+Documentos de referencia (léelos antes de tocar su área):
+
+| Documento | Contenido |
+|---|---|
+| `README.md` | Estado actual, ortofoto PNOA, módulos, comandos |
+| `Docs/PRIMER_COMPILADO_5_8.md` | Puesta en marcha paso a paso: nivel, HUD, landscape, materiales, navmesh |
+| `RESUMEN_TECNICO.md` | Informe de optimización GPU (0.3 → 48 FPS); metodología de perfilado |
+| `Docs/ADR-001_Terrain_V3_GPU_Driven_UE5.md` | Diseño de terreno GPU-driven — **no implementado**, es un ADR |
+| `GASP_MotionMatching_GUIA.md` | Integración de Motion Matching (pasos de editor/contenido) |
+| `Content/ModelosDescargados/LEEME.md` | Props CC0 de Poly Haven y su importación |
+| `Content/Terreno/README_Landscape.md` | Datos del heightmap |
+
+---
+
+## 2. Compilar y ejecutar
+
+**Motor: UE 5.8 exacto** (`EngineAssociation="5.8"` en el `.uproject`). C++20,
+Unity build desactivado en los módulos grandes, LiveCoding deshabilitado.
+
+```bat
+:: Build (Windows, VS 2022 + workload C++)
+"C:\Program Files\Epic Games\UE_5.8\Engine\Build\BatchFiles\Build.bat" ^
+    AlsasuaSimulatorEditor Win64 Development ^
+    -Project="<ruta>\AlsasuaSimulator.uproject" -WaitMutex
+
+:: Standalone (compila shaders la 1ª vez, ~1-5 min de boot)
+UnrealEditor.exe "AlsasuaSimulator.uproject" /Game/Maps/L_Alsasua ^
+    -game -DX11 -windowed -ResX=1280 -ResY=720 -NOSPLASH -log
+```
+
+- **Este repo no compila en Linux ni en CI**: es un proyecto UE de Windows sin
+  workflows de GitHub. No hay forma de verificar un cambio de C++ compilando
+  desde un contenedor. Si no puedes compilar, **dilo explícitamente** en vez de
+  afirmar que el cambio está verificado.
+- **El juego se autocierra a los 240 s.** `AAlsasuaGameplayGameMode::StartPlay()`
+  lanza `CsvProfile start` y `Tick()` sale a los 240 s de wall time escribiendo
+  `Saved/Profiling/CSV/Profile(<timestamp>).csv`. No es un bug; es el arnés de
+  perfilado. Si añades una sesión larga, tenlo en cuenta.
+- Flag `-NoMisiones`: omite misiones y multitud (benchmark del pueblo solo).
+- Tests: `Source/AlsasuaManifa/Private/AlsasuaSubsystemTests.cpp`, automation
+  tests bajo `Alsasua.*` (`WITH_AUTOMATION_WORKER`). Cobertura mínima y varios
+  están *skipped* por requerir world vivo. No los uses como red de seguridad.
+
+---
+
+## 3. Arquitectura de módulos
+
+8 módulos declarados en `AlsasuaSimulator.uproject` + los dos `.Target.cs`.
+
+| Módulo | Rol | Cifras |
+|---|---|---|
+| `AlsasuaCore` | Geo/UTM 30N, event bus, spatial grid, helpers de carga de material | 4 cpp |
+| `AlsasuaWorld` | Generación procedural: `DirectorArranque`, terreno, calles, edificios, POI, puentes | 22 cpp |
+| `AlsasuaEntities` | Base de entidades: NPC, daño, vida | 6 cpp |
+| `AlsasuaGameplay` | GameMode, misiones, manifestación, ciclo visual, clima, guardado, economía | 40 cpp |
+| `AlsasuaManifa` | Port Unity: ~70 sistemas de mundo, GAS, IA, multitud, optimización, UI interna | **214 cpp** |
+| `AlsasuaSimulator` | Generadores de edificios y carreteras | 11 cpp |
+| `AlsasuaUI` | Widgets (HUD, pausa, ajustes, menú principal) | 6 cpp |
+| `AlsasuaEditor` | Solo editor: generadores de materiales/mallas, importador de landscape | 21 cpp |
+
+Grafo de dependencias:
+
+```
+AlsasuaCore ──► AlsasuaWorld ──► AlsasuaGameplay ──► AlsasuaUI
+            └─► AlsasuaEntities ─┘                      │
+            └─► AlsasuaManifa ◄──────────────────────────┘  (ciclo confesado)
+AlsasuaEditor (Editor) ──► Core + World
+```
+
+### Reglas de capa (respétalas)
+
+- Cada header empieza con `// Nombre.h (capa GAMEPLAY | UI | EDITOR)`. **Mantén
+  ese comentario** al crear ficheros nuevos.
+- La capa **Gameplay no puede referenciar UI**. Por eso el HUD se asigna por ini
+  (`HUDClass=/Script/AlsasuaUI.AlsasuaHUD`) o por Blueprint, no en C++.
+- Existe **un ciclo heredado**: `AlsasuaManifa` ↔ `AlsasuaUI`. Está confesado en
+  `AlsasuaManifa.Build.cs` con `CircularlyReferencedDependentModules.Add("AlsasuaUI")`.
+  **No añadas ciclos nuevos**; UBT 5.8 los marca como error.
+- `AlsasuaManifa` compila con `bUseUnity = false` y `bEnableExceptions = true`
+  (detecta includes que faltan). No lo cambies para "acelerar el build".
+
+---
+
+## 4. Sistemas de coordenadas — la fuente de bugs nº 1
+
+Todo lo geográfico pasa por `AlsasuaCore/Public/GeoDataAlsasua.h`. Léelo entero
+antes de tocar posiciones. Resumen:
+
+| Espacio | Definición |
+|---|---|
+| **Local relativo** | Metros; hay que sumar `OX=1918.0`, `OZ=8570.0` para pasar a absoluto |
+| **Local absoluto** | Metros; X=este, Z=norte |
+| **UTM 30N (EPSG:32630)** | Centro Alsasua E=567951.0, N=4749902.0 |
+| **UE5** | Centímetros; **X=este, Y=norte, Z=arriba**; 1 m = 100 uu |
+
+**Qué JSON viene en qué espacio** (documentado en el header, y es fácil equivocarse):
+
+- Relativo (necesitan `RelLocalToUE5`): `roads_unity.json`, `street_furniture.json`,
+  `buildings_final.json`.
+- **Absoluto** (usar `AbsLocalToUE5`): `trees_unity.json`, `signage_data.json`,
+  `waterways_unity.json`.
+
+Usa siempre las funciones (`AbsLocalToUE5`, `RelLocalToUE5`, `LatLonToUE5`,
+`UTMToUE5`, `UE5ToLatLon`), nunca aritmética a mano. El frame UTM↔UE5 usa el
+origen LiDAR `(566033, 4741332)`, **distinto** de `OriginLocalX/Z` — están ahí
+para centrado local, no para UTM.
+
+Cota de referencia: Herriko Plaza a 531.94 m → `CotaPlazaCm = 53194`.
+
+### Ortofoto PNOA
+
+Dos texturas georreferenciadas al mismo grid, con **el sur arriba** (v=0 en Ymin;
+verificado empíricamente contra el cauce del Arakil). Ver tabla de bounds en
+`README.md`. Regeneración: `Tools/DescargarOrtofotoPNOA.py` (WMS
+`OI.OrthoimageCoverage`; `OI.MosaicElement` está roto) → `Tools/ImportSatellite.py`
+en la consola Python del editor.
+
+---
+
+## 5. Arranque del mundo
+
+`ADirectorArranque` (`AlsasuaWorld`, 626 líneas) es el orquestador: `BeginPlay()`
+→ `IniciarConstruccion()`, que construye el pueblo en **~51 fases numeradas y
+comentadas**, en orden de dependencia, publicando progreso en
+`ArranqueMundo::Progreso` (lo lee `AlsasuaHUD` para la barra de carga):
+
+1. `ATerrenoGenerado` — heightmap real `Content/Terreno/alsasua_landscape_4033.r16`
+   (4033², procedural mesh; en `-game` no se usa Landscape).
+2. `UCargadorArboles` (LiDAR) → `UCargadorVias` (ferrocarril, caminos, túneles;
+   también genera los ríos como cintas drapeadas) → `UCargadorCalles` →
+   `UCargadorEdificios` → tejado modular → Herriko Plaza → `UCargadorPuentes` →
+   `UCargadorPOI` → vegetación.
+3. Fases 13-51: sistemas de `AlsasuaManifa/World/*` (atmósfera, post-process por
+   zonas, estilos de barrio, fachadas, farolas, señales, tráfico, aceras,
+   marcas viales, semáforos, cables aéreos, clima, audio…).
+
+Si añades una fase, ponla **donde toque en la cadena** y mantén la numeración y
+el `Progreso`. El terreno va siempre primero: el resto hace raycast contra él
+para apoyarse (`MuestreadorAltura`, `GeoDataAlsasua::TraceUp/TraceDown`).
+
+Detalle: `CargadorPoligonos.h` está incluido pero ya no se llama desde el
+director (plazas/zonas verdes las cubren otros sistemas); no asumas que corre.
+
+### Datos (`Content/Datos/*.json`)
+
+25 ficheros con el pueblo real: `buildings_final.json`, `building_facades.json`
+(7 MB), `roads_unity.json`, `trees_unity.json`, `street_furniture.json`,
+`landmarks_real.json`, `poi_data.json`, `signage_data.json`, `nighborhoods.json`
+(sic, sin la `e`), `asset_manifest.json`, `asset_mapping.json`… Se versionan y
+son la fuente de verdad del mundo. **No los regeneres a la ligera** — cambiarlos
+mueve geometría ya validada contra fotos de referencia
+(`Content/Datos/referencia_fotos/`).
+
+---
+
+## 6. Assets y materiales
+
+### Degradación elegante, siempre
+
+El proyecto tiene que arrancar **sin** los assets pesados (Megascans/Fab son
+decenas de GB fuera de git). Dos patrones a respetar:
+
+- `AlsasuaCore/Public/CargarMaterialComun.h` — `MaterialesAAADisponibles()`
+  comprueba 5 paquetes "gate" antes de usar la librería `Content/Road`. Sin ellos
+  un MI carga pero compila a Default Material gris, así que se cae a
+  `M_Terreno_Calles`/`M_Terreno_Acera`. Usa
+  `CargarMaterialConFallbackSeguro(AAA, Propia, Final)` para material nuevo.
+- `AlsasuaManifa/Public/World/AlsasuaMallaFab.h` — `Resolver(Tipo, FormaBasica)`
+  escoge malla por orden de calidad: Fab/Epic → `/Game/Mobiliario` propio →
+  forma básica del motor. `VieneDeFab()` decide si hay que reescalar;
+  `LimpiarCache()` tras importar sin reiniciar el editor.
+
+Rutas blandas que pueden faltar sin romper nada: `/Game/VFX/NS_Lluvia`,
+`/Game/Audio/SC_Trueno`, camas de ambiente. Mantén esa propiedad.
+
+### Materiales
+
+Se generan **por grafo de nodos** desde `AlsasuaEditor` (`UMaterialEditingLibrary`),
+no hay shaders `.usf/.ush` custom — por eso el breaking change de Substrate en 5.8
+(`ComputeFinalGBuffer`) no afecta.
+
+Orden obligatorio: `CrearMaterialEdificio()` crea el **`MPC_Clima`** (escalares
+`Wetness`, `Night`) del que dependen todos los demás. `UClimaSubsystem` conduce
+esos parámetros en runtime. Crear un material que lea el MPC antes de que exista
+= material gris.
+
+---
+
+## 7. Pipeline de Python (`Tools/`)
+
+44 scripts. Dos familias:
+
+- **32 con `import unreal`** — se ejecutan **dentro del editor** (Output Log →
+  consola Python, o Tools → Execute Python Script). `Tools/RunAll.py` es el
+  maestro: ejecuta todo el setup en orden de dependencias (assets/materiales →
+  nivel → capas visuales → VFX → foliage de Fab), aislando cada paso y sacando
+  un resumen de lo que falló. Deriva rutas de `unreal.Paths.project_dir()`.
+- **12 standalone** (`DescargarOrtofotoPNOA.py`, `PrepararLandscape.py`,
+  `DownloadTextures.py`, `enrich_*.py`, `asset_manifest.py`…) — Python 3 normal,
+  algunos con `numpy`/`requests`.
+
+**Deuda conocida**: varios scripts (`asset_manifest.py`, `ue5_setup_assets.py`,
+`SetupAlsasuaProject.ps1`, `startup_cmds.txt`) llevan **rutas absolutas hardcodeadas**
+de la máquina original (`F:\Epic Games\UE_5.7\altsasu_gtavii\...`) y de UE 5.7.
+Si tocas uno de ellos, deriva la ruta de `unreal.Paths.project_dir()` /
+`os.path.dirname(__file__)` como ya hace `RunAll.py`.
+
+---
+
+## 8. Rendimiento: reglas que no se negocian
+
+`RESUMEN_TECNICO.md` documenta cómo se pasó de 0.3 a 48 FPS. Las lecciones que
+hay que conservar al escribir código nuevo:
+
+1. **Una sección de `ProceduralMesh` = un draw call.** Las fachadas creaban una
+   sección por ventana (~60 000 draw calls y hitches de 8 s al invalidar el
+   draw-command cache). Ahora se acumulan verts/tris/normales/UVs con offset de
+   índices y se emite **una sección por edificio** (1030). Nunca crees secciones
+   en bucle sobre elementos pequeños.
+2. **Setters de render limitados a 4x/seg.** `CicloVisualSubsystem` y
+   `ClimaSubsystem` aplican rotación/intensidad/color de sol, skylight, niebla y
+   parámetros del MPC cada 0.25 s, no por frame — cada llamada invalida el
+   draw-cache de la escena. Si añades algo que toque render, respétalo.
+3. **LOD de multitud**: `UAlsasuaOptimizerSubsystem` apaga el tick de IA más allá
+   de `AICullDistance = 5000` cm y fuerza el LOD más grueso + sin sombras
+   dinámicas más allá de `RenderLODDistance = 2000` cm, transicionando **una sola
+   vez** (guarda con `GetForcedLOD() == 0`).
+4. **Lumen y VSM no son el cuello de botella** — apagarlos empeora el resultado
+   (sin VSM, los CSM triplican los draw calls de sombra: 819 → 2215). El coste
+   está en base pass/geometría. No "optimices" desactivándolos.
+5. **LOD de terreno**: `TerrenoGenerado.h` con `LOD1Step = 4`, `LOD2Step = 16`
+   (valores ya afinados; bajarlos vuelve a teselar sub-píxel).
+6. **Nanite en fachadas no es viable** (verificado en 5.8):
+   `UDynamicMeshComponent` no expone `SetEnableNanite`. Requeriría bake a
+   StaticMesh.
+7. `UAlsasuaHitchProtector` y `UAlsasuaOptimizerSubsystem` son
+   `FTickableGameObject` (necesitan `GetStatId()`).
+
+Para medir: lanza standalone (el CSV sale solo), y compara medianas de
+`FrameTime` / `GPUTime` / `RHI/PrimitivesDrawn` frente a los números del
+`RESUMEN_TECNICO.md`. La primera fila del CSV trae los nombres de columna; las
+posiciones cambian entre runs.
+
+---
+
+## 9. Convenciones de código
+
+- **C++20**, prefijos UE estándar (`A` actor, `U` UObject, `F` struct, `E` enum,
+  `I` interfaz). Macros de export por módulo: `ALSASUACORE_API`,
+  `ALSASUAWORLD_API`, `ALSASUAMANIFA_API`, …
+- **Nombres en castellano** para lo nuevo (`CargadorEdificios`, `MisionesSubsystem`,
+  `TerrenoGenerado`, `AvanzarObjetivo`). `AlsasuaManifa` conserva inglés del port.
+- Header con comentario de cabecera: nombre, capa y una o dos frases de qué hace y
+  de qué es puerto. Sigue ese formato.
+- Subsistemas: `UGameInstanceSubsystem` / `UWorldSubsystem`. Los que necesitan
+  tick implementan `FTickableGameObject` con `RETURN_QUICK_DECLARE_CYCLE_STAT` e
+  `IsTickable() { return !IsTemplate(); }`.
+- API expuesta a Blueprint con `UFUNCTION(BlueprintCallable, Category="X")`;
+  delegados con `DECLARE_DYNAMIC_MULTICAST_DELEGATE*` y `UPROPERTY(BlueprintAssignable)`.
+- Punteros a UObject **siempre** bajo `UPROPERTY()`, aunque sean privados.
+- Logs: `UE_LOG(LogTemp, Log, TEXT("Clase: mensaje..."))` con el nombre de la
+  clase como prefijo.
+- Comentarios: explican **por qué**, no qué. El código existente comenta las
+  decisiones raras (fallbacks, ciclos de módulo, flips de UV). Mantén ese nivel.
+- Indentación mixta (4 espacios en la mayoría, tabs en algunos ficheros de
+  `AlsasuaGameplay`). **Copia la del fichero que tocas.**
+
+---
+
+## 10. Git y contenido
+
+- Se versionan: `Source/`, `Config/`, `Tools/`, `Docs/`, `Content/Datos/`,
+  `Content/Textures/*.png`, `Content/Terreno/` (heightmap + metadatos),
+  `Content/ModelosDescargados/` (glTF CC0), `Content/Dialogs/`.
+- **Fuera de git** (`.gitignore`): `Binaries/`, `Intermediate/`, `Saved/`,
+  `DerivedDataCache/`, `Content/Megascans|Fab|GASP|Road|Materiales|AssetsImportados/`,
+  `Content/Maps/*.umap`, LiDAR raw, y los **uassets derivados de textura**
+  (reimportables con `Tools/ImportSatellite.py`). El `Content/` completo pesa
+  ~19 GB.
+- **Git LFS** para las dos ortofotos de 8192² (ver `.gitattributes`).
+- Mensajes de commit: **castellano**. Dos estilos conviven — convencional
+  (`fix:`, `perf:`, `feat(gis):`) y descriptivo en imperativo
+  ("Mapear Village y ForestPack, y enchufarlos donde había primitivas"). Ambos
+  valen; explica el *qué* y el *por qué*, no el fichero.
+- Sin CI: no hay `.github/workflows`. La verificación es manual, en Windows.
+- `.opencode/` contiene el vendoring del plugin Ponytail (agente de OpenCode) y
+  `graphify-out/` es salida de herramienta. **No los toques** salvo petición
+  explícita.
+
+---
+
+## 11. Trampas conocidas
+
+- El `.uproject` dice "migracion … a Unreal Engine 5.4" en `Description`, y
+  `RESUMEN_TECNICO.md` está escrito contra 5.4. **La versión real es 5.8**
+  (`EngineAssociation`), y el `README` y `Docs/PRIMER_COMPILADO_5_8.md` son la
+  referencia al día.
+- `UImportadorLandscape` **aborta** si el nivel es World Partition
+  (`IsPartitionedWorld()`) en vez de crear un landscape roto. Para el primer
+  arranque, usa un nivel **Empty**, o importa a mano por Landscape Mode con los
+  valores de la tabla de `PRIMER_COMPILADO_5_8.md` (§4).
+- Enhanced Input se construye **en runtime** si no hay assets `IA_*`/`IMC`
+  asignados; si los autoras en el editor, tienen prioridad.
+- `CreadorMaterialAgua.cpp` fija `BlendMode`/`TwoSided` **por reflexión**
+  (`FindPropertyByName`) para compilar independientemente de la visibilidad de
+  esos campos en 5.8. No lo "simplifiques" a acceso directo.
+- `CreateMeshSection` (overload C++ con `FColor`) sigue siendo válida en 5.8; lo
+  deprecado es el nodo de Blueprint. La ruta de migración, si llega, es
+  `CreateMeshSection_LinearColor`.
+- `AlsasuaManifestacionManager` (port Unity sin callers) está **dormido** a
+  propósito: se le quitó la instanciación de dos ISMCs huérfanos que disparaban
+  un `ensure` en cada boot.
+- `Docs/ADR-001_*` describe un terreno GPU-driven **que no existe**. No lo cites
+  como si estuviera implementado.
