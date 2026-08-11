@@ -160,8 +160,10 @@ Si añades una fase, ponla **donde toque en la cadena** y mantén la numeración
 el `Progreso`. El terreno va siempre primero: el resto hace raycast contra él
 para apoyarse (`MuestreadorAltura`, `GeoDataAlsasua::TraceUp/TraceDown`).
 
-Detalle: `CargadorPoligonos.h` está incluido pero ya no se llama desde el
-director (plazas/zonas verdes las cubren otros sistemas); no asumas que corre.
+Detalle: `UCargadorPoligonos` está **dormido** — nadie llama a `Cargar()`, así que
+las superficies de las 5 plazas y las 273 zonas verdes no se construyen y
+`plazas_unity.json` no tiene ningún consumidor. Es deliberado: pintaría color
+plano sobre la ortofoto PNOA del terreno. Ver la nota en su cabecera.
 
 ### Datos (`Content/Datos/*.json`)
 

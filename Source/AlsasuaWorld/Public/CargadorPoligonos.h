@@ -1,6 +1,13 @@
 // CargadorPoligonos.h (capa WORLD)
 // Carga plazas (5) y zonas verdes (273) desde sus *_unity.json (poly = [x,z,...]
 // plano, marco ABSOLUTO) como superficies planas drapeadas (APoligonoSuelo).
+//
+// DORMIDO: nadie llama a Cargar(). Pinta color plano (verde 58,122,53 y adoquín
+// 150,145,135) a 5-7 cm sobre el terreno, y el terreno lleva desde dc8747c la
+// ortofoto PNOA real: despertarlo taparía la foto aérea con 278 parches de color
+// liso, además de sumar 278 draw calls sobre los ~819 de referencia. Si algún día
+// se quiere el suelo poligonal, el camino es teñir la ortofoto por zona, no
+// superponerle geometría opaca.
 #pragma once
 
 #include "CoreMinimal.h"

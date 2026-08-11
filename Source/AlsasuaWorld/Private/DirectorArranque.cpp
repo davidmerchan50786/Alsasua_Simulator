@@ -5,7 +5,6 @@
 #include "CargadorArboles.h"
 #include "CargadorVias.h"
 #include "CargadorCalles.h"
-#include "CargadorPoligonos.h"
 #include "CargadorEdificios.h"
 #include "AlsasuaTejadoModular.h"
 #include "HerrikoPlazaGenerator.h"
