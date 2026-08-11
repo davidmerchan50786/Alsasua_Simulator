@@ -81,6 +81,108 @@ void UCargadorEdificios::OnWorldBeginPlay(UWorld& InWorld)
 	// La construye ADirectorArranque tras generar el terreno; aquí aún no existe (cota 0).
 }
 
+namespace
+{
+	/**
+	 * Alturas medidas por LiDAR, una por huella catastral.
+	 *
+	 * Las alturas de buildings_final.json vienen de OSM y se quedan cortas: la
+	 * mediana del mundo era 7,27 m contra los 10,94 m que mide el vuelo LiDAR de
+	 * Navarra 2017, casi una planta menos en todo el pueblo. Con esto cada
+	 * edificio usa su altura real medida, no una estimación.
+	 *
+	 * Lo genera Tools/AlturasLidarEdificios.py (muestrea el mapa de alturas de
+	 * IDENA dentro de cada huella y se queda con el percentil 75). Si el fichero
+	 * no está, no pasa nada: se sigue con lo que diga el JSON de siempre.
+	 *
+	 * NO se aplica un desplazamiento global. El sesgo es de 3 m pero la
+	 * dispersión es de 4, así que subir a todos taparía la media y estropearía
+	 * los cientos que ya estaban bien. Sólo se sustituye donde hay una huella
+	 * medida a menos de RadioMatchCm del centro del edificio.
+	 */
+	struct FAlturasLidar
+	{
+		struct FEntrada { FVector2D Centro; float AlturaM; int32 Plantas; };
+
+		TMap<FIntPoint, TArray<FEntrada>> Rejilla;
+		bool bCargado = false;
+		static constexpr float CeldaCm = 3000.f;
+		static constexpr float RadioMatchCm = 1500.f;   // 15 m
+
+		void Cargar()
+		{
+			if (bCargado) return;
+			bCargado = true;
+
+			const FString Ruta = FPaths::Combine(FPaths::ProjectContentDir(),
+				TEXT("Datos/alturas_lidar_edificios.json"));
+			FString Texto;
+			if (!FFileHelper::LoadFileToString(Texto, *Ruta))
+			{
+				UE_LOG(LogTemp, Log, TEXT("[Edificios] sin alturas LiDAR (%s); uso las del JSON."), *Ruta);
+				return;
+			}
+
+			TSharedPtr<FJsonObject> Doc;
+			const TSharedRef<TJsonReader<>> R = TJsonReaderFactory<>::Create(Texto);
+			if (!FJsonSerializer::Deserialize(R, Doc) || !Doc.IsValid()) return;
+
+			const TArray<TSharedPtr<FJsonValue>>* Arr = nullptr;
+			if (!Doc->TryGetArrayField(TEXT("edificios"), Arr) || !Arr) return;
+
+			for (const TSharedPtr<FJsonValue>& V : *Arr)
+			{
+				const TSharedPtr<FJsonObject> O = V->AsObject();
+				if (!O.IsValid()) continue;
+				const TArray<TSharedPtr<FJsonValue>>* C = nullptr;
+				if (!O->TryGetArrayField(TEXT("centro_mundo_cm"), C) || !C || C->Num() < 2) continue;
+
+				FEntrada E;
+				E.Centro = FVector2D((*C)[0]->AsNumber(), (*C)[1]->AsNumber());
+				E.AlturaM = (float)O->GetNumberField(TEXT("altura_m"));
+				E.Plantas = (int32)O->GetNumberField(TEXT("plantas"));
+				if (E.Plantas <= 0) continue;      // cobertizos y ruido: no sustituyen
+
+				const FIntPoint Celda(FMath::FloorToInt(E.Centro.X / CeldaCm),
+				                      FMath::FloorToInt(E.Centro.Y / CeldaCm));
+				Rejilla.FindOrAdd(Celda).Add(E);
+			}
+			UE_LOG(LogTemp, Log, TEXT("[Edificios] %d huellas con altura LiDAR cargadas."),
+				Arr->Num());
+		}
+
+		/** Altura y plantas medidas para ese centro, si hay una huella cerca. */
+		bool Buscar(const FVector2D& Centro, float& OutAlturaM, int32& OutPlantas) const
+		{
+			const FIntPoint C(FMath::FloorToInt(Centro.X / CeldaCm),
+			                  FMath::FloorToInt(Centro.Y / CeldaCm));
+			float MejorD2 = RadioMatchCm * RadioMatchCm;
+			const FEntrada* Mejor = nullptr;
+			for (int32 dx = -1; dx <= 1; ++dx)
+			{
+				for (int32 dy = -1; dy <= 1; ++dy)
+				{
+					if (const TArray<FEntrada>* Lista = Rejilla.Find(FIntPoint(C.X + dx, C.Y + dy)))
+					{
+						for (const FEntrada& E : *Lista)
+						{
+							const float D2 = FVector2D::DistSquared(E.Centro, Centro);
+							if (D2 < MejorD2) { MejorD2 = D2; Mejor = &E; }
+						}
+					}
+				}
+			}
+			if (!Mejor) return false;
+			OutAlturaM = Mejor->AlturaM;
+			OutPlantas = Mejor->Plantas;
+			return true;
+		}
+	};
+
+	FAlturasLidar GAlturasLidar;
+	int32 GSustituidas = 0;
+}
+
 float UCargadorEdificios::AlturaSuelo(const FVector2D& XY) const
 {
 	const UWorld* W = GetWorld();
@@ -132,7 +234,23 @@ void UCargadorEdificios::ConstruirUno(const TSharedPtr<FJsonObject>& O)
 	if (MundoXY.Num() < 3) return;
 	Centro /= MundoXY.Num();
 
-	const double AlturaM = O->HasField(TEXT("height")) ? O->GetNumberField(TEXT("height")) : 6.0;
+	double AlturaM = O->HasField(TEXT("height")) ? O->GetNumberField(TEXT("height")) : 6.0;
+	int32 PlantasJson = O->HasField(TEXT("levels")) ? (int32)O->GetNumberField(TEXT("levels")) : 1;
+
+	// Si hay huella medida por LiDAR a menos de 15 m, manda ella: es medida real
+	// del vuelo de 2017 frente a la estimación de OSM, que se queda ~3 m corta.
+	GAlturasLidar.Cargar();
+	{
+		float AltLidar = 0.f;
+		int32 PlantasLidar = 0;
+		if (GAlturasLidar.Buscar(Centro, AltLidar, PlantasLidar))
+		{
+			AlturaM = AltLidar;
+			PlantasJson = PlantasLidar;
+			++GSustituidas;
+		}
+	}
+
 	const float  Suelo   = AlturaSuelo(Centro) + 8.f;   // alzado sobre el terreno (anti z-fighting)
 
 	TArray<FVector2D> Local; Local.Reserve(MundoXY.Num());
@@ -146,7 +264,7 @@ void UCargadorEdificios::ConstruirUno(const TSharedPtr<FJsonObject>& O)
 
 	E->Id            = (int32)O->GetIntegerField(TEXT("id"));
 	E->NombreEdificio = O->HasField(TEXT("name")) ? O->GetStringField(TEXT("name")) : FString();
-	E->Plantas       = O->HasField(TEXT("levels")) ? (int32)O->GetNumberField(TEXT("levels")) : 1;
+	E->Plantas       = PlantasJson;   // ya lleva la medida LiDAR si la había
 
 	// Eje real del caballete (Unity dx,dz) -> dirección en el plano XY de Unreal (X=Z, Y=X).
 	FVector2D Eje(1, 0);
@@ -250,6 +368,7 @@ int32 UCargadorEdificios::Cargar()
 	const int32 MaxIter = 10000;
 	while (!PasoPresupuesto(1000.0) && ++IterGuard < MaxIter) {}
 	if (IterGuard >= MaxIter) UE_LOG(LogTemp, Warning, TEXT("[Edificios] Iteration guard reached (%d)"), MaxIter);
-	UE_LOG(LogTemp, Log, TEXT("[Edificios] %d edificios construidos"), Construidos);
+	UE_LOG(LogTemp, Log, TEXT("[Edificios] %d edificios construidos (%d con altura medida por LiDAR)"),
+		Construidos, GSustituidas);
 	return Construidos;
 }
