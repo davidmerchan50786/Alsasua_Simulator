@@ -12,6 +12,7 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "GeoDataAlsasua.h"
+#include "AlturasLidarComun.h"
 
 void UAlsasuaFacadeGenerator::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -231,8 +232,34 @@ int32 UAlsasuaFacadeGenerator::GenerarFachadasEnMundo()
 
         const float SideLen = FMath::Sqrt(Fachada.AreaAprox) * 100.0f;
         const float HalfSide = SideLen * 0.5f;
-        const float HeightCm = Fachada.AlturaTotal * 100.0f;
-        const float LevelCm = Fachada.AlturaPorNivel * 100.0f;
+
+        // La altura y los niveles salen del LiDAR si esa huella está medida, y si
+        // no, de building_facades.json como siempre.
+        //
+        // Tiene que ser la MISMA fuente que usa CargadorEdificios para el volumen.
+        // Si el cuerpo del edificio sube a la altura real y las ventanas se quedan
+        // con la de OSM (~3 m menos, casi una planta), queda muro desnudo por
+        // encima de la última fila: se midió el desajuste en 938 edificios y sólo
+        // el 31,6% de los recuentos de niveles coincidía.
+        int32 Niveles = Fachada.NumNiveles;
+        float AlturaTotalM = Fachada.AlturaTotal;
+        float AlturaNivelM = Fachada.AlturaPorNivel;
+        {
+            float AltLidar = 0.f;
+            int32 PlantasLidar = 0;
+            if (AlturasLidar::Buscar(FVector2D(Info->Centro.X, Info->Centro.Y), AltLidar, PlantasLidar))
+            {
+                Niveles = PlantasLidar;
+                AlturaTotalM = AltLidar;
+                // Se reparte la altura medida entre las plantas medidas en vez de
+                // arrastrar el altura_por_nivel del JSON: así la última fila de
+                // ventanas cae dentro del muro y no por encima del alero.
+                AlturaNivelM = AltLidar / FMath::Max(1, PlantasLidar);
+            }
+        }
+
+        const float HeightCm = AlturaTotalM * 100.0f;
+        const float LevelCm = AlturaNivelM * 100.0f;
 
         UMaterialInterface* WinMat = LoadObject<UMaterialInterface>(nullptr,
             TEXT("/Engine/EngineMaterials/DefaultMaterial.DefaultMaterial"));
@@ -247,7 +274,7 @@ int32 UAlsasuaFacadeGenerator::GenerarFachadasEnMundo()
             const FVector N = FaceDirs[Face];
             const FRotator R = FaceRots[Face];
 
-            for (int32 Lvl = 0; Lvl < Fachada.NumNiveles; ++Lvl)
+            for (int32 Lvl = 0; Lvl < Niveles; ++Lvl)
             {
                 const float ZBase = (Lvl + 0.2f) * LevelCm;
                 const int32 WinCount = FMath::Max(1, (int32)(SideLen / 250.0f));
