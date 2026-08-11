@@ -78,8 +78,13 @@ def run():
         unreal.log("M_TerrenoAlsasua eliminado — se regenerará con satélite en el próximo Play")
 
     unreal.log(f"IMPORT_DONE full={ok_full} town={ok_town} mats={ok_mat}")
-    unreal.SystemLibrary.execute_console_command(None, "quit")
+    return ok_full and ok_town and ok_mat
 
 
 if __name__ == "__main__":
     run()
+    # El quit va aquí y no dentro de run(): este script se lanzaba suelto y en
+    # modo desatendido interesa que el editor se cierre al acabar, pero RunAll.py
+    # lo llama como un paso más y cerrarle el editor a media tanda se llevaba por
+    # delante todo lo que venía detrás.
+    unreal.SystemLibrary.execute_console_command(None, "quit")

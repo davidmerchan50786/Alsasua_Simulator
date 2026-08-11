@@ -37,6 +37,17 @@ import unreal
 TOOLS_DIR = os.path.join(unreal.Paths.project_dir(), "Tools")
 
 
+# La importación va la PRIMERA de todo y antes faltaba entera: RunAll saltaba
+# directo a materiales y capas visuales, así que en un clon limpio los .gltf y
+# .fbx seguían siendo ficheros sueltos en disco, nunca uassets. AlsasuaMallaFab
+# escaneaba /Game/ModelosDescargados, no encontraba nada, y todo el pueblo caía a
+# formas básicas con los modelos descargados al lado sin usar.
+PASOS_IMPORT = [
+    ("ImportarModelosDescargados", "Props CC0 de Poly Haven (glTF)"),
+    ("ue5_import_all_assets",      "Mallas de AssetsImportados (FBX/OBJ/glTF)"),
+    ("ImportSatellite",            "Ortofotos PNOA + materiales que las drapean"),
+]
+
 # (módulo, descripción). Los que exponen run() se importan y se llama a run();
 # el resto se ejecutan con runpy, que activa su guard __main__.
 PASOS_NIVEL = [
@@ -110,6 +121,11 @@ def run():
         sys.path.insert(0, TOOLS_DIR)
 
     resultados = []
+
+    # 0. Importar: los ficheros de disco tienen que ser uassets antes de que
+    #    nadie los busque. Los materiales muestrean texturas y MallaFab escanea
+    #    el registro de assets; si esto no ha corrido, ambos encuentran vacío.
+    _fase("0. Importación de assets", PASOS_IMPORT, resultados)
 
     # 1. Ortofoto + MPC_Clima + materiales, en el orden que impone el C++.
     unreal.log("")
