@@ -43,9 +43,6 @@ struct FGeoLayerData
     TArray<FGeoNamedFeature> NamedPlazas;
     TArray<FGeoNamedFeature> NamedNeighborhoods;
     TArray<FGeoDataSource> DataSources;
-    double OriginLatitude = 42.84;
-    double OriginLongitude = -2.46;
-    double ScaleMetersPerUnit = 1.0;
     bool bHasAnyData = false;
 };
 
@@ -64,39 +61,12 @@ public:
 
 private:
     void BuildWorld();
-    void BuildTerrainMesh(AActor* Owner, class UInstancedStaticMeshComponent* TerrainISM);
     void BuildRoadMesh(AActor* Owner, const TArray<FVector>& Points, float Width, class UInstancedStaticMeshComponent* RoadISM);
     void BuildRailMesh(AActor* Owner, const TArray<FVector>& Points, float Width, class UInstancedStaticMeshComponent* RoadISM);
-    void BuildBuildings(AActor* Owner, class UInstancedStaticMeshComponent* BuildingISM);
-    void BuildForest(AActor* Owner, class UInstancedStaticMeshComponent* ForestISM);
-    void BuildGeoBuilding(AActor* Owner, const TArray<FGeoPoint>& Points, const FGeoLayerData& GeoData, class UInstancedStaticMeshComponent* BuildingISM);
-    void BuildGeoForest(AActor* Owner, const TArray<FGeoPoint>& Points, const FGeoLayerData& GeoData, class UInstancedStaticMeshComponent* ForestISM);
-    void BuildNamedRoadLabel(AActor* Owner, const FGeoNamedFeature& Feature, const FGeoLayerData& GeoData);
-    void BuildNamedPlazaLabel(AActor* Owner, const FGeoNamedFeature& Feature, const FGeoLayerData& GeoData);
-    void BuildNamedNeighborhoodLabel(AActor* Owner, const FGeoNamedFeature& Feature, const FGeoLayerData& GeoData);
+    void BuildGeoBuilding(AActor* Owner, const TArray<FGeoPoint>& Points, class UInstancedStaticMeshComponent* BuildingISM);
+    void BuildGeoForest(AActor* Owner, const TArray<FGeoPoint>& Points, class UInstancedStaticMeshComponent* ForestISM);
+    void BuildNamedRoadLabel(AActor* Owner, const FGeoNamedFeature& Feature);
+    void BuildNamedPlazaLabel(AActor* Owner, const FGeoNamedFeature& Feature);
+    void BuildNamedNeighborhoodLabel(AActor* Owner, const FGeoNamedFeature& Feature);
     void AddLabel(AActor* Owner, const FVector& Location, const FString& LabelText, float Size, const FColor& Color);
-
-    void AddBoxToMeshData(
-        TArray<FVector>& Vertices,
-        TArray<int32>& Triangles,
-        TArray<FVector>& Normals,
-        TArray<FVector2D>& UVs,
-        TArray<FColor>& Colors,
-        const FVector& Center,
-        const FVector& Extents,
-        const FColor& Color,
-        int32& StartIndex);
-
-    void AddQuadToMeshData(
-        TArray<FVector>& Vertices,
-        TArray<int32>& Triangles,
-        TArray<FVector>& Normals,
-        TArray<FVector2D>& UVs,
-        TArray<FColor>& Colors,
-        const FVector& A,
-        const FVector& B,
-        const FVector& C,
-        const FVector& D,
-        const FColor& Color,
-        int32& StartIndex);
 };

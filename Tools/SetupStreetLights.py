@@ -9,6 +9,11 @@ import json
 import os
 import unreal
 
+# La API de editor de 5.8 pasa por aquí: subsistemas en vez de las
+# librerías obsoletas, y los nombres que no existían. Ver ue5_compat.py.
+import sys as _sys, os as _os
+_sys.path.append(_os.path.join(unreal.Paths.project_dir(), "Tools"))
+import ue5_compat as compat
 
 FURNITURE_PATH = "/Game/Datos/street_furniture.json"
 STREET_LIGHT_MESH = "/Game/Meshes/Mobiliario/SM_Farola"
@@ -50,7 +55,7 @@ def spawn_farolas_from_json():
         unreal.log_error("[StreetLights] No se pudo cargar UAlsasuaStreetLightController")
         return
 
-    farola_mesh = unreal.EditorAssetLibrary.load_asset(STREET_LIGHT_MESH)
+    farola_mesh = compat.assets().load_asset(STREET_LIGHT_MESH)
     count = 0
 
     for item in farolas:
@@ -65,16 +70,16 @@ def spawn_farolas_from_json():
             continue
 
         loc = unreal.Vector(x, y, FAROLA_HEIGHT)
-        rot = unreal.Rotation(0, 0, 0)
+        rot = unreal.Rotator(0, 0, 0)
 
         actor = None
         if farola_mesh:
-            actor = unreal.EditorLevelLibrary.spawn_actor_from_object(
+            actor = compat.actores().spawn_actor_from_object(
                 farola_mesh, loc, rot)
 
         if actor:
             actor.set_actor_label(f"Farola_{count:03d}")
-            comp = unreal.add_component_to_actor(actor, wind_class)
+            comp = compat.anadir_componente(actor, wind_class)
             if comp:
                 count += 1
 
@@ -88,7 +93,7 @@ def add_light_to_existing_farolas():
     if not wind_class:
         return
 
-    actors = unreal.EditorLevelLibrary.get_all_level_actors_of_class(
+    actors = compat.actores().get_all_level_actors_of_class(
         unreal.StaticMeshActor)
     count = 0
 
@@ -97,7 +102,7 @@ def add_light_to_existing_farolas():
         if any(x in name for x in ["farola", "lamp", "street_light", "poste"]):
             existing = actor.get_component_by_class(wind_class)
             if not existing:
-                comp = unreal.add_component_to_actor(actor, wind_class)
+                comp = compat.anadir_componente(actor, wind_class)
                 if comp:
                     count += 1
 

@@ -64,6 +64,26 @@ public:
      *  Input: (east, 0, north). Output: (east_cm, north_cm, 0). */
     static FVector RelLocalToUE5(const FVector& RelLocalPos);
 
+    /**
+     * Cota del terreno bajo un punto del mundo (cm), por trazo vertical.
+     *
+     * Si no encuentra suelo devuelve CotaPlazaCm: es mejor dejar la pieza a la
+     * altura del pueblo que a la del nivel del mar.
+     */
+    static float AlturaSueloUE5(const class UWorld* World, double XCm, double YCm);
+
+    /**
+     * Relative local meters → UE5 centimeters, con la Z apoyada en el terreno.
+     *
+     * Existe porque RelLocalToUE5 devuelve Z = 0 y veintiún sistemas hacían
+     * "Pos.Z += 300" sobre eso: Alsasua está a 531 m, así que el mobiliario,
+     * los toldos, las aceras, los semáforos y los peatones acababan medio
+     * kilómetro por debajo del terreno. La Y del vector de entrada se ignora:
+     * la altura la manda SobreSueloCm.
+     */
+    static FVector RelLocalASueloUE5(const class UWorld* World, const FVector& RelLocalPos,
+                                     float SobreSueloCm = 0.f);
+
     /** Lat/Lon (WGS84) + altitude(m) → UE5 centimeters via UTM Zone 30N. */
     static FVector LatLonToUE5(double LatDeg, double LonDeg, double AltM = 0.0);
 

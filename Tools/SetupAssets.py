@@ -12,6 +12,13 @@ Este script:
 """
 
 import unreal
+
+# La API de editor de 5.8 pasa por aquí: subsistemas en vez de las
+# librerías obsoletas, y los nombres que no existían. Ver ue5_compat.py.
+import sys as _sys, os as _os
+_sys.path.append(_os.path.join(unreal.Paths.project_dir(), "Tools"))
+import ue5_compat as compat
+
 import json
 import os
 import time
@@ -32,13 +39,13 @@ def load_json(filename):
         return json.load(f)
 
 def load_asset(path):
-    asset = unreal.EditorAssetLibrary.load_asset(path)
+    asset = compat.assets().load_asset(path)
     if not asset:
         unreal.log_warning(f"[AlsasuaSetup] Asset no encontrado: {path}")
     return asset
 
 def find_all_actors_in_level(actor_class):
-    world = unreal.EditorLevelLibrary.get_editor_world()
+    world = compat.mundo()
     if not world:
         return []
     return unreal.GameplayStatics.get_all_actors_of_class(world, actor_class)
@@ -58,9 +65,7 @@ def assign_building_materials():
     mat_techo = load_asset(f"{MATERIALS_DIR}/M_Techo_Tejas")
     mat_muro = load_asset(f"{MATERIALS_DIR}/M_Muro_Piedra")
 
-    all_static_actors = unreal.EditorLevelLibrary.get_all_level_metadata("StaticMeshActor") if hasattr(unreal.EditorLevelLibrary, 'get_all_level_metadata') else []
-
-    world = unreal.EditorLevelLibrary.get_editor_world()
+    world = compat.mundo()
     all_actors = unreal.GameplayStatics.get_all_actors_of_class(world, unreal.StaticMeshActor)
     building_count = 0
 
@@ -107,7 +112,7 @@ def assign_street_materials():
     mat_calles = load_asset(f"{MATERIALS_DIR}/M_Terreno_Calles")
     mat_acera = load_asset(f"{MATERIALS_DIR}/M_Terreno_Acera")
 
-    world = unreal.EditorLevelLibrary.get_editor_world()
+    world = compat.mundo()
     all_actors = unreal.GameplayStatics.get_all_actors_of_class(world, unreal.Actor)
     street_count = 0
 
@@ -150,7 +155,7 @@ def assign_river_bridge_materials():
     mat_lecho = load_asset(f"{MATERIALS_DIR}/M_Terreno_Calles")
     mat_puente = load_asset(f"{MATERIALS_DIR}/M_Edificio")
 
-    world = unreal.EditorLevelLibrary.get_editor_world()
+    world = compat.mundo()
     all_actors = unreal.GameplayStatics.get_all_actors_of_class(world, unreal.Actor)
     count = 0
 
@@ -183,7 +188,7 @@ def assign_furniture_materials():
 
     mat_mobiliario = load_asset(f"{MATERIALS_DIR}/M_Mobiliario")
 
-    world = unreal.EditorLevelLibrary.get_editor_world()
+    world = compat.mundo()
     all_actors = unreal.GameplayStatics.get_all_actors_of_class(world, unreal.StaticMeshActor)
     count = 0
 
@@ -210,14 +215,14 @@ def assign_furniture_materials():
 def enable_nanite_all():
     unreal.log("[AlsasuaSetup] === Habilitando Nanite en todos los meshes ===")
 
-    mesh_paths = unreal.EditorAssetLibrary.list_assets("/Game/Meshes", True, True)
+    mesh_paths = compat.assets().list_assets("/Game/Meshes", True, True)
     count = 0
 
     for path in mesh_paths:
         if path.endswith("_lod0") or path.endswith("_lod1") or path.endswith("_lod2"):
             continue
 
-        asset = unreal.EditorAssetLibrary.load_asset(path)
+        asset = compat.assets().load_asset(path)
         if not asset or not isinstance(asset, unreal.StaticMesh):
             continue
 
@@ -238,7 +243,7 @@ def place_postprocess_volumes():
 
     barrios = data.get("barrios", [])
 
-    world = unreal.EditorLevelLibrary.get_editor_world()
+    world = compat.mundo()
     count = 0
 
     for barrio in barrios:
@@ -251,7 +256,7 @@ def place_postprocess_volumes():
         cx = centro.get("x", 0) * 100
         cz = centro.get("z", 0) * 100
 
-        pp_actor = unreal.EditorLevelLibrary.spawn_actor_from_class(
+        pp_actor = compat.actores().spawn_actor_from_class(
             unreal.PostProcessVolume, unreal.Vector(cx, cz, 300))
         if not pp_actor:
             continue
@@ -291,7 +296,7 @@ def place_postprocess_volumes():
 def place_atmosphere_actors():
     unreal.log("[AlsasuaSetup] === Colocando actores atmosféricos ===")
 
-    sun = unreal.EditorLevelLibrary.spawn_actor_from_class(
+    sun = compat.actores().spawn_actor_from_class(
         unreal.DirectionalLight, unreal.Vector(0, 0, 10000))
     if sun:
         sun.set_actor_label("Atmosphere_Sun")
@@ -302,12 +307,12 @@ def place_atmosphere_actors():
             sun_comp.set_light_color(unreal.LinearColor(1.0, 0.95, 0.9))
             sun_comp.set_cast_shadows(True)
 
-    sky_atm = unreal.EditorLevelLibrary.spawn_actor_from_class(
+    sky_atm = compat.actores().spawn_actor_from_class(
         unreal.SkyAtmosphere, unreal.Vector(0, 0, 0))
     if sky_atm:
         sky_atm.set_actor_label("Atmosphere_SkyAtmosphere")
 
-    sky_light = unreal.EditorLevelLibrary.spawn_actor_from_class(
+    sky_light = compat.actores().spawn_actor_from_class(
         unreal.SkyLight, unreal.Vector(0, 0, 5000))
     if sky_light:
         sky_light.set_actor_label("Atmosphere_SkyLight")
@@ -316,7 +321,7 @@ def place_atmosphere_actors():
             sl_comp.set_intensity(1.0)
             sl_comp.set_real_time_capture(True)
 
-    fog = unreal.EditorLevelLibrary.spawn_actor_from_class(
+    fog = compat.actores().spawn_actor_from_class(
         unreal.ExponentialHeightFog, unreal.Vector(0, 0, 0))
     if fog:
         fog.set_actor_label("Atmosphere_Fog")
@@ -335,11 +340,11 @@ def place_atmosphere_actors():
 def configure_tree_lods():
     unreal.log("[AlsasuaSetup] === Configurando LODs de árboles ===")
 
-    mesh_paths = unreal.EditorAssetLibrary.list_assets("/Game/Meshes/Arboles", True, True)
+    mesh_paths = compat.assets().list_assets("/Game/Meshes/Arboles", True, True)
     count = 0
 
     for path in mesh_paths:
-        asset = unreal.EditorAssetLibrary.load_asset(path)
+        asset = compat.assets().load_asset(path)
         if not asset or not isinstance(asset, unreal.StaticMesh):
             continue
 

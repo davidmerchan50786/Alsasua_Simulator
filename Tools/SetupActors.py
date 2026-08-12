@@ -13,6 +13,11 @@ Crea:
 """
 import unreal
 
+# La API de editor de 5.8 pasa por aquí: subsistemas en vez de las
+# librerías obsoletas, y los nombres que no existían. Ver ue5_compat.py.
+import sys as _sys, os as _os
+_sys.path.append(_os.path.join(unreal.Paths.project_dir(), "Tools"))
+import ue5_compat as compat
 
 def spawn_placeholder(label, class_name, location, scale=(1,1,1), color=(0.5,0.5,0.5,1)):
     """Spawnear un actor placeholder con StaticMeshComponent."""
@@ -23,7 +28,7 @@ def spawn_placeholder(label, class_name, location, scale=(1,1,1), color=(0.5,0.5
     except:
         actor_class = unreal.StaticMeshActor
 
-    actor = unreal.EditorLevelLibrary.spawn_actor_from_class(
+    actor = compat.actores().spawn_actor_from_class(
         actor_class, unreal.Vector(*location)
     )
     if actor:
@@ -115,7 +120,7 @@ def run():
     )
 
     # Guardar
-    unreal.EditorLevelLibrary.save_current_level()
+    compat.nivel().save_current_level()
     unreal.log("=== SetupActors: Completo (12 actores placeholder) ===")
 
 

@@ -6,6 +6,11 @@ Ejecutar en editor:  Tools > Execute Python Script
 """
 import unreal
 
+# La API de editor de 5.8 pasa por aquí: subsistemas en vez de las
+# librerías obsoletas, y los nombres que no existían. Ver ue5_compat.py.
+import sys as _sys, os as _os
+_sys.path.append(_os.path.join(unreal.Paths.project_dir(), "Tools"))
+import ue5_compat as compat
 
 def add_wind_to_foliage():
     """Añade UAlsasuaFoliageWindComponent a actores FoliageInstancedStaticMeshComponent."""
@@ -19,7 +24,7 @@ def add_wind_to_foliage():
         unreal.log_error("[FoliageWind] No se pudo cargar UAlsasuaFoliageWindComponent")
         return
 
-    actors = unreal.EditorLevelLibrary.get_all_level_actors()
+    actors = compat.actores().get_all_level_actors()
     count = 0
 
     for actor in actors:
@@ -33,7 +38,7 @@ def add_wind_to_foliage():
         if has_foliage:
             existing = actor.get_component_by_class(wind_class)
             if not existing:
-                comp = unreal.add_component_to_actor(actor, wind_class)
+                comp = compat.anadir_componente(actor, wind_class)
                 if comp:
                     count += 1
 
@@ -47,7 +52,7 @@ def add_wind_to_tree_actors():
     if not wind_class:
         return
 
-    actors = unreal.EditorLevelLibrary.get_all_level_actors_of_class(
+    actors = compat.actores().get_all_level_actors_of_class(
         unreal.StaticMeshActor)
     count = 0
 
@@ -56,7 +61,7 @@ def add_wind_to_tree_actors():
         if any(x in name for x in ["tree", "arbol", "árbol", "beech", "oak", "birch"]):
             existing = actor.get_component_by_class(wind_class)
             if not existing:
-                comp = unreal.add_component_to_actor(actor, wind_class)
+                comp = compat.anadir_componente(actor, wind_class)
                 if comp:
                     count += 1
 

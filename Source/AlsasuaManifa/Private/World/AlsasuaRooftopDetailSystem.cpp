@@ -54,8 +54,11 @@ int32 UAlsasuaRooftopDetailSystem::ColocarDetallesCubierta()
         CX /= VertsArr->Num();
         CZ /= VertsArr->Num();
 
-        FVector RoofCenter = UAlsasuaGeoData::RelLocalToUE5(FVector(CX, 0.0f, CZ));
-        RoofCenter.Z += Height * 100.0f;
+        // Sobre el edificio, que a su vez está sobre el terreno: antes la cota
+        // era sólo la altura del edificio y las antenas y depósitos salían a
+        // media montaña por debajo del pueblo.
+        FVector RoofCenter = UAlsasuaGeoData::RelLocalASueloUE5(GetWorld(),
+            FVector(CX, 0.0f, CZ), Height * 100.0f);
 
         const bool bFlatRoof = RoofTipo.Contains(TEXT("cemento"));
         const bool bPitchedRoof = RoofTipo.Contains(TEXT("pizarra")) || RoofTipo.Contains(TEXT("teja"));

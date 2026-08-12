@@ -47,7 +47,7 @@ int32 UAlsasuaTrafficLightSystem::ColocarSemaforos()
                 {
                     const TSharedPtr<FJsonObject>& PO = PV->AsObject();
                     if (!PO) continue;
-                    JunctionPoints.Add(UAlsasuaGeoData::RelLocalToUE5(
+                    JunctionPoints.Add(UAlsasuaGeoData::RelLocalASueloUE5(GetWorld(),
                         FVector(PO->GetNumberField(TEXT("x")), 0.0f, PO->GetNumberField(TEXT("z")))));
                 }
             }

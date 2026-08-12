@@ -7,6 +7,11 @@ Ejecutar en editor:  Tools > Execute Python Script
 """
 import unreal
 
+# La API de editor de 5.8 pasa por aquí: subsistemas en vez de las
+# librerías obsoletas, y los nombres que no existían. Ver ue5_compat.py.
+import sys as _sys, os as _os
+_sys.path.append(_os.path.join(unreal.Paths.project_dir(), "Tools"))
+import ue5_compat as compat
 
 def add_water_flow_map():
     """Añade UAlsasuaWaterFlowMap al agua."""
@@ -15,13 +20,13 @@ def add_water_flow_map():
         unreal.log_error("[AdvancedVisuals] No se pudo cargar UAlsasuaWaterFlowMap")
         return
 
-    actors = unreal.EditorLevelLibrary.get_all_level_actors_of_class(unreal.StaticMeshActor)
+    actors = compat.actores().get_all_level_actors_of_class(unreal.StaticMeshActor)
     count = 0
     for actor in actors:
         name = actor.get_actor_label().lower()
         if any(x in name for x in ["agua", "water", "rio", "river", "arakil"]):
             if not actor.get_component_by_class(cls):
-                comp = unreal.add_component_to_actor(actor, cls)
+                comp = compat.anadir_componente(actor, cls)
                 if comp:
                     count += 1
     unreal.log(f"[AdvancedVisuals] {count} actores de agua con flow map")
@@ -34,13 +39,13 @@ def add_road_decals():
         unreal.log_error("[AdvancedVisuals] No se pudo cargar UAlsasuaRoadDecalSystem")
         return
 
-    actors = unreal.EditorLevelLibrary.get_all_level_actors_of_class(unreal.StaticMeshActor)
+    actors = compat.actores().get_all_level_actors_of_class(unreal.StaticMeshActor)
     count = 0
     for actor in actors:
         name = actor.get_actor_label().lower()
         if any(x in name for x in ["calle", "road", "street", "acera", "carrera"]):
             if not actor.get_component_by_class(cls):
-                comp = unreal.add_component_to_actor(actor, cls)
+                comp = compat.anadir_componente(actor, cls)
                 if comp:
                     count += 1
     unreal.log(f"[AdvancedVisuals] {count} carreteras con road decals")
@@ -53,13 +58,13 @@ def add_building_facades():
         unreal.log_error("[AdvancedVisuals] No se pudo cargar UAlsasuaBuildingFacadeSystem")
         return
 
-    actors = unreal.EditorLevelLibrary.get_all_level_actors_of_class(unreal.StaticMeshActor)
+    actors = compat.actores().get_all_level_actors_of_class(unreal.StaticMeshActor)
     count = 0
     for actor in actors:
         name = actor.get_actor_label().lower()
         if any(x in name for x in ["edificio", "building", "casa", "bloque", "pisos"]):
             if not actor.get_component_by_class(cls):
-                comp = unreal.add_component_to_actor(actor, cls)
+                comp = compat.anadir_componente(actor, cls)
                 if comp:
                     count += 1
     unreal.log(f"[AdvancedVisuals] {count} edificios con fachadas procedurales")
@@ -72,13 +77,13 @@ def add_light_probes():
         unreal.log_error("[AdvancedVisuals] No se pudo cargar UAlsasuaLightProbeSystem")
         return
 
-    actors = unreal.EditorLevelLibrary.get_all_level_actors_of_class(unreal.StaticMeshActor)
+    actors = compat.actores().get_all_level_actors_of_class(unreal.StaticMeshActor)
     count = 0
     for actor in actors:
         name = actor.get_actor_label().lower()
         if any(x in name for x in ["edificio", "building", "interior", "iglesia"]):
             if not actor.get_component_by_class(cls):
-                comp = unreal.add_component_to_actor(actor, cls)
+                comp = compat.anadir_componente(actor, cls)
                 if comp:
                     count += 1
     unreal.log(f"[AdvancedVisuals] {count} edificios con light probes")
@@ -91,11 +96,11 @@ def add_post_process_stack():
         unreal.log_error("[AdvancedVisuals] No se pudo cargar UAlsasuaPostProcessStack")
         return
 
-    pawns = unreal.EditorLevelLibrary.get_all_level_actors_of_class(unreal.Pawn)
+    pawns = compat.actores().get_all_level_actors_of_class(unreal.Pawn)
     count = 0
     for pawn in pawns:
         if not pawn.get_component_by_class(cls):
-            comp = unreal.add_component_to_actor(pawn, cls)
+            comp = compat.anadir_componente(pawn, cls)
             if comp:
                 count += 1
     unreal.log(f"[AdvancedVisuals] {count} post-process stacks")
@@ -108,10 +113,10 @@ def add_foliage_density():
         unreal.log_error("[AdvancedVisuals] No se pudo cargar UAlsasuaFoliageDensitySystem")
         return
 
-    world_settings = unreal.EditorLevelLibrary.get_world_settings()
+    world_settings = compat.ajustes_mundo()
     if world_settings:
         if not world_settings.get_component_by_class(cls):
-            comp = unreal.add_component_to_actor(world_settings, cls)
+            comp = compat.anadir_componente(world_settings, cls)
             if comp:
                 unreal.log("[AdvancedVisuals] FoliageDensitySystem añadido")
 
@@ -123,13 +128,13 @@ def add_terrain_blender():
         unreal.log_error("[AdvancedVisuals] No se pudo cargar UAlsasuaTerrainMaterialBlender")
         return
 
-    actors = unreal.EditorLevelLibrary.get_all_level_actors_of_class(unreal.StaticMeshActor)
+    actors = compat.actores().get_all_level_actors_of_class(unreal.StaticMeshActor)
     count = 0
     for actor in actors:
         name = actor.get_actor_label().lower()
         if any(x in name for x in ["terreno", "terrain", "landscape"]):
             if not actor.get_component_by_class(cls):
-                comp = unreal.add_component_to_actor(actor, cls)
+                comp = compat.anadir_componente(actor, cls)
                 if comp:
                     count += 1
     unreal.log(f"[AdvancedVisuals] {count} terrenos con terrain blender")
@@ -142,14 +147,14 @@ def add_reverb_zones():
         unreal.log_error("[AdvancedVisuals] No se pudo cargar UAlsasuaReverbZoneSystem")
         return
 
-    actors = unreal.EditorLevelLibrary.get_all_level_actors_of_class(unreal.StaticMeshActor)
+    actors = compat.actores().get_all_level_actors_of_class(unreal.StaticMeshActor)
     count = 0
     for actor in actors:
         name = actor.get_actor_label().lower()
         if any(x in name for x in ["edificio", "building", "iglesia", "church",
                                     "cave", "cueva", "callejon", "alley", "interior"]):
             if not actor.get_component_by_class(cls):
-                comp = unreal.add_component_to_actor(actor, cls)
+                comp = compat.anadir_componente(actor, cls)
                 if comp:
                     count += 1
     unreal.log(f"[AdvancedVisuals] {count} reverb zones")

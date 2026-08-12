@@ -10,6 +10,11 @@ Crea:
 """
 import unreal
 
+# La API de editor de 5.8 pasa por aquí: subsistemas en vez de las
+# librerías obsoletas, y los nombres que no existían. Ver ue5_compat.py.
+import sys as _sys, os as _os
+_sys.path.append(_os.path.join(unreal.Paths.project_dir(), "Tools"))
+import ue5_compat as compat
 
 def spawn_ambient(label, location, sound_class="AmbientSound", volume=1.0, radius=5000):
     """Spawnear un AmbientSound actor."""
@@ -18,7 +23,7 @@ def spawn_ambient(label, location, sound_class="AmbientSound", volume=1.0, radiu
     except:
         actor_class = unreal.Actor
 
-    actor = unreal.EditorLevelLibrary.spawn_actor_from_class(
+    actor = compat.actores().spawn_actor_from_class(
         actor_class, unreal.Vector(*location)
     )
     if actor:
@@ -71,7 +76,7 @@ def run():
         radius=20000
     )
 
-    unreal.EditorLevelLibrary.save_current_level()
+    compat.nivel().save_current_level()
     unreal.log("=== SetupAudio: Completo ===")
     unreal.log("NOTA: Asigna sonidos reales a cada AmbientSound en el Details Panel")
 

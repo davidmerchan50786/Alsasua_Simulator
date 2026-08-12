@@ -61,7 +61,8 @@ int32 UAlsasuaStreetArtSystem::ColocarArteCallejero()
             Pos = UAlsasuaGeoData::AbsLocalToUE5(UAlsasuaGeoData::BarrioCenter(Barrio));
         }
 
-        Pos.Z += FMath::RandRange(150.0f, 300.0f);
+        Pos.Z = UAlsasuaGeoData::AlturaSueloUE5(GetWorld(), Pos.X, Pos.Y)
+            + FMath::RandRange(150.0f, 300.0f);
         float Rot = FMath::RandRange(0.0f, 360.0f);
 
         FStreetArt Art;
@@ -115,7 +116,8 @@ int32 UAlsasuaStreetArtSystem::ColocarArteCallejero()
         Barrio = Barrios[FMath::RandRange(0, Barrios.Num() - 1)];
         Pos = UAlsasuaGeoData::AbsLocalToUE5(UAlsasuaGeoData::BarrioCenter(Barrio));
 
-        Pos.Z += FMath::RandRange(50.0f, 180.0f);
+        Pos.Z = UAlsasuaGeoData::AlturaSueloUE5(GetWorld(), Pos.X, Pos.Y)
+            + FMath::RandRange(50.0f, 180.0f);
         float Rot = FMath::RandRange(0.0f, 360.0f);
 
         FStreetArt Art;

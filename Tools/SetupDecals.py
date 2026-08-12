@@ -6,6 +6,11 @@ Ejecutar en editor:  Tools > Execute Python Script
 """
 import unreal
 
+# La API de editor de 5.8 pasa por aquí: subsistemas en vez de las
+# librerías obsoletas, y los nombres que no existían. Ver ue5_compat.py.
+import sys as _sys, os as _os
+_sys.path.append(_os.path.join(unreal.Paths.project_dir(), "Tools"))
+import ue5_compat as compat
 
 def add_decals_to_roads():
     """Añade UAlsasuaDecalSystem a carreteras."""
@@ -15,7 +20,7 @@ def add_decals_to_roads():
         unreal.log_error("[Decals] No se pudo cargar UAlsasuaDecalSystem")
         return
 
-    actors = unreal.EditorLevelLibrary.get_all_level_actors_of_class(
+    actors = compat.actores().get_all_level_actors_of_class(
         unreal.StaticMeshActor)
     count = 0
 
@@ -25,7 +30,7 @@ def add_decals_to_roads():
                                     "sidewalk", "carrera", "pasarela"]):
             existing = actor.get_component_by_class(decal_class)
             if not existing:
-                comp = unreal.add_component_to_actor(actor, decal_class)
+                comp = compat.anadir_componente(actor, decal_class)
                 if comp:
                     count += 1
 

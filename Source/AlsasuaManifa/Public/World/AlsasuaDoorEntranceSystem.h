@@ -13,6 +13,9 @@ struct FDoorEntry
     FString Tipo;
     FString Color;
     FString Barrio;
+    /** Dirección de OSM (Datos/direcciones_osm.json); vacías si no tiene. */
+    FString Calle;
+    FString Portal;
 };
 
 UCLASS()

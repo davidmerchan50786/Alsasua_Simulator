@@ -82,7 +82,7 @@ void UCargadorPuentes::DetectarCruces()
 				const auto& Po = Pv->AsObject();
 				if (!Po.IsValid()) continue;
 			const FVector M = UAlsasuaGeoData::RelLocalToUE5(FVector(Po->GetNumberField(TEXT("x")), 0.0, Po->GetNumberField(TEXT("z"))));
-				Calle.Add(FVector(M.X, M.Y, 0));
+				Calle.Add(FVector(M.X, M.Y, UAlsasuaGeoData::AlturaSueloUE5(GetWorld(), M.X, M.Y)));
 			}
 			if (Calle.Num() >= 2) Calles.Add(MakeTuple(Calle, Nombre));
 		}
