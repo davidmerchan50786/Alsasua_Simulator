@@ -102,6 +102,9 @@ void UCargadorEdificios::OnWorldBeginPlay(UWorld& InWorld)
 	// La construye ADirectorArranque tras generar el terreno; aquí aún no existe (cota 0).
 }
 
+// Contador del log de abajo. Es estático de unidad de traducción, así que
+// sobrevive entre sesiones de PIE en el mismo proceso del editor: se reinicia en
+// PrepararCarga() o el resumen iría sumando el de la partida anterior.
 namespace { int32 GSustituidas = 0; }
 
 
@@ -125,6 +128,7 @@ void UCargadorEdificios::PrepararCarga()
 {
 	if (bPreparado) return;
 	bPreparado = true;
+	GSustituidas = 0;
 
 	const FString Ruta = FPaths::Combine(FPaths::ProjectContentDir(), RutaRelativa);
 	FString Texto;

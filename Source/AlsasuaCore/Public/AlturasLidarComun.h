@@ -2,9 +2,11 @@
 // Alturas de edificio medidas por LiDAR, compartidas por quien las necesite.
 //
 // Las alturas de buildings_final.json y de building_facades.json vienen de OSM y
-// se quedan cortas: la mediana del mundo era 7,03 m contra los 9,50 m que mide
-// el vuelo LiDAR de Navarra 2017 sobre las mismas huellas, casi una planta menos
-// en todo el pueblo. Con esto cada edificio usa su altura real medida.
+// se quedan cortas: contra el vuelo LiDAR de Navarra 2017 el pueblo mide de menos
+// del orden de 3 m, casi una planta. Con esto cada edificio usa su altura real
+// medida. Las cifras exactas y cómo se obtuvieron están en el PR y se reproducen
+// con Tools/AlturasLidarEdificios.py --verificar; aquí no se clavan porque
+// dependen del emparejamiento y envejecerían mal en un comentario.
 //
 // Vive en Core y no en el módulo que la usa porque la necesitan dos: el cargador
 // de edificios (para el volumen) y el generador de fachadas (para cuántas filas

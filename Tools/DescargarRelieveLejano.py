@@ -3,7 +3,7 @@ DescargarRelieveLejano.py — Relieve lejano de Alsasua desde los servicios del 
 
 El terreno jugable son 7200x7200 m y se corta de golpe a 3,6 km del centro. Esto
 baja los 60x60 km de alrededor para poder dibujar detrás un anillo de relieve sin
-colisión, de forma que el mundo no acabe en un vacío: al oeste Aizkorri (1480 m a
+colisión, de forma que el mundo no acabe en un vacío: al oeste Aizkorri (1543 m a
 14,8 km), al este San Donato/Andía (1410 m a 15,1 km), al norte Aralar (1382 m a
 16,1 km) y al sur Urbasa/Lokiz (1375 m a 32,9 km).
 

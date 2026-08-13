@@ -96,10 +96,10 @@ def _ejecutar_modulo(nombre):
 
     mod = __import__(nombre)
     if hasattr(mod, "run"):
-        mod.run()
-    else:
-        # La mayoría de los Setup* no tienen run(), sólo un guard __main__.
-        runpy.run_path(ruta, run_name="__main__")
+        return mod.run()
+    # La mayoría de los Setup* no tienen run(), sólo un guard __main__.
+    runpy.run_path(ruta, run_name="__main__")
+    return None
 
 
 def _fase(titulo, pasos, resultados):
@@ -107,9 +107,14 @@ def _fase(titulo, pasos, resultados):
     unreal.log("--- %s ---" % titulo)
     for nombre, desc in pasos:
         try:
-            _ejecutar_modulo(nombre)
-            resultados.append((True, desc))
-            unreal.log("   OK    %s" % desc)
+            r = _ejecutar_modulo(nombre)
+            # Sólo un False explícito cuenta como fallo. Un entero NO: el
+            # importador masivo devuelve 0 cuando no hay nada que importar
+            # (AssetsImportados no se versiona), y eso es normal, no un error.
+            # Los pasos sin run() devuelven None y siguen contando como OK.
+            ok = (r is not False)
+            resultados.append((ok, desc))
+            unreal.log("   %s %s" % ("OK   " if ok else "FALLO", desc))
         except Exception as e:
             resultados.append((False, desc))
             unreal.log_warning("   FALLO %s: %s" % (desc, e))
