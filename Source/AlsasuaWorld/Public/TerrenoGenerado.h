@@ -147,6 +147,11 @@ private:
 
 	void ActualizarLODs();
 
+public:
+	// Públicos porque ATerrenoLejano necesita saber dónde acaba este terreno para
+	// dejar ahí el agujero de su anillo. Son getters puros; que la fórmula viva en
+	// un solo sitio evita que el anillo y el terreno se desalineen si cambia la
+	// resolución o la escala.
 	FVector CentroMundo() const { return FVector(191800.0, 857000.0, 0.0); }
 	double MitadMundo() const { return (ResolucionRAW - 1) * EscalaXY * 0.5; }
 };

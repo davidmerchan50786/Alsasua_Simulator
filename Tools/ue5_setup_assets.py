@@ -1,8 +1,8 @@
 r"""
 UE5 Materials & Assets Setup Script
 Ejecutar DENTRO de UE5 con Python Script Plugin habilitado:
-  Window > Developer Tools > Output Log > 
-    exec(open(r"F:\Epic Games\UE_5.7\altsasu_gtavii\UnrealProject\Tools\ue5_setup_assets.py").read())
+  Window > Developer Tools > Output Log >
+    exec(open(unreal.Paths.project_dir() + 'Tools/ue5_setup_assets.py').read())
 
 Crea materiales PBR, DataAssets y configura el sistema de assets reales.
 """

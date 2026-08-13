@@ -8,6 +8,7 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "GeoDataAlsasua.h"
+#include "AlturasLidarComun.h"
 
 void UAlsasuaBuildingInteriorSystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -40,7 +41,7 @@ int32 UAlsasuaBuildingInteriorSystem::GenerarInteriores()
 
         const int32 Id = Bld->HasField(TEXT("id")) ? Bld->GetIntegerField(TEXT("id")) : -1;
         const FString Barrio = Bld->HasField(TEXT("barrio")) ? Bld->GetStringField(TEXT("barrio")) : TEXT("Herriko");
-        const float Height = Bld->HasField(TEXT("height")) ? Bld->GetNumberField(TEXT("height")) : 10.0f;
+        float Height = Bld->HasField(TEXT("height")) ? Bld->GetNumberField(TEXT("height")) : 10.0f;
 
         const TArray<TSharedPtr<FJsonValue>>* VertsArr;
         if (!Bld->TryGetArrayField(TEXT("vertices"), VertsArr) || !VertsArr || VertsArr->Num() < 3) continue;
@@ -56,7 +57,19 @@ int32 UAlsasuaBuildingInteriorSystem::GenerarInteriores()
         CX /= VertsArr->Num();
         CZ /= VertsArr->Num();
 
+        // Dos correcciones independientes que se suman: el centro se apoya en el
+        // SUELO y no en Z=0, y la altura es la medida por LiDAR. Con la de OSM
+        // salían menos plantas de las que tiene el edificio, o sea ventanas
+        // encendidas sólo abajo y a oscuras las de arriba.
         FVector Center = UAlsasuaGeoData::RelLocalASueloUE5(GetWorld(), FVector(CX, 0.0f, CZ));
+
+        {
+            float AltLidar = 0.f;
+            int32 PlantasLidar = 0;
+            if (AlturasLidar::Buscar(FVector2D(Center.X, Center.Y), AltLidar, PlantasLidar))
+                Height = AltLidar;
+        }
+
         int32 NumPlantas = FMath::Max(1, FMath::CeilToInt(Height / 3.0f));
 
         FBuildingInterior Interior;

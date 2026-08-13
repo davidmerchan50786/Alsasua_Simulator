@@ -15,6 +15,7 @@
 #include "Materials/MaterialInterface.h"
 #include "MuestreadorAltura.h"
 #include "CargarMaterialComun.h"
+#include "AlturasLidarComun.h"
 #include "World/AlsasuaFacadeGenerator.h"
 #include "Engine/GameInstance.h"
 
@@ -101,6 +102,12 @@ void UCargadorEdificios::OnWorldBeginPlay(UWorld& InWorld)
 	// La construye ADirectorArranque tras generar el terreno; aquí aún no existe (cota 0).
 }
 
+// Contador del log de abajo. Es estático de unidad de traducción, así que
+// sobrevive entre sesiones de PIE en el mismo proceso del editor: se reinicia en
+// PrepararCarga() o el resumen iría sumando el de la partida anterior.
+namespace { int32 GSustituidas = 0; }
+
+
 float UCargadorEdificios::AlturaSuelo(const FVector2D& XY) const
 {
 	const UWorld* W = GetWorld();
@@ -121,6 +128,7 @@ void UCargadorEdificios::PrepararCarga()
 {
 	if (bPreparado) return;
 	bPreparado = true;
+	GSustituidas = 0;
 
 	const FString Ruta = FPaths::Combine(FPaths::ProjectContentDir(), RutaRelativa);
 	FString Texto;
@@ -152,7 +160,22 @@ void UCargadorEdificios::ConstruirUno(const TSharedPtr<FJsonObject>& O)
 	if (MundoXY.Num() < 3) return;
 	Centro /= MundoXY.Num();
 
-	const double AlturaM = O->HasField(TEXT("height")) ? O->GetNumberField(TEXT("height")) : 6.0;
+	double AlturaM = O->HasField(TEXT("height")) ? O->GetNumberField(TEXT("height")) : 6.0;
+	int32 PlantasJson = O->HasField(TEXT("levels")) ? (int32)O->GetNumberField(TEXT("levels")) : 1;
+
+	// Si hay huella medida por LiDAR a menos de 15 m, manda ella: es medida real
+	// del vuelo de 2017 frente a la estimación de OSM, que se queda ~3 m corta.
+	{
+		float AltLidar = 0.f;
+		int32 PlantasLidar = 0;
+		if (AlturasLidar::Buscar(Centro, AltLidar, PlantasLidar))
+		{
+			AlturaM = AltLidar;
+			PlantasJson = PlantasLidar;
+			++GSustituidas;
+		}
+	}
+
 	const float  Suelo   = AlturaSuelo(Centro) + 8.f;   // alzado sobre el terreno (anti z-fighting)
 
 	TArray<FVector2D> Local; Local.Reserve(MundoXY.Num());
@@ -166,7 +189,7 @@ void UCargadorEdificios::ConstruirUno(const TSharedPtr<FJsonObject>& O)
 
 	E->Id            = (int32)O->GetIntegerField(TEXT("id"));
 	E->NombreEdificio = O->HasField(TEXT("name")) ? O->GetStringField(TEXT("name")) : FString();
-	E->Plantas       = O->HasField(TEXT("levels")) ? (int32)O->GetNumberField(TEXT("levels")) : 1;
+	E->Plantas       = PlantasJson;   // ya lleva la medida LiDAR si la había
 
 	// Eje real del caballete (Unity dx,dz) -> dirección en el plano XY de Unreal (X=Z, Y=X).
 	FVector2D Eje(1, 0);
@@ -298,6 +321,7 @@ int32 UCargadorEdificios::Cargar()
 	const int32 MaxIter = 10000;
 	while (!PasoPresupuesto(1000.0) && ++IterGuard < MaxIter) {}
 	if (IterGuard >= MaxIter) UE_LOG(LogTemp, Warning, TEXT("[Edificios] Iteration guard reached (%d)"), MaxIter);
-	UE_LOG(LogTemp, Log, TEXT("[Edificios] %d edificios construidos"), Construidos);
+	UE_LOG(LogTemp, Log, TEXT("[Edificios] %d edificios construidos (%d con altura medida por LiDAR)"),
+		Construidos, GSustituidas);
 	return Construidos;
 }

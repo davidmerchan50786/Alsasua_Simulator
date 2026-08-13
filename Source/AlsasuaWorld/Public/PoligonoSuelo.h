@@ -25,5 +25,7 @@ public:
 	UPROPERTY(EditAnywhere, Category="Suelo") FString Tipo;
 
 private:
-	float AlturaSuelo(const FVector2D& XY) const;
+	/** Z del suelo bajo XY. Devuelve false si el trace no encuentra nada (fuera del
+	 *  terreno); 0 es una altura válida en este mundo, así que no sirve de centinela. */
+	bool AlturaSuelo(const FVector2D& XY, float& OutZ) const;
 };

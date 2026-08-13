@@ -24,7 +24,8 @@ static UMaterialInterface* CargarMaterialSueloPoligonos()
 void UCargadorPoligonos::OnWorldBeginPlay(UWorld& InWorld)
 {
 	Super::OnWorldBeginPlay(InWorld);
-	// Los construye ADirectorArranque tras generar el terreno.
+	// No autocarga a propósito: los construye ADirectorArranque en la fase 1b, que
+	// es quien sabe que el terreno ya está y que aún no hay árboles debajo.
 }
 
 void UCargadorPoligonos::Encolar(const FString& RutaRel, FColor ColorDefecto, float EpsilonCm)

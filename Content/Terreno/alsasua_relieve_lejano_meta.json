@@ -1,0 +1,38 @@
+{
+ "archivo": "alsasua_relieve_lejano_2048.r16",
+ "resolucion": 2048,
+ "lado_m": 60000.0,
+ "metrosPorMuestra": 29.296875,
+ "utm": {
+  "centro_E": 567951.0,
+  "centro_N": 4749902.0,
+  "box": [
+   537951.0,
+   4719902.0,
+   597951.0,
+   4779902.0
+  ],
+  "epsg": 25830
+ },
+ "mundo_cm": {
+  "centroX": 191800.0,
+  "centroY": 857000.0,
+  "semilado": 3000000.0
+ },
+ "codificacion": {
+  "datum_m": 0.0,
+  "paso_m": 0.03125,
+  "orden": "uint16 little-endian",
+  "fila0": "sur"
+ },
+ "altura_m": {
+  "min": 55.94550176375453,
+  "max": 1543.033153238896
+ },
+ "ortofoto": {
+  "archivo": "alsasua_relieve_lejano_4096.png",
+  "resolucion": 4096,
+  "flip": "sur arriba"
+ },
+ "verify_mdt_corr": 1.0
+}

@@ -1,6 +1,7 @@
 #include "DirectorArranque.h"
 #include "ArranqueMundo.h"
 #include "TerrenoGenerado.h"
+#include "TerrenoLejano.h"
 #include "MuestreadorAltura.h"
 #include "CargadorArboles.h"
 #include "CargadorVias.h"
@@ -91,6 +92,36 @@ void ADirectorArranque::IniciarConstruccion()
         Terreno->SetActorLabel(TEXT("Alsasua_TerrenoProcedural"));
 #endif
         UE_LOG(LogTemp, Log, TEXT("DirectorArranque: Terreno procedural spawneado."));
+    }
+
+    // --- 1b. Suelos poligonales: 5 plazas + 273 zonas verdes ---
+    // Va aquí, pegado al terreno y ANTES que árboles/calles/edificios, porque
+    // APoligonoSuelo muestrea Z con un LineTrace por ECC_Visibility que no filtra
+    // por actor: coge lo más alto que encuentre. Con el terreno solo, drapea sobre
+    // el terreno; detrás de los árboles, un vértice de zona verde bajo una copa
+    // drapearía a la altura de la copa. La colisión del terreno ya está lista a
+    // estas alturas: los árboles usan este mismo trace en la fase siguiente.
+    UCargadorPoligonos* Suelos = World->GetSubsystem<UCargadorPoligonos>();
+    if (Suelos)
+    {
+        const int32 NumSuelos = Suelos->Cargar();
+        UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d suelos poligonales (plazas + zonas verdes)."), NumSuelos);
+    }
+
+    // --- 1c. Relieve lejano: anillo de 60 km alrededor del terreno jugable ---
+    // Para que el mundo no se corte en seco a 3,6 km. Necesita el terreno ya
+    // spawneado, porque le pregunta dónde acaba para dejar ahí su agujero y funde
+    // las alturas contra su borde. No tiene colisión, así que no estorba a los
+    // muestreos de suelo por LineTrace de las fases siguientes.
+    ATerrenoLejano* Lejano = World->SpawnActor<ATerrenoLejano>(
+        ATerrenoLejano::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator);
+    if (Lejano)
+    {
+#if WITH_EDITOR
+        Lejano->SetActorLabel(TEXT("Alsasua_RelieveLejano"));
+#endif
+        const int32 NumTris = Lejano->Construir();
+        UE_LOG(LogTemp, Log, TEXT("DirectorArranque: relieve lejano con %d triangulos."), NumTris);
     }
 
     ArranqueMundo::Progreso = 0.3f;

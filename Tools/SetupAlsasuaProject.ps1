@@ -1,10 +1,18 @@
+param(
+    # CitySample vive fuera del repo y su unidad cambia de máquina: esta sí hay
+    # que poder pasarla. El valor por defecto es el de la máquina original.
+    [string]$MegascansSrc = 'J:\Documentos\Unreal Projects\CitySample\Content\Megascans'
+)
+
 $ErrorActionPreference = 'Stop'
 
-$ProjectRoot = 'F:\Epic Games\UE_5.7\altsasu_gtavii\UnrealProject'
+# La raíz es la carpeta que contiene a Tools/, donde vive este script. Antes
+# estaba fija a 'F:\Epic Games\UE_5.7\altsasu_gtavii\UnrealProject' y sólo
+# funcionaba en esa máquina, con una versión de motor que ya no es la del proyecto.
+$ProjectRoot = Split-Path -Parent $PSScriptRoot
 $ProjectFile = Join-Path $ProjectRoot 'AlsasuaSimulator.uproject'
 $DocsRoot = Join-Path $env:USERPROFILE 'Documents\Unreal Projects'
 $ProjectLink = Join-Path $DocsRoot 'AlsasuaSimulator'
-$MegascansSrc = 'J:\Documentos\Unreal Projects\CitySample\Content\Megascans'
 $MegascansDst = Join-Path $ProjectRoot 'Content\External\Megascans'
 $LogFile = Join-Path $ProjectRoot 'Tools\setup_alsasua_project.log'
 

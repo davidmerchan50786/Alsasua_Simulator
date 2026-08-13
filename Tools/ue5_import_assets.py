@@ -1,10 +1,10 @@
 r"""
 ImportAssets.bat - Batch script to import assets into UE5
 Run from: Tools/ImportAssets.bat
-Requires: UE5.7 with Python Script Plugin enabled
+Requires: UE 5.8 with Python Script Plugin enabled
 
 Open UE5 Editor, then in Output Log run:
-  exec(open(r"F:\Epic Games\UE_5.7\altsasu_gtavii\UnrealProject\Tools\ue5_setup_assets.py").read())
+  exec(open(unreal.Paths.project_dir() + 'Tools/ue5_setup_assets.py').read())
 
 Then run this script to import FBX/OBJ/USD files.
 """

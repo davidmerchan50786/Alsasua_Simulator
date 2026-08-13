@@ -13,8 +13,11 @@ import os
 import random
 import math
 
-BASE = r"F:\Epic Games\UE_5.7\altsasu_gtavii\UnrealProject\Content\Datos"
-TOOLS_BASE = r"F:\Epic Games\UE_5.7\altsasu_gtavii\UnrealProject\Tools"
+# Raiz derivada de donde vive este fichero. Antes fija a la maquina original
+# ("F:/Epic Games/UE_5.7/altsasu_gtavii/UnrealProject"), asi que solo corria alli.
+RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE = os.path.join(RAIZ, "Content", "Datos")
+TOOLS_BASE = os.path.join(RAIZ, "Tools")
 
 # ============================
 # DATOS REALES DE ALSASUA

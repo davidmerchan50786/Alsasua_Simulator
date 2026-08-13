@@ -40,6 +40,12 @@ Content/Terreno/*.xyz
 Content/Terreno/T_Satelite_Alsasua.uasset
 Content/Terreno/alsasua_satelite.jpg
 
+# Ortofoto del relieve lejano (29 MB). Iría por LFS como las otras dos, pero la
+# cuenta tiene el presupuesto de LFS de GitHub agotado y el push la rechaza.
+# La regenera Tools/DescargarRelieveLejano.py en ~80 s desde el IGN. Si algún día
+# se amplía el presupuesto, quita esta línea y añádela a .gitattributes.
+Content/Terreno/alsasua_relieve_lejano_4096.png
+
 # uassets de textura derivados (reimportables desde los PNG con ImportSatellite.py)
 Content/Textures/*.uasset
 

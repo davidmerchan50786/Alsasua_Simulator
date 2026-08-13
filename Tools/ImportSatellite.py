@@ -2,6 +2,8 @@
 ImportSatellite.py — Importa los ortomosaicos PNOA reales de Alsasua como texturas.
 Ejecutar desde el editor (consola Python): exec(open("Tools/ImportSatellite.py").read())
 """
+import os
+
 import unreal
 
 # La API de editor de 5.8 pasa por aquí: subsistemas en vez de las
@@ -17,6 +19,13 @@ FULL_NAME = "T_Satelite_Alsasua"
 TOWN_SRC = unreal.Paths.project_content_dir() + "Textures/ortofoto_pnoa_plaza_8192.png"
 TOWN_FOLDER = "/Game/Textures"
 TOWN_NAME = "T_Ortofoto"
+
+# Ortofoto de los 60x60 km para el anillo de relieve lejano (ATerrenoLejano).
+# No se versiona por su peso: la baja Tools/DescargarRelieveLejano.py. Si no está,
+# el anillo se queda con el color procedural por altitud y pendiente, que ya se ve.
+LEJOS_SRC = unreal.Paths.project_content_dir() + "Terreno/alsasua_relieve_lejano_4096.png"
+LEJOS_FOLDER = "/Game/Terreno"
+LEJOS_NAME = "T_Relieve_Lejano"
 
 
 def import_tex(src, folder, name):
@@ -47,11 +56,19 @@ def run():
     ok_full = import_tex(FULL_SRC, FULL_FOLDER, FULL_NAME)
     ok_town = import_tex(TOWN_SRC, TOWN_FOLDER, TOWN_NAME)
 
+    if os.path.exists(LEJOS_SRC):
+        import_tex(LEJOS_SRC, LEJOS_FOLDER, LEJOS_NAME)
+    else:
+        unreal.log_warning(
+            "Sin %s: el relieve lejano irá sólo con color procedural. "
+            "Bájalo con Tools/DescargarRelieveLejano.py." % LEJOS_SRC)
+
     # Regenerar los materiales que drapean las ortofotos (bounds UTM corregidos)
     ok_mat = True
     for cls, fn in [
         ("CreadorMaterialTerrenoOrto", "crear_material_terreno_orto"),
         ("CreadorMaterialTejadoOrto", "crear_material_tejado_orto"),
+        ("CreadorMaterialRelieveLejano", "crear_material_relieve_lejano"),
     ]:
         try:
             ok = getattr(getattr(unreal, cls), fn)()
@@ -67,8 +84,13 @@ def run():
         unreal.log("M_TerrenoAlsasua eliminado — se regenerará con satélite en el próximo Play")
 
     unreal.log(f"IMPORT_DONE full={ok_full} town={ok_town} mats={ok_mat}")
-    unreal.SystemLibrary.execute_console_command(None, "quit")
+    return ok_full and ok_town and ok_mat
 
 
 if __name__ == "__main__":
     run()
+    # El quit va aquí y no dentro de run(): este script se lanzaba suelto y en
+    # modo desatendido interesa que el editor se cierre al acabar, pero RunAll.py
+    # lo llama como un paso más y cerrarle el editor a media tanda se llevaba por
+    # delante todo lo que venía detrás.
+    unreal.SystemLibrary.execute_console_command(None, "quit")

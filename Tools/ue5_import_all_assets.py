@@ -23,7 +23,6 @@ UE_CONTENT = "/Game/AssetsImportados"
 def import_file(filepath, dest_folder):
     filename = os.path.basename(filepath)
     asset_name = os.path.splitext(filename)[0]
-    asset_path = os.path.join(dest_folder, asset_name)
 
     task = unreal.AssetImportTask()
     task.set_editor_property("filename", filepath)
@@ -48,18 +47,29 @@ def import_file(filepath, dest_folder):
     # glTF/GLB van por Interchange y no llevan options: unreal.GltfImportUI no
     # existe (era un AttributeError en cada .gltf, y el except de RunAll lo
     # tapaba). Sin options se usa la pipeline por defecto, que importa malla,
-    # materiales y texturas — lo mismo que pedían las líneas que había.
-
-    compat.importar_tareas([task])
-    if task.get_editor_property("result"):
-        names = task.get_editor_property("imported_object_names")
-        unreal.log("  Imported: {} -> {}".format(asset_name, dest_folder))
-    else:
-        unreal.log_warning("  FAILED: {}".format(asset_name))
+    # materiales y texturas.
+    #
+    # La llamada va por compat.importar_tareas, que además de usar la API buena
+    # devuelve las rutas creadas: sirve para saber si la importación hizo algo,
+    # que es más fiable que mirar la propiedad "result" de la tarea.
+    creados = compat.importar_tareas([task])
+    if creados:
+        unreal.log("  Importado: {} -> {} ({} assets)".format(asset_name, dest_folder, len(creados)))
+        return True
+    unreal.log_warning("  FALLO: {} ({})".format(asset_name, filepath))
+    return False
 
 
 def main():
+    if not os.path.isdir(ASSETS_ROOT):
+        # AssetsImportados no se versiona: en un clon limpio no está y no pasa
+        # nada, pero conviene decirlo en vez de reportar "0 ficheros" sin más.
+        unreal.log_warning(
+            "No existe {}: no hay nada que importar. Baja los packs primero.".format(ASSETS_ROOT))
+        return 0
+
     count = 0
+    ok = 0
     for root, dirs, files in os.walk(ASSETS_ROOT):
         for f in files:
             ext = os.path.splitext(f)[1].lower()
@@ -67,14 +77,25 @@ def main():
                 continue
 
             filepath = os.path.join(root, f)
-            rel = os.path.relpath(root, ASSETS_ROOT)
-            dest = os.path.join(UE_CONTENT, rel.replace("\\", "/")).replace("\\", "/")
+            rel = os.path.relpath(root, ASSETS_ROOT).replace("\\", "/")
+            # relpath devuelve "." para los ficheros que están en la raíz, y
+            # entonces salía "/Game/AssetsImportados/." — una ruta de contenido
+            # inválida, así que esos assets no se importaban. Las rutas /Game se
+            # componen con "/" siempre, nunca con os.path.join (en Windows mete
+            # barras invertidas).
+            dest = UE_CONTENT if rel in (".", "") else UE_CONTENT + "/" + rel
 
-            unreal.log("Importing: {} -> {}".format(f, dest))
-            import_file(filepath, dest)
+            if import_file(filepath, dest):
+                ok += 1
             count += 1
 
-    unreal.log("=== DONE: {} files processed ===".format(count))
+    unreal.log("=== Importacion: {}/{} ficheros ===".format(ok, count))
+    return ok
+
+
+def run():
+    """Punto de entrada para RunAll.py."""
+    return main()
 
 
 if __name__ == "__main__":

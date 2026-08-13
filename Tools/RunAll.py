@@ -39,6 +39,17 @@ import unreal
 TOOLS_DIR = os.path.join(unreal.Paths.project_dir(), "Tools")
 
 
+# La importación va la PRIMERA de todo y antes faltaba entera: RunAll saltaba
+# directo a materiales y capas visuales, así que en un clon limpio los .gltf y
+# .fbx seguían siendo ficheros sueltos en disco, nunca uassets. AlsasuaMallaFab
+# escaneaba /Game/ModelosDescargados, no encontraba nada, y todo el pueblo caía a
+# formas básicas con los modelos descargados al lado sin usar.
+PASOS_IMPORT = [
+    ("ImportarModelosDescargados", "Props CC0 de Poly Haven (glTF)"),
+    ("ue5_import_all_assets",      "Mallas de AssetsImportados (FBX/OBJ/glTF)"),
+    ("ImportSatellite",            "Ortofotos PNOA + materiales que las drapean"),
+]
+
 # (módulo, descripción). Los que exponen run() se importan y se llama a run();
 # el resto se ejecutan con runpy, que activa su guard __main__.
 PASOS_NIVEL = [
@@ -85,10 +96,10 @@ def _ejecutar_modulo(nombre):
 
     mod = __import__(nombre)
     if hasattr(mod, "run"):
-        mod.run()
-    else:
-        # La mayoría de los Setup* no tienen run(), sólo un guard __main__.
-        runpy.run_path(ruta, run_name="__main__")
+        return mod.run()
+    # La mayoría de los Setup* no tienen run(), sólo un guard __main__.
+    runpy.run_path(ruta, run_name="__main__")
+    return None
 
 
 def _fase(titulo, pasos, resultados):
@@ -96,9 +107,14 @@ def _fase(titulo, pasos, resultados):
     unreal.log("--- %s ---" % titulo)
     for nombre, desc in pasos:
         try:
-            _ejecutar_modulo(nombre)
-            resultados.append((True, desc))
-            unreal.log("   OK    %s" % desc)
+            r = _ejecutar_modulo(nombre)
+            # Sólo un False explícito cuenta como fallo. Un entero NO: el
+            # importador masivo devuelve 0 cuando no hay nada que importar
+            # (AssetsImportados no se versiona), y eso es normal, no un error.
+            # Los pasos sin run() devuelven None y siguen contando como OK.
+            ok = (r is not False)
+            resultados.append((ok, desc))
+            unreal.log("   %s %s" % ("OK   " if ok else "FALLO", desc))
         except Exception as e:
             resultados.append((False, desc))
             unreal.log_warning("   FALLO %s: %s" % (desc, e))
@@ -113,6 +129,11 @@ def run():
         sys.path.insert(0, TOOLS_DIR)
 
     resultados = []
+
+    # 0. Importar: los ficheros de disco tienen que ser uassets antes de que
+    #    nadie los busque. Los materiales muestrean texturas y MallaFab escanea
+    #    el registro de assets; si esto no ha corrido, ambos encuentran vacío.
+    _fase("0. Importación de assets", PASOS_IMPORT, resultados)
 
     # 1. Ortofoto + MPC_Clima + materiales, en el orden que impone el C++.
     unreal.log("")

@@ -8,6 +8,7 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "GeoDataAlsasua.h"
+#include "AlturasLidarComun.h"
 
 void UAlsasuaRooftopDetailSystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -36,7 +37,7 @@ int32 UAlsasuaRooftopDetailSystem::ColocarDetallesCubierta()
         if (!Bld) continue;
 
         const int32 Id = Bld->GetIntegerField(TEXT("id"));
-        const float Height = Bld->HasField(TEXT("height")) ? Bld->GetNumberField(TEXT("height")) : 10.0f;
+        float Height = Bld->HasField(TEXT("height")) ? Bld->GetNumberField(TEXT("height")) : 10.0f;
         const FString Barrio = Bld->HasField(TEXT("barrio")) ? Bld->GetStringField(TEXT("barrio")) : TEXT("");
         const FString RoofTipo = Bld->HasField(TEXT("roof_tipo_real")) ? Bld->GetStringField(TEXT("roof_tipo_real")) : TEXT("desconocido");
 
@@ -54,9 +55,19 @@ int32 UAlsasuaRooftopDetailSystem::ColocarDetallesCubierta()
         CX /= VertsArr->Num();
         CZ /= VertsArr->Num();
 
-        // Sobre el edificio, que a su vez está sobre el terreno: antes la cota
-        // era sólo la altura del edificio y las antenas y depósitos salían a
-        // media montaña por debajo del pueblo.
+        // Dos correcciones que se suman:
+        //  - La cota parte del SUELO (RelLocalASueloUE5) y no de Z=0, o las
+        //    antenas y depósitos salían a media montaña por debajo del pueblo.
+        //  - La altura es la medida por LiDAR y no la de OSM, ~3 m más baja, con
+        //    la que las chimeneas quedaban enterradas dentro del tejado.
+        {
+            float AltLidar = 0.f;
+            int32 PlantasLidar = 0;
+            const FVector Plano = UAlsasuaGeoData::RelLocalToUE5(FVector(CX, 0.0f, CZ));
+            if (AlturasLidar::Buscar(FVector2D(Plano.X, Plano.Y), AltLidar, PlantasLidar))
+                Height = AltLidar;
+        }
+
         FVector RoofCenter = UAlsasuaGeoData::RelLocalASueloUE5(GetWorld(),
             FVector(CX, 0.0f, CZ), Height * 100.0f);
 
