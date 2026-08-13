@@ -6,6 +6,11 @@ Ejecutar en editor:  Tools > Execute Python Script
 """
 import unreal
 
+# La API de editor de 5.8 pasa por aquí: subsistemas en vez de las
+# librerías obsoletas, y los nombres que no existían. Ver ue5_compat.py.
+import sys as _sys, os as _os
+_sys.path.append(_os.path.join(unreal.Paths.project_dir(), "Tools"))
+import ue5_compat as compat
 
 def add_facade_details():
     """Añade UAlsasuaFacadeDetailSystem a edificios."""
@@ -15,7 +20,7 @@ def add_facade_details():
         unreal.log_error("[FacadeDetails] No se pudo cargar UAlsasuaFacadeDetailSystem")
         return
 
-    actors = unreal.EditorLevelLibrary.get_all_level_actors_of_class(
+    actors = compat.actores().get_all_level_actors_of_class(
         unreal.StaticMeshActor)
     count = 0
 
@@ -25,7 +30,7 @@ def add_facade_details():
                                     "pisos", "vivienda"]):
             existing = actor.get_component_by_class(facade_class)
             if not existing:
-                comp = unreal.add_component_to_actor(actor, facade_class)
+                comp = compat.anadir_componente(actor, facade_class)
                 if comp:
                     count += 1
 

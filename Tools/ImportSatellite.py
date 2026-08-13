@@ -6,6 +6,12 @@ import os
 
 import unreal
 
+# La API de editor de 5.8 pasa por aquí: subsistemas en vez de las
+# librerías obsoletas, y los nombres que no existían. Ver ue5_compat.py.
+import sys as _sys, os as _os
+_sys.path.append(_os.path.join(unreal.Paths.project_dir(), "Tools"))
+import ue5_compat as compat
+
 FULL_SRC = unreal.Paths.project_content_dir() + "Terreno/alsasua_satelite_pnoa_8192.png"
 FULL_FOLDER = "/Game/Terreno"
 FULL_NAME = "T_Satelite_Alsasua"
@@ -34,12 +40,12 @@ def import_tex(src, folder, name):
     unreal.AssetToolsHelpers.get_asset_tools().import_asset_tasks([task])
 
     tex_path = f"{folder}/{name}"
-    tex = unreal.EditorAssetLibrary.load_asset(tex_path)
+    tex = compat.assets().load_asset(tex_path)
     if tex:
         tex.set_editor_property("srgb", True)
         tex.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_DEFAULT)
         tex.set_editor_property("lod_group", unreal.TextureGroup.TEXTUREGROUP_WORLD)
-        unreal.EditorAssetLibrary.save_asset(tex_path, False)
+        compat.assets().save_asset(tex_path, False)
         unreal.log(f"Textura importada: {tex_path}")
         return True
     unreal.log_error(f"No se pudo importar la textura: {tex_path}")
@@ -73,8 +79,8 @@ def run():
 
     # Forzar regeneración del material del terreno con el nuevo satélite
     mat_path = "/Game/Materiales/M_TerrenoAlsasua"
-    if unreal.EditorAssetLibrary.does_asset_exist(mat_path):
-        unreal.EditorAssetLibrary.delete_asset(mat_path)
+    if compat.assets().does_asset_exist(mat_path):
+        compat.assets().delete_asset(mat_path)
         unreal.log("M_TerrenoAlsasua eliminado — se regenerará con satélite en el próximo Play")
 
     unreal.log(f"IMPORT_DONE full={ok_full} town={ok_town} mats={ok_mat}")

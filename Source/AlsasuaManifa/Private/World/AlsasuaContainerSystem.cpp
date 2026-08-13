@@ -58,7 +58,7 @@ int32 UAlsasuaContainerSystem::ColocarContenedores()
         const FString Barrio = Obj->GetStringField(TEXT("barrio"));
         const float Rot = Obj->HasField(TEXT("rotacion")) ? Obj->GetNumberField(TEXT("rotacion")) : 0.0f;
 
-        const FVector Pos = UAlsasuaGeoData::RelLocalToUE5(FVector(X, 0.0f, Z));
+        const FVector Pos = UAlsasuaGeoData::RelLocalASueloUE5(GetWorld(), FVector(X, 0.0f, Z));
 
         int32 TipoIdx = Placed % TiposContenedor.Num();
         const auto& TipoInfo = TiposContenedor[TipoIdx];
@@ -125,6 +125,7 @@ int32 UAlsasuaContainerSystem::ColocarContenedoresFallback()
         FString Barrio = Barrios[FMath::RandRange(0, Barrios.Num() - 1)];
         FVector Centro = UAlsasuaGeoData::AbsLocalToUE5(UAlsasuaGeoData::BarrioCenter(Barrio));
         FVector Pos = Centro + FVector(FMath::RandRange(-1000.0f, 1000.0f), FMath::RandRange(-1000.0f, 1000.0f), 0);
+        Pos.Z = UAlsasuaGeoData::AlturaSueloUE5(GetWorld(), Pos.X, Pos.Y);
 
         const auto& TipoInfo = TiposContenedor[FMath::RandRange(0, TiposContenedor.Num() - 1)];
         float Rot = FMath::RandRange(0.0f, 360.0f);

@@ -1,0 +1,3059 @@
+[
+ {
+  "id": 91927762,
+  "calle": "Foruen Plaza",
+  "calle_x": -10.66,
+  "calle_z": -344.46,
+  "portal": "4"
+ },
+ {
+  "id": 103171607,
+  "calle": "San Pedro bidea",
+  "calle_x": 165.22,
+  "calle_z": 727.28,
+  "portal": "51"
+ },
+ {
+  "id": 103486726,
+  "calle": "Santokristobarren",
+  "calle_x": 282.15,
+  "calle_z": -307.9,
+  "portal": "1"
+ },
+ {
+  "id": 103563090,
+  "calle": "Zelai",
+  "calle_x": -452.98,
+  "calle_z": 137.43,
+  "portal": "89"
+ },
+ {
+  "id": 103563249,
+  "calle": "Zelai",
+  "calle_x": -428.62,
+  "calle_z": 95.69,
+  "portal": "87"
+ },
+ {
+  "id": 103565588,
+  "calle": "Zelandi",
+  "calle_x": -432.09,
+  "calle_z": -244.63,
+  "portal": "1"
+ },
+ {
+  "id": 297053428,
+  "calle": "Erkuden",
+  "calle_x": -200.38,
+  "calle_z": -459.87,
+  "portal": "2"
+ },
+ {
+  "id": 297055048,
+  "calle": "Intxostia",
+  "calle_x": -230.99,
+  "calle_z": -447.55,
+  "portal": "11"
+ },
+ {
+  "id": 297055050,
+  "calle": "Intxostia",
+  "calle_x": -239.06,
+  "calle_z": -430.24,
+  "portal": "9"
+ },
+ {
+  "id": 297055051,
+  "calle": "Intxostia",
+  "calle_x": -250.56,
+  "calle_z": -405.54,
+  "portal": "3-5-7"
+ },
+ {
+  "id": 297055411,
+  "calle": "Intxostia",
+  "calle_x": -263.28,
+  "calle_z": -378.25,
+  "portal": "1"
+ },
+ {
+  "id": 297057690,
+  "calle": "Txikipolita",
+  "calle_x": 38.69,
+  "calle_z": -487.73,
+  "portal": "13"
+ },
+ {
+  "id": 297060217,
+  "calle": "Galtzada",
+  "calle_x": 373.19,
+  "calle_z": -256.98,
+  "portal": "14"
+ },
+ {
+  "id": 297067224,
+  "calle": "San Juan",
+  "portal": "15"
+ },
+ {
+  "id": 297067225,
+  "calle": "San Juan",
+  "portal": "13"
+ },
+ {
+  "id": 297067227,
+  "calle": "San Juan",
+  "portal": "9"
+ },
+ {
+  "id": 297067228,
+  "calle": "San Juan",
+  "portal": "7"
+ },
+ {
+  "id": 297067229,
+  "calle": "San Juan",
+  "portal": "5"
+ },
+ {
+  "id": 297067230,
+  "calle": "San Juan",
+  "portal": "3"
+ },
+ {
+  "id": 297067231,
+  "calle": "San Juan",
+  "portal": "1"
+ },
+ {
+  "id": 297071824,
+  "calle": "Gartzia Ximenez",
+  "portal": "2"
+ },
+ {
+  "id": 297071827,
+  "calle": "Gartzia Ximenez",
+  "portal": "4"
+ },
+ {
+  "id": 297071829,
+  "calle": "Gartzia Ximenez",
+  "portal": "6"
+ },
+ {
+  "id": 297071831,
+  "calle": "Gartzia Ximenez",
+  "calle_x": -109.56,
+  "calle_z": -393.44,
+  "portal": "8"
+ },
+ {
+  "id": 297071837,
+  "calle": "Gartzia Ximenez",
+  "calle_x": -109.56,
+  "calle_z": -393.44,
+  "portal": "10"
+ },
+ {
+  "id": 297071839,
+  "calle": "Gartzia Ximenez",
+  "calle_x": -109.56,
+  "calle_z": -393.44,
+  "portal": "12"
+ },
+ {
+  "id": 297071840,
+  "calle": "Gartzia Ximenez",
+  "calle_x": -106.05,
+  "calle_z": -390.95,
+  "portal": "14"
+ },
+ {
+  "id": 297071841,
+  "calle": "Gartzia Ximenez",
+  "calle_x": -91.03,
+  "calle_z": -363.4,
+  "portal": "16"
+ },
+ {
+  "id": 297071842,
+  "calle": "Gartzia Ximenez",
+  "calle_x": -108.48,
+  "calle_z": -392.67,
+  "portal": "18"
+ },
+ {
+  "id": 297071843,
+  "calle": "Gartzia Ximenez",
+  "calle_x": -102.9,
+  "calle_z": -388.73,
+  "portal": "20"
+ },
+ {
+  "id": 297071844,
+  "calle": "Gartzia Ximenez",
+  "calle_x": -96.21,
+  "calle_z": -384.0,
+  "portal": "22"
+ },
+ {
+  "id": 297076420,
+  "calle": "Gartzia Ximenez",
+  "calle_x": -88.41,
+  "calle_z": -378.36,
+  "portal": "28"
+ },
+ {
+  "id": 297076423,
+  "calle": "Gartzia Ximenez",
+  "calle_x": -91.29,
+  "calle_z": -380.52,
+  "portal": "30"
+ },
+ {
+  "id": 297076433,
+  "calle": "Gartzia Ximenez",
+  "calle_x": -109.56,
+  "calle_z": -393.44,
+  "portal": "38"
+ },
+ {
+  "id": 297076438,
+  "calle": "Gartzia Ximenez",
+  "calle_x": -42.17,
+  "calle_z": -423.01,
+  "portal": "40"
+ },
+ {
+  "id": 297076441,
+  "calle": "Gartzia Ximenez",
+  "calle_x": -42.17,
+  "calle_z": -423.01,
+  "portal": "42"
+ },
+ {
+  "id": 297082259,
+  "calle": "Pilotajoko Zeharbidea",
+  "calle_x": -214.91,
+  "calle_z": -379.64,
+  "portal": "8"
+ },
+ {
+  "id": 297085420,
+  "calle": "Gartzia Ximenez",
+  "calle_x": -102.61,
+  "calle_z": -388.52,
+  "portal": "26"
+ },
+ {
+  "id": 297085424,
+  "calle": "Santa Kruz",
+  "calle_x": 124.7,
+  "calle_z": -391.77,
+  "portal": "25"
+ },
+ {
+  "id": 297085425,
+  "calle": "Santa Kruz",
+  "calle_x": 121.82,
+  "calle_z": -388.11,
+  "portal": "23"
+ },
+ {
+  "id": 297085426,
+  "calle": "Santa Kruz",
+  "calle_x": 113.98,
+  "calle_z": -378.83,
+  "portal": "21"
+ },
+ {
+  "id": 297085427,
+  "calle": "Santa Kruz",
+  "calle_x": 109.39,
+  "calle_z": -373.49,
+  "portal": "19"
+ },
+ {
+  "id": 297085430,
+  "calle": "Galtzada",
+  "calle_x": 128.34,
+  "calle_z": -348.48,
+  "portal": "2"
+ },
+ {
+  "id": 297085431,
+  "calle": "Santa Kruz",
+  "calle_x": 128.02,
+  "calle_z": -395.99,
+  "portal": "27"
+ },
+ {
+  "id": 297085432,
+  "calle": "Santa Kruz",
+  "calle_x": 137.44,
+  "calle_z": -405.46,
+  "portal": "29"
+ },
+ {
+  "id": 297086963,
+  "calle": "Ualdera",
+  "calle_x": 168.95,
+  "calle_z": -391.96,
+  "portal": "3"
+ },
+ {
+  "id": 297092152,
+  "calle": "Santa Kruz",
+  "calle_x": 123.08,
+  "calle_z": -389.71,
+  "portal": "26"
+ },
+ {
+  "id": 297092153,
+  "calle": "Santa Kruz",
+  "calle_x": 126.94,
+  "calle_z": -394.62,
+  "portal": "28"
+ },
+ {
+  "id": 297092154,
+  "calle": "Santa Kruz",
+  "calle_x": 140.37,
+  "calle_z": -411.52,
+  "portal": "30"
+ },
+ {
+  "id": 297092155,
+  "calle": "Santa Kruz",
+  "calle_x": 134.1,
+  "calle_z": -403.22,
+  "portal": "32"
+ },
+ {
+  "id": 297092156,
+  "calle": "Santa Kruz",
+  "calle_x": 141.57,
+  "calle_z": -414.01,
+  "portal": "34"
+ },
+ {
+  "id": 297092157,
+  "calle": "Santa Kruz",
+  "calle_x": 144.37,
+  "calle_z": -419.8,
+  "portal": "36"
+ },
+ {
+  "id": 297092158,
+  "calle": "Santa Kruz",
+  "calle_x": 151.01,
+  "calle_z": -433.54,
+  "portal": "35"
+ },
+ {
+  "id": 297092162,
+  "calle": "Soldaubide",
+  "calle_x": 181.69,
+  "calle_z": -401.34,
+  "portal": "1"
+ },
+ {
+  "id": 297092163,
+  "calle": "Amandrea",
+  "calle_x": 239.02,
+  "calle_z": -377.09,
+  "portal": "12"
+ },
+ {
+  "id": 297094485,
+  "calle": "Santa Kruz",
+  "calle_x": 109.74,
+  "calle_z": -373.9,
+  "portal": "22"
+ },
+ {
+  "id": 297094486,
+  "calle": "Santa Kruz",
+  "calle_x": 115.03,
+  "calle_z": -380.05,
+  "portal": "24"
+ },
+ {
+  "id": 297094752,
+  "calle": "Santo Cristo de Otadia",
+  "calle_x": 90.61,
+  "calle_z": -372.55,
+  "portal": "12"
+ },
+ {
+  "id": 297097880,
+  "calle": "Galtzada",
+  "calle_x": 110.86,
+  "calle_z": -360.21,
+  "portal": "1"
+ },
+ {
+  "id": 297097881,
+  "calle": "Galtzada",
+  "calle_x": 119.43,
+  "calle_z": -354.46,
+  "portal": "3"
+ },
+ {
+  "id": 297097882,
+  "calle": "Galtzada",
+  "calle_x": 132.86,
+  "calle_z": -345.44,
+  "portal": "5"
+ },
+ {
+  "id": 297097886,
+  "calle": "Amandrea",
+  "portal": "1"
+ },
+ {
+  "id": 297097887,
+  "calle": "Amandrea",
+  "portal": "2"
+ },
+ {
+  "id": 297097888,
+  "calle": "Amandrea",
+  "calle_x": 212.88,
+  "calle_z": -266.96,
+  "portal": "3"
+ },
+ {
+  "id": 297097889,
+  "calle": "Larrainbide",
+  "calle_x": 141.32,
+  "calle_z": -250.15,
+  "portal": "2"
+ },
+ {
+  "id": 297100824,
+  "calle": "Santa Kruz",
+  "calle_x": 92.2,
+  "calle_z": -344.08,
+  "portal": "17"
+ },
+ {
+  "id": 297100827,
+  "calle": "Santa Kruz",
+  "calle_x": 89.74,
+  "calle_z": -339.01,
+  "portal": "15"
+ },
+ {
+  "id": 297100829,
+  "calle": "Santa Kruz",
+  "calle_x": 85.8,
+  "calle_z": -330.9,
+  "portal": "13"
+ },
+ {
+  "id": 297100832,
+  "calle": "Santa Kruz",
+  "calle_x": 82.03,
+  "calle_z": -323.13,
+  "portal": "11"
+ },
+ {
+  "id": 297100834,
+  "calle": "Santa Kruz",
+  "calle_x": 83.59,
+  "calle_z": -304.93,
+  "portal": "9"
+ },
+ {
+  "id": 297100837,
+  "calle": "Santa Kruz",
+  "calle_x": 73.26,
+  "calle_z": -289.86,
+  "portal": "1"
+ },
+ {
+  "id": 297100840,
+  "calle": "Santa Kruz",
+  "calle_x": 96.52,
+  "calle_z": -298.59,
+  "portal": "3"
+ },
+ {
+  "id": 297100842,
+  "calle": "Santa Kruz",
+  "calle_x": 105.33,
+  "calle_z": -295.64,
+  "portal": "5"
+ },
+ {
+  "id": 297100843,
+  "calle": "Santa Kruz",
+  "calle_x": 108.33,
+  "calle_z": -294.64,
+  "portal": "7"
+ },
+ {
+  "id": 297100855,
+  "calle": "Santa Kruz",
+  "calle_x": 75.81,
+  "calle_z": -295.8,
+  "portal": "4"
+ },
+ {
+  "id": 297100858,
+  "calle": "Santa Kruz",
+  "calle_x": 77.34,
+  "calle_z": -313.49,
+  "portal": "6"
+ },
+ {
+  "id": 297100861,
+  "calle": "Santa Kruz",
+  "calle_x": 80.94,
+  "calle_z": -320.89,
+  "portal": "8"
+ },
+ {
+  "id": 297100864,
+  "calle": "Santa Kruz",
+  "calle_x": 84.1,
+  "calle_z": -327.4,
+  "portal": "10"
+ },
+ {
+  "id": 297102366,
+  "calle": "Santo Cristo de Otadia",
+  "calle_x": 65.97,
+  "calle_z": -368.42,
+  "portal": "7"
+ },
+ {
+  "id": 297102367,
+  "calle": "Santo Cristo de Otadia",
+  "calle_x": 75.19,
+  "calle_z": -370.69,
+  "portal": "8"
+ },
+ {
+  "id": 297102368,
+  "calle": "Santa Kruz",
+  "calle_x": 98.38,
+  "calle_z": -356.8,
+  "portal": "20"
+ },
+ {
+  "id": 297102369,
+  "calle": "Santa Kruz",
+  "calle_x": 95.27,
+  "calle_z": -350.41,
+  "portal": "18"
+ },
+ {
+  "id": 297102370,
+  "calle": "Santa Kruz",
+  "calle_x": 87.37,
+  "calle_z": -334.14,
+  "portal": "12"
+ },
+ {
+  "id": 297102371,
+  "calle": "Santa Kruz",
+  "calle_x": 90.51,
+  "calle_z": -340.6,
+  "portal": "14"
+ },
+ {
+  "id": 297102372,
+  "calle": "Santa Kruz",
+  "calle_x": 92.93,
+  "calle_z": -345.58,
+  "portal": "16"
+ },
+ {
+  "id": 297102373,
+  "calle": "Santo Cristo de Otadia",
+  "calle_x": 52.85,
+  "calle_z": -367.14,
+  "portal": "6"
+ },
+ {
+  "id": 297102376,
+  "calle": "Foruen Plaza",
+  "calle_x": -10.66,
+  "calle_z": -344.46,
+  "portal": "5"
+ },
+ {
+  "id": 297102377,
+  "calle": "Foruen Plaza",
+  "calle_x": -4.68,
+  "calle_z": -341.48,
+  "portal": "6"
+ },
+ {
+  "id": 297103561,
+  "calle": "Santo Cristo de Otadia",
+  "calle_x": 33.03,
+  "calle_z": -368.66,
+  "portal": "21"
+ },
+ {
+  "id": 297103608,
+  "calle": "Foruen Plaza",
+  "calle_x": -5.72,
+  "calle_z": -401.34,
+  "portal": "19"
+ },
+ {
+  "id": 297107848,
+  "calle": "Iortia",
+  "calle_x": -93.22,
+  "calle_z": -472.3,
+  "portal": "1"
+ },
+ {
+  "id": 297139662,
+  "calle": "Foruen Plaza",
+  "calle_x": -2.4,
+  "calle_z": -340.35,
+  "portal": "8"
+ },
+ {
+  "id": 297139663,
+  "calle": "Foruen Plaza",
+  "calle_x": 0.07,
+  "calle_z": -339.12,
+  "portal": "9"
+ },
+ {
+  "id": 297142263,
+  "calle": "Santo Cristo de Otadia",
+  "calle_x": 24.95,
+  "calle_z": -371.54,
+  "portal": "1"
+ },
+ {
+  "id": 297142264,
+  "calle": "Santo Cristo de Otadia",
+  "calle_x": 28.1,
+  "calle_z": -370.07,
+  "portal": "2"
+ },
+ {
+  "id": 297142265,
+  "calle": "Santo Cristo de Otadia",
+  "calle_x": 30.0,
+  "calle_z": -369.19,
+  "portal": "3"
+ },
+ {
+  "id": 297142266,
+  "calle": "Santo Cristo de Otadia",
+  "calle_x": 37.55,
+  "calle_z": -367.88,
+  "portal": "4"
+ },
+ {
+  "id": 297142267,
+  "calle": "Santo Cristo de Otadia",
+  "calle_x": 47.19,
+  "calle_z": -366.21,
+  "portal": "5"
+ },
+ {
+  "id": 297142268,
+  "calle": "Santo Cristo de Otadia",
+  "calle_x": 65.99,
+  "calle_z": -368.42,
+  "portal": "9"
+ },
+ {
+  "id": 297142269,
+  "calle": "Santo Cristo de Otadia",
+  "calle_x": 70.31,
+  "calle_z": -369.28,
+  "portal": "10"
+ },
+ {
+  "id": 297142270,
+  "calle": "Santo Cristo de Otadia",
+  "calle_x": 73.28,
+  "calle_z": -370.14,
+  "portal": "11"
+ },
+ {
+  "id": 297142271,
+  "calle": "Santo Cristo de Otadia",
+  "calle_x": 81.39,
+  "calle_z": -372.49,
+  "portal": "19"
+ },
+ {
+  "id": 297143822,
+  "calle": "Ferialeku",
+  "calle_x": 73.43,
+  "calle_z": -423.58,
+  "portal": "1"
+ },
+ {
+  "id": 297143823,
+  "calle": "Ferialeku",
+  "calle_x": 70.68,
+  "calle_z": -425.14,
+  "portal": "3"
+ },
+ {
+  "id": 297143825,
+  "calle": "Santo Cristo de Otadia",
+  "calle_x": 37.87,
+  "calle_z": -367.82,
+  "portal": "20"
+ },
+ {
+  "id": 297143826,
+  "calle": "Santo Cristo de Otadia",
+  "calle_x": 19.83,
+  "calle_z": -373.93,
+  "portal": "22"
+ },
+ {
+  "id": 297144836,
+  "calle": "Foruen Plaza",
+  "calle_x": -4.44,
+  "calle_z": -403.99,
+  "portal": "17"
+ },
+ {
+  "id": 297144837,
+  "calle": "Foruen Plaza",
+  "calle_x": -4.67,
+  "calle_z": -403.5,
+  "portal": "18"
+ },
+ {
+  "id": 297144838,
+  "calle": "Foruen Plaza",
+  "calle_x": 32.77,
+  "calle_z": -402.5,
+  "portal": "11"
+ },
+ {
+  "id": 297144840,
+  "calle": "Foruen Plaza",
+  "calle_x": 31.33,
+  "calle_z": -403.13,
+  "portal": "12"
+ },
+ {
+  "id": 297144841,
+  "calle": "Foruen Plaza",
+  "calle_x": 32.76,
+  "calle_z": -402.5,
+  "portal": "13"
+ },
+ {
+  "id": 297144842,
+  "calle": "Foruen Plaza",
+  "calle_x": 32.51,
+  "calle_z": -419.75,
+  "portal": "14"
+ },
+ {
+  "id": 297145359,
+  "calle": "Foruen Plaza",
+  "calle_x": -5.72,
+  "calle_z": -401.34,
+  "portal": "20"
+ },
+ {
+  "id": 297145360,
+  "calle": "Foruen Plaza",
+  "calle_x": -10.66,
+  "calle_z": -344.46,
+  "portal": "21"
+ },
+ {
+  "id": 297145361,
+  "calle": "Gartzia Ximenez",
+  "calle_x": -45.48,
+  "calle_z": -371.6,
+  "portal": "15"
+ },
+ {
+  "id": 297145362,
+  "calle": "Foruen Plaza",
+  "calle_x": -10.66,
+  "calle_z": -344.46,
+  "portal": "22"
+ },
+ {
+  "id": 297145363,
+  "calle": "Gartzia Ximenez",
+  "calle_x": -48.09,
+  "calle_z": -374.28,
+  "portal": "13"
+ },
+ {
+  "id": 297145824,
+  "calle": "Foruen Plaza",
+  "portal": "23"
+ },
+ {
+  "id": 297145825,
+  "calle": "Gartzia Ximenez",
+  "calle_x": -81.72,
+  "calle_z": -373.11,
+  "portal": "9"
+ },
+ {
+  "id": 297145826,
+  "calle": "Gartzia Ximenez",
+  "calle_x": -58.51,
+  "calle_z": -387.2,
+  "portal": "11"
+ },
+ {
+  "id": 297145827,
+  "calle": "Foruen Plaza",
+  "portal": "1"
+ },
+ {
+  "id": 297145828,
+  "calle": "Foruen Plaza",
+  "portal": "2"
+ },
+ {
+  "id": 297145829,
+  "calle": "Foruen Plaza",
+  "calle_x": -10.66,
+  "calle_z": -344.46,
+  "portal": "3"
+ },
+ {
+  "id": 297145830,
+  "calle": "Zubeztia",
+  "calle_x": -73.89,
+  "calle_z": -330.75,
+  "portal": "4"
+ },
+ {
+  "id": 297146107,
+  "calle": "Arkangoa",
+  "calle_x": -71.0,
+  "calle_z": -313.38,
+  "portal": "2"
+ },
+ {
+  "id": 297146108,
+  "calle": "Arkangoa",
+  "calle_x": -74.67,
+  "calle_z": -303.48,
+  "portal": "4"
+ },
+ {
+  "id": 297146109,
+  "calle": "Arkangoa",
+  "calle_x": -77.68,
+  "calle_z": -295.33,
+  "portal": "6"
+ },
+ {
+  "id": 297146664,
+  "calle": "Arkangoa",
+  "calle_x": -71.95,
+  "calle_z": -310.82,
+  "portal": "1"
+ },
+ {
+  "id": 297146665,
+  "calle": "Arkangoa",
+  "calle_x": -75.4,
+  "calle_z": -301.51,
+  "portal": "3"
+ },
+ {
+  "id": 297146666,
+  "calle": "Arkangoa",
+  "calle_x": -82.8,
+  "calle_z": -281.52,
+  "portal": "5"
+ },
+ {
+  "id": 297150864,
+  "calle": "Gartzia Ximenez",
+  "calle_x": -90.32,
+  "calle_z": -363.14,
+  "portal": "3"
+ },
+ {
+  "id": 297150865,
+  "calle": "Gartzia Ximenez",
+  "calle_x": -91.03,
+  "calle_z": -363.4,
+  "portal": "5"
+ },
+ {
+  "id": 297150866,
+  "calle": "Gartzia Ximenez",
+  "calle_x": -91.03,
+  "calle_z": -363.4,
+  "portal": "7"
+ },
+ {
+  "id": 297150867,
+  "calle": "Zubeztia",
+  "calle_x": -101.63,
+  "calle_z": -343.02,
+  "portal": "1"
+ },
+ {
+  "id": 297150868,
+  "calle": "Zubeztia",
+  "calle_x": -85.87,
+  "calle_z": -336.05,
+  "portal": "5"
+ },
+ {
+  "id": 297150869,
+  "calle": "Zubeztia",
+  "calle_x": -91.25,
+  "calle_z": -338.43,
+  "portal": "3"
+ },
+ {
+  "id": 297150870,
+  "calle": "Zubeztia",
+  "calle_x": -71.44,
+  "calle_z": -329.66,
+  "portal": "7"
+ },
+ {
+  "id": 297153264,
+  "calle": "Gartzia Ximenez",
+  "portal": "1"
+ },
+ {
+  "id": 297153265,
+  "calle": "Zelai",
+  "calle_x": -156.12,
+  "calle_z": -313.38,
+  "portal": "2"
+ },
+ {
+  "id": 297153267,
+  "calle": "Zelai",
+  "calle_x": -162.34,
+  "calle_z": -301.56,
+  "portal": "4"
+ },
+ {
+  "id": 297153268,
+  "calle": "Zelai",
+  "calle_x": -167.48,
+  "calle_z": -293.86,
+  "portal": "6"
+ },
+ {
+  "id": 297153269,
+  "calle": "Zelai",
+  "calle_x": -170.62,
+  "calle_z": -289.16,
+  "portal": "8"
+ },
+ {
+  "id": 297153270,
+  "calle": "Zelai",
+  "calle_x": -175.03,
+  "calle_z": -282.57,
+  "portal": "8"
+ },
+ {
+  "id": 297155398,
+  "calle": "Zelai",
+  "calle_x": -178.87,
+  "calle_z": -276.83,
+  "portal": "10"
+ },
+ {
+  "id": 297155399,
+  "calle": "Zelai",
+  "calle_x": -182.23,
+  "calle_z": -271.8,
+  "portal": "12"
+ },
+ {
+  "id": 297155400,
+  "calle": "Zelai",
+  "calle_x": -186.14,
+  "calle_z": -265.95,
+  "portal": "14-16"
+ },
+ {
+  "id": 297155401,
+  "calle": "Zelai",
+  "calle_x": -190.9,
+  "calle_z": -258.83,
+  "portal": "18"
+ },
+ {
+  "id": 297155402,
+  "calle": "Zelai",
+  "calle_x": -194.47,
+  "calle_z": -253.48,
+  "portal": "20"
+ },
+ {
+  "id": 297157154,
+  "calle": "Zelai",
+  "calle_x": -196.69,
+  "calle_z": -250.17,
+  "portal": "22"
+ },
+ {
+  "id": 297157155,
+  "calle": "Zelai",
+  "calle_x": -199.57,
+  "calle_z": -245.85,
+  "portal": "24"
+ },
+ {
+  "id": 297157156,
+  "calle": "Zelai",
+  "calle_x": -203.01,
+  "calle_z": -240.71,
+  "portal": "26"
+ },
+ {
+  "id": 297157157,
+  "calle": "Zelai",
+  "calle_x": -206.4,
+  "calle_z": -235.63,
+  "portal": "28"
+ },
+ {
+  "id": 297157158,
+  "calle": "Zelai",
+  "calle_x": -212.18,
+  "calle_z": -226.99,
+  "portal": "30"
+ },
+ {
+  "id": 297157162,
+  "calle": "Zelai",
+  "calle_x": -217.7,
+  "calle_z": -218.73,
+  "portal": "32"
+ },
+ {
+  "id": 297157163,
+  "calle": "Zelai",
+  "calle_x": -224.62,
+  "calle_z": -208.86,
+  "portal": "34"
+ },
+ {
+  "id": 297157165,
+  "calle": "Zelai",
+  "calle_x": -232.77,
+  "calle_z": -197.78,
+  "portal": "38"
+ },
+ {
+  "id": 297157166,
+  "calle": "Zelai",
+  "calle_x": -237.15,
+  "calle_z": -191.82,
+  "portal": "40"
+ },
+ {
+  "id": 297157698,
+  "calle": "Zelai",
+  "calle_x": -243.02,
+  "calle_z": -183.83,
+  "portal": "42"
+ },
+ {
+  "id": 297157699,
+  "calle": "Zelai",
+  "calle_x": -247.01,
+  "calle_z": -178.41,
+  "portal": "44"
+ },
+ {
+  "id": 297157700,
+  "calle": "Zelai",
+  "calle_x": -251.51,
+  "calle_z": -172.28,
+  "portal": "46"
+ },
+ {
+  "id": 297157701,
+  "calle": "Zelai",
+  "calle_x": -256.65,
+  "calle_z": -165.29,
+  "portal": "48"
+ },
+ {
+  "id": 297157702,
+  "calle": "Zelai",
+  "calle_x": -261.54,
+  "calle_z": -158.64,
+  "portal": "50"
+ },
+ {
+  "id": 297157703,
+  "calle": "Zelai",
+  "calle_x": -269.78,
+  "calle_z": -147.43,
+  "portal": "52-54"
+ },
+ {
+  "id": 297157704,
+  "calle": "Zelai",
+  "calle_x": -287.2,
+  "calle_z": -123.73,
+  "portal": "60"
+ },
+ {
+  "id": 297158484,
+  "calle": "Zelai",
+  "calle_x": -279.46,
+  "calle_z": -134.26,
+  "portal": "56"
+ },
+ {
+  "id": 297158485,
+  "calle": "Zelai",
+  "calle_x": -282.73,
+  "calle_z": -129.82,
+  "portal": "58"
+ },
+ {
+  "id": 297158486,
+  "calle": "Zelai",
+  "calle_x": -285.24,
+  "calle_z": -126.39,
+  "portal": "62"
+ },
+ {
+  "id": 297158487,
+  "calle": "Zelai",
+  "calle_x": -286.28,
+  "calle_z": -124.99,
+  "portal": "64"
+ },
+ {
+  "id": 297158488,
+  "calle": "Zelai",
+  "portal": "66"
+ },
+ {
+  "id": 297158741,
+  "calle": "Zubeztia",
+  "calle_x": -92.23,
+  "calle_z": -338.87,
+  "portal": "2"
+ },
+ {
+  "id": 297160853,
+  "calle": "Zelai",
+  "calle_x": -292.27,
+  "calle_z": -117.57,
+  "portal": "68"
+ },
+ {
+  "id": 297160854,
+  "calle": "Zelai",
+  "calle_x": -294.66,
+  "calle_z": -115.34,
+  "portal": "70"
+ },
+ {
+  "id": 297160855,
+  "calle": "Zelai",
+  "calle_x": -299.49,
+  "calle_z": -110.82,
+  "portal": "72"
+ },
+ {
+  "id": 297160856,
+  "calle": "Zelai",
+  "calle_x": -317.46,
+  "calle_z": -88.99,
+  "portal": "76"
+ },
+ {
+  "id": 297160857,
+  "calle": "Zelai",
+  "calle_x": -320.64,
+  "calle_z": -84.2,
+  "portal": "78"
+ },
+ {
+  "id": 297160858,
+  "calle": "Zelai",
+  "calle_x": -326.53,
+  "calle_z": -75.33,
+  "portal": "80"
+ },
+ {
+  "id": 297160859,
+  "calle": "Zelai",
+  "calle_x": -330.87,
+  "calle_z": -68.79,
+  "portal": "82"
+ },
+ {
+  "id": 297160860,
+  "calle": "Zelai",
+  "calle_x": -335.73,
+  "calle_z": -61.47,
+  "portal": "84"
+ },
+ {
+  "id": 297160862,
+  "calle": "Zelai",
+  "calle_x": -344.56,
+  "calle_z": -48.17,
+  "portal": "86"
+ },
+ {
+  "id": 297160863,
+  "calle": "Zelai",
+  "calle_x": -352.87,
+  "calle_z": -35.38
+ },
+ {
+  "id": 297160865,
+  "calle": "Zelai"
+ },
+ {
+  "id": 297162224,
+  "calle": "Zelai",
+  "calle_x": -354.0,
+  "calle_z": -33.42,
+  "portal": "88"
+ },
+ {
+  "id": 297162227,
+  "calle": "Zelai",
+  "calle_x": -360.97,
+  "calle_z": -21.22,
+  "portal": "90"
+ },
+ {
+  "id": 297162230,
+  "calle": "Zelai",
+  "calle_x": -366.07,
+  "calle_z": -12.31,
+  "portal": "92"
+ },
+ {
+  "id": 297162232,
+  "calle": "Zelai",
+  "calle_x": -370.21,
+  "calle_z": -5.07,
+  "portal": "94"
+ },
+ {
+  "id": 297162235,
+  "calle": "Zelai",
+  "calle_x": -377.41,
+  "calle_z": 7.53,
+  "portal": "96"
+ },
+ {
+  "id": 297162237,
+  "calle": "Zelai",
+  "calle_x": -381.2,
+  "calle_z": 14.16,
+  "portal": "98"
+ },
+ {
+  "id": 297162241,
+  "calle": "Zelai",
+  "calle_x": -389.26,
+  "calle_z": 28.26,
+  "portal": "100"
+ },
+ {
+  "id": 297162244,
+  "calle": "Zelai",
+  "calle_x": -388.1,
+  "calle_z": 26.23
+ },
+ {
+  "id": 297162247,
+  "calle": "Zelai",
+  "calle_x": -396.71,
+  "calle_z": 41.29,
+  "portal": "102"
+ },
+ {
+  "id": 297162249,
+  "calle": "Zelai",
+  "calle_x": -398.4,
+  "calle_z": 44.23,
+  "portal": "104"
+ },
+ {
+  "id": 297165188,
+  "calle": "Zubeztia",
+  "calle_x": -47.06,
+  "calle_z": -321.22,
+  "portal": "9"
+ },
+ {
+  "id": 297165189,
+  "calle": "Zubeztia",
+  "calle_x": -39.54,
+  "calle_z": -318.79,
+  "portal": "11"
+ },
+ {
+  "id": 297165190,
+  "calle": "Zubeztia",
+  "calle_x": -31.44,
+  "calle_z": -299.43,
+  "portal": "13"
+ },
+ {
+  "id": 297165191,
+  "calle": "Zubeztia",
+  "calle_x": -31.44,
+  "calle_z": -299.43,
+  "portal": "15"
+ },
+ {
+  "id": 297167107,
+  "calle": "Zubeztia",
+  "calle_x": -3.23,
+  "calle_z": -292.54,
+  "portal": "17"
+ },
+ {
+  "id": 297167109,
+  "calle": "Zubeztia",
+  "calle_x": -1.37,
+  "calle_z": -296.36,
+  "portal": "19"
+ },
+ {
+  "id": 297167110,
+  "calle": "Zubeztia",
+  "calle_x": -3.3,
+  "calle_z": -319.82,
+  "portal": "21"
+ },
+ {
+  "id": 297167111,
+  "calle": "Zubeztia",
+  "calle_x": -3.23,
+  "calle_z": -292.54,
+  "portal": "23"
+ },
+ {
+  "id": 297167112,
+  "calle": "Zubeztia",
+  "calle_x": -3.23,
+  "calle_z": -292.54,
+  "portal": "25"
+ },
+ {
+  "id": 297167113,
+  "calle": "Zubeztia",
+  "calle_x": -1.3,
+  "calle_z": -296.52,
+  "portal": "29"
+ },
+ {
+  "id": 297167114,
+  "calle": "Zubeztia",
+  "calle_x": 0.6,
+  "calle_z": -300.41,
+  "portal": "31-33"
+ },
+ {
+  "id": 297167115,
+  "calle": "Zubeztia",
+  "calle_x": 30.28,
+  "calle_z": -302.68,
+  "portal": "35"
+ },
+ {
+  "id": 297167116,
+  "calle": "Zubeztia",
+  "calle_x": 37.42,
+  "calle_z": -299.03,
+  "portal": "37"
+ },
+ {
+  "id": 297167117,
+  "calle": "Zubeztia",
+  "calle_x": 46.21,
+  "calle_z": -294.41,
+  "portal": "39"
+ },
+ {
+  "id": 297167118,
+  "calle": "Zubeztia",
+  "calle_x": 57.82,
+  "calle_z": -259.71,
+  "portal": "41-43-45"
+ },
+ {
+  "id": 297187230,
+  "calle": "Zelai",
+  "calle_x": -229.82,
+  "calle_z": -219.63,
+  "portal": "29"
+ },
+ {
+  "id": 297187231,
+  "calle": "Zelai",
+  "calle_x": -222.97,
+  "calle_z": -229.85,
+  "portal": "27"
+ },
+ {
+  "id": 297187232,
+  "calle": "Zelai",
+  "calle_x": -215.0,
+  "calle_z": -241.73,
+  "portal": "23"
+ },
+ {
+  "id": 297187233,
+  "calle": "Zelai",
+  "calle_x": -209.23,
+  "calle_z": -250.33,
+  "portal": "21"
+ },
+ {
+  "id": 297187234,
+  "calle": "Zelai",
+  "calle_x": -204.77,
+  "calle_z": -256.97,
+  "portal": "19"
+ },
+ {
+  "id": 297187235,
+  "calle": "Zelai",
+  "calle_x": -202.51,
+  "calle_z": -260.35,
+  "portal": "17"
+ },
+ {
+  "id": 297187236,
+  "calle": "Zelai",
+  "calle_x": -199.5,
+  "calle_z": -264.84,
+  "portal": "13"
+ },
+ {
+  "id": 297187237,
+  "calle": "Zelai",
+  "calle_x": -197.1,
+  "calle_z": -268.41,
+  "portal": "13"
+ },
+ {
+  "id": 297187238,
+  "calle": "Zelai",
+  "calle_x": -194.45,
+  "calle_z": -272.37,
+  "portal": "11"
+ },
+ {
+  "id": 297187239,
+  "calle": "Zelai",
+  "calle_x": -193.02,
+  "calle_z": -274.5,
+  "portal": "9"
+ },
+ {
+  "id": 297187240,
+  "calle": "Zelai",
+  "calle_x": -188.71,
+  "calle_z": -280.92,
+  "portal": "7"
+ },
+ {
+  "id": 297187241,
+  "calle": "Zelai",
+  "calle_x": -183.75,
+  "calle_z": -288.24,
+  "portal": "5"
+ },
+ {
+  "id": 297187242,
+  "calle": "Zelai",
+  "calle_x": -180.8,
+  "calle_z": -292.37,
+  "portal": "3"
+ },
+ {
+  "id": 297187243,
+  "calle": "San Juan",
+  "portal": "2"
+ },
+ {
+  "id": 297190273,
+  "calle": "San Juan",
+  "portal": "2A"
+ },
+ {
+  "id": 297190274,
+  "calle": "San Juan",
+  "portal": "4"
+ },
+ {
+  "id": 297190275,
+  "calle": "San Juan",
+  "portal": "6"
+ },
+ {
+  "id": 297190276,
+  "calle": "San Juan",
+  "portal": "8"
+ },
+ {
+  "id": 297190277,
+  "calle": "Zelai",
+  "calle_x": -190.41,
+  "calle_z": -278.39,
+  "portal": "10"
+ },
+ {
+  "id": 297190279,
+  "calle": "San Juan",
+  "portal": "12"
+ },
+ {
+  "id": 297190280,
+  "calle": "Zelai",
+  "calle_x": -192.49,
+  "calle_z": -275.28,
+  "portal": "14"
+ },
+ {
+  "id": 297190987,
+  "calle": "San Juan",
+  "portal": "16"
+ },
+ {
+  "id": 297190990,
+  "calle": "San Juan",
+  "portal": "18"
+ },
+ {
+  "id": 297190992,
+  "calle": "San Juan",
+  "portal": "22"
+ },
+ {
+  "id": 297190994,
+  "calle": "San Juan",
+  "portal": "24"
+ },
+ {
+  "id": 297192117,
+  "calle": "San Juan",
+  "portal": "26"
+ },
+ {
+  "id": 297205306,
+  "calle": "San Juan",
+  "portal": "28"
+ },
+ {
+  "id": 297205307,
+  "calle": "San Juan",
+  "portal": "30"
+ },
+ {
+  "id": 297205309,
+  "calle": "San Juan",
+  "portal": "32"
+ },
+ {
+  "id": 297205310,
+  "calle": "San Juan",
+  "portal": "34"
+ },
+ {
+  "id": 297205311,
+  "calle": "San Juan",
+  "portal": "36"
+ },
+ {
+  "id": 297205312,
+  "calle": "San Juan",
+  "portal": "38"
+ },
+ {
+  "id": 297205313,
+  "calle": "San Juan",
+  "portal": "40"
+ },
+ {
+  "id": 297206007,
+  "calle": "San Juan",
+  "portal": "44"
+ },
+ {
+  "id": 297206451,
+  "calle": "San Juan",
+  "portal": "46"
+ },
+ {
+  "id": 297206452,
+  "calle": "San Juan",
+  "portal": "48"
+ },
+ {
+  "id": 297206453,
+  "calle": "San Juan",
+  "portal": "50"
+ },
+ {
+  "id": 297214464,
+  "calle": "Isidoro Melero",
+  "calle_x": -369.95,
+  "calle_z": -313.4,
+  "portal": "19"
+ },
+ {
+  "id": 297214465,
+  "calle": "Isidoro Melero",
+  "calle_x": -373.61,
+  "calle_z": -308.58,
+  "portal": "15"
+ },
+ {
+  "id": 297214468,
+  "calle": "Isidoro Melero",
+  "calle_x": -380.61,
+  "calle_z": -299.37,
+  "portal": "13"
+ },
+ {
+  "id": 297214469,
+  "calle": "Isidoro Melero",
+  "calle_x": -371.46,
+  "calle_z": -311.42,
+  "portal": "11"
+ },
+ {
+  "id": 297214470,
+  "calle": "Isidoro Melero",
+  "portal": "9"
+ },
+ {
+  "id": 297214471,
+  "calle": "Isidoro Melero",
+  "portal": "7"
+ },
+ {
+  "id": 297214472,
+  "calle": "Isidoro Melero",
+  "portal": "5"
+ },
+ {
+  "id": 297214473,
+  "calle": "Isidoro Melero",
+  "portal": "3"
+ },
+ {
+  "id": 297214474,
+  "calle": "Isidoro Melero",
+  "portal": "1"
+ },
+ {
+  "id": 297217474,
+  "calle": "Isidoro Melero",
+  "portal": "2"
+ },
+ {
+  "id": 297217479,
+  "calle": "Isidoro Melero",
+  "portal": "4"
+ },
+ {
+  "id": 297217482,
+  "calle": "Isidoro Melero",
+  "portal": "6"
+ },
+ {
+  "id": 297217484,
+  "calle": "Isidoro Melero",
+  "portal": "8"
+ },
+ {
+  "id": 297217487,
+  "calle": "Isidoro Melero",
+  "portal": "8"
+ },
+ {
+  "id": 297217494,
+  "calle": "Isidoro Melero",
+  "portal": "12"
+ },
+ {
+  "id": 297217496,
+  "calle": "Isidoro Melero",
+  "portal": "14"
+ },
+ {
+  "id": 297218287,
+  "calle": "Intxaurrondo",
+  "calle_x": -357.6,
+  "calle_z": -191.85
+ },
+ {
+  "id": 297220748,
+  "calle": "Zelandi",
+  "calle_x": -414.89,
+  "calle_z": -250.67
+ },
+ {
+  "id": 297220749,
+  "calle": "Intxaurrondo",
+  "calle_x": -372.06,
+  "calle_z": -237.47
+ },
+ {
+  "id": 297221724,
+  "calle": "Zelai",
+  "calle_x": -243.16,
+  "calle_z": -199.74,
+  "portal": "31"
+ },
+ {
+  "id": 297221725,
+  "calle": "Zelai",
+  "calle_x": -252.15,
+  "calle_z": -187.21,
+  "portal": "33"
+ },
+ {
+  "id": 297221726,
+  "calle": "Zelai",
+  "calle_x": -260.83,
+  "calle_z": -175.23,
+  "portal": "35"
+ },
+ {
+  "id": 297221727,
+  "calle": "Zelai",
+  "calle_x": -266.86,
+  "calle_z": -166.9,
+  "portal": "37"
+ },
+ {
+  "id": 297221728,
+  "calle": "Zelai",
+  "calle_x": -269.94,
+  "calle_z": -162.64,
+  "portal": "39"
+ },
+ {
+  "id": 297222291,
+  "calle": "Zelai",
+  "calle_x": -273.4,
+  "calle_z": -157.87,
+  "portal": "41"
+ },
+ {
+  "id": 297222292,
+  "calle": "Zelai",
+  "calle_x": -277.37,
+  "calle_z": -152.39,
+  "portal": "43"
+ },
+ {
+  "id": 297222293,
+  "calle": "Zelai",
+  "calle_x": -281.13,
+  "calle_z": -147.19,
+  "portal": "45"
+ },
+ {
+  "id": 297222294,
+  "calle": "Zelai",
+  "calle_x": -284.85,
+  "calle_z": -142.06,
+  "portal": "47"
+ },
+ {
+  "id": 297222295,
+  "calle": "Zelai",
+  "calle_x": -289.16,
+  "calle_z": -136.11,
+  "portal": "49"
+ },
+ {
+  "id": 297222296,
+  "calle": "Zelai",
+  "calle_x": -293.35,
+  "calle_z": -130.31,
+  "portal": "51"
+ },
+ {
+  "id": 297222297,
+  "calle": "Zelai",
+  "calle_x": -298.86,
+  "calle_z": -122.71,
+  "portal": "53"
+ },
+ {
+  "id": 297222298,
+  "calle": "Zelai Txiki",
+  "calle_x": -325.1,
+  "calle_z": -113.69,
+  "portal": "1"
+ },
+ {
+  "id": 297226310,
+  "calle": "Zelai Txiki",
+  "calle_x": -329.12,
+  "calle_z": -116.49,
+  "portal": "2"
+ },
+ {
+  "id": 297226311,
+  "calle": "Zelai Txiki",
+  "calle_x": -348.48,
+  "calle_z": -130.0,
+  "portal": "4"
+ },
+ {
+  "id": 297226312,
+  "calle": "Zelai",
+  "calle_x": -319.95,
+  "calle_z": -85.24,
+  "portal": "57"
+ },
+ {
+  "id": 297271235,
+  "calle": "Zelai",
+  "calle_x": -323.97,
+  "calle_z": -79.19,
+  "portal": "57"
+ },
+ {
+  "id": 297271237,
+  "calle": "Zelai",
+  "calle_x": -330.93,
+  "calle_z": -68.71,
+  "portal": "61"
+ },
+ {
+  "id": 297271238,
+  "calle": "Zelai",
+  "calle_x": -339.02,
+  "calle_z": -56.51,
+  "portal": "63"
+ },
+ {
+  "id": 297271239,
+  "calle": "Zelai",
+  "calle_x": -344.52,
+  "calle_z": -48.22,
+  "portal": "65"
+ },
+ {
+  "id": 297271240,
+  "calle": "Erlategi",
+  "portal": "4"
+ },
+ {
+  "id": 297271241,
+  "calle": "Erlategi",
+  "portal": "2"
+ },
+ {
+  "id": 297272104,
+  "calle": "Zelai",
+  "calle_x": -356.39,
+  "calle_z": -29.24,
+  "portal": "67"
+ },
+ {
+  "id": 297272105,
+  "calle": "Zelai",
+  "calle_x": -360.15,
+  "calle_z": -22.66,
+  "portal": "69"
+ },
+ {
+  "id": 297274398,
+  "calle": "Zelai",
+  "calle_x": -362.49,
+  "calle_z": -18.57,
+  "portal": "71"
+ },
+ {
+  "id": 297274399,
+  "calle": "Zelai",
+  "calle_x": -365.45,
+  "calle_z": -13.39,
+  "portal": "73"
+ },
+ {
+  "id": 297274400,
+  "calle": "Zelai",
+  "calle_x": -369.94,
+  "calle_z": -5.54,
+  "portal": "75"
+ },
+ {
+  "id": 297274401,
+  "calle": "Zelai",
+  "calle_x": -375.89,
+  "calle_z": 4.88,
+  "portal": "77"
+ },
+ {
+  "id": 297274402,
+  "calle": "Zelai",
+  "calle_x": -388.36,
+  "calle_z": 26.69,
+  "portal": "79"
+ },
+ {
+  "id": 297274403,
+  "calle": "Zelai",
+  "calle_x": -394.84,
+  "calle_z": 38.01,
+  "portal": "81"
+ },
+ {
+  "id": 297274404,
+  "calle": "Zelai",
+  "calle_x": -399.15,
+  "calle_z": 45.56,
+  "portal": "83"
+ },
+ {
+  "id": 297274405,
+  "calle": "Zelai",
+  "calle_x": -404.19,
+  "calle_z": 54.33,
+  "portal": "85"
+ },
+ {
+  "id": 297281604,
+  "calle": "Egubera",
+  "calle_x": -52.97,
+  "calle_z": -476.84,
+  "portal": "11"
+ },
+ {
+  "id": 297281605,
+  "calle": "Egubera",
+  "calle_x": -47.77,
+  "calle_z": -490.44,
+  "portal": "13"
+ },
+ {
+  "id": 297281606,
+  "calle": "Gartzia Ximenez etorbidea",
+  "calle_x": 0.48,
+  "calle_z": -482.82,
+  "portal": "44"
+ },
+ {
+  "id": 297281607,
+  "calle": "Gartzia Ximenez etorbidea",
+  "calle_x": 7.82,
+  "calle_z": -493.63,
+  "portal": "46"
+ },
+ {
+  "id": 297281608,
+  "calle": "Egubera",
+  "calle_x": 10.85,
+  "calle_z": -549.34,
+  "portal": "19"
+ },
+ {
+  "id": 297281609,
+  "calle": "Egubera",
+  "calle_x": -43.21,
+  "calle_z": -508.4,
+  "portal": "15-17"
+ },
+ {
+  "id": 297281935,
+  "calle": "Egubera",
+  "calle_x": -31.49,
+  "calle_z": -543.81,
+  "portal": "21"
+ },
+ {
+  "id": 297283762,
+  "calle": "Sorgingainbera",
+  "calle_x": -54.75,
+  "calle_z": -581.36,
+  "portal": "17"
+ },
+ {
+  "id": 297283763,
+  "calle": "Sorgingainbera",
+  "calle_x": -68.81,
+  "calle_z": -587.06,
+  "portal": "19"
+ },
+ {
+  "id": 297283764,
+  "calle": "Sorgingainbera",
+  "calle_x": -110.77,
+  "calle_z": -610.33,
+  "portal": "10"
+ },
+ {
+  "id": 297283766,
+  "calle": "Sorgingainbera",
+  "calle_x": -116.41,
+  "calle_z": -612.72,
+  "portal": "12"
+ },
+ {
+  "id": 297284549,
+  "calle": "Egubera",
+  "calle_x": -96.06,
+  "calle_z": -567.1,
+  "portal": "33"
+ },
+ {
+  "id": 297284550,
+  "calle": "Egubera",
+  "calle_x": -91.69,
+  "calle_z": -575.74,
+  "portal": "35"
+ },
+ {
+  "id": 297284551,
+  "calle": "Egubera",
+  "calle_x": -89.63,
+  "calle_z": -579.81,
+  "portal": "37"
+ },
+ {
+  "id": 297284552,
+  "calle": "Sorgingainbera",
+  "calle_x": -69.04,
+  "calle_z": -587.16,
+  "portal": "39"
+ },
+ {
+  "id": 297284553,
+  "calle": "Egubera",
+  "calle_x": -82.8,
+  "calle_z": -552.39,
+  "portal": "31"
+ },
+ {
+  "id": 297284554,
+  "calle": "Egubera",
+  "calle_x": -76.39,
+  "calle_z": -548.79,
+  "portal": "29"
+ },
+ {
+  "id": 297284555,
+  "calle": "Egubera",
+  "calle_x": -55.8,
+  "calle_z": -544.21,
+  "portal": "23"
+ },
+ {
+  "id": 297284556,
+  "calle": "Egubera",
+  "calle_x": -58.28,
+  "calle_z": -544.26,
+  "portal": "25"
+ },
+ {
+  "id": 297284557,
+  "calle": "Egubera",
+  "calle_x": -62.14,
+  "calle_z": -544.32,
+  "portal": "27"
+ },
+ {
+  "id": 297328549,
+  "calle": "Gartzia Ximenez",
+  "calle_x": -35.17,
+  "calle_z": -391.52,
+  "portal": "17"
+ },
+ {
+  "id": 297328550,
+  "calle": "Gartzia Ximenez",
+  "calle_x": -38.61,
+  "calle_z": -392.44,
+  "portal": "19"
+ },
+ {
+  "id": 297328551,
+  "calle": "Gartzia Ximenez",
+  "calle_x": -28.58,
+  "calle_z": -412.27,
+  "portal": "21"
+ },
+ {
+  "id": 297328552,
+  "calle": "Gartzia Ximenez",
+  "calle_x": -20.62,
+  "calle_z": -410.05,
+  "portal": "23"
+ },
+ {
+  "id": 297328553,
+  "calle": "Txikipolita",
+  "calle_x": 6.0,
+  "calle_z": -432.38,
+  "portal": "2"
+ },
+ {
+  "id": 297328554,
+  "calle": "Gartzia Ximenez",
+  "calle_x": -21.21,
+  "calle_z": -410.21,
+  "portal": "25"
+ },
+ {
+  "id": 297330039,
+  "calle": "Gartzia Ximenez",
+  "calle_x": -25.03,
+  "calle_z": -411.28,
+  "portal": "27"
+ },
+ {
+  "id": 297330040,
+  "calle": "Gartzia Ximenez",
+  "calle_x": -20.62,
+  "calle_z": -410.05,
+  "portal": "29"
+ },
+ {
+  "id": 297330041,
+  "calle": "Txikipolita",
+  "calle_x": 6.16,
+  "calle_z": -432.63,
+  "portal": "4"
+ },
+ {
+  "id": 297330042,
+  "calle": "Gartzia Ximenez",
+  "calle_x": -42.17,
+  "calle_z": -423.01,
+  "portal": "31"
+ },
+ {
+  "id": 297330043,
+  "calle": "Txikipolita",
+  "calle_x": 11.3,
+  "calle_z": -440.97,
+  "portal": "6"
+ },
+ {
+  "id": 297331886,
+  "calle": "Txikipolita",
+  "calle_x": 16.85,
+  "calle_z": -449.97,
+  "portal": "6"
+ },
+ {
+  "id": 297331887,
+  "calle": "Gartzia Ximenez",
+  "portal": "33"
+ },
+ {
+  "id": 297340700,
+  "calle": "Gartzia Ximenez",
+  "portal": "35"
+ },
+ {
+  "id": 297340701,
+  "calle": "Gartzia Ximenez",
+  "portal": "37"
+ },
+ {
+  "id": 297340702,
+  "calle": "Gartzia Ximenez",
+  "portal": "39"
+ },
+ {
+  "id": 297340703,
+  "calle": "Gartzia Ximenez",
+  "portal": "41"
+ },
+ {
+  "id": 297340704,
+  "calle": "Gartzia Ximenez",
+  "portal": "43"
+ },
+ {
+  "id": 297340708,
+  "calle": "Beheko Benta",
+  "calle_x": 68.68,
+  "calle_z": -620.34,
+  "portal": "3"
+ },
+ {
+  "id": 297360032,
+  "calle": "Beheko Benta",
+  "calle_x": 7.99,
+  "calle_z": -619.95,
+  "portal": "4"
+ },
+ {
+  "id": 297360040,
+  "calle": "Beheko Benta",
+  "calle_x": 52.65,
+  "calle_z": -606.61,
+  "portal": "6"
+ },
+ {
+  "id": 297360042,
+  "calle": "Beheko Benta",
+  "calle_x": 69.6,
+  "calle_z": -623.65,
+  "portal": "8"
+ },
+ {
+  "id": 297360044,
+  "calle": "Beheko Benta",
+  "calle_x": 73.58,
+  "calle_z": -637.9,
+  "portal": "8"
+ },
+ {
+  "id": 297360045,
+  "calle": "Beheko Benta",
+  "calle_x": 89.63,
+  "calle_z": -695.34,
+  "portal": "5"
+ },
+ {
+  "id": 297360046,
+  "calle": "Beheko Benta",
+  "portal": "7"
+ },
+ {
+  "id": 297360049,
+  "calle": "Beheko Benta",
+  "portal": "9"
+ },
+ {
+  "id": 297360053,
+  "calle": "Avda. Iruñea",
+  "portal": "1"
+ },
+ {
+  "id": 297361983,
+  "calle": "Avda. Iruñea",
+  "portal": "17"
+ },
+ {
+  "id": 297361989,
+  "calle": "Avda. Iruñea",
+  "portal": "20"
+ },
+ {
+  "id": 297361991,
+  "calle": "Avda. Iruñea",
+  "portal": "20"
+ },
+ {
+  "id": 297375895,
+  "calle": "Iruñeko Etorbidea",
+  "calle_x": 305.01,
+  "calle_z": -822.19
+ },
+ {
+  "id": 297375896,
+  "calle": "Iruñeko Etorbidea",
+  "calle_x": 294.99,
+  "calle_z": -796.37
+ },
+ {
+  "id": 297494687,
+  "calle": "Txikipolita",
+  "calle_x": 6.0,
+  "calle_z": -432.38,
+  "portal": "1"
+ },
+ {
+  "id": 297494688,
+  "calle": "Foruen Plaza",
+  "calle_x": 24.89,
+  "calle_z": -407.35,
+  "portal": "16"
+ },
+ {
+  "id": 297494689,
+  "calle": "Txikipolita",
+  "calle_x": 6.0,
+  "calle_z": -432.38,
+  "portal": "15"
+ },
+ {
+  "id": 297494690,
+  "calle": "Txikipolita",
+  "calle_x": 12.99,
+  "calle_z": -443.71,
+  "portal": "3"
+ },
+ {
+  "id": 297494691,
+  "calle": "Txikipolita",
+  "calle_x": 15.96,
+  "calle_z": -448.53,
+  "portal": "5"
+ },
+ {
+  "id": 297494692,
+  "calle": "Txikipolita",
+  "calle_x": 19.06,
+  "calle_z": -453.55,
+  "portal": "7"
+ },
+ {
+  "id": 297494693,
+  "calle": "Txikipolita",
+  "calle_x": 23.84,
+  "calle_z": -461.3,
+  "portal": "9"
+ },
+ {
+  "id": 297494696,
+  "calle": "Ferialeku",
+  "calle_x": 51.58,
+  "calle_z": -495.76,
+  "portal": "22"
+ },
+ {
+  "id": 297494697,
+  "calle": "Txikipolita",
+  "calle_x": 50.75,
+  "calle_z": -520.89,
+  "portal": "15"
+ },
+ {
+  "id": 297494698,
+  "calle": "Txikipolita",
+  "calle_x": 52.47,
+  "calle_z": -527.52,
+  "portal": "17"
+ },
+ {
+  "id": 297496719,
+  "calle": "Ferialeku",
+  "calle_x": 55.26,
+  "calle_z": -430.56,
+  "portal": "2"
+ },
+ {
+  "id": 297496722,
+  "calle": "Ferialeku",
+  "calle_x": 47.28,
+  "calle_z": -454.22,
+  "portal": "4"
+ },
+ {
+  "id": 297496725,
+  "calle": "Ferialeku",
+  "calle_x": 50.4,
+  "calle_z": -452.3,
+  "portal": "8"
+ },
+ {
+  "id": 297503950,
+  "calle": "Ferialeku",
+  "calle_x": 52.56,
+  "calle_z": -450.97,
+  "portal": "10"
+ },
+ {
+  "id": 297503951,
+  "calle": "Ferialeku",
+  "calle_x": 51.79,
+  "calle_z": -451.45,
+  "portal": "12"
+ },
+ {
+  "id": 297503952,
+  "calle": "Ferialeku",
+  "calle_x": 47.23,
+  "calle_z": -454.25,
+  "portal": "14"
+ },
+ {
+  "id": 297503953,
+  "calle": "Ferialeku",
+  "calle_x": 64.38,
+  "calle_z": -486.91,
+  "portal": "16-18-20"
+ },
+ {
+  "id": 297503954,
+  "calle": "Ferialeku",
+  "calle_x": 60.19,
+  "calle_z": -489.81,
+  "portal": "22"
+ },
+ {
+  "id": 297503955,
+  "calle": "Ferialeku",
+  "calle_x": 92.29,
+  "calle_z": -490.82,
+  "portal": "26"
+ },
+ {
+  "id": 297503956,
+  "calle": "Ferialeku",
+  "calle_x": 96.41,
+  "calle_z": -497.84,
+  "portal": "28"
+ },
+ {
+  "id": 297503957,
+  "calle": "Ferialeku",
+  "calle_x": 99.81,
+  "calle_z": -503.61,
+  "portal": "30-32"
+ },
+ {
+  "id": 297503960,
+  "calle": "Ferialeku",
+  "calle_x": 109.71,
+  "calle_z": -520.1,
+  "portal": "36"
+ },
+ {
+  "id": 297503961,
+  "calle": "Ferialeku",
+  "calle_x": 102.21,
+  "calle_z": -507.61,
+  "portal": "34"
+ },
+ {
+  "id": 297518880,
+  "calle": "Zubeztia",
+  "calle_x": 0.16,
+  "calle_z": -318.06,
+  "portal": "6"
+ },
+ {
+  "id": 297518881,
+  "calle": "Zubeztia",
+  "calle_x": 33.0,
+  "calle_z": -321.37,
+  "portal": "8"
+ },
+ {
+  "id": 297518882,
+  "calle": "Zubeztia",
+  "calle_x": 33.0,
+  "calle_z": -321.37,
+  "portal": "10"
+ },
+ {
+  "id": 297518883,
+  "calle": "Zubeztia",
+  "calle_x": 40.28,
+  "calle_z": -323.3,
+  "portal": "12"
+ },
+ {
+  "id": 297518884,
+  "calle": "Zubeztia",
+  "calle_x": 58.92,
+  "calle_z": -330.96,
+  "portal": "14"
+ },
+ {
+  "id": 297518885,
+  "calle": "Zubeztia",
+  "calle_x": 48.03,
+  "calle_z": -320.04,
+  "portal": "18"
+ },
+ {
+  "id": 297518886,
+  "calle": "Zubeztia",
+  "calle_x": 37.84,
+  "calle_z": -298.81,
+  "portal": "20"
+ },
+ {
+  "id": 297518887,
+  "calle": "Zubeztia",
+  "calle_x": 46.17,
+  "calle_z": -294.43,
+  "portal": "22"
+ },
+ {
+  "id": 297518888,
+  "calle": "Zubeztia",
+  "calle_x": 58.18,
+  "calle_z": -287.27,
+  "portal": "24"
+ },
+ {
+  "id": 297519876,
+  "calle": "San Pedro bidea",
+  "portal": "2"
+ },
+ {
+  "id": 297519877,
+  "calle": "Larrainbide",
+  "calle_x": 161.7,
+  "calle_z": -227.38,
+  "portal": "1"
+ },
+ {
+  "id": 297519879,
+  "calle": "San Pedro bidea",
+  "portal": "4"
+ },
+ {
+  "id": 297519880,
+  "calle": "San Pedro bidea",
+  "portal": "6"
+ },
+ {
+  "id": 297519882,
+  "calle": "Larrainbide",
+  "calle_x": 175.97,
+  "calle_z": -245.26,
+  "portal": "7"
+ },
+ {
+  "id": 297519883,
+  "calle": "Larrainbide",
+  "calle_x": 188.14,
+  "calle_z": -246.75,
+  "portal": "5"
+ },
+ {
+  "id": 297519884,
+  "calle": "Larrainbide",
+  "calle_x": 201.05,
+  "calle_z": -249.99,
+  "portal": "3"
+ },
+ {
+  "id": 297521079,
+  "calle": "San Pedro bidea",
+  "portal": "8"
+ },
+ {
+  "id": 297521080,
+  "calle": "San Pedro bidea",
+  "portal": "10"
+ },
+ {
+  "id": 297521081,
+  "calle": "Amandrea",
+  "calle_x": 197.38,
+  "calle_z": -159.25
+ },
+ {
+  "id": 297522422,
+  "calle": "San Pedro bidea",
+  "portal": "3"
+ },
+ {
+  "id": 297522423,
+  "calle": "San Pedro bidea",
+  "portal": "5"
+ },
+ {
+  "id": 297522424,
+  "calle": "San Pedro bidea",
+  "portal": "7"
+ },
+ {
+  "id": 297522425,
+  "calle": "San Pedro bidea",
+  "portal": "9"
+ },
+ {
+  "id": 297522426,
+  "calle": "San Pedro bidea",
+  "portal": "11"
+ },
+ {
+  "id": 297522427,
+  "calle": "San Pedro bidea",
+  "portal": "13"
+ },
+ {
+  "id": 297522428,
+  "calle": "San Pedro bidea",
+  "portal": "15"
+ },
+ {
+  "id": 297522429,
+  "calle": "San Pedro bidea",
+  "portal": "17"
+ },
+ {
+  "id": 297522430,
+  "calle": "San Pedro bidea",
+  "portal": "19"
+ },
+ {
+  "id": 297522431,
+  "calle": "San Pedro bidea",
+  "portal": "21"
+ },
+ {
+  "id": 297522432,
+  "calle": "San Pedro bidea",
+  "portal": "23"
+ },
+ {
+  "id": 297522433,
+  "calle": "San Pedro bidea",
+  "portal": "25"
+ },
+ {
+  "id": 297523799,
+  "calle": "Urdiain",
+  "calle_x": 144.78,
+  "calle_z": -159.69,
+  "portal": "2"
+ },
+ {
+  "id": 297523800,
+  "calle": "Urdiain",
+  "calle_x": 136.37,
+  "calle_z": -161.66,
+  "portal": "4"
+ },
+ {
+  "id": 297523801,
+  "calle": "Urdiain",
+  "calle_x": 128.76,
+  "calle_z": -163.44,
+  "portal": "6"
+ },
+ {
+  "id": 297523802,
+  "calle": "Urdiain",
+  "calle_x": 122.43,
+  "calle_z": -164.92,
+  "portal": "8"
+ },
+ {
+  "id": 297523803,
+  "calle": "Urdiain",
+  "calle_x": 115.46,
+  "calle_z": -166.56,
+  "portal": "10"
+ },
+ {
+  "id": 297523804,
+  "calle": "San Pedro bidea",
+  "portal": "27"
+ },
+ {
+  "id": 297646221,
+  "calle": "San Pedro bidea",
+  "portal": "29"
+ },
+ {
+  "id": 297646222,
+  "calle": "Mendizabal",
+  "calle_x": 161.31,
+  "calle_z": -82.28,
+  "portal": "1"
+ },
+ {
+  "id": 297646223,
+  "calle": "Mendizabal",
+  "calle_x": 152.99,
+  "calle_z": -68.34,
+  "portal": "3"
+ },
+ {
+  "id": 297646224,
+  "calle": "Mendizabal",
+  "calle_x": 127.02,
+  "calle_z": -35.68,
+  "portal": "7"
+ },
+ {
+  "id": 297646225,
+  "calle": "Mendizabal",
+  "calle_x": 116.85,
+  "calle_z": -21.26,
+  "portal": "9"
+ },
+ {
+  "id": 297646229,
+  "calle": "San Pedro bidea",
+  "portal": "31"
+ },
+ {
+  "id": 297646230,
+  "calle": "San Pedro bidea",
+  "portal": "33"
+ },
+ {
+  "id": 297646232,
+  "calle": "San Pedro bidea",
+  "portal": "35-47"
+ },
+ {
+  "id": 297646237,
+  "calle": "San Pedro bidea",
+  "portal": "12"
+ },
+ {
+  "id": 297646240,
+  "calle": "San Pedroko bidea",
+  "calle_x": 354.66,
+  "calle_z": 297.51,
+  "portal": "14"
+ },
+ {
+  "id": 297646241,
+  "calle": "San Pedro bidea",
+  "calle_x": 380.87,
+  "calle_z": 373.99,
+  "portal": "49"
+ },
+ {
+  "id": 297647820,
+  "calle": "Santo Cristo de Otadia",
+  "calle_x": 84.31,
+  "calle_z": -372.51,
+  "portal": "18"
+ },
+ {
+  "id": 297647821,
+  "calle": "Santo Cristo de Otadia",
+  "calle_x": 94.06,
+  "calle_z": -371.06,
+  "portal": "13"
+ },
+ {
+  "id": 297647822,
+  "calle": "Santo Cristo de Otadia",
+  "calle_x": 94.43,
+  "calle_z": -370.91,
+  "portal": "14"
+ },
+ {
+  "id": 297647823,
+  "calle": "Santo Cristo de Otadia",
+  "calle_x": 90.61,
+  "calle_z": -372.55,
+  "portal": "15"
+ },
+ {
+  "id": 297647826,
+  "calle": "Santo Cristo de Otadia",
+  "calle_x": 90.61,
+  "calle_z": -372.55,
+  "portal": "15"
+ },
+ {
+  "id": 297647827,
+  "calle": "Santo Cristo de Otadia",
+  "calle_x": 89.94,
+  "calle_z": -372.55,
+  "portal": "16"
+ },
+ {
+  "id": 297647831,
+  "calle": "Ferialeku",
+  "calle_x": 83.73,
+  "calle_z": -440.38,
+  "portal": "15"
+ },
+ {
+  "id": 297647832,
+  "calle": "Ferialeku",
+  "calle_x": 76.75,
+  "calle_z": -444.72,
+  "portal": "17"
+ },
+ {
+  "id": 297647833,
+  "calle": "Ferialeku",
+  "calle_x": 89.06,
+  "calle_z": -463.86,
+  "portal": "19"
+ },
+ {
+  "id": 297647834,
+  "calle": "Ferialeku",
+  "calle_x": 97.39,
+  "calle_z": -458.58,
+  "portal": "21"
+ },
+ {
+  "id": 297647835,
+  "calle": "Ferialeku",
+  "calle_x": 99.87,
+  "calle_z": -457.01,
+  "portal": "23"
+ },
+ {
+  "id": 297648145,
+  "calle": "Ferialeku",
+  "calle_x": 81.68,
+  "calle_z": -418.89,
+  "portal": "13"
+ },
+ {
+  "id": 297648146,
+  "calle": "Ferialeku",
+  "calle_x": 85.77,
+  "calle_z": -439.12,
+  "portal": "11"
+ },
+ {
+  "id": 297648147,
+  "calle": "Ferialeku",
+  "calle_x": 78.18,
+  "calle_z": -443.83,
+  "portal": "9"
+ },
+ {
+  "id": 297648148,
+  "calle": "Ferialeku",
+  "calle_x": 74.66,
+  "calle_z": -422.88,
+  "portal": "5"
+ },
+ {
+  "id": 297648149,
+  "calle": "Ferialeku",
+  "calle_x": 68.09,
+  "calle_z": -426.62,
+  "portal": "7"
+ },
+ {
+  "id": 297648150,
+  "calle": "Ferialeku",
+  "calle_x": 107.7,
+  "calle_z": -452.06,
+  "portal": "25"
+ },
+ {
+  "id": 297699633,
+  "calle": "Ferialeku",
+  "calle_x": 103.57,
+  "calle_z": -454.67,
+  "portal": "27"
+ },
+ {
+  "id": 297699634,
+  "calle": "Ferialeku",
+  "calle_x": 99.56,
+  "calle_z": -457.21,
+  "portal": "27"
+ },
+ {
+  "id": 297699635,
+  "calle": "Ferialeku",
+  "calle_x": 90.89,
+  "calle_z": -462.7,
+  "portal": "23"
+ },
+ {
+  "id": 297699636,
+  "calle": "Ferialeku",
+  "calle_x": 97.04,
+  "calle_z": -458.8,
+  "portal": "31"
+ },
+ {
+  "id": 297699637,
+  "calle": "Ferialeku",
+  "calle_x": 89.87,
+  "calle_z": -486.7,
+  "portal": "33"
+ },
+ {
+  "id": 297699638,
+  "calle": "Ferialeku",
+  "calle_x": 92.7,
+  "calle_z": -491.53,
+  "portal": "35"
+ },
+ {
+  "id": 297699639,
+  "calle": "Ferialeku",
+  "calle_x": 96.18,
+  "calle_z": -497.45,
+  "portal": "37"
+ },
+ {
+  "id": 297699641,
+  "calle": "Santa Kruz",
+  "calle_x": 115.59,
+  "calle_z": -493.48,
+  "portal": "44"
+ },
+ {
+  "id": 297699642,
+  "calle": "Santa Kruz",
+  "calle_x": 123.62,
+  "calle_z": -489.04,
+  "portal": "46"
+ },
+ {
+  "id": 297699643,
+  "calle": "Ferialeku",
+  "calle_x": 101.99,
+  "calle_z": -507.23,
+  "portal": "41"
+ },
+ {
+  "id": 297699644,
+  "calle": "Ferialeku",
+  "calle_x": 105.89,
+  "calle_z": -513.74,
+  "portal": "43"
+ },
+ {
+  "id": 297699645,
+  "calle": "Aldautia",
+  "calle_x": 131.27,
+  "calle_z": -511.13,
+  "portal": "1"
+ },
+ {
+  "id": 297699646,
+  "calle": "Aldautia",
+  "calle_x": 137.24,
+  "calle_z": -507.36,
+  "portal": "3"
+ },
+ {
+  "id": 297725348,
+  "calle": "Lapurbide",
+  "calle_x": 145.9,
+  "calle_z": -457.76,
+  "portal": "2"
+ },
+ {
+  "id": 297725350,
+  "calle": "Lapurbide",
+  "calle_x": 158.61,
+  "calle_z": -449.27,
+  "portal": "4"
+ },
+ {
+  "id": 297725351,
+  "calle": "Santa Kruz",
+  "calle_x": 134.9,
+  "calle_z": -482.79,
+  "portal": "39"
+ },
+ {
+  "id": 297725352,
+  "calle": "Santa Kruz",
+  "calle_x": 134.9,
+  "calle_z": -482.79,
+  "portal": "41"
+ },
+ {
+  "id": 297725353,
+  "calle": "Aldautia",
+  "calle_x": 170.6,
+  "calle_z": -487.72,
+  "portal": "7"
+ },
+ {
+  "id": 297725354,
+  "calle": "Aldautia",
+  "calle_x": 175.46,
+  "calle_z": -485.35,
+  "portal": "9"
+ },
+ {
+  "id": 297725356,
+  "calle": "Aldautia",
+  "calle_x": 180.56,
+  "calle_z": -482.87,
+  "portal": "11"
+ },
+ {
+  "id": 297725358,
+  "calle": "Aldautia",
+  "calle_x": 187.73,
+  "calle_z": -466.19,
+  "portal": "13"
+ },
+ {
+  "id": 301232710,
+  "calle": "Soldaubide",
+  "calle_x": 203.83,
+  "calle_z": -451.74,
+  "portal": "3-5-7-9"
+ },
+ {
+  "id": 301232713,
+  "calle": "Amandrea",
+  "calle_x": 260.36,
+  "calle_z": -428.13,
+  "portal": "14-16-18-20"
+ },
+ {
+  "id": 590205682,
+  "calle": "Felix Arano",
+  "calle_x": -856.59,
+  "calle_z": -565.15
+ },
+ {
+  "id": 760502523,
+  "calle": "Bakea",
+  "calle_x": -523.98,
+  "calle_z": -596.56,
+  "portal": "51"
+ },
+ {
+  "id": 783874275,
+  "portal": "1"
+ },
+ {
+  "id": 784673789,
+  "calle": "Zelai",
+  "calle_x": -452.18,
+  "calle_z": 136.03,
+  "portal": "138"
+ },
+ {
+  "id": 784673790,
+  "calle": "Zelai",
+  "calle_x": -463.24,
+  "calle_z": 155.31,
+  "portal": "140"
+ },
+ {
+  "id": 784673826,
+  "calle": "Isidoro Melero",
+  "calle_x": -384.56,
+  "calle_z": -294.17,
+  "portal": "23"
+ },
+ {
+  "id": 1225734435,
+  "calle": "Texeria Aldapa kalea",
+  "calle_x": -543.27,
+  "calle_z": 292.89,
+  "portal": "1"
+ }
+]

@@ -1,4 +1,11 @@
 import unreal
+
+# La API de editor de 5.8 pasa por aquí: subsistemas en vez de las
+# librerías obsoletas, y los nombres que no existían. Ver ue5_compat.py.
+import sys as _sys, os as _os
+_sys.path.append(_os.path.join(unreal.Paths.project_dir(), "Tools"))
+import ue5_compat as compat
+
 import os
 import struct
 
@@ -12,7 +19,7 @@ def run():
         unreal.log_error(f"No existe: {r16_path}")
         return
 
-    world = unreal.EditorLevelLibrary.get_editor_world()
+    world = compat.mundo()
     if not world:
         unreal.log_error("Sin mundo editor")
         return
@@ -43,14 +50,11 @@ def run():
         loc_x = 606500.0 - 360000.0  # HerrikoPlaza - half world
         loc_y = 4749500.0 - 360000.0
 
-        asset_tools = unreal.AssetToolsHelpers.get_asset_tools()
-        landscape_path = "/Game/Terreno/Landscape_HM"
-        hm_asset = asset_tools.create_asset(
-            "Landscape_HM", "/Game/Terreno",
-            unreal.HeightmapImportFactory, unreal.HeightmapImportFactory()
-        )
-
-        unreal.EditorLevelLibrary.spawn_actor_from_class(
+        # El heightmap no se puede importar desde Python: no hay factory
+        # expuesta (unreal.HeightmapImportFactory no existe, y ese create_asset
+        # saltaba al except de abajo sin dejar rastro). Se crea el Landscape
+        # vacío y se importa el .r16 desde Landscape Mode > Import from File.
+        compat.actores().spawn_actor_from_class(
             unreal.Landscape, unreal.Vector(loc_x, loc_y, loc_z)
         )
         unreal.log("Landscape creado. Asigna heightmap manualmente si no se ve.")

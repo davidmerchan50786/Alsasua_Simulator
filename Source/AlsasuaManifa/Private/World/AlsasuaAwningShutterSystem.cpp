@@ -101,7 +101,9 @@ int32 UAlsasuaAwningShutterSystem::ColocarToldosYPersianas()
         }
         CX /= VertsArr->Num();
         CZ /= VertsArr->Num();
-        FVector Center = UAlsasuaGeoData::RelLocalToUE5(FVector(CX, 0.0f, CZ));
+        // La cota sale del terreno: antes era 0 y los toldos y persianas de los
+        // 1030 edificios quedaban medio kilómetro bajo el pueblo (está a 531 m).
+        FVector Center = UAlsasuaGeoData::RelLocalASueloUE5(GetWorld(), FVector(CX, 0.0f, CZ));
 
         // Misma altura medida que el resto: las persianas se reparten por planta
         // (Height/3), así que con la altura de OSM faltaban las de arriba.

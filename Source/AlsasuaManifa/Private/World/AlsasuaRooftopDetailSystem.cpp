@@ -55,19 +55,21 @@ int32 UAlsasuaRooftopDetailSystem::ColocarDetallesCubierta()
         CX /= VertsArr->Num();
         CZ /= VertsArr->Num();
 
-        FVector RoofCenter = UAlsasuaGeoData::RelLocalToUE5(FVector(CX, 0.0f, CZ));
-
-        // La misma altura medida que usan CargadorEdificios y el generador de
-        // fachadas. Si aquí se quedara la de OSM, que es ~3 m más baja, las
-        // chimeneas y antenas aparecerían enterradas dentro del tejado.
+        // Dos correcciones que se suman:
+        //  - La cota parte del SUELO (RelLocalASueloUE5) y no de Z=0, o las
+        //    antenas y depósitos salían a media montaña por debajo del pueblo.
+        //  - La altura es la medida por LiDAR y no la de OSM, ~3 m más baja, con
+        //    la que las chimeneas quedaban enterradas dentro del tejado.
         {
             float AltLidar = 0.f;
             int32 PlantasLidar = 0;
-            if (AlturasLidar::Buscar(FVector2D(RoofCenter.X, RoofCenter.Y), AltLidar, PlantasLidar))
+            const FVector Plano = UAlsasuaGeoData::RelLocalToUE5(FVector(CX, 0.0f, CZ));
+            if (AlturasLidar::Buscar(FVector2D(Plano.X, Plano.Y), AltLidar, PlantasLidar))
                 Height = AltLidar;
         }
 
-        RoofCenter.Z += Height * 100.0f;
+        FVector RoofCenter = UAlsasuaGeoData::RelLocalASueloUE5(GetWorld(),
+            FVector(CX, 0.0f, CZ), Height * 100.0f);
 
         const bool bFlatRoof = RoofTipo.Contains(TEXT("cemento"));
         const bool bPitchedRoof = RoofTipo.Contains(TEXT("pizarra")) || RoofTipo.Contains(TEXT("teja"));

@@ -17,6 +17,11 @@ Crea en /Game/Input/:
 """
 import unreal
 
+# La API de editor de 5.8 pasa por aquí: subsistemas en vez de las
+# librerías obsoletas, y los nombres que no existían. Ver ue5_compat.py.
+import sys as _sys, os as _os
+_sys.path.append(_os.path.join(unreal.Paths.project_dir(), "Tools"))
+import ue5_compat as compat
 
 INPUT_DIR = "/Game/Input"
 
@@ -70,17 +75,17 @@ MAPPINGS = [
 
 
 def ensure_folder():
-    if not unreal.EditorAssetLibrary.does_asset_exist(INPUT_DIR):
-        unreal.EditorAssetLibrary.make_directory(INPUT_DIR)
+    if not compat.assets().does_asset_exist(INPUT_DIR):
+        compat.assets().make_directory(INPUT_DIR)
         unreal.log("Creada carpeta /Game/Input")
 
 
 def create_input_action(name, value_type):
     """Crea un InputAction asset."""
     path = f"{INPUT_DIR}/{name}"
-    if unreal.EditorAssetLibrary.does_asset_exist(path):
+    if compat.assets().does_asset_exist(path):
         unreal.log(f"  {name} ya existe, saltando.")
-        return unreal.EditorAssetLibrary.load_asset(path)
+        return compat.assets().load_asset(path)
 
     factory = unreal.InputActionFactoryNew()
     ia = unreal.AssetToolsHelpers.get_asset_tools().create_asset(
@@ -98,7 +103,7 @@ def create_input_action(name, value_type):
         "Axis3D": unreal.PlayerMappableKeySettings,
     }
 
-    unreal.EditorAssetLibrary.save_asset(path)
+    compat.assets().save_asset(path)
     unreal.log(f"  Creado {name}")
     return ia
 
@@ -106,9 +111,9 @@ def create_input_action(name, value_type):
 def create_mapping_context():
     """Crea el InputMapping Context principal."""
     path = f"{INPUT_DIR}/IMC_Jugador"
-    if unreal.EditorAssetLibrary.does_asset_exist(path):
+    if compat.assets().does_asset_exist(path):
         unreal.log("IMC_Jugador ya existe, saltando.")
-        return unreal.EditorAssetLibrary.load_asset(path)
+        return compat.assets().load_asset(path)
 
     factory = unreal.InputMappingContextFactoryNew()
     imc = unreal.AssetToolsHelpers.get_asset_tools().create_asset(
@@ -118,7 +123,7 @@ def create_mapping_context():
         unreal.log_error("No se pudo crear IMC_Jugador")
         return None
 
-    unreal.EditorAssetLibrary.save_asset(path)
+    compat.assets().save_asset(path)
     unreal.log("Creado IMC_Jugador")
     return imc
 
@@ -126,14 +131,14 @@ def create_mapping_context():
 def add_mappings():
     """Añade los key mappings al IMC."""
     path = f"{INPUT_DIR}/IMC_Jugador"
-    imc = unreal.EditorAssetLibrary.load_asset(path)
+    imc = compat.assets().load_asset(path)
     if not imc:
         unreal.log_error("IMC_Jugador no encontrado para añadir mappings")
         return
 
     for action_name, key_name, modifiers in MAPPINGS:
         ia_path = f"{INPUT_DIR}/{action_name}"
-        ia = unreal.EditorAssetLibrary.load_asset(ia_path)
+        ia = compat.assets().load_asset(ia_path)
         if not ia:
             unreal.log_warning(f"  InputAction {action_name} no encontrado, saltando mapping")
             continue
@@ -145,7 +150,7 @@ def add_mappings():
 
         imc.add_player_mapping(mapping)
 
-    unreal.EditorAssetLibrary.save_asset(path)
+    compat.assets().save_asset(path)
     unreal.log("Mappings añadidos a IMC_Jugador")
 
 

@@ -1,4 +1,6 @@
 #include "GeoDataAlsasua.h"
+#include "Engine/World.h"
+#include "CollisionQueryParams.h"
 #include <cmath>
 
 // ============================================================
@@ -55,6 +57,31 @@ FVector UAlsasuaGeoData::RelLocalToUE5(const FVector& RelLocalPos)
     const double Ax = RelLocalPos.X + OX;
     const double Az = RelLocalPos.Z + OZ;
     return FVector(Ax * 100.0, Az * 100.0, RelLocalPos.Y * 100.0);
+}
+
+// ============================================================
+//  Cota del terreno
+// ============================================================
+
+float UAlsasuaGeoData::AlturaSueloUE5(const UWorld* World, double XCm, double YCm)
+{
+    if (!World) return CotaPlazaCm;
+
+    FHitResult Hit;
+    const FCollisionQueryParams Q(SCENE_QUERY_STAT(AlturaSueloUE5), true);
+    if (World->LineTraceSingleByChannel(Hit,
+            FVector(XCm, YCm, TraceUp), FVector(XCm, YCm, TraceDown), ECC_Visibility, Q))
+    {
+        return Hit.Location.Z;
+    }
+    return CotaPlazaCm;
+}
+
+FVector UAlsasuaGeoData::RelLocalASueloUE5(const UWorld* World, const FVector& RelLocalPos,
+                                          float SobreSueloCm)
+{
+    const FVector P = RelLocalToUE5(RelLocalPos);
+    return FVector(P.X, P.Y, AlturaSueloUE5(World, P.X, P.Y) + SobreSueloCm);
 }
 
 // ============================================================

@@ -57,11 +57,12 @@ int32 UAlsasuaBuildingInteriorSystem::GenerarInteriores()
         CX /= VertsArr->Num();
         CZ /= VertsArr->Num();
 
-        FVector Center = UAlsasuaGeoData::RelLocalToUE5(FVector(CX, 0.0f, CZ));
+        // Dos correcciones independientes que se suman: el centro se apoya en el
+        // SUELO y no en Z=0, y la altura es la medida por LiDAR. Con la de OSM
+        // salían menos plantas de las que tiene el edificio, o sea ventanas
+        // encendidas sólo abajo y a oscuras las de arriba.
+        FVector Center = UAlsasuaGeoData::RelLocalASueloUE5(GetWorld(), FVector(CX, 0.0f, CZ));
 
-        // Misma altura medida que el resto del pipeline. Con la de OSM salían
-        // menos plantas de las que tiene el edificio, o sea ventanas encendidas
-        // sólo en la parte baja y a oscuras las de arriba.
         {
             float AltLidar = 0.f;
             int32 PlantasLidar = 0;

@@ -83,8 +83,9 @@ int32 UAlsasuaFarolaPlacer::ColocarFarolasEnMundo()
 
     for (const FFarolaEntry& F : Farolas)
     {
-        FVector Loc = UAlsasuaGeoData::RelLocalToUE5(FVector(F.X, 0.0f, F.Z));
-        Loc.Z += F.AlturaM * 50.0f;
+        // Media altura sobre el terreno, no sobre el nivel del mar.
+        FVector Loc = UAlsasuaGeoData::RelLocalASueloUE5(GetWorld(), FVector(F.X, 0.0f, F.Z),
+            F.AlturaM * 50.0f);
 
         AStaticMeshActor* FarolaActor = World->SpawnActor<AStaticMeshActor>(
             AStaticMeshActor::StaticClass(), Loc, FRotator(0, F.Rotacion, 0));

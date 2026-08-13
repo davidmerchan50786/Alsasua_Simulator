@@ -316,16 +316,17 @@ void ADirectorArranque::IniciarConstruccion()
         UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d edificios con luces interiores."), InteriorCount);
     }
 
-    // --- 21. Fachadas reales (building_facades.json: ventanas, balcones, tiendas) ---
+    // --- 21. Landmarks y paradas de transporte ---
+    // Las ventanas de building_facades.json ya no se generan aparte: las labra
+    // AEdificioGenerado en el muro real (CargadorEdificios lee la fachada).
     {
         UAlsasuaFacadeGenerator* Facades = World->GetGameInstance()->GetSubsystem<UAlsasuaFacadeGenerator>();
         if (Facades)
         {
-            const int32 NumFachadas = Facades->GenerarFachadasEnMundo();
             const int32 NumLMK = Facades->ColocarLandmarksReales();
             const int32 NumTransport = Facades->ColocarParadasTransporte();
-            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d fachadas, %d landmarks, %d paradas transporte."),
-                NumFachadas, NumLMK, NumTransport);
+            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d landmarks, %d paradas transporte."),
+                NumLMK, NumTransport);
         }
     }
 

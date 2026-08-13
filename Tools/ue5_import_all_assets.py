@@ -7,6 +7,13 @@ Characters (FBX with 'Bot@' or 'Walking' in name) -> SkeletalMesh/Animation
 Everything else -> StaticMesh
 """
 import unreal
+
+# La API de editor de 5.8 pasa por aquí: subsistemas en vez de las
+# librerías obsoletas, y los nombres que no existían. Ver ue5_compat.py.
+import sys as _sys, os as _os
+_sys.path.append(_os.path.join(unreal.Paths.project_dir(), "Tools"))
+import ue5_compat as compat
+
 import os
 
 ASSETS_ROOT = unreal.Paths.project_content_dir() + "AssetsImportados"
@@ -27,6 +34,8 @@ def import_file(filepath, dest_folder):
 
     ext = os.path.splitext(filename)[1].lower()
 
+    # FBX por el importador clásico: pasarle un FbxImportUI es lo que lo
+    # selecciona, y en 5.8 sigue estando.
     if ext == ".fbx":
         s = unreal.FbxImportUI()
         s.set_editor_property("import_mesh", True)
@@ -35,14 +44,15 @@ def import_file(filepath, dest_folder):
         s.set_editor_property("convert_scene", True)
         s.set_editor_property("import_as_skeletal", False)
         task.set_editor_property("options", s)
-    # El glTF va sin options a propósito: lo importa Interchange (el plugin
-    # InterchangeEditor del .uproject) con sus pipelines por defecto. La clase
-    # GltfImportUI que había aquí no existe en 5.8, así que sólo servía para
-    # reventar la importación de los glTF antes de empezarla.
-
-    unreal.AssetToolsHelpers.get_asset_tools().import_asset_tasks([task])
-
-    creados = task.get_editor_property("imported_object_paths") or []
+    # glTF/GLB van por Interchange y no llevan options: unreal.GltfImportUI no
+    # existe (era un AttributeError en cada .gltf, y el except de RunAll lo
+    # tapaba). Sin options se usa la pipeline por defecto, que importa malla,
+    # materiales y texturas.
+    #
+    # La llamada va por compat.importar_tareas, que además de usar la API buena
+    # devuelve las rutas creadas: sirve para saber si la importación hizo algo,
+    # que es más fiable que mirar la propiedad "result" de la tarea.
+    creados = compat.importar_tareas([task])
     if creados:
         unreal.log("  Importado: {} -> {} ({} assets)".format(asset_name, dest_folder, len(creados)))
         return True

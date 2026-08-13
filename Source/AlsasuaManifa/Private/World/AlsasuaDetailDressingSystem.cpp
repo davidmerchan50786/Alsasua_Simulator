@@ -80,7 +80,11 @@ void UAlsasuaDetailDressingSystem::CargarMueblesReales(UWorld* World)
         const float Z = Obj->GetNumberField(TEXT("z"));
         const float Y = Obj->HasField(TEXT("y")) ? Obj->GetNumberField(TEXT("y")) : 0.0f;
 
-        const FVector Pos = UAlsasuaGeoData::RelLocalToUE5(FVector(X, Y, Z));
+        // La Y del JSON es altura sobre el suelo, no cota absoluta: se suma a
+        // la del terreno. Antes se tomaba como cota y las 220 piezas de
+        // mobiliario quedaban a 531 m por debajo del pueblo.
+        FVector Pos = UAlsasuaGeoData::RelLocalToUE5(FVector(X, Y, Z));
+        Pos.Z += UAlsasuaGeoData::AlturaSueloUE5(GetWorld(), Pos.X, Pos.Y);
 
         // street_furniture.json trae "rotacion" por pieza y se estaba ignorando:
         // los 24 bancos y las 12 marquesinas quedaban todos mirando al norte.
@@ -214,6 +218,7 @@ void UAlsasuaDetailDressingSystem::ColocarMacetas(UWorld* World)
         FVector Pos = Centro + FVector(
             FMath::RandRange(-800.0f, 800.0f),
             FMath::RandRange(-800.0f, 800.0f), 0);
+        Pos.Z = UAlsasuaGeoData::AlturaSueloUE5(GetWorld(), Pos.X, Pos.Y);
 
         float Escala = FMath::RandRange(0.8f, 1.5f);
         float Rot = FMath::RandRange(0.0f, 360.0f);
@@ -288,6 +293,7 @@ void UAlsasuaDetailDressingSystem::ColocarPapeleiras(UWorld* World)
         FVector Pos = Centro + FVector(
             FMath::RandRange(-1000.0f, 1000.0f),
             FMath::RandRange(-1000.0f, 1000.0f), 0);
+        Pos.Z = UAlsasuaGeoData::AlturaSueloUE5(GetWorld(), Pos.X, Pos.Y);
 
         FDetailItem Item;
         Item.Tipo = TEXT("papelera");
@@ -348,6 +354,7 @@ void UAlsasuaDetailDressingSystem::ColocarVallasVerdes(UWorld* World)
         FVector Pos = Centro + FVector(
             FMath::RandRange(-1200.0f, 1200.0f),
             FMath::RandRange(-1200.0f, 1200.0f), 0);
+        Pos.Z = UAlsasuaGeoData::AlturaSueloUE5(GetWorld(), Pos.X, Pos.Y);
 
         FDetailItem Item;
         Item.Tipo = TEXT("valla_verde");
