@@ -105,7 +105,7 @@ int32 UAlsasuaArakilWaterSystem::GenerarMallaAgua()
         WaterActor->SetActorScale3D(FVector(Seg.Largo / 100.0f, Seg.Ancho / 100.0f, 0.05f));
 
         UStaticMesh* PlaneMesh = LoadObject<UStaticMesh>(nullptr,
-            TEXT("/Game/EngineBasicShapes/Plane"));
+            TEXT("/Engine/BasicShapes/Plane.Plane"));
         if (PlaneMesh)
             WaterActor->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
 

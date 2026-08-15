@@ -1,12 +1,14 @@
 #include "DirectorArranque.h"
 #include "ArranqueMundo.h"
 #include "TerrenoGenerado.h"
+#include "TerrenoLejano.h"
 #include "MuestreadorAltura.h"
 #include "CargadorArboles.h"
 #include "CargadorVias.h"
 #include "CargadorCalles.h"
 #include "CargadorPoligonos.h"
 #include "CargadorEdificios.h"
+#include "AlsasuaTejadoModular.h"
 #include "HerrikoPlazaGenerator.h"
 #include "CargadorPuentes.h"
 #include "CargadorPOI.h"
@@ -92,6 +94,36 @@ void ADirectorArranque::IniciarConstruccion()
         UE_LOG(LogTemp, Log, TEXT("DirectorArranque: Terreno procedural spawneado."));
     }
 
+    // --- 1b. Suelos poligonales: 5 plazas + 273 zonas verdes ---
+    // Va aquí, pegado al terreno y ANTES que árboles/calles/edificios, porque
+    // APoligonoSuelo muestrea Z con un LineTrace por ECC_Visibility que no filtra
+    // por actor: coge lo más alto que encuentre. Con el terreno solo, drapea sobre
+    // el terreno; detrás de los árboles, un vértice de zona verde bajo una copa
+    // drapearía a la altura de la copa. La colisión del terreno ya está lista a
+    // estas alturas: los árboles usan este mismo trace en la fase siguiente.
+    UCargadorPoligonos* Suelos = World->GetSubsystem<UCargadorPoligonos>();
+    if (Suelos)
+    {
+        const int32 NumSuelos = Suelos->Cargar();
+        UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d suelos poligonales (plazas + zonas verdes)."), NumSuelos);
+    }
+
+    // --- 1c. Relieve lejano: anillo de 60 km alrededor del terreno jugable ---
+    // Para que el mundo no se corte en seco a 3,6 km. Necesita el terreno ya
+    // spawneado, porque le pregunta dónde acaba para dejar ahí su agujero y funde
+    // las alturas contra su borde. No tiene colisión, así que no estorba a los
+    // muestreos de suelo por LineTrace de las fases siguientes.
+    ATerrenoLejano* Lejano = World->SpawnActor<ATerrenoLejano>(
+        ATerrenoLejano::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator);
+    if (Lejano)
+    {
+#if WITH_EDITOR
+        Lejano->SetActorLabel(TEXT("Alsasua_RelieveLejano"));
+#endif
+        const int32 NumTris = Lejano->Construir();
+        UE_LOG(LogTemp, Log, TEXT("DirectorArranque: relieve lejano con %d triangulos."), NumTris);
+    }
+
     ArranqueMundo::Progreso = 0.3f;
 
     // --- 2. Árboles (2783 posiciones LIDAR reales) ---
@@ -128,6 +160,16 @@ void ADirectorArranque::IniciarConstruccion()
     {
         Edificios->Cargar();
         UE_LOG(LogTemp, Log, TEXT("DirectorArranque: Edificios cargados (LIDAR real)."));
+    }
+
+    // --- 5b. Remate de tejados con el kit modular (piezas Roof_ de Village) ---
+    // Tiene que ir después de los edificios: lee los AEdificioGenerado ya
+    // construidos para colocar las piezas en su propio alero y su cumbrera.
+    UAlsasuaTejadoModular* Tejados = World->GetSubsystem<UAlsasuaTejadoModular>();
+    if (Tejados)
+    {
+        const int32 NumPiezas = Tejados->Cargar();
+        UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d piezas de tejado modular."), NumPiezas);
     }
 
     // --- 6. Herriko Plaza (plaza real con mobiliario) ---
@@ -274,16 +316,17 @@ void ADirectorArranque::IniciarConstruccion()
         UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d edificios con luces interiores."), InteriorCount);
     }
 
-    // --- 21. Fachadas reales (building_facades.json: ventanas, balcones, tiendas) ---
+    // --- 21. Landmarks y paradas de transporte ---
+    // Las ventanas de building_facades.json ya no se generan aparte: las labra
+    // AEdificioGenerado en el muro real (CargadorEdificios lee la fachada).
     {
         UAlsasuaFacadeGenerator* Facades = World->GetGameInstance()->GetSubsystem<UAlsasuaFacadeGenerator>();
         if (Facades)
         {
-            const int32 NumFachadas = Facades->GenerarFachadasEnMundo();
             const int32 NumLMK = Facades->ColocarLandmarksReales();
             const int32 NumTransport = Facades->ColocarParadasTransporte();
-            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d fachadas, %d landmarks, %d paradas transporte."),
-                NumFachadas, NumLMK, NumTransport);
+            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d landmarks, %d paradas transporte."),
+                NumLMK, NumTransport);
         }
     }
 

@@ -40,7 +40,7 @@ void UAlsasuaTerrainLayersSystem::AplicarMaterialesPorBarrio()
         FloorActor->SetMobility(EComponentMobility::Static);
 
         UStaticMesh* PlaneMesh = LoadObject<UStaticMesh>(nullptr,
-            TEXT("/Game/EngineBasicShapes/Plane"));
+            TEXT("/Engine/BasicShapes/Plane.Plane"));
         if (PlaneMesh)
             FloorActor->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
 
@@ -75,7 +75,7 @@ void UAlsasuaTerrainLayersSystem::GenerarSueloCiudad()
     Suelo->SetActorScale3D(FVector(Scale, Scale, 1.0f));
 
     UStaticMesh* PlaneMesh = LoadObject<UStaticMesh>(nullptr,
-        TEXT("/Game/EngineBasicShapes/Plane"));
+        TEXT("/Engine/BasicShapes/Plane.Plane"));
     if (PlaneMesh)
         Suelo->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
 

@@ -8,7 +8,10 @@ import sys
 import json
 
 BLENDER = r"C:\Program Files\Blender Foundation\Blender 5.2\blender.exe"
-BASE = r"F:\Epic Games\UE_5.7\altsasu_gtavii\UnrealProject\Content\AssetsImportados"
+# Raiz derivada de donde vive este fichero. Antes fija a la maquina original
+# ("F:/Epic Games/UE_5.7/altsasu_gtavii/UnrealProject"), asi que solo corria alli.
+RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE = os.path.join(RAIZ, "Content", "AssetsImportados")
 
 # Python script to run inside Blender
 BLENDER_SCRIPT = r'''

@@ -1,13 +1,41 @@
 #include "World/AlsasuaDoorEntranceSystem.h"
+#include "World/AlsasuaMallaFab.h"
+#include "World/AlsasuaDirecciones.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "Engine/StaticMeshActor.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/TextRenderComponent.h"
+#include "CollisionQueryParams.h"
+#include "Math/RandomStream.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "GeoDataAlsasua.h"
+
+namespace
+{
+    /**
+     * Cota del suelo bajo un punto del mundo.
+     *
+     * Las puertas salían a Z = 110 cm absolutos, y Herriko Plaza está a 531 m:
+     * las 1030 estaban medio kilómetro por debajo del pueblo. Si falla el trazo
+     * se usa la cota de la plaza, que al menos deja la puerta en el pueblo.
+     */
+    float AlturaSuelo(UWorld* World, const FVector2D& XY)
+    {
+        FHitResult Hit;
+        const FCollisionQueryParams Q(SCENE_QUERY_STAT(AlturaPuerta), true);
+        if (World && World->LineTraceSingleByChannel(Hit,
+                FVector(XY.X, XY.Y, UAlsasuaGeoData::TraceUp),
+                FVector(XY.X, XY.Y, UAlsasuaGeoData::TraceDown), ECC_Visibility, Q))
+        {
+            return Hit.Location.Z;
+        }
+        return UAlsasuaGeoData::CotaPlazaCm;
+    }
+}
 
 void UAlsasuaDoorEntranceSystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -32,6 +60,8 @@ int32 UAlsasuaDoorEntranceSystem::ColocarPuertas()
 
     Puertas.Empty();
     int32 Placed = 0;
+    int32 ConCalle = 0;
+    int32 Rotulos = 0;
 
     const TArray<FString> ColoresPuerta = {
         TEXT("marron"), TEXT("verde_oscuro"), TEXT("azul_oscuro"),
@@ -49,45 +79,64 @@ int32 UAlsasuaDoorEntranceSystem::ColocarPuertas()
         const TArray<TSharedPtr<FJsonValue>>* VertsArr;
         if (!Bld->TryGetArrayField(TEXT("vertices"), VertsArr) || !VertsArr || VertsArr->Num() < 3) continue;
 
-        float CX = 0, CZ = 0;
-        float minX = 1e9f, maxX = -1e9f;
-        float minZ = 1e9f, maxZ = -1e9f;
+        // Centroide y caja del footprint, en local relativo: X = x, Y = z.
+        FVector2D Centro(0.f, 0.f);
+        FVector2D Min2(TNumericLimits<float>::Max(), TNumericLimits<float>::Max());
+        FVector2D Max2(TNumericLimits<float>::Lowest(), TNumericLimits<float>::Lowest());
         for (const auto& V : *VertsArr)
         {
             const TSharedPtr<FJsonObject>& Vert = V->AsObject();
             if (!Vert) continue;
-            float VX = Vert->GetNumberField(TEXT("x"));
-            float VZ = Vert->GetNumberField(TEXT("z"));
-            CX += VX;
-            CZ += VZ;
-            minX = FMath::Min(minX, VX);
-            maxX = FMath::Max(maxX, VX);
-            minZ = FMath::Min(minZ, VZ);
-            maxZ = FMath::Max(maxZ, VZ);
+            const FVector2D P(Vert->GetNumberField(TEXT("x")), Vert->GetNumberField(TEXT("z")));
+            Centro += P;
+            Min2.X = FMath::Min(Min2.X, P.X); Min2.Y = FMath::Min(Min2.Y, P.Y);
+            Max2.X = FMath::Max(Max2.X, P.X); Max2.Y = FMath::Max(Max2.Y, P.Y);
         }
-        CX /= VertsArr->Num();
-        CZ /= VertsArr->Num();
+        Centro /= VertsArr->Num();
 
-        float DX = maxX - minX;
-        float DZ = maxZ - minZ;
-        float DoorRot;
-        FVector DoorOffset;
+        // Sorteos por id: el color y el toldo eran FRand, así que cambiaban en
+        // cada arranque y no se podía razonar sobre lo que se veía.
+        FRandomStream Sorteo(Id * 2654435761u + 31);
 
-        if (DX > DZ)
+        // Las cuatro fachadas candidatas: centro de cada lado de la caja, con
+        // el yaw que las hace mirar afuera (+X del mundo es el este, +Y el norte).
+        const FVector2D Lados[4] = {
+            FVector2D(Max2.X, Centro.Y), FVector2D(Min2.X, Centro.Y),
+            FVector2D(Centro.X, Max2.Y), FVector2D(Centro.X, Min2.Y) };
+        const float Yaws[4] = { 0.f, 180.f, 90.f, 270.f };
+
+        // Fachada de entrada: la que da a su calle. Antes era una moneda al aire
+        // (dos FRand por edificio), así que la puerta cambiaba de fachada en cada
+        // arranque; con addr:street de OSM se elige el lado más cercano al eje
+        // de su calle. 374 edificios lo tienen; el resto cae al lado largo.
+        const AlsasuaDirecciones::FDireccion* Dir = AlsasuaDirecciones::De(Id);
+        const bool bHaciaCalle = Dir && Dir->bTienePuntoCalle;
+
+        int32 Lado = 0;
+        if (bHaciaCalle)
         {
-            DoorRot = (FMath::FRand() < 0.5f) ? 0.0f : 180.0f;
-            float SideZ = (FMath::FRand() < 0.5f) ? minZ : maxZ;
-            DoorOffset = FVector(CX, SideZ, 0);
+            float MejorDist2 = TNumericLimits<float>::Max();
+            for (int32 i = 0; i < 4; ++i)
+            {
+                const float D2 = FVector2D::DistSquared(Lados[i], Dir->PuntoCalle);
+                if (D2 < MejorDist2) { MejorDist2 = D2; Lado = i; }
+            }
         }
         else
         {
-            DoorRot = (FMath::FRand() < 0.5f) ? 90.0f : 270.0f;
-            float SideX = (FMath::FRand() < 0.5f) ? minX : maxX;
-            DoorOffset = FVector(SideX, CZ, 0);
+            // Sin calle conocida: el lado largo, con el sentido sorteado por id.
+            const bool bLadoEnX = (Max2.X - Min2.X) >= (Max2.Y - Min2.Y);
+            Lado = (bLadoEnX ? 0 : 2) + (Sorteo.GetFraction() < 0.5f ? 0 : 1);
         }
 
-        FVector DoorPos = UAlsasuaGeoData::RelLocalToUE5(FVector(DoorOffset.X, 0.0f, DoorOffset.Z));
-        DoorPos.Z += 110.0f;
+        const FVector2D PuertaXZ = Lados[Lado];
+        const float DoorRot = Yaws[Lado];
+
+        // El tercer componente es la altura, no la z local: antes iba
+        // DoorOffset.Z, que nunca se rellenaba, y las 1030 puertas acababan
+        // sobre la línea z=0 del pueblo en vez de en su edificio.
+        FVector DoorPos = UAlsasuaGeoData::RelLocalToUE5(FVector(PuertaXZ.X, 0.f, PuertaXZ.Y));
+        DoorPos.Z = AlturaSuelo(World, FVector2D(DoorPos.X, DoorPos.Y)) + 110.0f;
 
         FDoorEntry Puerta;
         Puerta.BuildingId = Id;
@@ -95,8 +144,14 @@ int32 UAlsasuaDoorEntranceSystem::ColocarPuertas()
         Puerta.Rotacion = DoorRot;
         Puerta.Tipo = (Barrio == TEXT("Herriko") || Barrio == TEXT("Harrobieta")) ?
             TEXT("madera_vieja") : TEXT("moderna");
-        Puerta.Color = ColoresPuerta[FMath::RandRange(0, ColoresPuerta.Num() - 1)];
+        Puerta.Color = ColoresPuerta[Sorteo.RandHelper(ColoresPuerta.Num())];
         Puerta.Barrio = Barrio;
+        if (Dir)
+        {
+            Puerta.Calle = Dir->Calle;
+            Puerta.Portal = Dir->Portal;
+        }
+        if (bHaciaCalle) ++ConCalle;
 
         AStaticMeshActor* PuertaActor = World->SpawnActor<AStaticMeshActor>(
             AStaticMeshActor::StaticClass(), DoorPos, FRotator(0, DoorRot, 0));
@@ -105,8 +160,8 @@ int32 UAlsasuaDoorEntranceSystem::ColocarPuertas()
             PuertaActor->SetMobility(EComponentMobility::Static);
             PuertaActor->SetActorScale3D(FVector(1.0f, 0.1f, 2.2f));
 
-            UStaticMesh* CubeMesh = LoadObject<UStaticMesh>(nullptr,
-                TEXT("/Game/EngineBasicShapes/Cube"));
+            UStaticMesh* CubeMesh = AlsasuaMallaFab::Resolver(TEXT("puerta"),
+                    TEXT("/Engine/BasicShapes/Cube.Cube"));
             if (CubeMesh)
                 PuertaActor->GetStaticMeshComponent()->SetStaticMesh(CubeMesh);
 
@@ -120,11 +175,39 @@ int32 UAlsasuaDoorEntranceSystem::ColocarPuertas()
                 PuertaActor->GetStaticMeshComponent()->SetMaterial(0, PuertaMat);
 
 #if WITH_EDITOR
-            PuertaActor->SetActorLabel(*FString::Printf(TEXT("Puerta_%d_%s"), Id, *Barrio.Left(6)));
+            PuertaActor->SetActorLabel(*FString::Printf(TEXT("Puerta_%d_%s%s"), Id, *Barrio.Left(6),
+                Puerta.Portal.IsEmpty() ? TEXT("") : *FString::Printf(TEXT("_%s"), *Puerta.Portal)));
 #endif
+
+            // Número de portal en la fachada, junto a la puerta.
+            if (!Puerta.Portal.IsEmpty())
+            {
+                UTextRenderComponent* Rotulo = NewObject<UTextRenderComponent>(PuertaActor);
+                Rotulo->RegisterComponent();
+                Rotulo->AttachToComponent(PuertaActor->GetRootComponent(),
+                    FAttachmentTransformRules::KeepWorldTransform);
+                // El actor de la puerta va escalado (1, 0.1, 2.2): sin escala
+                // absoluta el número saldría aplastado diez veces en un eje.
+                Rotulo->SetUsingAbsoluteScale(true);
+                Rotulo->SetText(FText::FromString(Puerta.Portal));
+                Rotulo->SetWorldSize(24.f);
+                Rotulo->SetTextRenderColor(FColor(240, 238, 230));
+                Rotulo->SetHorizontalAlignment(EHTA_Center);
+                Rotulo->SetVerticalAlignment(EVRTA_TextCenter);
+
+                const FRotator Frente(0.f, DoorRot, 0.f);
+                const FVector Fuera = Frente.Vector();
+                const FVector Lateral = FVector::CrossProduct(FVector::UpVector, Fuera);
+                Rotulo->SetWorldLocation(DoorPos + Fuera * 8.f + Lateral * 75.f + FVector(0.f, 0.f, 95.f));
+                // Si el número saliera del revés, es este giro: UTextRender
+                // mira por su +X y basta sumar 180 al yaw.
+                Rotulo->SetWorldRotation(Frente);
+                Rotulo->SetCullDistance(8000.f);   // un portal no se lee a 80 m
+                ++Rotulos;
+            }
         }
 
-        if (Barrio == TEXT("Herriko") && FMath::FRand() < 0.3f)
+        if (Barrio == TEXT("Herriko") && Sorteo.GetFraction() < 0.3f)
         {
             FVector ToldoPos = DoorPos;
             ToldoPos.Z += 130.0f;
@@ -137,7 +220,7 @@ int32 UAlsasuaDoorEntranceSystem::ColocarPuertas()
                 ToldoActor->SetActorScale3D(FVector(2.0f, 1.0f, 0.05f));
 
                 UStaticMesh* PlaneMesh = LoadObject<UStaticMesh>(nullptr,
-                    TEXT("/Game/EngineBasicShapes/Plane"));
+                    TEXT("/Engine/BasicShapes/Plane.Plane"));
                 if (PlaneMesh)
                     ToldoActor->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
 
@@ -156,6 +239,7 @@ int32 UAlsasuaDoorEntranceSystem::ColocarPuertas()
         Placed++;
     }
 
-    UE_LOG(LogTemp, Log, TEXT("Doors: %d puertas y entradas colocadas"), Placed);
+    UE_LOG(LogTemp, Log, TEXT("Doors: %d puertas (%d en la fachada de su calle, %d con número de portal)"),
+        Placed, ConCalle, Rotulos);
     return Placed;
 }

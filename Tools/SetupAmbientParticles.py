@@ -6,6 +6,11 @@ Ejecutar en editor:  Tools > Execute Python Script
 """
 import unreal
 
+# La API de editor de 5.8 pasa por aquí: subsistemas en vez de las
+# librerías obsoletas, y los nombres que no existían. Ver ue5_compat.py.
+import sys as _sys, os as _os
+_sys.path.append(_os.path.join(unreal.Paths.project_dir(), "Tools"))
+import ue5_compat as compat
 
 def add_ambient_particles():
     """Añade UAlsasuaAmbientParticles al jugador."""
@@ -15,21 +20,21 @@ def add_ambient_particles():
         unreal.log_error("[AmbientParticles] No se pudo cargar UAlsasuaAmbientParticles")
         return
 
-    pawns = unreal.EditorLevelLibrary.get_all_level_actors_of_class(unreal.Pawn)
+    pawns = compat.actores().get_all_level_actors_of_class(unreal.Pawn)
     count = 0
     for pawn in pawns:
         existing = pawn.get_component_by_class(ambient_class)
         if not existing:
-            comp = unreal.add_component_to_actor(pawn, ambient_class)
+            comp = compat.anadir_componente(pawn, ambient_class)
             if comp:
                 count += 1
 
-    controllers = unreal.EditorLevelLibrary.get_all_level_actors_of_class(
+    controllers = compat.actores().get_all_level_actors_of_class(
         unreal.PlayerController)
     for pc in controllers:
         existing = pc.get_component_by_class(ambient_class)
         if not existing:
-            comp = unreal.add_component_to_actor(pc, ambient_class)
+            comp = compat.anadir_componente(pc, ambient_class)
             if comp:
                 count += 1
 

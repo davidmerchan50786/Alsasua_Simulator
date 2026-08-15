@@ -1,12 +1,19 @@
-"""
+r"""
 UE5 Materials & Assets Setup Script
 Ejecutar DENTRO de UE5 con Python Script Plugin habilitado:
-  Window > Developer Tools > Output Log > 
-    exec(open(r"F:\Epic Games\UE_5.7\altsasu_gtavii\UnrealProject\Tools\ue5_setup_assets.py").read())
+  Window > Developer Tools > Output Log >
+    exec(open(unreal.Paths.project_dir() + 'Tools/ue5_setup_assets.py').read())
 
 Crea materiales PBR, DataAssets y configura el sistema de assets reales.
 """
 import unreal
+
+# La API de editor de 5.8 pasa por aquí: subsistemas en vez de las
+# librerías obsoletas, y los nombres que no existían. Ver ue5_compat.py.
+import sys as _sys, os as _os
+_sys.path.append(_os.path.join(unreal.Paths.project_dir(), "Tools"))
+import ue5_compat as compat
+
 import os
 import json
 
@@ -18,8 +25,8 @@ MATERIALS_PATH = "/Game/Materials"
 
 def create_folder(path):
     """Create a folder in the Content Browser"""
-    if not unreal.EditorAssetLibrary.does_directory_exist(path):
-        unreal.EditorAssetLibrary.make_directory(path)
+    if not compat.assets().does_directory_exist(path):
+        compat.assets().make_directory(path)
         unreal.log(f"Carpeta creada: {path}")
 
 def create_material(name, parent_material_path, texture_paths, output_path):
@@ -28,12 +35,12 @@ def create_material(name, parent_material_path, texture_paths, output_path):
     texture_paths: dict with keys like 'base_color', 'normal', 'roughness', 'ao'
     """
     full_path = f"{output_path}/{name}"
-    if unreal.EditorAssetLibrary.does_asset_exist(full_path):
+    if compat.assets().does_asset_exist(full_path):
         unreal.log(f"Material ya existe: {full_path}")
         return full_path
     
     # Get parent material
-    parent = unreal.EditorAssetLibrary.load_asset(parent_material_path)
+    parent = compat.assets().load_asset(parent_material_path)
     if not parent:
         unreal.log_warning(f"Parent material no encontrado: {parent_material_path}")
         return None
@@ -49,11 +56,11 @@ def create_material(name, parent_material_path, texture_paths, output_path):
     # Set material domain to Surface
     mat.set_editor_property("material_domain", unreal.MaterialDomain.SURFACE)
     mat.set_editor_property("blend_mode", unreal.BlendMode.OPAQUE)
-    mat.set_editor_property("shading_model", unreal.ShadingModel.DEFAULT_LIT)
+    mat.set_editor_property("shading_model", compat.LIT)
     
     # Apply textures
     for tex_key, tex_path in texture_paths.items():
-        tex = unreal.EditorAssetLibrary.load_asset(tex_path)
+        tex = compat.assets().load_asset(tex_path)
         if not tex:
             unreal.log_warning(f"Textura no encontrada: {tex_path}")
             continue
@@ -77,7 +84,7 @@ def create_material(name, parent_material_path, texture_paths, output_path):
             mat.connect_material_property("World Position Offset", "R", expr, "R")
     
     # Save
-    unreal.EditorAssetLibrary.save_asset(full_path)
+    compat.assets().save_asset(full_path)
     unreal.log(f"Material creado: {full_path}")
     return full_path
 

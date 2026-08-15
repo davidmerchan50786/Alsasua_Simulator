@@ -65,15 +65,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "StreetLight|Flicker")
 	float FlickerDuration = 0.08f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "StreetLight|Flicker")
-	float BurnOutChance = 0.001f;
+	/** Fracción de farolas del pueblo que pueden parpadear (se sortea al empezar). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "StreetLight|Flicker", meta = (ClampMin = "0.0", ClampMax = "1.0"))
+	float FlickerFixtureChance = 0.08f;
 
-	// --- Puddle Reflection ---
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "StreetLight|Reflection")
-	bool bCastPuddleReflection = true;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "StreetLight|Reflection")
-	float PuddleReflectionRadius = 600.f;
+	/** Probabilidad de que esta farola nazca fundida (se sortea una sola vez). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "StreetLight|Flicker", meta = (ClampMin = "0.0", ClampMax = "1.0"))
+	float BurnOutChance = 0.02f;
 
 private:
 	void UpdateLightState(float DeltaTime);
@@ -83,6 +81,8 @@ private:
 	float CurrentIntensity = 0.f;
 	float TargetIntensity = 0.f;
 	float FlickerTimer = 0.f;
+	float FlickerScale = 1.f;
 	bool bIsOn = false;
 	bool bBurnedOut = false;
+	bool bFlickers = false;
 };

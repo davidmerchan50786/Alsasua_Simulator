@@ -55,9 +55,9 @@ int32 UAlsasuaOverheadCableSystem::ColocarCables()
             const TSharedPtr<FJsonObject>& P1 = (*PointsArr)[FMath::Min(i + Step, PointsArr->Num() - 1)]->AsObject();
             if (!P0 || !P1) continue;
 
-            FVector Loc0 = UAlsasuaGeoData::RelLocalToUE5(FVector(
+            FVector Loc0 = UAlsasuaGeoData::RelLocalASueloUE5(GetWorld(), FVector(
                 P0->GetNumberField(TEXT("x")), 0.0f, P0->GetNumberField(TEXT("z"))));
-            FVector Loc1 = UAlsasuaGeoData::RelLocalToUE5(FVector(
+            FVector Loc1 = UAlsasuaGeoData::RelLocalASueloUE5(GetWorld(), FVector(
                 P1->GetNumberField(TEXT("x")), 0.0f, P1->GetNumberField(TEXT("z"))));
 
             Loc0.Z += AlturaCables;
@@ -77,7 +77,7 @@ int32 UAlsasuaOverheadCableSystem::ColocarCables()
             CableActor->SetActorScale3D(FVector(Largo / 100.0f, 0.02f, 0.02f));
 
             UStaticMesh* CubeMesh = LoadObject<UStaticMesh>(nullptr,
-                TEXT("/Game/EngineBasicShapes/Cube"));
+                TEXT("/Engine/BasicShapes/Cube.Cube"));
             if (CubeMesh)
                 CableActor->GetStaticMeshComponent()->SetStaticMesh(CubeMesh);
 
@@ -100,7 +100,7 @@ int32 UAlsasuaOverheadCableSystem::ColocarCables()
                     PostActor->SetActorScale3D(FVector(0.12f, 0.12f, AlturaCables / 100.0f));
 
                     UStaticMesh* CylinderMesh = LoadObject<UStaticMesh>(nullptr,
-                        TEXT("/Game/EngineBasicShapes/Cylinder"));
+                        TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
                     if (CylinderMesh)
                         PostActor->GetStaticMeshComponent()->SetStaticMesh(CylinderMesh);
 

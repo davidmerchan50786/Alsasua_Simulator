@@ -80,7 +80,7 @@ int32 UAlsasuaRoadMarkingsSystem::GenerarMarcas()
         OutComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
         OutComp->SetCanEverAffectNavigation(false);
         OutComp->CastShadow = true;
-        OutComp->SetStaticMesh(LoadObject<UStaticMesh>(nullptr, TEXT("/Game/EngineBasicShapes/Plane")));
+        OutComp->SetStaticMesh(LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Plane.Plane")));
         UMaterialInterface* WhiteMat = CargarMaterialMarcas();
         if (WhiteMat) OutComp->SetMaterial(0, WhiteMat);
         OutComp->SetFlags(RF_Transactional);
@@ -111,9 +111,9 @@ int32 UAlsasuaRoadMarkingsSystem::GenerarMarcas()
             const TSharedPtr<FJsonObject>& P1 = (*PointsArr)[i + 1]->AsObject();
             if (!P0 || !P1) continue;
 
-            FVector Loc0 = UAlsasuaGeoData::RelLocalToUE5(FVector(
+            FVector Loc0 = UAlsasuaGeoData::RelLocalASueloUE5(GetWorld(), FVector(
                 P0->GetNumberField(TEXT("x")), 0.0f, P0->GetNumberField(TEXT("z"))));
-            FVector Loc1 = UAlsasuaGeoData::RelLocalToUE5(FVector(
+            FVector Loc1 = UAlsasuaGeoData::RelLocalASueloUE5(GetWorld(), FVector(
                 P1->GetNumberField(TEXT("x")), 0.0f, P1->GetNumberField(TEXT("z"))));
 
             FVector Centro = (Loc0 + Loc1) * 0.5f;

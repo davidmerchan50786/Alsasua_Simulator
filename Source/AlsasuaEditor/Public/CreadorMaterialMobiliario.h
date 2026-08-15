@@ -11,4 +11,8 @@ class UCreadorMaterialMobiliario : public UBlueprintFunctionLibrary
 public:
 	UFUNCTION(BlueprintCallable, CallInEditor, Category="Alsasua|Materiales")
 	static bool CrearMaterialMobiliario();
+
+	/** Hierro pintado: farolas, barandillas, semáforos, bolardos. */
+	UFUNCTION(BlueprintCallable, CallInEditor, Category="Alsasua|Materiales")
+	static bool CrearMaterialMetal();
 };

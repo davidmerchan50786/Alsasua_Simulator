@@ -20,7 +20,8 @@ static TAutoConsoleVariable<int32> CVarSkipParkingGeneration(
 void UAlsasuaParkingSystem::Initialize(FSubsystemCollectionBase& Collection)
 {
     Super::Initialize(Collection);
-    CargarCalles();
+    // Las calles se leen al generar las plazas, no aquí: en Initialize todavía
+    // no hay terreno y los puntos se quedarían a la cota de la plaza.
 }
 
 void UAlsasuaParkingSystem::CargarCalles()
@@ -51,7 +52,8 @@ void UAlsasuaParkingSystem::CargarCalles()
         {
             const TSharedPtr<FJsonObject>& PO = PV->AsObject();
             if (!PO) continue;
-            Pts.Add(UAlsasuaGeoData::RelLocalToUE5(FVector(PO->GetNumberField(TEXT("x")), 0.0f, PO->GetNumberField(TEXT("z")))));
+            Pts.Add(UAlsasuaGeoData::RelLocalASueloUE5(GetWorld(),
+                FVector(PO->GetNumberField(TEXT("x")), 0.0f, PO->GetNumberField(TEXT("z")))));
         }
 
         for (int32 i = 0; i < Pts.Num() - 1; ++i)
@@ -82,6 +84,8 @@ FVector UAlsasuaParkingSystem::ObtenerPuntoEnCalle(FVector& OutDir)
 
 int32 UAlsasuaParkingSystem::GenerarPlazasAparcamiento()
 {
+    if (SegmentosCalle.Num() == 0) CargarCalles();
+
     if (CVarSkipParkingGeneration.GetValueOnAnyThread() != 0)
     {
         UE_LOG(LogTemp, Log, TEXT("Parking generation skipped by alsasua.SkipParkingGeneration"));
@@ -121,7 +125,7 @@ int32 UAlsasuaParkingSystem::GenerarPlazasAparcamiento()
             SpotActor->SetActorScale3D(FVector(4.5f, 2.5f, 0.05f));
 
             UStaticMesh* PlaneMesh = LoadObject<UStaticMesh>(nullptr,
-                TEXT("/Game/EngineBasicShapes/Plane"));
+                TEXT("/Engine/BasicShapes/Plane.Plane"));
             if (PlaneMesh)
                 SpotActor->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
 
@@ -165,7 +169,7 @@ int32 UAlsasuaParkingSystem::GenerarPlazasAparcamiento()
             GarajeActor->SetActorScale3D(FVector(5.0f, 6.0f, 3.0f));
 
             UStaticMesh* CubeMesh = LoadObject<UStaticMesh>(nullptr,
-                TEXT("/Game/EngineBasicShapes/Cube"));
+                TEXT("/Engine/BasicShapes/Cube.Cube"));
             if (CubeMesh)
                 GarajeActor->GetStaticMeshComponent()->SetStaticMesh(CubeMesh);
 

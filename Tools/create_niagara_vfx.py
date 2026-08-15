@@ -5,20 +5,26 @@ Or: Edit > Editor Preferences > Plugins > Python > enable, then run from Python 
 """
 import unreal
 
+# La API de editor de 5.8 pasa por aquí: subsistemas en vez de las
+# librerías obsoletas, y los nombres que no existían. Ver ue5_compat.py.
+import sys as _sys, os as _os
+_sys.path.append(_os.path.join(unreal.Paths.project_dir(), "Tools"))
+import ue5_compat as compat
+
 def ensure_folder(path):
-    if not unreal.EditorAssetLibrary.does_asset_exist(path):
-        unreal.EditorAssetLibrary.make_directory(path)
+    if not compat.assets().does_asset_exist(path):
+        compat.assets().make_directory(path)
 
 def create_rain_system():
     """NS_Rain: Falling rain streaks"""
     asset_path = "/Game/Effects/NS_Rain"
     ensure_folder("/Game/Effects")
     
-    system = unreal.AssetHelpers.create_asset(
+    system = compat.crear_asset(
         "NS_Rain", "/Game/Effects", unreal.NiagaraSystem, unreal.NiagaraSystemFactoryNew())
     if not system:
         # Fallback: try loading existing
-        system = unreal.EditorAssetLibrary.load_asset(asset_path)
+        system = compat.assets().load_asset(asset_path)
         if system:
             return system
         unreal.log_warning("[VFX] Could not create NS_Rain")
@@ -51,7 +57,7 @@ def create_rain_system():
     # Sprite renderer
     renderer = emitter.find_or_add_renderer("Sprite Renderer")
     
-    system = unreal.EditorAssetLibrary.save_asset(asset_path)
+    system = compat.assets().save_asset(asset_path)
     unreal.log("[VFX] NS_Rain created")
     return system
 
@@ -60,10 +66,10 @@ def create_snow_system():
     asset_path = "/Game/Effects/NS_Snow"
     ensure_folder("/Game/Effects")
     
-    system = unreal.AssetHelpers.create_asset(
+    system = compat.crear_asset(
         "NS_Snow", "/Game/Effects", unreal.NiagaraSystem, unreal.NiagaraSystemFactoryNew())
     if not system:
-        system = unreal.EditorAssetLibrary.load_asset(asset_path)
+        system = compat.assets().load_asset(asset_path)
         if system: return system
         unreal.log_warning("[VFX] Could not create NS_Snow")
         return None
@@ -84,7 +90,7 @@ def create_snow_system():
     
     renderer = emitter.find_or_add_renderer("Sprite Renderer")
     
-    system = unreal.EditorAssetLibrary.save_asset(asset_path)
+    system = compat.assets().save_asset(asset_path)
     unreal.log("[VFX] NS_Snow created")
     return system
 
@@ -93,10 +99,10 @@ def create_dust_system():
     asset_path = "/Game/Effects/NS_Dust"
     ensure_folder("/Game/Effects")
     
-    system = unreal.AssetHelpers.create_asset(
+    system = compat.crear_asset(
         "NS_Dust", "/Game/Effects", unreal.NiagaraSystem, unreal.NiagaraSystemFactoryNew())
     if not system:
-        system = unreal.EditorAssetLibrary.load_asset(asset_path)
+        system = compat.assets().load_asset(asset_path)
         if system: return system
         unreal.log_warning("[VFX] Could not create NS_Dust")
         return None
@@ -117,7 +123,7 @@ def create_dust_system():
     
     renderer = emitter.find_or_add_renderer("Sprite Renderer")
     
-    system = unreal.EditorAssetLibrary.save_asset(asset_path)
+    system = compat.assets().save_asset(asset_path)
     unreal.log("[VFX] NS_Dust created")
     return system
 
@@ -126,10 +132,10 @@ def create_leaves_system():
     asset_path = "/Game/Effects/NS_Leaves"
     ensure_folder("/Game/Effects")
     
-    system = unreal.AssetHelpers.create_asset(
+    system = compat.crear_asset(
         "NS_Leaves", "/Game/Effects", unreal.NiagaraSystem, unreal.NiagaraSystemFactoryNew())
     if not system:
-        system = unreal.EditorAssetLibrary.load_asset(asset_path)
+        system = compat.assets().load_asset(asset_path)
         if system: return system
         unreal.log_warning("[VFX] Could not create NS_Leaves")
         return None
@@ -150,7 +156,7 @@ def create_leaves_system():
     
     renderer = emitter.find_or_add_renderer("Sprite Renderer")
     
-    system = unreal.EditorAssetLibrary.save_asset(asset_path)
+    system = compat.assets().save_asset(asset_path)
     unreal.log("[VFX] NS_Leaves created")
     return system
 
@@ -159,10 +165,10 @@ def create_thunder_system():
     asset_path = "/Game/Effects/NS_ThunderFlash"
     ensure_folder("/Game/Effects")
     
-    system = unreal.AssetHelpers.create_asset(
+    system = compat.crear_asset(
         "NS_ThunderFlash", "/Game/Effects", unreal.NiagaraSystem, unreal.NiagaraSystemFactoryNew())
     if not system:
-        system = unreal.EditorAssetLibrary.load_asset(asset_path)
+        system = compat.assets().load_asset(asset_path)
         if system: return system
         unreal.log_warning("[VFX] Could not create NS_ThunderFlash")
         return None
@@ -182,7 +188,7 @@ def create_thunder_system():
     
     renderer = emitter.find_or_add_renderer("Sprite Renderer")
     
-    system = unreal.EditorAssetLibrary.save_asset(asset_path)
+    system = compat.assets().save_asset(asset_path)
     unreal.log("[VFX] NS_ThunderFlash created")
     return system
 
@@ -191,10 +197,10 @@ def create_pollen_system():
     asset_path = "/Game/Effects/NS_Pollen"
     ensure_folder("/Game/Effects")
     
-    system = unreal.AssetHelpers.create_asset(
+    system = compat.crear_asset(
         "NS_Pollen", "/Game/Effects", unreal.NiagaraSystem, unreal.NiagaraSystemFactoryNew())
     if not system:
-        system = unreal.EditorAssetLibrary.load_asset(asset_path)
+        system = compat.assets().load_asset(asset_path)
         if system: return system
         unreal.log_warning("[VFX] Could not create NS_Pollen")
         return None
@@ -215,7 +221,7 @@ def create_pollen_system():
     
     renderer = emitter.find_or_add_renderer("Sprite Renderer")
     
-    system = unreal.EditorAssetLibrary.save_asset(asset_path)
+    system = compat.assets().save_asset(asset_path)
     unreal.log("[VFX] NS_Pollen created")
     return system
 
@@ -224,10 +230,10 @@ def create_firefly_system():
     asset_path = "/Game/Effects/NS_Fireflies"
     ensure_folder("/Game/Effects")
     
-    system = unreal.AssetHelpers.create_asset(
+    system = compat.crear_asset(
         "NS_Fireflies", "/Game/Effects", unreal.NiagaraSystem, unreal.NiagaraSystemFactoryNew())
     if not system:
-        system = unreal.EditorAssetLibrary.load_asset(asset_path)
+        system = compat.assets().load_asset(asset_path)
         if system: return system
         unreal.log_warning("[VFX] Could not create NS_Fireflies")
         return None
@@ -248,7 +254,7 @@ def create_firefly_system():
     
     renderer = emitter.find_or_add_renderer("Sprite Renderer")
     
-    system = unreal.EditorAssetLibrary.save_asset(asset_path)
+    system = compat.assets().save_asset(asset_path)
     unreal.log("[VFX] NS_Fireflies created")
     return system
 
@@ -257,10 +263,10 @@ def create_mist_system():
     asset_path = "/Game/Effects/NS_RainMist"
     ensure_folder("/Game/Effects")
     
-    system = unreal.AssetHelpers.create_asset(
+    system = compat.crear_asset(
         "NS_RainMist", "/Game/Effects", unreal.NiagaraSystem, unreal.NiagaraSystemFactoryNew())
     if not system:
-        system = unreal.EditorAssetLibrary.load_asset(asset_path)
+        system = compat.assets().load_asset(asset_path)
         if system: return system
         unreal.log_warning("[VFX] Could not create NS_RainMist")
         return None
@@ -284,7 +290,7 @@ def create_mist_system():
     
     renderer = emitter.find_or_add_renderer("Sprite Renderer")
     
-    system = unreal.EditorAssetLibrary.save_asset(asset_path)
+    system = compat.assets().save_asset(asset_path)
     unreal.log("[VFX] NS_RainMist created")
     return system
 
@@ -295,10 +301,10 @@ def create_weapon_vfx(name, folder="/Game/VFX", color=unreal.LinearColor(1, 0.5,
     path = f"{folder}/{name}"
     ensure_folder(folder)
     
-    system = unreal.AssetHelpers.create_asset(
+    system = compat.crear_asset(
         name, folder, unreal.NiagaraSystem, unreal.NiagaraSystemFactoryNew())
     if not system:
-        system = unreal.EditorAssetLibrary.load_asset(path)
+        system = compat.assets().load_asset(path)
         if system: return system
         unreal.log_warning(f"[VFX] Could not create {name}")
         return None
@@ -319,7 +325,7 @@ def create_weapon_vfx(name, folder="/Game/VFX", color=unreal.LinearColor(1, 0.5,
     
     renderer = emitter.find_or_add_renderer("Sprite Renderer")
     
-    system = unreal.EditorAssetLibrary.save_asset(path)
+    system = compat.assets().save_asset(path)
     unreal.log(f"[VFX] {name} created")
     return system
 

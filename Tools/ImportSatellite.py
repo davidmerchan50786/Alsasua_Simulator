@@ -2,15 +2,30 @@
 ImportSatellite.py — Importa los ortomosaicos PNOA reales de Alsasua como texturas.
 Ejecutar desde el editor (consola Python): exec(open("Tools/ImportSatellite.py").read())
 """
+import os
+
 import unreal
 
-FULL_SRC = "F:/Epic Games/UE_5.7/altsasu_gtavii/UnrealProject/Content/Terreno/alsasua_satelite_pnoa_8192.png"
+# La API de editor de 5.8 pasa por aquí: subsistemas en vez de las
+# librerías obsoletas, y los nombres que no existían. Ver ue5_compat.py.
+import sys as _sys, os as _os
+_sys.path.append(_os.path.join(unreal.Paths.project_dir(), "Tools"))
+import ue5_compat as compat
+
+FULL_SRC = unreal.Paths.project_content_dir() + "Terreno/alsasua_satelite_pnoa_8192.png"
 FULL_FOLDER = "/Game/Terreno"
 FULL_NAME = "T_Satelite_Alsasua"
 
-TOWN_SRC = "F:/Epic Games/UE_5.7/altsasu_gtavii/UnrealProject/Content/Textures/ortofoto_pnoa_plaza_8192.png"
+TOWN_SRC = unreal.Paths.project_content_dir() + "Textures/ortofoto_pnoa_plaza_8192.png"
 TOWN_FOLDER = "/Game/Textures"
 TOWN_NAME = "T_Ortofoto"
+
+# Ortofoto de los 60x60 km para el anillo de relieve lejano (ATerrenoLejano).
+# No se versiona por su peso: la baja Tools/DescargarRelieveLejano.py. Si no está,
+# el anillo se queda con el color procedural por altitud y pendiente, que ya se ve.
+LEJOS_SRC = unreal.Paths.project_content_dir() + "Terreno/alsasua_relieve_lejano_4096.png"
+LEJOS_FOLDER = "/Game/Terreno"
+LEJOS_NAME = "T_Relieve_Lejano"
 
 
 def import_tex(src, folder, name):
@@ -25,12 +40,12 @@ def import_tex(src, folder, name):
     unreal.AssetToolsHelpers.get_asset_tools().import_asset_tasks([task])
 
     tex_path = f"{folder}/{name}"
-    tex = unreal.EditorAssetLibrary.load_asset(tex_path)
+    tex = compat.assets().load_asset(tex_path)
     if tex:
         tex.set_editor_property("srgb", True)
         tex.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_DEFAULT)
         tex.set_editor_property("lod_group", unreal.TextureGroup.TEXTUREGROUP_WORLD)
-        unreal.EditorAssetLibrary.save_asset(tex_path, False)
+        compat.assets().save_asset(tex_path, False)
         unreal.log(f"Textura importada: {tex_path}")
         return True
     unreal.log_error(f"No se pudo importar la textura: {tex_path}")
@@ -41,11 +56,19 @@ def run():
     ok_full = import_tex(FULL_SRC, FULL_FOLDER, FULL_NAME)
     ok_town = import_tex(TOWN_SRC, TOWN_FOLDER, TOWN_NAME)
 
+    if os.path.exists(LEJOS_SRC):
+        import_tex(LEJOS_SRC, LEJOS_FOLDER, LEJOS_NAME)
+    else:
+        unreal.log_warning(
+            "Sin %s: el relieve lejano irá sólo con color procedural. "
+            "Bájalo con Tools/DescargarRelieveLejano.py." % LEJOS_SRC)
+
     # Regenerar los materiales que drapean las ortofotos (bounds UTM corregidos)
     ok_mat = True
     for cls, fn in [
         ("CreadorMaterialTerrenoOrto", "crear_material_terreno_orto"),
         ("CreadorMaterialTejadoOrto", "crear_material_tejado_orto"),
+        ("CreadorMaterialRelieveLejano", "crear_material_relieve_lejano"),
     ]:
         try:
             ok = getattr(getattr(unreal, cls), fn)()
@@ -56,13 +79,18 @@ def run():
 
     # Forzar regeneración del material del terreno con el nuevo satélite
     mat_path = "/Game/Materiales/M_TerrenoAlsasua"
-    if unreal.EditorAssetLibrary.does_asset_exist(mat_path):
-        unreal.EditorAssetLibrary.delete_asset(mat_path)
+    if compat.assets().does_asset_exist(mat_path):
+        compat.assets().delete_asset(mat_path)
         unreal.log("M_TerrenoAlsasua eliminado — se regenerará con satélite en el próximo Play")
 
     unreal.log(f"IMPORT_DONE full={ok_full} town={ok_town} mats={ok_mat}")
-    unreal.SystemLibrary.execute_console_command(None, "quit")
+    return ok_full and ok_town and ok_mat
 
 
 if __name__ == "__main__":
     run()
+    # El quit va aquí y no dentro de run(): este script se lanzaba suelto y en
+    # modo desatendido interesa que el editor se cierre al acabar, pero RunAll.py
+    # lo llama como un paso más y cerrarle el editor a media tanda se llevaba por
+    # delante todo lo que venía detrás.
+    unreal.SystemLibrary.execute_console_command(None, "quit")

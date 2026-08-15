@@ -16,16 +16,24 @@ APoligonoSuelo::APoligonoSuelo()
 	Tags.Add(TEXT("Suelo"));
 }
 
-float APoligonoSuelo::AlturaSuelo(const FVector2D& XY) const
+bool APoligonoSuelo::AlturaSuelo(const FVector2D& XY, float& OutZ) const
 {
+	OutZ = 0.f;
 	const UWorld* W = GetWorld();
-	if (!W) return 0.f;
+	if (!W) return false;
 	FHitResult Hit;
 	FCollisionQueryParams Q(SCENE_QUERY_STAT(AlturaSueloPoli), true);
 	Q.AddIgnoredActor(this);
 	if (W->LineTraceSingleByChannel(Hit, FVector(XY.X, XY.Y, UAlsasuaGeoData::TraceUp), FVector(XY.X, XY.Y, UAlsasuaGeoData::TraceDown), ECC_Visibility, Q))
-		return Hit.Location.Z;
-	return 0.f;
+	{
+		OutZ = Hit.Location.Z;
+		return true;
+	}
+	// Devolvía 0 en este caso, que no es "no hay suelo" sino una altura de mundo
+	// perfectamente válida (el cauce del Arakil anda por -1394). Los polígonos que
+	// se salen del terreno — 3 zonas verdes tocan el borde — hundían ahí sus
+	// vértices de fuera y levantaban un pico de ~550 m. Ahora se distingue.
+	return false;
 }
 
 void APoligonoSuelo::Construir(const TArray<FVector2D>& In, FColor Color, float EpsilonCm)
@@ -45,9 +53,32 @@ void APoligonoSuelo::Construir(const TArray<FVector2D>& In, FColor Color, float 
 	TArray<FVector2D> UVs;     UVs.Reserve(N);
 	TArray<FColor> Colores;    Colores.Reserve(N);
 
+	// Primero muestreamos, y sólo con los vértices que han encontrado suelo. A los
+	// que se salen del terreno les ponemos la media de los que sí, que deja el
+	// borde plano en vez de despeñado. Si no hay ninguno, el polígono entero está
+	// fuera del mundo y no se construye.
+	TArray<float> Zs;   Zs.SetNumUninitialized(N);
+	TArray<bool> HayZ;  HayZ.SetNumUninitialized(N);
+	double Suma = 0.0;
+	int32 Validos = 0;
 	for (int32 i = 0; i < N; ++i)
 	{
-		const float z = AlturaSuelo(P[i]) + EpsilonCm;
+		float z = 0.f;
+		HayZ[i] = AlturaSuelo(P[i], z);
+		Zs[i] = z;
+		if (HayZ[i]) { Suma += z; ++Validos; }
+	}
+
+	if (Validos == 0)
+	{
+		UE_LOG(LogTemp, Verbose, TEXT("[Suelos] polígono '%s' fuera del terreno; omitido."), *Tipo);
+		return;
+	}
+
+	const float ZMedia = (float)(Suma / Validos);
+	for (int32 i = 0; i < N; ++i)
+	{
+		const float z = (HayZ[i] ? Zs[i] : ZMedia) + EpsilonCm;
 		Verts.Add(FVector(P[i].X, P[i].Y, z) - Base);
 		Normales.Add(FVector::UpVector);
 		UVs.Add(P[i] / 100.f);   // UV en metros

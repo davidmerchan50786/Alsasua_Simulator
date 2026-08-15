@@ -9,8 +9,11 @@ We read pathname, then copy asset to Content/AssetsImportados/<original_path>.
 """
 import tarfile, os, sys, shutil, json
 
-BASE = r"F:\Epic Games\UE_5.7\altsasu_gtavii\UnrealProject\Content\AssetsImportados"
-DEST_ROOT = r"F:\Epic Games\UE_5.7\altsasu_gtavii\UnrealProject\Content\AssetsImportados\ExtractedUnity"
+# Raiz derivada de donde vive este fichero. Antes fija a la maquina original
+# ("F:/Epic Games/UE_5.7/altsasu_gtavii/UnrealProject"), asi que solo corria alli.
+RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE = os.path.join(RAIZ, "Content", "AssetsImportados")
+DEST_ROOT = os.path.join(BASE, "ExtractedUnity")
 
 # extensions we care about
 KEEP_EXT = {'.fbx', '.obj', '.gltf', '.glb', '.png', '.jpg', '.jpeg', '.tga', '.tif', '.tiff',

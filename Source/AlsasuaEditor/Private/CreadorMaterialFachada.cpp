@@ -1,5 +1,6 @@
 // CreadorMaterialFachada.cpp (sólo editor)
 #include "CreadorMaterialFachada.h"
+#include "CreadorPBRComun.h"
 #include "AssetToolsModule.h"
 #include "IAssetTools.h"
 #include "Factories/MaterialFactoryNew.h"
@@ -112,10 +113,13 @@ bool UCreadorMaterialFachada::CrearMaterialFachada()
 	auto* emis = Mul(Mul(winCol, gate, 200), Const(3.f, 220), 210);
 	ML::ConnectMaterialProperty(emis, TEXT(""), MP_EmissiveColor);
 
-	// --- Base + mojado (como el suelo) ---
+	// --- Base: revoco sobre el color de barrio ---
+	// El color por vértice lleva la paleta del barrio, pero solo no basta: una
+	// fachada plana de color liso se lee como cartón. Aquí el set de hormigón
+	// aporta el grano del revoco, su normal y su roughness, y el VertexColor
+	// pasa a ser el tinte. T_Concrete_* estaba descargado y sin usar.
 	auto* VC = New(UMaterialExpressionVertexColor::StaticClass(), -200);
 	UMaterialExpression* baseFactor = Const(1.f, -160);
-	UMaterialExpression* rough = Const(0.78f, 320);
 	if (MPC)
 	{
 		auto* wet = Cast<UMaterialExpressionCollectionParameter>(New(UMaterialExpressionCollectionParameter::StaticClass(), -120));
@@ -127,14 +131,19 @@ bool UCreadorMaterialFachada::CrearMaterialFachada()
 		ML::ConnectMaterialExpressions(Const(0.55f, -140), TEXT(""), lc, TEXT("B"));
 		ML::ConnectMaterialExpressions(wet, TEXT(""), lc, TEXT("Alpha"));
 		baseFactor = lc;
-		auto* lr = Cast<UMaterialExpressionLinearInterpolate>(New(UMaterialExpressionLinearInterpolate::StaticClass(), 320));
-		ML::ConnectMaterialExpressions(Const(0.78f, 320), TEXT(""), lr, TEXT("A"));
-		ML::ConnectMaterialExpressions(Const(0.15f, 340), TEXT(""), lr, TEXT("B"));
-		ML::ConnectMaterialExpressions(wet, TEXT(""), lr, TEXT("Alpha"));
-		rough = lr;
 	}
-	ML::ConnectMaterialProperty(Mul(VC, baseFactor, -180), TEXT(""), MP_BaseColor);
-	ML::ConnectMaterialProperty(rough, TEXT(""), MP_Roughness);
+
+	AlsasuaPBR::FOpciones Op;
+	Op.Set = TEXT("Concrete");
+	Op.TileCm = 250.f;              // el grano del revoco, no bloques marcados
+	Op.RoughnessMojado = 0.35f;     // la fachada mojada oscurece pero no espejea
+	Op.Tinte = Mul(VC, baseFactor, -180);
+	if (!AlsasuaPBR::Cablear(Mat, Op))
+	{
+		// Sin las texturas importadas, al menos el color de barrio y el mojado.
+		ML::ConnectMaterialProperty(Op.Tinte, TEXT(""), MP_BaseColor);
+		ML::ConnectMaterialProperty(Const(0.78f, 320), TEXT(""), MP_Roughness);
+	}
 
 	Mat->PostEditChange();
 	ML::RecompileMaterial(Mat);

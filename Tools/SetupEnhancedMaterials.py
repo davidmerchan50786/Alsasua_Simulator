@@ -11,12 +11,17 @@ Ejecutar en editor:  Tools > Execute Python Script
 """
 import unreal
 
+# La API de editor de 5.8 pasa por aquí: subsistemas en vez de las
+# librerías obsoletas, y los nombres que no existían. Ver ue5_compat.py.
+import sys as _sys, os as _os
+_sys.path.append(_os.path.join(unreal.Paths.project_dir(), "Tools"))
+import ue5_compat as compat
 
 MPC_PATH = "/Game/Materials/MPC_AlsasuaGlobal"
 
 
 def get_mpc():
-    mpc = unreal.EditorAssetLibrary.load_asset(MPC_PATH)
+    mpc = compat.assets().load_asset(MPC_PATH)
     if mpc and isinstance(mpc, unreal.MaterialParameterCollection):
         return mpc
     unreal.log_warning("[EnhancedMat] MPC no encontrado")
@@ -26,7 +31,7 @@ def get_mpc():
 def create_puddle_street_material():
     """M_Calles_Puddle: asfalto con charcos por MPC GlobalWetness/PuddleOpacity."""
     pkg = "/Game/Materials/M_Calles_Puddle"
-    if unreal.EditorAssetLibrary.does_asset_exist(pkg):
+    if compat.assets().does_asset_exist(pkg):
         return
 
     mpc = get_mpc()
@@ -37,7 +42,7 @@ def create_puddle_street_material():
     if not mat:
         return
 
-    mat.set_editor_property("BlendMode", unreal.MaterialBlendMode.BM_Opaque)
+    mat.set_editor_property("BlendMode", compat.OPACO)
 
     # Roughness: dry=0.7, wet=0.15
     roughness_dry = new_material_expression_constant(0, 200, 0.7)
@@ -50,10 +55,10 @@ def create_puddle_street_material():
     roughness = new_material_expression_lerp(roughness_dry, roughness_wet, puddle_node)
 
     # Normal: flat puddles
-    puddle_normal = new_material_expression_texture(-200, 400, "/Game/Textures/T_Normal_Default")
+    puddle_normal = new_material_expression_texture(-200, 400, "/Game/Textures/T_Asphalt_Normal")
 
     # Color: darken when wet
-    base_color = new_material_expression_texture(0, 0, "/Game/Textures/T_Asphalt_01_D")
+    base_color = new_material_expression_texture(0, 0, "/Game/Textures/T_Asphalt_Color")
     wet_darken = new_material_expression_constant(200, 0, 0.6)
     color = new_material_expression_multiply(base_color, wet_darken)
 
@@ -64,7 +69,7 @@ def create_puddle_street_material():
 def create_puddle_sidewalk_material():
     """M_Acera_Puddle: adoquinado mojado."""
     pkg = "/Game/Materials/M_Acera_Puddle"
-    if unreal.EditorAssetLibrary.does_asset_exist(pkg):
+    if compat.assets().does_asset_exist(pkg):
         return
 
     mpc = get_mpc()
@@ -75,7 +80,7 @@ def create_puddle_sidewalk_material():
     if not mat:
         return
 
-    mat.set_editor_property("BlendMode", unreal.MaterialBlendMode.BM_Opaque)
+    mat.set_editor_property("BlendMode", compat.OPACO)
 
     mat.recompile()
     unreal.log("[EnhancedMat] M_Acera_Puddle creado")
@@ -84,7 +89,7 @@ def create_puddle_sidewalk_material():
 def create_window_emissive_material():
     """M_Edificio_Ventanas: ventanas emissivas que brillan de noche via MPC."""
     pkg = "/Game/Materials/M_Edificio_Ventanas"
-    if unreal.EditorAssetLibrary.does_asset_exist(pkg):
+    if compat.assets().does_asset_exist(pkg):
         return
 
     mpc = get_mpc()
@@ -95,8 +100,8 @@ def create_window_emissive_material():
     if not mat:
         return
 
-    mat.set_editor_property("BlendMode", unreal.MaterialBlendMode.BM_Opaque)
-    mat.set_editor_property("ShadingModel", unreal.ShadingModel.MSM_DEFAULT_LIT)
+    mat.set_editor_property("BlendMode", compat.OPACO)
+    mat.set_editor_property("ShadingModel", compat.LIT)
 
     # Emissive color from parameter
     emissive_color_node = new_material_expression_constant(-400, 300, 1.0, 0.85, 0.5, 1.0)
@@ -105,7 +110,7 @@ def create_window_emissive_material():
     emissive = new_material_expression_multiply(emissive_color_node, emissive_intensity)
 
     # Base color (dark facade)
-    facade_color = new_material_expression_texture(0, 0, "/Game/Textures/T_Brick_01_D")
+    facade_color = new_material_expression_texture(0, 0, "/Game/Textures/T_Brick_Color")
     dark_facade = new_material_expression_multiply(facade_color, new_material_expression_constant(200, 0, 0.3))
 
     mat.recompile()
@@ -115,7 +120,7 @@ def create_window_emissive_material():
 def create_foliage_wind_material():
     """M_Foliage_Wind: foliage con world-position-offset por viento."""
     pkg = "/Game/Materials/M_Foliage_Wind"
-    if unreal.EditorAssetLibrary.does_asset_exist(pkg):
+    if compat.assets().does_asset_exist(pkg):
         return
 
     mpc = get_mpc()
@@ -126,11 +131,11 @@ def create_foliage_wind_material():
     if not mat:
         return
 
-    mat.set_editor_property("BlendMode", unreal.MaterialBlendMode.BM_Masked)
+    mat.set_editor_property("BlendMode", compat.ENMASCARADO)
     mat.set_two_sided(True)
 
     # Two-sided foliage shading
-    mat.set_editor_property("ShadingModel", unreal.ShadingModel.MSM_SUBSURFACE)
+    mat.set_editor_property("ShadingModel", compat.SUBSURFACE)
 
     mat.recompile()
     unreal.log("[EnhancedMat] M_Foliage_Wind creado")
@@ -139,7 +144,7 @@ def create_foliage_wind_material():
 def create_metal_railing_material():
     """M_Baranda_Metal: metal con reflejos y posible óxido."""
     pkg = "/Game/Materials/M_Baranda_Metal"
-    if unreal.EditorAssetLibrary.does_asset_exist(pkg):
+    if compat.assets().does_asset_exist(pkg):
         return
 
     mpc = get_mpc()
@@ -150,7 +155,7 @@ def create_metal_railing_material():
     if not mat:
         return
 
-    mat.set_editor_property("BlendMode", unreal.MaterialBlendMode.BM_Opaque)
+    mat.set_editor_property("BlendMode", compat.OPACO)
     mat.recompile()
     unreal.log("[EnhancedMat] M_Baranda_Metal creado")
 
@@ -158,7 +163,7 @@ def create_metal_railing_material():
 def create_improved_water_material():
     """M_Agua_Mejorada: agua mejorada con normal panning, depth coloring, foam."""
     pkg = "/Game/Materials/M_Agua_Mejorada"
-    if unreal.EditorAssetLibrary.does_asset_exist(pkg):
+    if compat.assets().does_asset_exist(pkg):
         return
 
     mpc = get_mpc()
@@ -169,8 +174,8 @@ def create_improved_water_material():
     if not mat:
         return
 
-    mat.set_editor_property("BlendMode", unreal.MaterialBlendMode.BM_Translucent)
-    mat.set_editor_property("ShadingModel", unreal.ShadingModel.MSM_DEFAULT_LIT)
+    mat.set_editor_property("BlendMode", compat.TRASLUCIDO)
+    mat.set_editor_property("ShadingModel", compat.LIT)
     mat.set_editor_property("TwoSided", True)
 
     mat.recompile()
@@ -204,7 +209,7 @@ def new_material_expression_lerp(a, b, alpha):
 
 
 def new_material_expression_texture(x, y, tex_path):
-    tex = unreal.EditorAssetLibrary.load_asset(tex_path)
+    tex = compat.assets().load_asset(tex_path)
     if not tex:
         return new_material_expression_constant(x, y, 0.5, 0.5, 1.0)
     node = unreal.MaterialExpressionTextureSample.new()

@@ -107,7 +107,11 @@ void UAlsasuaLODConfigComponent::ApplyGlobalNaniteSettings(bool bEnableNanite, i
 		CVarProxy->Set(bEnableNanite ? 500000 : 0);
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("[LOD] Nanite %s (MaxPixels=%d)"), bEnableNanite ? TEXT("ON") : TEXT("OFF"), MaxPixelsPerEdge);
+	// Esto son CVars de calidad, no el interruptor de Nanite: Nanite se activa
+	// por malla, en sus build settings. Decía "Nanite ON" mientras ninguna malla
+	// de la biblioteca lo tenía puesto. Eso lo hace Tools/AdaptarBiblioteca58.py.
+	UE_LOG(LogTemp, Log, TEXT("[LOD] Calidad de Nanite %s (MaxPixels=%d); activarlo por malla es cosa de AdaptarBiblioteca58.py"),
+		bEnableNanite ? TEXT("alta") : TEXT("baja"), MaxPixelsPerEdge);
 }
 
 void UAlsasuaLODConfigComponent::ApplyGlobalHLODSettings(bool bEnableHLOD, float HLODScreenSize)

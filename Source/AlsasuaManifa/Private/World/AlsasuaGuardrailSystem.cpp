@@ -55,9 +55,9 @@ int32 UAlsasuaGuardrailSystem::ColocarBarandillas()
             const TSharedPtr<FJsonObject>& P1 = (*PointsArr)[i + 1]->AsObject();
             if (!P0 || !P1) continue;
 
-            FVector Loc0 = UAlsasuaGeoData::RelLocalToUE5(FVector(
+            FVector Loc0 = UAlsasuaGeoData::RelLocalASueloUE5(GetWorld(), FVector(
                 P0->GetNumberField(TEXT("x")), 0.0f, P0->GetNumberField(TEXT("z"))));
-            FVector Loc1 = UAlsasuaGeoData::RelLocalToUE5(FVector(
+            FVector Loc1 = UAlsasuaGeoData::RelLocalASueloUE5(GetWorld(), FVector(
                 P1->GetNumberField(TEXT("x")), 0.0f, P1->GetNumberField(TEXT("z"))));
 
             FVector Centro = (Loc0 + Loc1) * 0.5f;

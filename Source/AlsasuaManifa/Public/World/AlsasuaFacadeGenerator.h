@@ -60,15 +60,6 @@ struct FBuildingFacadeEntry
     TArray<float> ColorTejado;
 };
 
-USTRUCT()
-struct FFacadeBuildingInfo
-{
-    GENERATED_BODY()
-    FVector Centro = FVector::ZeroVector;
-    float AlturaM = 6.0f;
-    FFacadeBuildingInfo() = default;
-    FFacadeBuildingInfo(FVector InCentro, float InAltura) : Centro(InCentro), AlturaM(InAltura) {}
-};
 
 UCLASS()
 class ALSASUAMANIFA_API UAlsasuaFacadeGenerator : public UGameInstanceSubsystem
@@ -82,12 +73,6 @@ public:
     bool CargarFachadas();
 
     UFUNCTION(BlueprintCallable, Category = "Alsasua|Facade")
-    bool CargarEdificios();
-
-    UFUNCTION(BlueprintCallable, Category = "Alsasua|Facade")
-    int32 GenerarFachadasEnMundo();
-
-    UFUNCTION(BlueprintCallable, Category = "Alsasua|Facade")
     int32 ColocarLandmarksReales();
 
     UFUNCTION(BlueprintCallable, Category = "Alsasua|Facade")
@@ -95,15 +80,19 @@ public:
 
     const TArray<FBuildingFacadeEntry>& GetFachadas() const { return Fachadas; }
 
+    /**
+     * Fachada real de un edificio, o null.
+     *
+     * Es de donde CargadorEdificios saca las ventanas: antes este subsistema
+     * generaba su propia geometría de ventanas a 1 cm del centro de cada
+     * edificio (con HalfSide calculado y sin usar), o sea dentro del edificio y
+     * sin que se viera nada, mientras los muros de verdad se hacían con medidas
+     * inventadas a partir del tamaño.
+     */
+    const FBuildingFacadeEntry* De(int32 BuildingId) const;
+
 private:
     TArray<FBuildingFacadeEntry> Fachadas;
-    TMap<int32, FFacadeBuildingInfo> EdificiosCentros;
     bool bCargado = false;
 
-    void CrearVentanaProcedural(AActor* Owner, const FWindowData& Ventana,
-        const FVector& Pos, const FRotator& Rot, float Escala);
-    void CrearBalconProcedural(AActor* Owner, const FBalconData& Balcon,
-        const FVector& Pos, const FRotator& Rot);
-    void CrearTiendaProcedural(AActor* Owner, const FTiendaData& Tienda,
-        const FVector& Pos, const FRotator& Rot);
 };

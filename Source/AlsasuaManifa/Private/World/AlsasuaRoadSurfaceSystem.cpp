@@ -93,13 +93,13 @@ int32 UAlsasuaRoadSurfaceSystem::AplicarSuperficiesEnMundo()
     if (MaterialMeshes.Num() == 0)
     {
         MaterialMeshes.Add(TEXT("asphalt"), LoadObject<UStaticMesh>(nullptr,
-            TEXT("/Game/EngineBasicShapes/Cube")));
+            TEXT("/Engine/BasicShapes/Cube.Cube")));
         MaterialMeshes.Add(TEXT("cobblestone"), LoadObject<UStaticMesh>(nullptr,
-            TEXT("/Game/EngineBasicShapes/Cube")));
+            TEXT("/Engine/BasicShapes/Cube.Cube")));
         MaterialMeshes.Add(TEXT("asphalt_worn"), LoadObject<UStaticMesh>(nullptr,
-            TEXT("/Game/EngineBasicShapes/Cube")));
+            TEXT("/Engine/BasicShapes/Cube.Cube")));
         MaterialMeshes.Add(TEXT("gravel"), LoadObject<UStaticMesh>(nullptr,
-            TEXT("/Game/EngineBasicShapes/Cube")));
+            TEXT("/Engine/BasicShapes/Cube.Cube")));
     }
 
     static TMap<FString, FLinearColor> MaterialColors;

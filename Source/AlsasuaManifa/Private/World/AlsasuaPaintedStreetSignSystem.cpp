@@ -56,9 +56,8 @@ int32 UAlsasuaPaintedStreetSignSystem::ColocarRotulosPintados()
         const TSharedPtr<FJsonObject>& P0 = (*PointsArr)[0]->AsObject();
         if (!P0) continue;
 
-        FVector Loc = UAlsasuaGeoData::RelLocalToUE5(FVector(
-            P0->GetNumberField(TEXT("x")), 0.0f, P0->GetNumberField(TEXT("z"))));
-        Loc.Z += 250.0f;
+        FVector Loc = UAlsasuaGeoData::RelLocalASueloUE5(GetWorld(), FVector(
+            P0->GetNumberField(TEXT("x")), 0.0f, P0->GetNumberField(TEXT("z"))), 250.0f);
 
         float Rot = FMath::RandRange(0.0f, 360.0f);
 
@@ -82,7 +81,7 @@ int32 UAlsasuaPaintedStreetSignSystem::ColocarRotulosPintados()
             RotuloActor->SetActorScale3D(FVector(SX, 0.03f, SZ));
 
             UStaticMesh* PlaneMesh = LoadObject<UStaticMesh>(nullptr,
-                TEXT("/Game/EngineBasicShapes/Plane"));
+                TEXT("/Engine/BasicShapes/Plane.Plane"));
             if (PlaneMesh)
                 RotuloActor->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
 

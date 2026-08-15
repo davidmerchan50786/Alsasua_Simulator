@@ -1,9 +1,21 @@
-# RESUMEN TÉCNICO — Optimización de Rendimiento GPU · Alsasua Simulator (UE 5.4)
+# RESUMEN TÉCNICO — Optimización de Rendimiento GPU · Alsasua Simulator
 
 Fecha: 2026-07-31
-Proyecto: `AlsasuaSimulator` (Altsasu Manifa, UE 5.4, C++20)
+Proyecto: `AlsasuaSimulator` (Altsasu Manifa, C++20)
 Resultado global: **0.3 FPS → 48 FPS estables con misiones activas**
 (GPU mediana 157 ms → 18.9 ms por frame).
+
+> **Este documento es el acta de una sesión que corrió sobre UE 5.4.** El
+> proyecto está hoy en **5.8** (`EngineAssociation` en el `.uproject`). Las
+> medidas, los CSV y los comandos de más abajo son los de aquel día y se dejan
+> tal cual: reescribirlos a 5.8 sería inventarse números que nadie ha medido.
+>
+> Qué sigue valiendo: el diagnóstico (una sección de `ProceduralMesh` = un draw
+> call), las cifras relativas y las reglas de §5, que son las que gobiernan el
+> código actual. La nota de Nanite en fachadas se re-verificó en 5.8 (§8.2). Lo
+> que **no** debes reutilizar son las rutas de motor y de proyecto de §2.2 y §6:
+> apuntan a `UE_5.4` y a la máquina original. Para compilar y lanzar hoy, usa
+> `README.md` o `CLAUDE.md`.
 
 ---
 

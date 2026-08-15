@@ -38,13 +38,15 @@ public class AlsasuaManifa : ModuleRules
 			"AlsasuaUI"
 		});
 
-        PrivateDependencyModuleNames.AddRange(new string[] { 
-            "UMG", 
-            "Slate", 
+        PrivateDependencyModuleNames.AddRange(new string[] {
+            "UMG",
+            "Slate",
             "SlateCore",
             "AudioMixer",
             "Json",
-            "JsonUtilities"
+            "JsonUtilities",
+            // AlsasuaMallaFab busca en el registro las mallas bajadas de Fab.
+            "AssetRegistry"
         });
     }
 }

@@ -71,6 +71,27 @@ static void Triangular(const TArray<FVector2D>& Poly, TArray<int32>& OutTris)
 	}
 }
 
+FMetricasTejado CalcularMetricasTejado(const TArray<FVector2D>& Poligono, float AlturaCm,
+                                       EFormaTejado Forma, float EscalaTejado)
+{
+	FMetricasTejado M;
+	if (Poligono.Num() < 3 || AlturaCm <= 0.f) return M;
+
+	FVector2D mn = Poligono[0], mx = Poligono[0];
+	for (const FVector2D& V : Poligono)
+	{
+		mn.X = FMath::Min(mn.X, V.X); mn.Y = FMath::Min(mn.Y, V.Y);
+		mx.X = FMath::Max(mx.X, V.X); mx.Y = FMath::Max(mx.Y, V.Y);
+	}
+
+	M.RoofH = (Forma == EFormaTejado::Plano) ? 0.f
+		: FMath::Clamp(FMath::Min(mx.X - mn.X, mx.Y - mn.Y) * 0.22f * EscalaTejado, 120.f, 700.f);
+	// El tejado no se come más de medio edificio.
+	M.RoofH = FMath::Min(M.RoofH, AlturaCm * 0.5f);
+	M.Alero = AlturaCm - M.RoofH;
+	return M;
+}
+
 void AEdificioGenerado::Construir(const TArray<FVector2D>& In, float AlturaCm, FColor ColorMuro, FColor ColorTejado,
                                   EFormaTejado Forma, FVector2D EjeCaballete, float EscalaTejado)
 {
@@ -84,12 +105,10 @@ void AEdificioGenerado::Construir(const TArray<FVector2D>& In, float AlturaCm, F
 
 	// Altura total (LIDAR) = hasta el caballete. Repartimos en muro (alero) + tejado,
 	// para que el remate quede en la cota real y no se sume por encima.
-	FVector2D mn = P[0], mx = P[0];
-	for (const FVector2D& v : P) { mn.X = FMath::Min(mn.X, v.X); mn.Y = FMath::Min(mn.Y, v.Y); mx.X = FMath::Max(mx.X, v.X); mx.Y = FMath::Max(mx.Y, v.Y); }
-	float RoofH = (Forma == EFormaTejado::Plano) ? 0.f
-		: FMath::Clamp(FMath::Min(mx.X - mn.X, mx.Y - mn.Y) * 0.22f * EscalaTejado, 120.f, 700.f);
-	RoofH = FMath::Min(RoofH, AlturaCm * 0.5f);             // el tejado no se come más de medio edificio
-	const float Alero = AlturaCm - RoofH;                  // cota del alero (tope del muro)
+	const FMetricasTejado Met = CalcularMetricasTejado(P, AlturaCm, Forma, EscalaTejado);
+	const float RoofH = Met.RoofH;
+	const float Alero = Met.Alero;
+	Tejado = FTejadoConstruido{ P, AlturaCm, Forma, EjeCaballete, EscalaTejado };
 
 	TArray<FVector> Verts;
 	TArray<int32>  Tris;
@@ -161,12 +180,10 @@ void AEdificioGenerado::ConstruirConDetalle(const TArray<FVector2D>& In, float A
 	const int32 N = P.Num();
 	if (N < 3) return;
 
-	FVector2D mn = P[0], mx = P[0];
-	for (const FVector2D& v : P) { mn.X = FMath::Min(mn.X, v.X); mn.Y = FMath::Min(mn.Y, v.Y); mx.X = FMath::Max(mx.X, v.X); mx.Y = FMath::Max(mx.Y, v.Y); }
-	float RoofH = (Forma == EFormaTejado::Plano) ? 0.f
-		: FMath::Clamp(FMath::Min(mx.X - mn.X, mx.Y - mn.Y) * 0.22f * EscalaTejado, 120.f, 700.f);
-	RoofH = FMath::Min(RoofH, AlturaCm * 0.5f);
-	const float Alero = AlturaCm - RoofH;
+	const FMetricasTejado Met = CalcularMetricasTejado(P, AlturaCm, Forma, EscalaTejado);
+	const float RoofH = Met.RoofH;
+	const float Alero = Met.Alero;
+	Tejado = FTejadoConstruido{ P, AlturaCm, Forma, EjeCaballete, EscalaTejado };
 
 	TArray<FVector> Verts;
 	TArray<int32>  Tris;

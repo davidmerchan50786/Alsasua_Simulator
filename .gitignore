@@ -23,6 +23,14 @@ Content/External/
 Content/CitySample/
 Content/Materiales/
 Content/Road/
+
+# Descargas de Fab / biblioteca de Epic (Megascans, packs del launcher).
+# Son decenas de GB de .uasset: cada quien las baja con el plugin Fab.
+Content/Megascans/
+Content/MSPresets/
+Content/Fab/
+Content/GASP/
+Content/Characters/Megascans/
 Content/Maps/*.umap
 Content/Maps/*.uasset
 Content/__ExternalActors__/
@@ -31,6 +39,12 @@ Content/Terreno/*.raw
 Content/Terreno/*.xyz
 Content/Terreno/T_Satelite_Alsasua.uasset
 Content/Terreno/alsasua_satelite.jpg
+
+# Ortofoto del relieve lejano (29 MB). Iría por LFS como las otras dos, pero la
+# cuenta tiene el presupuesto de LFS de GitHub agotado y el push la rechaza.
+# La regenera Tools/DescargarRelieveLejano.py en ~80 s desde el IGN. Si algún día
+# se amplía el presupuesto, quita esta línea y añádela a .gitattributes.
+Content/Terreno/alsasua_relieve_lejano_4096.png
 
 # uassets de textura derivados (reimportables desde los PNG con ImportSatellite.py)
 Content/Textures/*.uasset

@@ -1,5 +1,8 @@
 // DiaNocheSubsystem.cpp
 #include "DiaNocheSubsystem.h"
+#include "World/Time/TimeOfDayManager.h"
+#include "Engine/GameInstance.h"
+#include "Engine/World.h"
 
 float UDiaNocheSubsystem::FactorIngresoNegocio(ETipoNegocio Tipo) const
 {
@@ -15,5 +18,17 @@ float UDiaNocheSubsystem::FactorIngresoNegocio(ETipoNegocio Tipo) const
 
 void UDiaNocheSubsystem::Tick(float DeltaTime)
 {
+	// El reloj de gameplay y el que mueve el sol tienen que ser el mismo: si no,
+	// el alumbrado y las ventanas se encienden a una hora y el sol está en otra.
+	// UTimeOfDayManager manda cuando existe; este reloj es su espejo.
+	if (const UWorld* W = GetGameInstance() ? GetGameInstance()->GetWorld() : nullptr)
+	{
+		if (const UTimeOfDayManager* Tod = W->GetSubsystem<UTimeOfDayManager>())
+		{
+			Hora = Tod->CurrentTime;
+			return;
+		}
+	}
+
 	Hora = FMath::Fmod(Hora + DeltaTime * HorasPorSegundo, 24.f);
 }

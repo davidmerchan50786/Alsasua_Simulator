@@ -15,6 +15,9 @@
 #include "Materials/MaterialInterface.h"
 #include "MuestreadorAltura.h"
 #include "CargarMaterialComun.h"
+#include "AlturasLidarComun.h"
+#include "World/AlsasuaFacadeGenerator.h"
+#include "Engine/GameInstance.h"
 
 
 // Paleta vasca por edificio (determinista por id): arenisca rojiza en muros,
@@ -75,11 +78,35 @@ static EFormaTejado FormaReal(const TSharedPtr<FJsonObject>& O, float& OutEscala
 	return EFormaTejado::Cuatro_Aguas;   // None/desconocido
 }
 
+// Fachada real del edificio, o null. El subsistema se busca una vez: es de
+// GameInstance y GetSubsystem no es gratis por cada uno de los 1030 edificios.
+const FBuildingFacadeEntry* UCargadorEdificios::FachadaDe(int32 IdEdificio) const
+{
+	if (!bFachadasBuscadas)
+	{
+		bFachadasBuscadas = true;
+		if (const UWorld* W = GetWorld())
+		{
+			if (const UGameInstance* GI = W->GetGameInstance())
+			{
+				GenFachadas = GI->GetSubsystem<UAlsasuaFacadeGenerator>();
+			}
+		}
+	}
+	return GenFachadas ? GenFachadas->De(IdEdificio) : nullptr;
+}
+
 void UCargadorEdificios::OnWorldBeginPlay(UWorld& InWorld)
 {
 	Super::OnWorldBeginPlay(InWorld);
 	// La construye ADirectorArranque tras generar el terreno; aquí aún no existe (cota 0).
 }
+
+// Contador del log de abajo. Es estático de unidad de traducción, así que
+// sobrevive entre sesiones de PIE en el mismo proceso del editor: se reinicia en
+// PrepararCarga() o el resumen iría sumando el de la partida anterior.
+namespace { int32 GSustituidas = 0; }
+
 
 float UCargadorEdificios::AlturaSuelo(const FVector2D& XY) const
 {
@@ -101,6 +128,7 @@ void UCargadorEdificios::PrepararCarga()
 {
 	if (bPreparado) return;
 	bPreparado = true;
+	GSustituidas = 0;
 
 	const FString Ruta = FPaths::Combine(FPaths::ProjectContentDir(), RutaRelativa);
 	FString Texto;
@@ -132,7 +160,22 @@ void UCargadorEdificios::ConstruirUno(const TSharedPtr<FJsonObject>& O)
 	if (MundoXY.Num() < 3) return;
 	Centro /= MundoXY.Num();
 
-	const double AlturaM = O->HasField(TEXT("height")) ? O->GetNumberField(TEXT("height")) : 6.0;
+	double AlturaM = O->HasField(TEXT("height")) ? O->GetNumberField(TEXT("height")) : 6.0;
+	int32 PlantasJson = O->HasField(TEXT("levels")) ? (int32)O->GetNumberField(TEXT("levels")) : 1;
+
+	// Si hay huella medida por LiDAR a menos de 15 m, manda ella: es medida real
+	// del vuelo de 2017 frente a la estimación de OSM, que se queda ~3 m corta.
+	{
+		float AltLidar = 0.f;
+		int32 PlantasLidar = 0;
+		if (AlturasLidar::Buscar(Centro, AltLidar, PlantasLidar))
+		{
+			AlturaM = AltLidar;
+			PlantasJson = PlantasLidar;
+			++GSustituidas;
+		}
+	}
+
 	const float  Suelo   = AlturaSuelo(Centro) + 8.f;   // alzado sobre el terreno (anti z-fighting)
 
 	TArray<FVector2D> Local; Local.Reserve(MundoXY.Num());
@@ -146,7 +189,7 @@ void UCargadorEdificios::ConstruirUno(const TSharedPtr<FJsonObject>& O)
 
 	E->Id            = (int32)O->GetIntegerField(TEXT("id"));
 	E->NombreEdificio = O->HasField(TEXT("name")) ? O->GetStringField(TEXT("name")) : FString();
-	E->Plantas       = O->HasField(TEXT("levels")) ? (int32)O->GetNumberField(TEXT("levels")) : 1;
+	E->Plantas       = PlantasJson;   // ya lleva la medida LiDAR si la había
 
 	// Eje real del caballete (Unity dx,dz) -> dirección en el plano XY de Unreal (X=Z, Y=X).
 	FVector2D Eje(1, 0);
@@ -173,10 +216,38 @@ void UCargadorEdificios::ConstruirUno(const TSharedPtr<FJsonObject>& O)
 		// Escalar espaciado de ventanas según tamaño.
 		const float Factor = FMath::Clamp(LadoGrande / 15.f, 0.6f, 2.0f);
 		Cfg.EspaciadoX = 300.f * Factor;
-		Cfg.EspaciadoY = FMath::Max(280.f, 320.f * (E->Plantas > 0 ? 1.f : 0.8f));
+		// El ternario que había aquí comparaba Plantas > 0, que con levels >= 1 es
+		// siempre cierto: daba 320 fijo. Ahora la altura de planta sale del dato.
+		Cfg.EspaciadoY = 320.f;
 		Cfg.AnchoVentana = FMath::Clamp(120.f * Factor, 80.f, 200.f);
 		Cfg.AltoVentana = FMath::Clamp(160.f * Factor, 100.f, 220.f);
 		Cfg.OffsetPrimerPiso = (E->Plantas > 1) ? 180.f : 120.f;
+
+		// Y encima, lo que building_facades.json sí mide: altura de planta y
+		// tamaño de ventana. Sus 24891 ventanas se leían para generar una malla
+		// aparte que caía a 1 cm del centro del edificio (o sea dentro, sin que
+		// se viera nada), mientras el muro de verdad se labraba con las cuentas
+		// aproximadas de arriba. Ahora el dato entra en el muro que se ve.
+		if (const FBuildingFacadeEntry* Fach = FachadaDe(E->Id))
+		{
+			// Altura de planta real, acotada a lo que puede ser una planta: el
+			// fichero tiene 151 edificios entre 0,8 y 2,4 m, que es altura_total
+			// partida por un recuento de plantas que no cuadra.
+			Cfg.EspaciadoY = FMath::Clamp(Fach->AlturaPorNivel * 100.f, 240.f, 420.f);
+
+			if (Fach->Ventanas.Num() > 0)
+			{
+				float SumaAncho = 0.f, SumaAlto = 0.f;
+				for (const FWindowData& V : Fach->Ventanas) { SumaAncho += V.Ancho; SumaAlto += V.Alto; }
+				Cfg.AnchoVentana = FMath::Clamp(SumaAncho / Fach->Ventanas.Num() * 100.f, 60.f, 260.f);
+				Cfg.AltoVentana  = FMath::Clamp(SumaAlto  / Fach->Ventanas.Num() * 100.f, 80.f, 300.f);
+			}
+
+			// El espaciado horizontal se queda en la heurística del tamaño: el
+			// número de ventanas del fichero no es un recuento del edificio sino
+			// una muestra (8,5 por planta para 6,2 m de perímetro por hueco), y
+			// usarlo como densidad dejaba las ventanas a 6,25 m unas de otras.
+		}
 		Cfg.ColorMuro = MuroReal(O, E->Id);
 		Cfg.ColorPuerta = FColor(static_cast<uint8>(Cfg.ColorMuro.R * 0.5f), static_cast<uint8>(Cfg.ColorMuro.G * 0.4f), static_cast<uint8>(Cfg.ColorMuro.B * 0.3f), 255);
 		Cfg.bPonerPuerta = (AlturaM < 25.0); // no poner puerta en edificios muy altos
@@ -250,6 +321,7 @@ int32 UCargadorEdificios::Cargar()
 	const int32 MaxIter = 10000;
 	while (!PasoPresupuesto(1000.0) && ++IterGuard < MaxIter) {}
 	if (IterGuard >= MaxIter) UE_LOG(LogTemp, Warning, TEXT("[Edificios] Iteration guard reached (%d)"), MaxIter);
-	UE_LOG(LogTemp, Log, TEXT("[Edificios] %d edificios construidos"), Construidos);
+	UE_LOG(LogTemp, Log, TEXT("[Edificios] %d edificios construidos (%d con altura medida por LiDAR)"),
+		Construidos, GSustituidas);
 	return Construidos;
 }

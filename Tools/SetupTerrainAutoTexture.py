@@ -10,11 +10,20 @@ Ejecutar en el editor UE5:  Tools > Execute Python Script
 """
 import unreal
 
+# La API de editor de 5.8 pasa por aquí: subsistemas en vez de las
+# librerías obsoletas, y los nombres que no existían. Ver ue5_compat.py.
+import sys as _sys, os as _os
+_sys.path.append(_os.path.join(unreal.Paths.project_dir(), "Tools"))
+import ue5_compat as compat
+
 MPC_PATH = "/Game/Materials/MPC_AlsasuaGlobal"
-GRASS_TEXTURE = "/Game/Textures/T_Grass_01_D"
-DIRT_TEXTURE = "/Game/Textures/T_Rock_05_D"
-ROCK_TEXTURE = "/Game/Textures/T_StoneWall_02_D"
-SNOW_TEXTURE = "/Game/Textures/T_Ground_01_D"
+# Nombres reales de Content/Textures (los pone Tools/DownloadTextures.py).
+# Antes apuntaban a T_Grass_01_D, T_Rock_05_D, T_StoneWall_02_D y T_Ground_01_D,
+# que no existen: el material salia sin ninguna textura.
+GRASS_TEXTURE = "/Game/Textures/T_Grass_Color"
+DIRT_TEXTURE = "/Game/Textures/T_Ground_Color"
+ROCK_TEXTURE = "/Game/Textures/T_StoneWall_Color"
+SNOW_TEXTURE = "/Game/Textures/T_Concrete_Color"
 
 
 def create_terrain_material():
@@ -22,7 +31,7 @@ def create_terrain_material():
     pkg_path = "/Game/Materials/M_Terreno_AutoTexture"
     asset_tools = unreal.AssetToolsHelpers.get_asset_tools()
 
-    existing = unreal.EditorAssetLibrary.does_asset_exist(pkg_path)
+    existing = compat.assets().does_asset_exist(pkg_path)
     if existing:
         unreal.log(f"[TerrainAutoTex] Material ya existe: {pkg_path}")
         return
@@ -35,12 +44,12 @@ def create_terrain_material():
         unreal.log_error("[TerrainAutoTex] No se pudo crear material")
         return
 
-    mat.set_editor_property("BlendMode", unreal.MaterialBlendMode.BM_MASKED)
-    mat.set_editor_property("ShadingModel", unreal.ShadingModel.MSM_DEFAULT_LIT)
+    mat.set_editor_property("BlendMode", compat.ENMASCARADO)
+    mat.set_editor_property("ShadingModel", compat.LIT)
     mat.set_two_sided(False)
 
     mpc_param = unreal.MaterialParameterCollection()
-    mpc_loaded = unreal.EditorAssetLibrary.load_asset(MPC_PATH)
+    mpc_loaded = compat.assets().load_asset(MPC_PATH)
 
     if mpc_loaded and isinstance(mpc_loaded, unreal.MaterialParameterCollection):
         mpc_param = mpc_loaded
@@ -75,10 +84,10 @@ def create_terrain_material():
 def setup_terrain_material_instances():
     """Crea instancias de M_Terreno_AutoTexture para cada sección del terreno."""
     base_mat_path = "/Game/Materials/M_Terreno_AutoTexture"
-    if not unreal.EditorAssetLibrary.does_asset_exist(base_mat_path):
+    if not compat.assets().does_asset_exist(base_mat_path):
         return
 
-    base_mat = unreal.EditorAssetLibrary.load_asset(base_mat_path)
+    base_mat = compat.assets().load_asset(base_mat_path)
     if not base_mat:
         return
 
@@ -89,7 +98,7 @@ def setup_terrain_material_instances():
         inst_name = f"MI_Terreno_{section}"
         pkg = f"/Game/Materials/{inst_name}"
 
-        if unreal.EditorAssetLibrary.does_asset_exist(pkg):
+        if compat.assets().does_asset_exist(pkg):
             continue
 
         asset_tools = unreal.AssetToolsHelpers.get_asset_tools()

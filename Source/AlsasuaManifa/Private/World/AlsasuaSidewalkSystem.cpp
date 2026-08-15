@@ -1,4 +1,5 @@
 #include "World/AlsasuaSidewalkSystem.h"
+#include "World/AlsasuaMallaFab.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "Engine/StaticMeshActor.h"
@@ -54,9 +55,9 @@ int32 UAlsasuaSidewalkSystem::GenerarAceras()
             const TSharedPtr<FJsonObject>& P1 = (*PointsArr)[i + 1]->AsObject();
             if (!P0 || !P1) continue;
 
-            FVector Loc0 = UAlsasuaGeoData::RelLocalToUE5(FVector(
+            FVector Loc0 = UAlsasuaGeoData::RelLocalASueloUE5(GetWorld(), FVector(
                 P0->GetNumberField(TEXT("x")), 0.0f, P0->GetNumberField(TEXT("z"))));
-            FVector Loc1 = UAlsasuaGeoData::RelLocalToUE5(FVector(
+            FVector Loc1 = UAlsasuaGeoData::RelLocalASueloUE5(GetWorld(), FVector(
                 P1->GetNumberField(TEXT("x")), 0.0f, P1->GetNumberField(TEXT("z"))));
 
             FVector Centro = (Loc0 + Loc1) * 0.5f;
@@ -80,8 +81,8 @@ int32 UAlsasuaSidewalkSystem::GenerarAceras()
                 SidewalkActor->SetMobility(EComponentMobility::Static);
                 SidewalkActor->SetActorScale3D(FVector(Largo / 100.0f, AnchoAceras / 100.0f, 0.15f));
 
-                UStaticMesh* PlaneMesh = LoadObject<UStaticMesh>(nullptr,
-                    TEXT("/Game/EngineBasicShapes/Plane"));
+                UStaticMesh* PlaneMesh = AlsasuaMallaFab::Resolver(TEXT("acera_pieza"),
+                    TEXT("/Engine/BasicShapes/Plane.Plane"));
                 if (PlaneMesh)
                     SidewalkActor->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
 

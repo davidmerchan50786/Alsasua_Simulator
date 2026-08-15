@@ -6,6 +6,11 @@ Ejecutar en editor:  Tools > Execute Python Script
 """
 import unreal
 
+# La API de editor de 5.8 pasa por aquí: subsistemas en vez de las
+# librerías obsoletas, y los nombres que no existían. Ver ue5_compat.py.
+import sys as _sys, os as _os
+_sys.path.append(_os.path.join(unreal.Paths.project_dir(), "Tools"))
+import ue5_compat as compat
 
 def add_ground_cover():
     """Añade UAlsasuaGroundCoverSystem al terreno."""
@@ -15,7 +20,7 @@ def add_ground_cover():
         unreal.log_error("[GroundCover] No se pudo cargar UAlsasuaGroundCoverSystem")
         return
 
-    actors = unreal.EditorLevelLibrary.get_all_level_actors_of_class(
+    actors = compat.actores().get_all_level_actors_of_class(
         unreal.StaticMeshActor)
     count = 0
 
@@ -24,7 +29,7 @@ def add_ground_cover():
         if any(x in name for x in ["terreno", "terrain", "landscape", "suelo"]):
             existing = actor.get_component_by_class(cover_class)
             if not existing:
-                comp = unreal.add_component_to_actor(actor, cover_class)
+                comp = compat.anadir_componente(actor, cover_class)
                 if comp:
                     count += 1
 
@@ -39,7 +44,7 @@ def add_seasonal_foliage():
         unreal.log_error("[SeasonalFoliage] No se pudo cargar UAlsasuaSeasonalFoliage")
         return
 
-    actors = unreal.EditorLevelLibrary.get_all_level_actors_of_class(
+    actors = compat.actores().get_all_level_actors_of_class(
         unreal.StaticMeshActor)
     count = 0
 
@@ -49,7 +54,7 @@ def add_seasonal_foliage():
                                     "foliage", "hierba", "grass"]):
             existing = actor.get_component_by_class(seasonal_class)
             if not existing:
-                comp = unreal.add_component_to_actor(actor, seasonal_class)
+                comp = compat.anadir_componente(actor, seasonal_class)
                 if comp:
                     count += 1
 
@@ -64,7 +69,7 @@ def add_environmental_decals():
         unreal.log_error("[EnvironmentalDecals] No se pudo cargar UAlsasuaEnvironmentalDecals")
         return
 
-    actors = unreal.EditorLevelLibrary.get_all_level_actors_of_class(
+    actors = compat.actores().get_all_level_actors_of_class(
         unreal.StaticMeshActor)
     count = 0
 
@@ -74,7 +79,7 @@ def add_environmental_decals():
                                     "casa", "bloque"]):
             existing = actor.get_component_by_class(env_class)
             if not existing:
-                comp = unreal.add_component_to_actor(actor, env_class)
+                comp = compat.anadir_componente(actor, env_class)
                 if comp:
                     count += 1
 
@@ -89,12 +94,12 @@ def add_procedural_audio():
         unreal.log_error("[ProceduralAudio] No se pudo cargar UAlsasuaProceduralAudio")
         return
 
-    pawns = unreal.EditorLevelLibrary.get_all_level_actors_of_class(unreal.Pawn)
+    pawns = compat.actores().get_all_level_actors_of_class(unreal.Pawn)
     count = 0
     for pawn in pawns:
         existing = pawn.get_component_by_class(audio_class)
         if not existing:
-            comp = unreal.add_component_to_actor(pawn, audio_class)
+            comp = compat.anadir_componente(pawn, audio_class)
             if comp:
                 count += 1
 
@@ -109,11 +114,11 @@ def add_dynamic_cloud_shadows():
         unreal.log_error("[CloudShadows] No se pudo cargar UAlsasuaDynamicCloudShadows")
         return
 
-    world_settings = unreal.EditorLevelLibrary.get_world_settings()
+    world_settings = compat.ajustes_mundo()
     if world_settings:
         existing = world_settings.get_component_by_class(cloud_class)
         if not existing:
-            comp = unreal.add_component_to_actor(world_settings, cloud_class)
+            comp = compat.anadir_componente(world_settings, cloud_class)
             if comp:
                 unreal.log("[CloudShadows] DynamicCloudShadows añadido al WorldSettings")
 

@@ -7,6 +7,7 @@ Run from project root: python Tools/DownloadTextures.py
 import os
 import sys
 import json
+import time
 import urllib.request
 import urllib.error
 import zipfile
@@ -20,7 +21,7 @@ TEMP_DIR = os.path.join(tempfile.gettempdir(), "ambientcg_downloads")
 ASSETS = {
     "Asphalt":      "Asphalt033",
     "Cobblestone":  "PavingStones137",
-    "StoneWall":    "Rock064",
+    "StoneWall":    "Bricks104",   # mamposteria irregular, no roca natural
     "Brick":        "Bricks085",
     "RoofTiles":    "RoofingTiles013A",
     "Ground":       "Ground103",
@@ -30,10 +31,13 @@ ASSETS = {
     "MetalPlate":   "Metal063",
 }
 
-# Maps to extract from each ZIP
+# Maps to extract from each ZIP.
+# ambientCG ships both _NormalGL (OpenGL) and _NormalDX (DirectX). UE5 expects
+# the DirectX convention, so only that one is kept as T_<name>_Normal; the GL
+# variant is the same map with the green channel flipped and nothing can use it.
 MAP_NAMES = {
     "Color":     ["Color.jpg", "color.jpg"],
-    "NormalGL":  ["NormalGL.jpg", "normalgl.jpg", "Normal.jpg", "normal.jpg"],
+    "Normal":    ["NormalDX.jpg", "normaldx.jpg", "Normal.jpg", "normal.jpg"],
     "Roughness": ["Roughness.jpg", "roughness.jpg"],
     "AO":        ["AmbientOcclusion.jpg", "ambientocclusion.jpg", "AO.jpg", "ao.jpg"],
 }
@@ -46,17 +50,28 @@ def download_and_extract_zip(asset_id, asset_name):
     if os.path.exists(zip_path):
         print(f"  [SKIP] {asset_name} ZIP already downloaded")
     else:
-        print(f"  [DL] {asset_name} ({asset_id}) ... ", end="", flush=True)
-        try:
-            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-            with urllib.request.urlopen(req, timeout=120) as resp:
-                data = resp.read()
+        # Los ZIP pesan 30-80 MB y ambientCG corta conexiones lentas. Sin
+        # reintentos un timeout dejaba el set sin bajar sin que se notara, y
+        # luego el material caia a la textura por defecto (gris) en el editor.
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        for intento in range(1, 5):
+            print(f"  [DL] {asset_name} ({asset_id}) intento {intento}/4 ... ", end="", flush=True)
+            try:
+                with urllib.request.urlopen(req, timeout=300) as resp:
+                    data = resp.read()
+                if len(data) < 1024 * 1024:
+                    raise IOError(f"respuesta demasiado corta ({len(data)} bytes)")
                 with open(zip_path, "wb") as f:
                     f.write(data)
-            print(f"OK ({len(data) // (1024*1024)} MB)")
-        except Exception as e:
-            print(f"FAIL: {e}")
-            return False
+                print(f"OK ({len(data) // (1024*1024)} MB)")
+                break
+            except Exception as e:
+                print(f"FAIL: {e}")
+                if os.path.exists(zip_path):
+                    os.remove(zip_path)
+                if intento == 4:
+                    return False
+                time.sleep(2 ** intento)
 
     # Extract
     extract_dir = os.path.join(TEMP_DIR, asset_name)
@@ -82,7 +97,7 @@ def download_and_extract_zip(asset_id, asset_name):
             if "_color" in f_lower:
                 ue_name = f"T_{asset_name}_Color.png"
             elif "_normalgl" in f_lower or "_normal_gl" in f_lower:
-                ue_name = f"T_{asset_name}_NormalGL.png"
+                continue    # convencion OpenGL: UE usa la DX
             elif "_normal" in f_lower:
                 ue_name = f"T_{asset_name}_Normal.png"
             elif "_roughness" in f_lower:

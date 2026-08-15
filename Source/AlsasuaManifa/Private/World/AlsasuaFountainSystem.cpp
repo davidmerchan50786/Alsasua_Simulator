@@ -47,6 +47,8 @@ int32 UAlsasuaFountainSystem::ColocarFuentes()
                 const float X = Obj->GetNumberField(TEXT("x"));
                 const float Z = Obj->GetNumberField(TEXT("z"));
                 Fuente.Posicion = UAlsasuaGeoData::AbsLocalToUE5(FVector(X, 0.0f, Z));
+                Fuente.Posicion.Z = UAlsasuaGeoData::AlturaSueloUE5(GetWorld(),
+                    Fuente.Posicion.X, Fuente.Posicion.Y);
                 Fuente.Radio = 100.0f;
                 Fuente.AlturaCazoleta = 80.0f;
                 Fuente.bFuncional = Obj->HasField(TEXT("activa")) ? Obj->GetBoolField(TEXT("activa")) : true;
@@ -73,6 +75,8 @@ int32 UAlsasuaFountainSystem::ColocarFuentes()
             Fuente.Calle = CallesFuentes[i].Key;
             Fuente.Barrio = CallesFuentes[i].Value;
             Fuente.Posicion = UAlsasuaGeoData::AbsLocalToUE5(UAlsasuaGeoData::BarrioCenter(Fuente.Barrio));
+            Fuente.Posicion.Z = UAlsasuaGeoData::AlturaSueloUE5(GetWorld(),
+                Fuente.Posicion.X, Fuente.Posicion.Y);
             Fuente.Radio = 100.0f;
             Fuente.AlturaCazoleta = 80.0f;
             Fuente.bFuncional = true;

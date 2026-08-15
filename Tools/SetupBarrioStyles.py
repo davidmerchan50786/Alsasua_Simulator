@@ -8,6 +8,11 @@ import json
 import os
 import unreal
 
+# La API de editor de 5.8 pasa por aquí: subsistemas en vez de las
+# librerías obsoletas, y los nombres que no existían. Ver ue5_compat.py.
+import sys as _sys, os as _os
+_sys.path.append(_os.path.join(unreal.Paths.project_dir(), "Tools"))
+import ue5_compat as compat
 
 def load_neighborhoods():
     """Carga nighborhoods.json."""
@@ -95,7 +100,7 @@ def apply_material_by_barrio():
     }
 
     count = 0
-    actors = unreal.EditorLevelLibrary.get_all_level_actors_of_class(
+    actors = compat.actores().get_all_level_actors_of_class(
         unreal.StaticMeshActor)
 
     for actor in actors:
@@ -122,7 +127,7 @@ def apply_material_by_barrio():
         facade_type = barrio.get("material_fachada", "Piedra")
         mat_path = material_map.get(facade_type, "/Game/Materials/M_Fachada_Piedra")
 
-        mat = unreal.EditorAssetLibrary.load_asset(mat_path)
+        mat = compat.assets().load_asset(mat_path)
         if not mat:
             continue
 

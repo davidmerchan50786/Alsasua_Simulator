@@ -1,4 +1,5 @@
 #include "World/AlsasuaAwningShutterSystem.h"
+#include "World/AlsasuaMallaFab.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "Engine/StaticMeshActor.h"
@@ -8,6 +9,7 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "GeoDataAlsasua.h"
+#include "AlturasLidarComun.h"
 
 void UAlsasuaAwningShutterSystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -84,7 +86,7 @@ int32 UAlsasuaAwningShutterSystem::ColocarToldosYPersianas()
         if (!Bld) continue;
 
         const int32 Id = Bld->GetIntegerField(TEXT("id"));
-        const float Height = Bld->HasField(TEXT("height")) ? Bld->GetNumberField(TEXT("height")) : 10.0f;
+        float Height = Bld->HasField(TEXT("height")) ? Bld->GetNumberField(TEXT("height")) : 10.0f;
 
         const TArray<TSharedPtr<FJsonValue>>* VertsArr;
         if (!Bld->TryGetArrayField(TEXT("vertices"), VertsArr) || !VertsArr || VertsArr->Num() < 3) continue;
@@ -99,7 +101,18 @@ int32 UAlsasuaAwningShutterSystem::ColocarToldosYPersianas()
         }
         CX /= VertsArr->Num();
         CZ /= VertsArr->Num();
-        FVector Center = UAlsasuaGeoData::RelLocalToUE5(FVector(CX, 0.0f, CZ));
+        // La cota sale del terreno: antes era 0 y los toldos y persianas de los
+        // 1030 edificios quedaban medio kilómetro bajo el pueblo (está a 531 m).
+        FVector Center = UAlsasuaGeoData::RelLocalASueloUE5(GetWorld(), FVector(CX, 0.0f, CZ));
+
+        // Misma altura medida que el resto: las persianas se reparten por planta
+        // (Height/3), así que con la altura de OSM faltaban las de arriba.
+        {
+            float AltLidar = 0.f;
+            int32 PlantasLidar = 0;
+            if (AlturasLidar::Buscar(FVector2D(Center.X, Center.Y), AltLidar, PlantasLidar))
+                Height = AltLidar;
+        }
 
         bool bHasAwning = false;
         if (bool* Found = TieneToldo.Find(Id)) bHasAwning = *Found;
@@ -129,8 +142,8 @@ int32 UAlsasuaAwningShutterSystem::ColocarToldosYPersianas()
                 float SZ = Toldo.bPlegado ? 0.1f : Toldo.Profundidad / 100.0f;
                 ToldoActor->SetActorScale3D(FVector(SX, SZ, 0.05f));
 
-                UStaticMesh* PlaneMesh = LoadObject<UStaticMesh>(nullptr,
-                    TEXT("/Game/EngineBasicShapes/Plane"));
+                UStaticMesh* PlaneMesh = AlsasuaMallaFab::Resolver(TEXT("toldo"),
+                    TEXT("/Engine/BasicShapes/Plane.Plane"));
                 if (PlaneMesh)
                     ToldoActor->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
             }
@@ -168,7 +181,7 @@ int32 UAlsasuaAwningShutterSystem::ColocarToldosYPersianas()
                 PersianaActor->SetActorScale3D(FVector(SX, 0.05f, SZ));
 
                 UStaticMesh* PlaneMesh = LoadObject<UStaticMesh>(nullptr,
-                    TEXT("/Game/EngineBasicShapes/Plane"));
+                    TEXT("/Engine/BasicShapes/Plane.Plane"));
                 if (PlaneMesh)
                     PersianaActor->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
             }
