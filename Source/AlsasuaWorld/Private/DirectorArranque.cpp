@@ -38,6 +38,7 @@
 #include "World/AlsasuaFarolaPlacer.h"
 #include "World/AlsasuaFoliagePainter.h"
 #include "World/AlsasuaTrafficSystem.h"
+#include "World/AlsasuaFerrocarrilSystem.h"
 #include "World/AlsasuaRoadSurfaceSystem.h"
 #include "World/AlsasuaNightLightingSystem.h"
 #include "World/AlsasuaWeatherSystem.h"
@@ -621,11 +622,26 @@ void ADirectorArranque::IniciarConstruccion()
         }
     }
 
+    // --- 52. Material rodante en la playa de vías de la estación ---
+    // El último de la cadena por las dos puntas. Necesita las cintas de balasto
+    // de la fase 3 ya drapeadas, porque la Z de cada vehículo sale de un trazo
+    // vertical contra ellas. Y va detrás de todo lo demás porque un tren sí
+    // tiene colisión: colocado antes, cualquier sistema que se apoye por
+    // raycast y pase por la estación se subiría al techo de un vagón.
+    {
+        UAlsasuaFerrocarrilSystem* Ferro = World->GetSubsystem<UAlsasuaFerrocarrilSystem>();
+        if (Ferro)
+        {
+            const int32 NumVagones = Ferro->ColocarMaterialRodante();
+            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d vehículos ferroviarios."), NumVagones);
+        }
+    }
+
     ArranqueMundo::Progreso = 1.f;
     ArranqueMundo::BaselineListo = true;
     ArranqueMundo::HayDirector = false;
     bConstruccionCompleta = true;
-    UE_LOG(LogTemp, Log, TEXT("DirectorArranque: BaselineListo = true (51 sistemas basados en datos reales)."));
+    UE_LOG(LogTemp, Log, TEXT("DirectorArranque: BaselineListo = true (52 sistemas basados en datos reales)."));
 }
 
 void ADirectorArranque::Tick(float DeltaTime)

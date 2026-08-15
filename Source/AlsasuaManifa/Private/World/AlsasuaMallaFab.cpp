@@ -62,6 +62,15 @@ namespace
 		{ TEXT("autobus"),           TEXT("autobus_urbano|autobus|bus|city_bus") },
 		{ TEXT("furgoneta"),         TEXT("furgoneta_secundaria|furgoneta|van|truck") },
 
+		// ── Material rodante ───────────────────────────────────────────────
+		// Altsasu es nudo ferroviario (Madril-Hendaia con Castejón) y tenía la
+		// playa de vías vacía. La locomotora y el contenedor estaban bajados sin
+		// que ninguna clave los alcanzara. El nombre exacto va primero porque
+		// BuscarEnFab prueba coincidencia exacta antes que subcadena: "container"
+		// a secas también casaría con los contenedores de basura del barrio.
+		{ TEXT("locomotora"),        TEXT("locomotive00|locomotive|locomotora|train_engine|diesel_locomotive") },
+		{ TEXT("vagon_contenedor"),  TEXT("container|contenedor_carga|freight_container|shipping_container|boxcar|wagon") },
+
 		// Tipos que trae street_furniture.json y que la tabla no conocía (17
 		// piezas en total): sin entrada caían a primitiva aunque hubiera malla.
 		// papelera_reciclaje tiene la suya propia de Meshy; el resto tira del

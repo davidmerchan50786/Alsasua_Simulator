@@ -142,7 +142,7 @@ en la consola Python del editor.
 ## 5. Arranque del mundo
 
 `ADirectorArranque` (`AlsasuaWorld`, 626 líneas) es el orquestador: `BeginPlay()`
-→ `IniciarConstruccion()`, que construye el pueblo en **~51 fases numeradas y
+→ `IniciarConstruccion()`, que construye el pueblo en **~52 fases numeradas y
 comentadas**, en orden de dependencia, publicando progreso en
 `ArranqueMundo::Progreso` (lo lee `AlsasuaHUD` para la barra de carga):
 
@@ -158,10 +158,23 @@ comentadas**, en orden de dependencia, publicando progreso en
 3. Fases 13-51: sistemas de `AlsasuaManifa/World/*` (atmósfera, post-process por
    zonas, estilos de barrio, fachadas, farolas, señales, tráfico, aceras,
    marcas viales, semáforos, cables aéreos, clima, audio…).
+52. `UAlsasuaFerrocarrilSystem` — material rodante en la playa de vías. Va el
+   último **a propósito**: un tren tiene colisión, y colocado antes cualquier
+   sistema que se apoye por raycast y pase por la estación se subiría al techo
+   de un vagón (ver el aviso de más abajo).
 
 Si añades una fase, ponla **donde toque en la cadena** y mantén la numeración y
 el `Progreso`. El terreno va siempre primero: el resto hace raycast contra él
 para apoyarse (`MuestreadorAltura`, `GeoDataAlsasua::TraceUp/TraceDown`).
+
+**Los datasets de `UCargadorVias` no tienen todos la misma forma de raíz.** Cuatro
+son un array; `railways_unity.json` es un objeto `{"rails", "stations"}` porque
+además de los 86 trazados lleva los dos apeaderos. `Encolar` acepta las dos formas
+y recibe el nombre del campo cuando hace falta. Deserializar a `TArray` contra una
+raíz de objeto devuelve `false` sin más, así que la vía férrea entera —38,7 km—
+estuvo perdiéndose en silencio mientras el director registraba "Vías férreas
+cargadas". `Tools/VerificarVias.py` replica el parseo y canta si un dataset deja
+de producir trazados.
 
 **Cuidado con el orden y los raycast de altura.** Varios cargadores muestrean Z
 con `LineTraceSingleByChannel(ECC_Visibility)` **sin filtrar por actor** (lo hacen
@@ -250,16 +263,23 @@ esos parámetros en runtime. Crear un material que lea el MPC antes de que exist
 
 ## 7. Pipeline de Python (`Tools/`)
 
-44 scripts. Dos familias:
+54 scripts. Dos familias:
 
-- **32 con `import unreal`** — se ejecutan **dentro del editor** (Output Log →
+- **34 con `import unreal`** — se ejecutan **dentro del editor** (Output Log →
   consola Python, o Tools → Execute Python Script). `Tools/RunAll.py` es el
   maestro: ejecuta todo el setup en orden de dependencias (assets/materiales →
   nivel → capas visuales → VFX → foliage de Fab), aislando cada paso y sacando
   un resumen de lo que falló. Deriva rutas de `unreal.Paths.project_dir()`.
-- **12 standalone** (`DescargarOrtofotoPNOA.py`, `PrepararLandscape.py`,
+- **20 standalone** (`DescargarOrtofotoPNOA.py`, `PrepararLandscape.py`,
   `DownloadTextures.py`, `enrich_*.py`, `asset_manifest.py`…) — Python 3 normal,
   algunos con `numpy`/`requests`.
+
+Los que empiezan por `Verificar`/`Auditar` no montan nada: contrastan lo que hay
+contra su fuente y sacan un informe. Sirven de red donde no hay compilador —
+`VerificarVias.py` (formas de raíz de los datasets de vía y sitio para el material
+rodante), `VerificarCallesNavarra.py` (trazado contra el eje catastral),
+`AuditarAssets.py` (rutas sin respaldo y mallas bajadas que nadie pide),
+`AlturasLidarEdificios.py --verificar`, `DescargarCatastroNavarra.py --verificar`.
 
 **Regla de rutas**: ningún script puede llevar rutas absolutas de una máquina
 concreta. Los standalone derivan la raíz de su propia ubicación

@@ -58,7 +58,7 @@ con X=east, Y=north. Texturas con el **sur arriba** (v=0 en Ymin).
 | `AlsasuaWorld` | Generación procedural: terreno, calles, edificios, POI, puentes |
 | `AlsasuaEntities` | Base de entidades: NPC, daño, vida |
 | `AlsasuaGameplay` | GameMode, misiones, manifestación, ciclo visual, clima, guardado |
-| `AlsasuaManifa` | Sistemas de mundo (~51): multitud, tráfico, iluminación, fachadas, optimización, hitch protector, GAS |
+| `AlsasuaManifa` | Sistemas de mundo (~52): multitud, tráfico, ferrocarril, iluminación, fachadas, optimización, hitch protector, GAS |
 | `AlsasuaSimulator` | Generadores de edificios y carreteras |
 | `AlsasuaUI` | Widgets (pausa, ajustes) |
 | `AlsasuaEditor` | Generadores de assets/materiales en editor |
