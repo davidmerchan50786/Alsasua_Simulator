@@ -1,7 +1,21 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Engine/Texture2D.h"
 #include "AlsasuaBarrioStyleSystem.generated.h"
+
+UENUM(BlueprintType)
+enum class EBarrioStyle : uint8
+{
+	Herriko     UMETA(DisplayName = "Herriko Aldea (Casco Viejo)"),
+	Zelai       UMETA(DisplayName = "Zelai (Residencial)"),
+	Intxostia   UMETA(DisplayName = "Intxostia (Ensanche)"),
+	Errota      UMETA(DisplayName = "Errota (Industrial)"),
+	SanPedro    UMETA(DisplayName = "San Pedro (Estación)"),
+	Harrobieta  UMETA(DisplayName = "Harrobieta (Mercado)"),
+	Ferroviario UMETA(DisplayName = "Ferroviario (Vías)"),
+	Monte       UMETA(DisplayName = "Monte (Caseríos)")
+};
 
 /**
  * Sistema que aplica el estilo visual REAL de cada barrio de Alsasua
@@ -101,6 +115,24 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Barrio|Monte")
 	float MonteAlturaMedia = 400.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ColorGrading")
+	TMap<EBarrioStyle, TObjectPtr<UTexture2D>> BarrioLUTs;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ColorGrading")
+	bool bEnableColorMatching = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ColorGrading")
+	float ColorMatchingIntensity = 1.0f;
+
+	UFUNCTION(BlueprintCallable, Category = "ColorGrading")
+	void ApplyBarrioLUT(EBarrioStyle Barrio);
+
+	UFUNCTION(BlueprintCallable, Category = "ColorGrading")
+	EBarrioStyle GetBarrioStyleAtLocation(const FVector& WorldLocation);
+
+	UFUNCTION(BlueprintCallable, Category = "ColorGrading")
+	void UpdateColorGradingForLocation(const FVector& PlayerLocation);
 
 private:
 	void ApplyBarrioStyles();

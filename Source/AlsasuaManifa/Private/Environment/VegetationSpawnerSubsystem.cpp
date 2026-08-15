@@ -168,7 +168,15 @@ TArray<FTransform> UVegetationSpawnerSubsystem::GeneratePoissonDiscPoints(UVeget
 
 			FRandomStream ProbRng(Vegetation->Seed + (int32)Sample.X * (int32)Sample.Y);
 
-			if ((ProbRng.FRand() * 100.0f) > Vegetation->GlobalProbability)
+			float EffectiveProbability = Vegetation->GlobalProbability;
+			
+			if (Vegetation->bUseNaturalClustering || Vegetation->bRiverAffinity || Vegetation->bNorthFacing || Vegetation->bSouthFacing)
+			{
+				float DensityMult = GetNaturalDensityMultiplier(WorldPos, Vegetation);
+				EffectiveProbability *= DensityMult;
+			}
+
+			if ((ProbRng.FRand() * 100.0f) > EffectiveProbability)
 			{
 				continue;
 			}
@@ -635,4 +643,100 @@ int32 UVegetationSpawnerSubsystem::GetPrefabIndex(UVegetationType* Vegetation, f
 	}
 
 	return Vegetation->Prefabs.Num() - 1;
+}
+
+float UVegetationSpawnerSubsystem::GetNaturalDensityMultiplier(const FVector& WorldPos, UVegetationType* Vegetation)
+{
+	if (!Vegetation)
+	{
+		return 1.0f;
+	}
+
+	float Multiplier = 1.0f;
+
+	if (Vegetation->bUseNaturalClustering)
+	{
+		float ClusterMask = GetClusteringMask(WorldPos, Vegetation->ClusterSize);
+		Multiplier *= FMath::Lerp(1.0f, ClusterMask, Vegetation->ClusterStrength);
+	}
+
+	if (Vegetation->bRiverAffinity)
+	{
+		float WaterMask = GetWaterProximityMask(WorldPos, Vegetation->WaterDistanceRange);
+		Multiplier *= WaterMask;
+	}
+
+	if (Vegetation->bNorthFacing || Vegetation->bSouthFacing)
+	{
+		float OrientationMask = GetOrientationMask(WorldPos, Vegetation->bNorthFacing, Vegetation->bSouthFacing);
+		Multiplier *= OrientationMask;
+	}
+
+	return FMath::Clamp(Multiplier, 0.0f, 3.0f);
+}
+
+float UVegetationSpawnerSubsystem::GetClusteringMask(const FVector& WorldPos, float ClusterSize)
+{
+	FVector NoisePos = WorldPos / (ClusterSize * 100.0f);
+	float Noise3D = FMath::PerlinNoise3D(NoisePos);
+	float ClusterMask = FMath::Clamp((Noise3D + 0.3f) / 0.6f, 0.0f, 1.0f);
+	return ClusterMask;
+}
+
+float UVegetationSpawnerSubsystem::GetWaterProximityMask(const FVector& WorldPos, const FVector2D& WaterDistanceRange)
+{
+	const FVector RiverCenter(566633.0f * 100.0f, 4741532.0f * 100.0f, 0.0f);
+	
+	float Distance = FVector::Dist2D(WorldPos, RiverCenter);
+	
+	float MinDist = WaterDistanceRange.X * 100.0f;
+	float MaxDist = WaterDistanceRange.Y * 100.0f;
+	
+	if (Distance < MinDist)
+	{
+		return 1.0f;
+	}
+	else if (Distance > MaxDist)
+	{
+		return 0.0f;
+	}
+	else
+	{
+		return 1.0f - ((Distance - MinDist) / (MaxDist - MinDist));
+	}
+}
+
+float UVegetationSpawnerSubsystem::GetOrientationMask(const FVector& WorldPos, bool bNorthFacing, bool bSouthFacing)
+{
+	if (!TargetLandscape.IsValid())
+	{
+		return 1.0f;
+	}
+
+	const float Step = 200.0f;
+	const FVector SamplePosX = WorldPos + FVector(Step, 0.0f, 0.0f);
+	const FVector SampleNegX = WorldPos - FVector(Step, 0.0f, 0.0f);
+	const FVector SamplePosY = WorldPos + FVector(0.0f, Step, 0.0f);
+	const FVector SampleNegY = WorldPos - FVector(0.0f, Step, 0.0f);
+
+	float PosX = TargetLandscape->GetHeightAtLocation(SamplePosX).Get(WorldPos.Z);
+	float NegX = TargetLandscape->GetHeightAtLocation(SampleNegX).Get(WorldPos.Z);
+	float PosY = TargetLandscape->GetHeightAtLocation(SamplePosY).Get(WorldPos.Z);
+	float NegY = TargetLandscape->GetHeightAtLocation(SampleNegY).Get(WorldPos.Z);
+
+	FVector Normal = FVector(NegX - PosX, NegY - PosY, 2.0f * Step).GetSafeNormal();
+
+	FVector NorthDir = FVector(0.0f, 1.0f, 0.0f);
+	float DotNorth = FVector::DotProduct(Normal, NorthDir);
+
+	if (bNorthFacing && DotNorth > 0.3f)
+	{
+		return FMath::Clamp((DotNorth - 0.3f) / 0.4f, 0.0f, 1.0f);
+	}
+	else if (bSouthFacing && DotNorth < -0.3f)
+	{
+		return FMath::Clamp((-DotNorth - 0.3f) / 0.4f, 0.0f, 1.0f);
+	}
+
+	return bNorthFacing || bSouthFacing ? 0.0f : 1.0f;
 }

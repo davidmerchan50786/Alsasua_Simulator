@@ -80,6 +80,11 @@ protected:
 	bool IsInsideOccupiedCell(const FVector& WorldPos);
 	bool TestSplatmap(const FVector2D& NormalizedPos, UVegetationType* Vegetation, float& OutSpawnChance);
 
+	float GetNaturalDensityMultiplier(const FVector& WorldPos, UVegetationType* Vegetation);
+	float GetClusteringMask(const FVector& WorldPos, float ClusterSize);
+	float GetWaterProximityMask(const FVector& WorldPos, const FVector2D& WaterDistanceRange);
+	float GetOrientationMask(const FVector& WorldPos, bool bNorthFacing, bool bSouthFacing);
+
 	static int32 GetSplatmapID(int32 LayerID);
 
 	TWeakObjectPtr<ALandscape> TargetLandscape;

@@ -83,6 +83,30 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Spawning")
 	float WaterHeight = 0.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Nanite")
+	bool bEnableNanite = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Clustering")
+	bool bUseNaturalClustering = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Clustering", meta = (ClampMin = "10.0", ClampMax = "1000.0"))
+	float ClusterSize = 50.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Clustering", meta = (ClampMin = "0.0", ClampMax = "1.0"))
+	float ClusterStrength = 0.5f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Ecology")
+	bool bRiverAffinity = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Ecology")
+	FVector2D WaterDistanceRange = FVector2D(0.0f, 30.0f);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Ecology")
+	bool bNorthFacing = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Ecology")
+	bool bSouthFacing = false;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Biome")
 	TArray<FString> BiomeAffinity;
 
