@@ -337,6 +337,13 @@ FLinearColor ATerrenoGenerado::CalcVertexColor(int32 PxX, int32 PxY) const
 	return FLinearColor(HNorm, Slope, DistNorm, 1.f);
 }
 
+FBox2D ATerrenoGenerado::BoundsXY() const
+{
+	const FVector C = CentroMundo();
+	const double M = MitadMundo();
+	return FBox2D(FVector2D(C.X - M, C.Y - M), FVector2D(C.X + M, C.Y + M));
+}
+
 float ATerrenoGenerado::AlturaEnMundo(float X, float Y) const
 {
 	if (AlturasRAW.Num() == 0) return (float)LocZ;
