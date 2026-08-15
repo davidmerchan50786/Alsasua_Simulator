@@ -173,6 +173,50 @@ def tipos_de_datos_sin_mapear():
     return cuenta
 
 
+def mallas_sin_usar(top=25):
+    """Mallas del inventario que ninguna clave de AlsasuaMallaFab reconoce.
+
+    Es la pregunta al revés de todo lo demás: no "qué pide el código y no está",
+    sino "qué está bajado y no lo usa nadie". Una malla que no casa con ninguna
+    palabra clave no falla ni avisa — el sistema que la necesitaría cae a su
+    forma básica y se ve un cubo con el modelo bueno en disco al lado.
+
+    Se agrupa por carpeta del pack, porque lo accionable es "este pack entero no
+    está mapeado", no cada fichero suelto.
+    """
+    fab = os.path.join(SOURCE, "AlsasuaManifa", "Private", "World", "AlsasuaMallaFab.cpp")
+    p = os.path.join(DATOS, "asset_manifest.json")
+    if not (os.path.exists(fab) and os.path.exists(p)):
+        return {}, 0, 0
+
+    # Todas las palabras clave de la tabla, en minúsculas.
+    txt = open(fab, encoding="utf-8", errors="ignore").read()
+    claves = set()
+    for _, lista in re.findall(r'\{\s*TEXT\("([^"]+)"\),\s*TEXT\("([^"]+)"\)', txt):
+        for c in lista.split("|"):
+            c = c.strip().lower()
+            if len(c) >= 3:
+                claves.add(c)
+
+    doc = json.load(open(p, encoding="utf-8"))
+    porpack = {}
+    total = casadas = 0
+    for m in doc.get("meshes", []):
+        ruta = str(m.get("path", "")).replace("\\\\", "/").replace("\\", "/")
+        if not ruta:
+            continue
+        total += 1
+        nombre = os.path.splitext(os.path.basename(ruta))[0].lower()
+        # Casa si alguna clave aparece en el nombre del fichero o en su ruta.
+        if any(c in nombre or c in ruta.lower() for c in claves):
+            casadas += 1
+            continue
+        pack = ruta.split("/")[0] if "/" in ruta else "(raíz)"
+        porpack.setdefault(pack, []).append(os.path.basename(ruta))
+
+    return porpack, total, casadas
+
+
 def main():
     codigo = rutas_del_codigo()
     dirs = carpetas_de_content()
@@ -259,6 +303,32 @@ def resumen_mallafab():
         print("  datos:  todos los tipos de street_furniture.json tienen entrada.")
     for t, c in sorted(sin_dat.items(), key=lambda x: -x[1]):
         print("  datos:  %-24s %d piezas caen a primitiva" % (t, c))
+
+    porpack, total, casadas = mallas_sin_usar()
+    print()
+    print("=" * 74)
+    print("  INVENTARIO SIN USAR — mallas bajadas que ninguna clave reconoce")
+    print("=" * 74)
+    if not total:
+        print("  Sin asset_manifest.json: no hay inventario contra el que cruzar.")
+        return
+    print("  %d mallas en el inventario, %d las reconoce alguna clave (%.0f%%)"
+          % (total, casadas, 100.0 * casadas / total))
+    if not porpack:
+        print("  Todas están mapeadas.")
+        return
+    print("  %d sin mapear, por pack:\n" % (total - casadas))
+    for pack, fs in sorted(porpack.items(), key=lambda k: -len(k[1]))[:15]:
+        print("  ── %-28s %4d mallas" % (pack, len(fs)))
+        print("       %s%s" % (", ".join(fs[:4]), " ..." if len(fs) > 4 else ""))
+    print()
+    print("  Un pack entero aquí = está bajado y no se usa. Si te interesa, añade")
+    print("  su palabra clave a ClavesPorTipo en AlsasuaMallaFab.cpp y entra solo.")
+    print()
+    print("  OJO: esto cruza contra asset_manifest.json, que es una foto del")
+    print("  inventario. Si has bajado cosas después, regenera el manifiesto en la")
+    print("  máquina que tiene el Content completo (python3 Tools/asset_manifest.py)")
+    print("  antes de fiarte de este listado.")
 
 
 if __name__ == "__main__":
