@@ -93,10 +93,13 @@ namespace
 		// Wood_ (16), Prop_ (13), Canopy_ (10), Waterwheel_ (9), Cobblestone_,
 		// Wall_Prop_, Dirt_, Kit_Window_. Se apunta a la pieza recta o
 		// "Full" de cada familia, que es la que sirve de caso general.
-		{ TEXT("toldo"),             TEXT("canopy_full|canopy_side|canopy_top|awning") },
-		{ TEXT("marquesina"),        TEXT("canopy_full|canopy_beam|canopy_corner") },
+		{ TEXT("toldo"),             TEXT("canopy_full|canopy_side|canopy_top|canopy_ramp|awning") },
+		{ TEXT("marquesina"),        TEXT("canopy_full|canopy_beam|canopy_corner|canopy_ramp") },
 		{ TEXT("bordillo"),          TEXT("stone_curb|curb|kerb") },
-		{ TEXT("acera_pieza"),       TEXT("cobblestone_floor|stone_floor|pp_floor_tile") },
+		// Las piezas de transición del kit (Cobblestone_Dirt_Transition_1..4) son
+		// las que rematan donde el adoquín muere contra la tierra, y estaban
+		// bajadas sin que ninguna clave las alcanzara.
+		{ TEXT("acera_pieza"),       TEXT("cobblestone_floor|cobblestone_dirt_transition|stone_floor|pp_floor_tile") },
 		{ TEXT("puerta"),            TEXT("wall_prop_door_simple|wall_prop_door_ornate|stucco_doorway|stone_doorway|door") },
 		{ TEXT("escaparate"),        TEXT("stucco_doorway_wide|harategia|okindegia|shop_front|storefront") },
 		{ TEXT("ventana"),           TEXT("stucco_window_single|stucco_window_double|kit_window|ventana_basca|window") },
@@ -113,7 +116,7 @@ namespace
 		{ TEXT("tejado_cumbrera"),      TEXT("roof_accent_ridge") },
 		{ TEXT("tejado_cumbrera_fin"),  TEXT("roof_accent_ridge_end") },
 		{ TEXT("tejado_limatesa"),      TEXT("roof_accent_rake_straight|roof_accent_rake_eave") },
-		{ TEXT("pilar"),             TEXT("stone_pillar|stucco_prop_support_pillar|wood_post") },
+		{ TEXT("pilar"),             TEXT("stone_pillar|stucco_prop_support_pillar|stucco_prop_support_angled|wood_post") },
 		{ TEXT("escalera"),          TEXT("stone_steps|wood_steps|stairs|steps") },
 		{ TEXT("barril"),            TEXT("prop_barrel|barrel") },
 		{ TEXT("caja_madera"),       TEXT("prop_crate|crate") },

@@ -154,11 +154,20 @@ def main():
             plantas = 0
         else:
             plantas = max(1, int(round((h - ALERO_M) / ALTURA_PLANTA_M)))
+
+        # Relieve interno de la cubierta: cuánto sube del faldón a la cumbrera.
+        # Un tejado plano queda casi llano dentro de su huella; uno a dos aguas
+        # tiene caballete y separa. Se usan percentiles y no min/max porque a
+        # 2 m/px un solo píxel de borde que pilla la calle, o una antena, se
+        # lleva el extremo por delante.
+        relieve = float(np.percentile(vals, 90) - np.percentile(vals, 25))
+
         out.append({
             "centro_mundo_cm": ed["centro_mundo_cm"],
             "area_m2": ed["area_m2"],
             "altura_m": round(h, 2),
             "plantas": plantas,
+            "relieve_m": round(relieve, 2),
             "px": len(vals),
         })
 
@@ -252,8 +261,80 @@ def verificar():
         print("  lo correcto es usar la altura LiDAR por edificio donde haya pareja.")
 
 
+def verificar_tejados():
+    """Contrasta lidar_forma de buildings_final contra el relieve medido.
+
+    Resultado de la primera pasada, relieve mediano (p90-p25) por forma declarada:
+
+        flat            27   0,70 m
+        gabled         670   1,32 m
+        hipped         153   1,57 m
+        steep_gabled    70   1,86 m
+
+    O sea que la clasificación es coherente: plano el que menos relieve tiene y
+    steep_gabled el que más, en el orden que toca. Es una validación, no un fallo.
+
+    Lo que NO se puede hacer con esto es reclasificar edificio por edificio: a
+    2 m/px las distribuciones se solapan mucho (el p75 de los planos, 2,71 m, ya
+    supera la mediana de los gabled), y una huella típica de 159 m2 son unos 40
+    píxeles. Sirve para comprobar la población, no para corregir casos sueltos.
+    Para eso haría falta el LiDAR de puntos, no el ráster derivado.
+    """
+    import statistics
+    from collections import defaultdict
+
+    lid = json.load(open(SALIDA, encoding="utf-8"))["edificios"]
+    bf = json.load(open(os.path.join(DATOS, "buildings_final.json"), encoding="utf-8"))
+    OX, OZ = 1918.0, 8570.0
+
+    def centro(b):
+        v = b["vertices"]
+        pts = ([(p["x"], p.get("z", p.get("y"))) for p in v] if isinstance(v[0], dict)
+               else [(v[i], v[i + 1]) for i in range(0, len(v) - 1, 2)])
+        return ((sum(p[0] for p in pts) / len(pts) + OX) * 100.0,
+                (sum(p[1] for p in pts) / len(pts) + OZ) * 100.0)
+
+    CEL = 3000.0
+    rej = defaultdict(list)
+    for e in lid:
+        if e["plantas"] > 0 and e.get("px", 0) >= 8:
+            x, y = e["centro_mundo_cm"]
+            rej[(int(x // CEL), int(y // CEL))].append(e)
+
+    porforma = defaultdict(list)
+    for b in bf:
+        f = b.get("lidar_forma")
+        if not f:
+            continue
+        x, y = centro(b)
+        mejor, md = None, float("inf")
+        cx, cy = int(x // CEL), int(y // CEL)
+        for ax in (-1, 0, 1):
+            for ay in (-1, 0, 1):
+                for e in rej.get((cx + ax, cy + ay), ()):
+                    d = math.hypot(e["centro_mundo_cm"][0] - x, e["centro_mundo_cm"][1] - y)
+                    if d < md:
+                        md, mejor = d, e
+        if mejor is not None and md <= 1500.0:
+            porforma[f].append(mejor.get("relieve_m", 0.0))
+
+    print("Relieve de cubierta medido (p90-p25), por forma declarada:")
+    print("  %-14s %5s %8s %8s %8s" % ("forma", "n", "mediana", "p25", "p75"))
+    for f, v in sorted(porforma.items(), key=lambda k: -len(k[1])):
+        v = sorted(v)
+        if not v:
+            continue
+        print("  %-14s %5d %8.2f %8.2f %8.2f"
+              % (f, len(v), statistics.median(v), v[len(v) // 4], v[3 * len(v) // 4]))
+    print("\nSe espera plano < gabled < hipped < steep_gabled. Si sale en ese orden,")
+    print("la clasificación está corroborada. No sirve para reclasificar casos")
+    print("sueltos: a 2 m/px las distribuciones se solapan (ver docstring).")
+
+
 if __name__ == "__main__":
     if "--verificar" in sys.argv:
         verificar()
+    elif "--tejados" in sys.argv:
+        verificar_tejados()
     else:
         main()
