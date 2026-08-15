@@ -112,7 +112,7 @@ void UAlsasuaAtmosphereController::ApplyLightSetup()
 			DirComp->SetDynamicShadowCascades(FMath::Clamp(ShadowCascades, 1, 6));
 			DirComp->SetDynamicShadowDistanceMovableLight(ShadowDistance);
 			DirComp->SetCascadeDistributionExponent(3.f);
-			DirComp->SetContactShadowLength(ContactShadowLength);
+			DirComp->ContactShadowLength = ContactShadowLength;
 			DirComp->SetVolumetricScatteringIntensity(SunVolumetricScattering);
 			DirComp->MarkRenderStateDirty();
 		}

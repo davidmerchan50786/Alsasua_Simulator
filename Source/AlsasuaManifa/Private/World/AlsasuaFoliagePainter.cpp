@@ -30,7 +30,7 @@ void UAlsasuaFoliagePainter::InicializarTipos()
 
     FFoliageTypeData Grass02;
     Grass02.Nombre = TEXT("Hierba_Larga");
-    Grass02.AssetPath = Base + TEXT("/multi_stylized_grass/01_d")   // no hay grass_02; "diffus" era la textura, no la malla;
+    Grass02.AssetPath = Base + TEXT("/multi_stylized_grass/01_d");  // no hay grass_02; "diffus" era la textura, no la malla.
     Grass02.EscalaMin = 0.5f;
     Grass02.EscalaMax = 1.5f;
     Grass02.Densidad = 3.0f;
@@ -39,7 +39,7 @@ void UAlsasuaFoliagePainter::InicializarTipos()
 
     FFoliageTypeData Grass07;
     Grass07.Nombre = TEXT("Hierba_Corta");
-    Grass07.AssetPath = Base + TEXT("/grass_07/grass_07")           // la malla repite el nombre de carpeta;
+    Grass07.AssetPath = Base + TEXT("/grass_07/grass_07");          // la malla repite el nombre de carpeta.
     Grass07.EscalaMin = 0.3f;
     Grass07.EscalaMax = 1.0f;
     Grass07.Densidad = 4.0f;
