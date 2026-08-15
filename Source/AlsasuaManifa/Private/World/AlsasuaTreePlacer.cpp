@@ -8,6 +8,7 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "GeoDataAlsasua.h"
+#include "CargarJsonComun.h"
 
 void UAlsasuaTreePlacer::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -152,29 +153,18 @@ FString UAlsasuaTreePlacer::AsignarEspecie(float AlturaLIDAR) const
 
 bool UAlsasuaTreePlacer::CargarArboles()
 {
-    const FString JsonPath = FPaths::ProjectContentDir() + TEXT("Datos/trees_unity.json");
-    TArray<FString> Lineas;
-    if (!FFileHelper::LoadFileToStringArray(Lineas, *JsonPath))
+    // trees_unity.json es un array de 2783 árboles en la raíz, no un objeto con
+    // campo "trees". La deserialización a FJsonObject fallaba y esto salía por
+    // aquí: el pueblo se quedaba sin los árboles con especie ni un aviso.
+    TArray<TSharedPtr<FJsonValue>> Arr;
+    if (!JsonDatos::CargarArray(TEXT("Datos/trees_unity.json"), Arr, { TEXT("trees") }))
     {
-        UE_LOG(LogTemp, Error, TEXT("TreePlacer: No se pudo cargar trees_unity.json"));
+        UE_LOG(LogTemp, Error, TEXT("TreePlacer: sin árboles en trees_unity.json"));
         return false;
     }
 
-    FString JsonStr;
-    for (const FString& L : Lineas) JsonStr += L;
-
-    TSharedPtr<FJsonObject> Root;
-    TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(JsonStr);
-    if (!FJsonSerializer::Deserialize(Reader, Root) || !Root.IsValid()) return false;
-
-    const TArray<TSharedPtr<FJsonValue>>* Arr;
-    if (!Root->TryGetArrayField(TEXT("trees"), Arr))
-    {
-        if (!Root->TryGetArrayField(TEXT(""), Arr)) return false;
-    }
-
-    Arboles.Empty(Arr->Num());
-    for (const auto& Val : *Arr)
+    Arboles.Empty(Arr.Num());
+    for (const auto& Val : Arr)
     {
         const TSharedPtr<FJsonObject>& Obj = Val->AsObject();
         if (!Obj) continue;

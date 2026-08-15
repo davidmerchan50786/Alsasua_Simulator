@@ -4,6 +4,7 @@
 #include "GameFramework/Pawn.h"
 #include "Kismet/GameplayStatics.h"
 #include "GeoDataAlsasua.h"
+#include "CargarJsonComun.h"
 #include "Rendering/DrawElements.h"
 #include "Json.h"
 #include "JsonUtilities.h"
@@ -141,104 +142,96 @@ int32 UAlsasuaMinimapWidget::NativePaint(const FPaintArgs& Args, const FGeometry
 	const FVector PlayerLoc = (PC && PC->GetPawn()) ? PC->GetPawn()->GetActorLocation() : FVector::ZeroVector;
 	const FVector2D PlayerLoc2D = GetPlayerLocation();
 
-	const FString RoadPath = FPaths::ProjectContentDir() / TEXT("Datos/roads_unity.json");
-	FString RoadJson;
-	if (FFileHelper::LoadFileToString(RoadJson, *RoadPath))
+	// roads_unity.json es un array en la raíz. Esto lo leía como objeto con campo
+	// "roads": la deserialización fallaba y el minimapa salía sin una sola calle.
+	// Los puntos son relativos, así que hay que sumar OX/OZ antes de convertir; sin
+	// eso el trazado saldría desplazado 1918 m al oeste y 8570 al sur.
 	{
-		TSharedPtr<FJsonObject> Root;
-		TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(RoadJson);
-		if (FJsonSerializer::Deserialize(Reader, Root) && Root.IsValid())
+		TArray<TSharedPtr<FJsonValue>> Segs;
+		if (JsonDatos::CargarArray(TEXT("Datos/roads_unity.json"), Segs, { TEXT("roads") }))
 		{
-			const TArray<TSharedPtr<FJsonValue>>* Segs;
-			if (Root->TryGetArrayField(TEXT("roads"), Segs))
+			const FLinearColor RoadColor(0.4f, 0.4f, 0.45f, 0.7f);
+
+			for (const auto& SegVal : Segs)
 			{
-				const FLinearColor RoadColor(0.4f, 0.4f, 0.45f, 0.7f);
+				const TSharedPtr<FJsonObject> Seg = SegVal->AsObject();
+				if (!Seg.IsValid()) continue;
 
-				for (const auto& SegVal : *Segs)
+				const TArray<TSharedPtr<FJsonValue>>* Pts;
+				if (!Seg->TryGetArrayField(TEXT("points"), Pts)) continue;
+
+				TArray<FVector2D> SegLine;
+				for (const auto& PtVal : *Pts)
 				{
-					const TSharedPtr<FJsonObject> Seg = SegVal->AsObject();
-					if (!Seg.IsValid()) continue;
+					const TSharedPtr<FJsonObject> Pt = PtVal->AsObject();
+					if (!Pt.IsValid()) continue;
 
-					const TArray<TSharedPtr<FJsonValue>>* Pts;
-					if (!Seg->TryGetArrayField(TEXT("points"), Pts)) continue;
+					double Rx = 0, Rz = 0;
+					Pt->TryGetNumberField(TEXT("x"), Rx);
+					Pt->TryGetNumberField(TEXT("z"), Rz);
 
-					TArray<FVector2D> SegLine;
-					for (const auto& PtVal : *Pts)
+					const FVector UnrealPt = UAlsasuaGeoData::RelLocalToUE5(FVector(Rx, 0.0, Rz));
+					const FVector2D MapPos = WorldToMinimap(UnrealPt, Center, Zoom);
+
+					if (FMath::Abs(MapPos.X - Center.X) <= HalfMap + 10.f &&
+						FMath::Abs(MapPos.Y - Center.Y) <= HalfMap + 10.f)
 					{
-						const TSharedPtr<FJsonObject> Pt = PtVal->AsObject();
-						if (!Pt.IsValid()) continue;
-
-						double Rx = 0, Rz = 0;
-						Pt->TryGetNumberField(TEXT("x"), Rx);
-						Pt->TryGetNumberField(TEXT("z"), Rz);
-
-						const FVector UnrealPt = UAlsasuaGeoData::UnityaUnreal(FVector(Rx, 0.0, Rz));
-						const FVector2D MapPos = WorldToMinimap(UnrealPt, Center, Zoom);
-
-						if (FMath::Abs(MapPos.X - Center.X) <= HalfMap + 10.f &&
-							FMath::Abs(MapPos.Y - Center.Y) <= HalfMap + 10.f)
-						{
-							SegLine.Add(MapPos);
-						}
+						SegLine.Add(MapPos);
 					}
+				}
 
-					if (SegLine.Num() >= 2)
-					{
-						FSlateDrawElement::MakeLines(OutDrawElements, LayerId,
-							AllottedGeometry.ToPaintGeometry(), SegLine,
-							ESlateDrawEffect::None, RoadColor, false, 2.f);
-					}
+				if (SegLine.Num() >= 2)
+				{
+					FSlateDrawElement::MakeLines(OutDrawElements, LayerId,
+						AllottedGeometry.ToPaintGeometry(), SegLine,
+						ESlateDrawEffect::None, RoadColor, false, 2.f);
 				}
 			}
 		}
 	}
 
 	// --- Draw rivers ---
-	const FString RiverPath = FPaths::ProjectContentDir() / TEXT("Datos/waterways_unity.json");
-	FString RiverJson;
-	if (FFileHelper::LoadFileToString(RiverJson, *RiverPath))
+	// Igual que las calles: array en la raíz, y encima el campo que se buscaba
+	// ("rivers") no existe en el dataset ni aunque la raíz fuera un objeto. A
+	// diferencia de las calles, los cauces vienen en absoluto y no llevan OX/OZ.
 	{
-		TSharedPtr<FJsonObject> Root;
-		TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(RiverJson);
-		if (FJsonSerializer::Deserialize(Reader, Root) && Root.IsValid())
+		TArray<TSharedPtr<FJsonValue>> Rivers;
+		if (JsonDatos::CargarArray(TEXT("Datos/waterways_unity.json"), Rivers,
+				{ TEXT("waterways"), TEXT("rivers") }))
 		{
-			const TArray<TSharedPtr<FJsonValue>>* RiversPtr;
-			if (Root->TryGetArrayField(TEXT("rivers"), RiversPtr))
+			const FLinearColor RiverColor(0.2f, 0.4f, 0.9f, 0.7f);
+
+			for (const auto& RivVal : Rivers)
 			{
-				const FLinearColor RiverColor(0.2f, 0.4f, 0.9f, 0.7f);
+				const TSharedPtr<FJsonObject> Riv = RivVal->AsObject();
+				if (!Riv.IsValid()) continue;
 
-				for (const auto& RivVal : *RiversPtr)
+				const TArray<TSharedPtr<FJsonValue>>* Pts;
+				if (!Riv->TryGetArrayField(TEXT("pts"), Pts)) continue;
+
+				TArray<FVector2D> RivLine;
+				for (int32 i = 0; i + 2 < Pts->Num(); i += 3)
 				{
-					const TSharedPtr<FJsonObject> Riv = RivVal->AsObject();
-					if (!Riv.IsValid()) continue;
+					double Rx = 0, Ry = 0, Rz = 0;
+					(*Pts)[i]->TryGetNumber(Rx);
+					(*Pts)[i + 1]->TryGetNumber(Ry);
+					(*Pts)[i + 2]->TryGetNumber(Rz);
 
-					const TArray<TSharedPtr<FJsonValue>>* Pts;
-					if (!Riv->TryGetArrayField(TEXT("pts"), Pts)) continue;
+					const FVector UnrealPt = UAlsasuaGeoData::UnityaUnreal(FVector(Rx, 0.0, Rz));
+					const FVector2D MapPos = WorldToMinimap(UnrealPt, Center, Zoom);
 
-					TArray<FVector2D> RivLine;
-					for (int32 i = 0; i + 2 < Pts->Num(); i += 3)
+					if (FMath::Abs(MapPos.X - Center.X) <= HalfMap + 10.f &&
+						FMath::Abs(MapPos.Y - Center.Y) <= HalfMap + 10.f)
 					{
-						double Rx = 0, Ry = 0, Rz = 0;
-						(*Pts)[i]->TryGetNumber(Rx);
-						(*Pts)[i + 1]->TryGetNumber(Ry);
-						(*Pts)[i + 2]->TryGetNumber(Rz);
-
-						const FVector UnrealPt = UAlsasuaGeoData::UnityaUnreal(FVector(Rx, 0.0, Rz));
-						const FVector2D MapPos = WorldToMinimap(UnrealPt, Center, Zoom);
-
-						if (FMath::Abs(MapPos.X - Center.X) <= HalfMap + 10.f &&
-							FMath::Abs(MapPos.Y - Center.Y) <= HalfMap + 10.f)
-						{
-							RivLine.Add(MapPos);
-						}
+						RivLine.Add(MapPos);
 					}
+				}
 
-					if (RivLine.Num() >= 2)
-					{
-						FSlateDrawElement::MakeLines(OutDrawElements, LayerId,
-							AllottedGeometry.ToPaintGeometry(), RivLine,
-							ESlateDrawEffect::None, RiverColor, false, 2.5f);
-					}
+				if (RivLine.Num() >= 2)
+				{
+					FSlateDrawElement::MakeLines(OutDrawElements, LayerId,
+						AllottedGeometry.ToPaintGeometry(), RivLine,
+						ESlateDrawEffect::None, RiverColor, false, 2.5f);
 				}
 			}
 		}

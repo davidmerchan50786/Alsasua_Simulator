@@ -7,6 +7,9 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "GeoDataAlsasua.h"
+#include "CargarJsonComun.h"
+#include "AjusteMallaComun.h"
+#include "Components/StaticMeshComponent.h"
 #include "World/AlsasuaMallaFab.h"
 
 void UAlsasuaTrafficSystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -25,26 +28,18 @@ void UAlsasuaTrafficSystem::Deinitialize()
 
 void UAlsasuaTrafficSystem::GenerarCochesDesdeCalles()
 {
-    const FString JsonPath = FPaths::ProjectContentDir() + TEXT("Datos/roads_unity.json");
-    TArray<FString> Lineas;
-    if (!FFileHelper::LoadFileToStringArray(Lineas, *JsonPath)) return;
-
-    FString JsonStr;
-    for (const FString& L : Lineas) JsonStr += L;
-
-    TSharedPtr<FJsonObject> Root;
-    TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(JsonStr);
-    if (!FJsonSerializer::Deserialize(Reader, Root) || !Root.IsValid()) return;
-
-    const TArray<TSharedPtr<FJsonValue>>* Arr;
-    if (!Root->TryGetArrayField(TEXT("roads"), Arr) && !Root->TryGetArrayField(TEXT(""), Arr)) return;
+    // La raíz de roads_unity.json es un array, no un objeto con campo "roads".
+    // Leerla como FJsonObject devolvía false y esta función salía sin generar
+    // nada: cero coches aparcados en todo el pueblo, sin un aviso en el log.
+    TArray<TSharedPtr<FJsonValue>> Arr;
+    if (!JsonDatos::CargarArray(TEXT("Datos/roads_unity.json"), Arr, { TEXT("roads") })) return;
 
     FRandomStream Rng(12345);
     const FString Colors[] = {TEXT("blanco"), TEXT("negro"), TEXT("gris"), TEXT("rojo"), TEXT("azul"),
         TEXT("plata"), TEXT("azul_oscuro"), TEXT("verde")};
     const int32 NumColors = 8;
 
-    for (const auto& Val : *Arr)
+    for (const auto& Val : Arr)
     {
         const TSharedPtr<FJsonObject>& Obj = Val->AsObject();
         if (!Obj) continue;
@@ -63,8 +58,6 @@ void UAlsasuaTrafficSystem::GenerarCochesDesdeCalles()
         const float RawZ = FirstPt->GetNumberField(TEXT("z"));
         const float X = RawX + UAlsasuaGeoData::OX;
         const float Z = RawZ + UAlsasuaGeoData::OZ;
-
-        FVector Loc = UAlsasuaGeoData::RelLocalASueloUE5(GetWorld(), FVector(RawX, 0.0f, RawZ));
 
         int32 NumCoches = (AnchoVia > 10.0f) ? 2 : 1;
         for (int32 i = 0; i < NumCoches; i++)
@@ -88,23 +81,14 @@ void UAlsasuaTrafficSystem::GenerarCochesDesdeCalles()
 
 void UAlsasuaTrafficSystem::GenerarSenalesDesdeCalles()
 {
-    const FString JsonPath = FPaths::ProjectContentDir() + TEXT("Datos/roads_unity.json");
-    TArray<FString> Lineas;
-    if (!FFileHelper::LoadFileToStringArray(Lineas, *JsonPath)) return;
-
-    FString JsonStr;
-    for (const FString& L : Lineas) JsonStr += L;
-
-    TSharedPtr<FJsonObject> Root;
-    TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(JsonStr);
-    if (!FJsonSerializer::Deserialize(Reader, Root) || !Root.IsValid()) return;
-
-    const TArray<TSharedPtr<FJsonValue>>* Arr2;
-    if (!Root->TryGetArrayField(TEXT("roads"), Arr2) && !Root->TryGetArrayField(TEXT(""), Arr2)) return;
+    // Misma raíz, mismo fallo silencioso que en GenerarCochesDesdeCalles: ni una
+    // señal de tráfico se llegaba a generar.
+    TArray<TSharedPtr<FJsonValue>> Arr2;
+    if (!JsonDatos::CargarArray(TEXT("Datos/roads_unity.json"), Arr2, { TEXT("roads") })) return;
 
     FRandomStream Rng(54321);
 
-    for (const auto& Val : *Arr2)
+    for (const auto& Val : Arr2)
     {
         const TSharedPtr<FJsonObject>& Obj = Val->AsObject();
         if (!Obj) continue;
@@ -148,29 +132,48 @@ int32 UAlsasuaTrafficSystem::ColocarCocheAparcado()
 
     if (Coches.Num() == 0) GenerarCochesDesdeCalles();
 
-    // Una sola resolución para todos los coches, fuera del bucle: antes se hacía un
-    // LoadObject por coche de una ruta constante. Y sobre todo, esa ruta era
+    // Una resolución por tipo, fuera del bucle: antes se hacía un LoadObject por
+    // coche de una ruta constante. Y sobre todo, esa ruta era
     // /Game/AssetsImportados/Casas/HousePack/House1 — cada coche aparcado del pueblo
     // era una CASA. Viene de arrastrar la ruta del sistema de casas; el comentario
     // que había sólo corregía la ruta, no que fuese el asset equivocado.
-    // AlsasuaMallaFab busca un coche por palabra clave y cae a forma básica si no
-    // hay ninguno, que es el patrón de degradación del proyecto.
-    UStaticMesh* CocheMesh = AlsasuaMallaFab::Resolver(
-        TEXT("coche"), TEXT("/Engine/BasicShapes/Cube.Cube"));
+    // AlsasuaMallaFab busca por palabra clave y cae a forma básica si no hay nada,
+    // que es el patrón de degradación del proyecto. Y como lo que devuelva puede
+    // venir a cualquier escala, se ajusta al tamaño real del vehículo: un turismo
+    // mide 4,3 m y una furgoneta 5,4 m, no lo que midiera el modelo de origen.
+    struct FModelo { UStaticMesh* Malla; AjusteMalla::FColocacion Col; };
+    auto Preparar = [](const TCHAR* Tipo, const FVector& MedidasM)
+    {
+        FModelo M;
+        M.Malla = AlsasuaMallaFab::Resolver(Tipo, TEXT("/Engine/BasicShapes/Cube.Cube"));
+        M.Col = AjusteMalla::Calcular(M.Malla, MedidasM, AlsasuaMallaFab::VieneDeFab(Tipo));
+        return M;
+    };
+    const FModelo Turismo   = Preparar(TEXT("coche"),     FVector(4.3f, 1.8f, 1.5f));
+    const FModelo Furgoneta = Preparar(TEXT("furgoneta"), FVector(5.4f, 2.0f, 2.3f));
 
     int32 Placed = 0;
     for (const FParkedCar& Car : Coches)
     {
-        FVector Loc = UAlsasuaGeoData::UnityaUnreal(FVector(Car.X, Car.Z, 0));
+        const FModelo& M = (Car.Tipo == TEXT("furgoneta")) ? Furgoneta : Turismo;
+        if (!M.Col.bValido) continue;
+
+        // Car.X/Car.Z son local ABSOLUTO en metros (ya llevan OX/OZ sumados), así
+        // que van por AbsLocalToUE5. Antes pasaban por UnityaUnreal(X, Z, 0), que
+        // interpreta el segundo componente como altura: los coches salían todos
+        // sobre la línea norte=0 y flotando a la altura de su coordenada norte,
+        // ochenta y tantos metros en el aire. No se veía porque el cargador de
+        // calles fallaba antes y la lista de coches estaba vacía.
+        FVector Loc = UAlsasuaGeoData::AbsLocalToUE5(FVector(Car.X, 0.0, Car.Z));
+        Loc.Z = UAlsasuaGeoData::AlturaSueloUE5(World, Loc.X, Loc.Y) + M.Col.SubirCm;
 
         AStaticMeshActor* CarActor = World->SpawnActor<AStaticMeshActor>(
-            AStaticMeshActor::StaticClass(), Loc, FRotator(0, Car.Rotacion, 0));
+            AStaticMeshActor::StaticClass(), Loc, FRotator(0, Car.Rotacion + M.Col.YawExtra, 0));
         if (CarActor)
         {
             CarActor->SetMobility(EComponentMobility::Movable);
-            CarActor->SetActorScale3D(FVector(1.0f));
-
-            if (CocheMesh) CarActor->GetStaticMeshComponent()->SetStaticMesh(CocheMesh);
+            CarActor->SetActorScale3D(M.Col.Escala);
+            CarActor->GetStaticMeshComponent()->SetStaticMesh(M.Malla);
 
 #if WITH_EDITOR
             CarActor->SetActorLabel(*FString::Printf(TEXT("Coche_%s_%s"), *Car.Color, *Car.Tipo));
@@ -190,17 +193,41 @@ int32 UAlsasuaTrafficSystem::ColocarSenalesTrafico()
 
     if (SenalesTrafico.Num() == 0) GenerarSenalesDesdeCalles();
 
+    // Estos actores se creaban sin malla ninguna: aunque hubieran llegado a
+    // colocarse, habrían sido actores vacíos e invisibles. Cada tipo tiene su
+    // clave en AlsasuaMallaFab; el conjunto poste+placa mide 2,4 m de alto, que
+    // es la medida que manda al escalar una señal.
+    struct FModelo { UStaticMesh* Malla; AjusteMalla::FColocacion Col; };
+    auto Preparar = [](const TCHAR* Tipo)
+    {
+        FModelo M;
+        M.Malla = AlsasuaMallaFab::Resolver(Tipo, TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
+        M.Col = AjusteMalla::Calcular(M.Malla, FVector(0.7f, 0.15f, 2.4f),
+            AlsasuaMallaFab::VieneDeFab(Tipo), AjusteMalla::EEncaje::Alto);
+        return M;
+    };
+    const FModelo Ceda      = Preparar(TEXT("señal_stop"));
+    const FModelo Velocidad = Preparar(TEXT("señal_velocidad"));
+
     int32 Placed = 0;
     for (const FTrafficSign& Sign : SenalesTrafico)
     {
-        FVector Loc = UAlsasuaGeoData::UnityaUnreal(FVector(Sign.X, Sign.Z, 0));
-        Loc.Z += 200.0f;
+        const FModelo& M = (Sign.Tipo == TEXT("velocidad_30")) ? Velocidad : Ceda;
+        if (!M.Col.bValido) continue;
+
+        // Mismo arreglo que en los coches: local absoluto por AbsLocalToUE5 y la
+        // cota por trazo contra el terreno. El "Loc.Z += 200" de antes sumaba dos
+        // metros sobre una Z que ya venía mal.
+        FVector Loc = UAlsasuaGeoData::AbsLocalToUE5(FVector(Sign.X, 0.0, Sign.Z));
+        Loc.Z = UAlsasuaGeoData::AlturaSueloUE5(World, Loc.X, Loc.Y) + M.Col.SubirCm;
 
         AStaticMeshActor* SignActor = World->SpawnActor<AStaticMeshActor>(
-            AStaticMeshActor::StaticClass(), Loc, FRotator(0, Sign.Rotacion, 0));
+            AStaticMeshActor::StaticClass(), Loc, FRotator(0, Sign.Rotacion + M.Col.YawExtra, 0));
         if (SignActor)
         {
             SignActor->SetMobility(EComponentMobility::Movable);
+            SignActor->SetActorScale3D(M.Col.Escala);
+            SignActor->GetStaticMeshComponent()->SetStaticMesh(M.Malla);
 #if WITH_EDITOR
             SignActor->SetActorLabel(*FString::Printf(TEXT("Trafico_%s"), *Sign.Tipo));
 #endif

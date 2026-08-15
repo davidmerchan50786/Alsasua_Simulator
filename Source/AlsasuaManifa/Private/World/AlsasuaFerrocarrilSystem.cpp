@@ -1,6 +1,7 @@
 #include "World/AlsasuaFerrocarrilSystem.h"
 #include "World/AlsasuaMallaFab.h"
 #include "GeoDataAlsasua.h"
+#include "AjusteMallaComun.h"
 #include "Engine/World.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/StaticMeshActor.h"
@@ -24,10 +25,7 @@ namespace
 	struct FVehiculo
 	{
 		UStaticMesh* Malla = nullptr;
-		FVector Escala = FVector::OneVector;
-		float   YawExtra = 0.f;
-		float   SubirCm = 0.f;
-		bool    bValido = false;
+		AjusteMalla::FColocacion Col;
 	};
 
 	struct FTrazado
@@ -58,52 +56,17 @@ namespace
 	 * Resuelve la malla de un papel y calcula cómo colocarla para que mida lo
 	 * que mide el vehículo de verdad.
 	 *
-	 * Lo descargado no viene normalizado: puede estar en metros, en centímetros
-	 * o en las unidades del programa con el que se exportó, y con el eje largo
-	 * en X o en Y. Se mide el bounding box, el eje horizontal mayor se toma como
-	 * la longitud del vehículo y el giro extra lo alinea con la vía.
-	 *
-	 * La escala depende de qué haya salido:
-	 *  - Malla de verdad: uniforme, calculada por el largo. Deformar una
-	 *    locomotora modelada para cuadrarle el ancho la estropearía.
-	 *  - Forma básica del motor (no hay malla): se estira el cubo a las tres
-	 *    medidas reales. Un vagón con la silueta correcta se lee como vagón;
-	 *    un cubo de 18 m de lado, que es lo que saldría de escalar uniforme,
-	 *    no se lee como nada.
+	 * Escala uniforme si hay malla modelada — deformar una locomotora para
+	 * cuadrarle el ancho la estropearía — y encaje de las tres medidas si sólo
+	 * hay forma básica del motor: un vagón con la silueta correcta se lee como
+	 * vagón, y un cubo de 18 m de lado, que es lo que saldría de escalar
+	 * uniforme un cubo, no se lee como nada.
 	 */
-	FVehiculo Preparar(const FString& Tipo, double LargoM, double AnchoM, double AltoM)
+	FVehiculo Preparar(const FString& Tipo, const FVector& MedidasM)
 	{
 		FVehiculo V;
 		V.Malla = AlsasuaMallaFab::Resolver(Tipo, TEXT("/Engine/BasicShapes/Cube.Cube"));
-		if (!V.Malla) return V;
-
-		const FBoxSphereBounds B = V.Malla->GetBounds();
-		const double Ex = B.BoxExtent.X, Ey = B.BoxExtent.Y, Ez = B.BoxExtent.Z;
-		if (FMath::Max(Ex, Ey) < 0.5 || Ez < 0.5) return V;   // malla degenerada
-
-		const bool bLargoEnY = (Ey > Ex);
-		V.YawExtra = bLargoEnY ? 90.f : 0.f;
-
-		const double Largo = 2.0 * FMath::Max(Ex, Ey);
-		const double EscLargo = LargoM * 100.0 / Largo;
-
-		if (AlsasuaMallaFab::VieneDeFab(Tipo))
-		{
-			V.Escala = FVector((float)EscLargo);
-		}
-		else
-		{
-			const double EscAncho = AnchoM * 100.0 / (2.0 * FMath::Min(Ex, Ey));
-			const double EscAlto  = AltoM  * 100.0 / (2.0 * Ez);
-			V.Escala = bLargoEnY
-				? FVector((float)EscAncho, (float)EscLargo, (float)EscAlto)
-				: FVector((float)EscLargo, (float)EscAncho, (float)EscAlto);
-		}
-
-		// El origen de la malla rara vez está en su base; se sube lo que haga
-		// falta para que las ruedas queden en el carril y no medio enterradas.
-		V.SubirCm = (float)(-(B.Origin.Z - Ez) * V.Escala.Z);
-		V.bValido = true;
+		V.Col = AjusteMalla::Calcular(V.Malla, MedidasM, AlsasuaMallaFab::VieneDeFab(Tipo));
 		return V;
 	}
 }
@@ -218,10 +181,10 @@ int32 UAlsasuaFerrocarrilSystem::ColocarMaterialRodante()
 
 	// --- Mallas -------------------------------------------------------------
 	const FVehiculo Loco  = Preparar(TEXT("locomotora"),
-		LargoLocomotoraM, AnchoLocomotoraM, AltoLocomotoraM);
+		FVector(LargoLocomotoraM, AnchoLocomotoraM, AltoLocomotoraM));
 	const FVehiculo Vagon = Preparar(TEXT("vagon_contenedor"),
-		LargoVagonM, AnchoVagonM, AltoVagonM);
-	if (!Loco.bValido && !Vagon.bValido)
+		FVector(LargoVagonM, AnchoVagonM, AltoVagonM));
+	if (!Loco.Col.bValido && !Vagon.Col.bValido)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Ferrocarril: sin malla utilizable; vías vacías."));
 		return 0;
@@ -249,17 +212,17 @@ int32 UAlsasuaFerrocarrilSystem::ColocarMaterialRodante()
 			// Si falta la malla de este papel se deja el hueco y se sigue: media
 			// composición bien puesta vale más que una fila de cubos, y el hueco
 			// se rellena solo en cuanto el asset esté importado.
-			if (Veh.bValido)
+			if (Veh.Col.bValido)
 			{
 				const float SueloZ = UAlsasuaGeoData::AlturaSueloUE5(World, XY.X, XY.Y);
-				const FVector Loc(XY.X, XY.Y, SueloZ + AlturaCarrilCm + Veh.SubirCm);
-				const FRotator Rot(0.f, (float)Yaw + Veh.YawExtra, 0.f);
+				const FVector Loc(XY.X, XY.Y, SueloZ + AlturaCarrilCm + Veh.Col.SubirCm);
+				const FRotator Rot(0.f, (float)Yaw + Veh.Col.YawExtra, 0.f);
 
 				if (AStaticMeshActor* A = World->SpawnActor<AStaticMeshActor>(
 						AStaticMeshActor::StaticClass(), Loc, Rot))
 				{
 					A->SetMobility(EComponentMobility::Movable);
-					A->SetActorScale3D(Veh.Escala);
+					A->SetActorScale3D(Veh.Col.Escala);
 					A->GetStaticMeshComponent()->SetStaticMesh(Veh.Malla);
 #if WITH_EDITOR
 					A->SetActorLabel(*FString::Printf(TEXT("Tren_%d_%s%d"), c,

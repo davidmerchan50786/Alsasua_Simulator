@@ -277,9 +277,14 @@ esos parámetros en runtime. Crear un material que lea el MPC antes de que exist
 Los que empiezan por `Verificar`/`Auditar` no montan nada: contrastan lo que hay
 contra su fuente y sacan un informe. Sirven de red donde no hay compilador —
 `VerificarVias.py` (formas de raíz de los datasets de vía y sitio para el material
-rodante), `VerificarCallesNavarra.py` (trazado contra el eje catastral),
+rodante), `VerificarDatasets.py` (campos que el C++ pide y el JSON no tiene),
+`VerificarFuentes.py` (sintaxis: el `;` que se lleva un comentario, delimitadores
+descuadrados), `VerificarCallesNavarra.py` (trazado contra el eje catastral),
 `AuditarAssets.py` (rutas sin respaldo y mallas bajadas que nadie pide),
 `AlturasLidarEdificios.py --verificar`, `DescargarCatastroNavarra.py --verificar`.
+
+Sin compilador en Linux, `VerificarFuentes.py` y `VerificarDatasets.py` son lo
+único que hay entre un error tonto y `main`. Pásalos antes de subir C++.
 
 **Regla de rutas**: ningún script puede llevar rutas absolutas de una máquina
 concreta. Los standalone derivan la raíz de su propia ubicación
@@ -297,6 +302,14 @@ ver `SetupAlsasuaProject.ps1`.
 `RESUMEN_TECNICO.md` documenta cómo se pasó de 0.3 a 48 FPS. Las lecciones que
 hay que conservar al escribir código nuevo:
 
+0. **Nada de un actor por pieza cuando las piezas se cuentan por miles.** Va
+   antes que el resto porque es el error más fácil de cometer y el más caro.
+   `UAlsasuaFoliagePainter` estaba escrito con un `AStaticMeshActor` por mata:
+   con las 273 zonas verdes salían decenas de miles de actores. Ahora siembra en
+   `UHierarchicalInstancedStaticMeshComponent`, uno por tipo de planta — doce mil
+   instancias en ocho draw calls, con culling y LOD de serie. La otra vía válida
+   es coser la geometría en una sola sección de `ProceduralMesh`, que es lo que
+   hace `AlsasuaVegetationSpawner` con el césped procedural.
 1. **Una sección de `ProceduralMesh` = un draw call.** Las fachadas creaban una
    sección por ventana (~60 000 draw calls y hitches de 8 s al invalidar el
    draw-command cache). Ahora se acumulan verts/tris/normales/UVs con offset de
@@ -376,6 +389,25 @@ posiciones cambian entre runs.
 
 ## 11. Trampas conocidas
 
+- **La forma de la raíz de los JSON de `Content/Datos/` no es uniforme, y
+  equivocarse no duele.** Unos son un array en la raíz (`roads_unity.json`,
+  `trees_unity.json`, `street_furniture.json`, `greenspaces_unity.json`) y otros
+  envuelven el array en un objeto (`railways_unity.json` → `rails`,
+  `poi_data.json` → `pois`, `nighborhoods.json` → `barrios`). Deserializar a
+  `TArray` contra una raíz de objeto —o a `FJsonObject` contra una de array—
+  devuelve `false` y ya está: ni excepción ni línea en el log. El sistema hace
+  `return` y el arranque sigue. Así estuvieron muertos a la vez la vía férrea,
+  las superficies de calle, los coches aparcados, las señales de tráfico, los
+  árboles con especie, las farolas, el foliage de zonas verdes y las calles y
+  ríos del minimapa. **Usa siempre `JsonDatos::CargarArray`**
+  (`AlsasuaCore/Public/CargarJsonComun.h`), que se traga las dos formas y avisa
+  cuando no encuentra nada. `Tools/VerificarDatasets.py` compara lo que pide el
+  C++ con lo que hay en el dato.
+- **Los datasets son heterogéneos entre elementos.** `street_furniture.json`
+  tiene 220 piezas y no todas traen los mismos campos: las fuentes llevan
+  `nombre` y `activa`, las paradas `linea` y `con_techo`, y la mayoría ninguno de
+  los dos. Antes de dar por ausente un campo, míralo en **todo** el fichero, no
+  en los primeros elementos.
 - `RESUMEN_TECNICO.md` es el **acta de una sesión que corrió en 5.4**, con un
   aviso al principio que lo dice. Sus medidas y sus rutas de motor son las de
   aquel día; el diagnóstico y las reglas de §5 siguen vigentes. Para compilar y

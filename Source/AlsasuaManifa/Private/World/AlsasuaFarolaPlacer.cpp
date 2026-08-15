@@ -8,6 +8,7 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "GeoDataAlsasua.h"
+#include "CargarJsonComun.h"
 
 void UAlsasuaFarolaPlacer::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -24,26 +25,17 @@ void UAlsasuaFarolaPlacer::Deinitialize()
 
 bool UAlsasuaFarolaPlacer::CargarFarolas()
 {
-    const FString JsonPath = FPaths::ProjectContentDir() + TEXT("Datos/street_furniture.json");
-    TArray<FString> Lineas;
-    if (!FFileHelper::LoadFileToStringArray(Lineas, *JsonPath))
+    // street_furniture.json es un array de 220 piezas en la raíz, no un objeto con
+    // campo "items". Salía por aquí y no colocaba ninguna farola.
+    TArray<TSharedPtr<FJsonValue>> ItemsArr;
+    if (!JsonDatos::CargarArray(TEXT("Datos/street_furniture.json"), ItemsArr, { TEXT("items") }))
     {
-        UE_LOG(LogTemp, Error, TEXT("FarolaPlacer: No se pudo cargar street_furniture.json"));
+        UE_LOG(LogTemp, Error, TEXT("FarolaPlacer: sin mobiliario en street_furniture.json"));
         return false;
     }
 
-    FString JsonStr;
-    for (const FString& L : Lineas) JsonStr += L;
-
-    TSharedPtr<FJsonObject> Root;
-    TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(JsonStr);
-    if (!FJsonSerializer::Deserialize(Reader, Root) || !Root.IsValid()) return false;
-
-    const TArray<TSharedPtr<FJsonValue>>* ItemsArr;
-    if (!Root->TryGetArrayField(TEXT("items"), ItemsArr)) return false;
-
-    Farolas.Empty(ItemsArr->Num());
-    for (const auto& Val : *ItemsArr)
+    Farolas.Empty(ItemsArr.Num());
+    for (const auto& Val : ItemsArr)
     {
         const TSharedPtr<FJsonObject>& Obj = Val->AsObject();
         if (!Obj) continue;
