@@ -10,7 +10,7 @@ de un comentario en AlsasuaFoliagePainter.cpp
 
 y AlsasuaManifa —214 cpp, el módulo gordo— dejó de compilar entero.
 
-Esto no es un compilador ni lo pretende. Son seis comprobaciones baratas que
+Esto no es un compilador ni lo pretende. Son siete comprobaciones baratas que
 cazan justo lo que se cuela cuando se edita a ciegas:
 
   1. Sentencia cuyo punto y coma se lo ha tragado un comentario de línea.
@@ -26,6 +26,20 @@ cazan justo lo que se cuela cuando se edita a ciegas:
      sin malla —invisible, pero ocupando su sitio en el log y en la lista de
      fases—. Lo tenían las antenas, los depósitos y las placas solares de
      AlsasuaRooftopDetailSystem, y las cinco fuentes del pueblo.
+  7. Conversor de coordenadas usado EN LÍNEA como posición de mundo. Los tres
+     —AbsLocalToUE5, RelLocalToUE5, UnityaUnreal— dejan la Z en el segundo
+     componente de la entrada, que con el patrón habitual (X, 0, Z) es cero:
+     cota cero del mundo, 531 m por debajo del pueblo. Metido directamente en
+     un SpawnActor o un AddInstance no queda sitio donde apoyarlo en el
+     terreno. Hay que pasarlo por una variable y ponerle la Z con
+     AlturaSueloUE5, o usar RelLocalASueloUE5.
+
+Lo que esto NO caza, y conviene saberlo: la comprobación 3 sólo salta cuando el
+segundo argumento de UnityaUnreal NO es cero. El caso contrario —cero literal,
+ejes bien, pero la Z de salida sin apoyar después— es legítimo a medias y no se
+distingue por sintaxis; la 7 cubre sólo la variante en línea. A CargadorPOI se le
+coló por ahí: UnityaUnreal(x, 0.0, z) con los ejes correctos y la Z a cero para
+siempre.
 
 Lo tercero es otra que costó cara. UAlsasuaGeoData::UnityaUnreal espera
 (este, arriba, norte) y devuelve (este_cm, norte_cm, arriba_cm). Media docena de
@@ -132,6 +146,14 @@ def cvars_sin_registrar(raiz):
 
 RE_MACRO_REFLEJADA = re.compile(r'^\s*(UCLASS|USTRUCT|UENUM|UINTERFACE)\s*\(')
 
+# Conversor de coordenadas metido directamente donde se espera una posición de
+# mundo. Ahí ya no hay dónde apoyar la cota: el valor entra tal cual, con la Z
+# que le tocara. Se busca el uso y el conversor en la misma llamada.
+RE_CONV_EN_LINEA = re.compile(
+    r'(?P<uso>SpawnActor\s*<[^>]*>|AddInstance|SetWorldLocation|SetActorLocation|'
+    r'SetRelativeLocation)\s*\([^;]{0,400}?'
+    r'(?P<conv>AbsLocalToUE5|RelLocalToUE5|UnityaUnreal)\s*\(', re.S)
+
 
 def generated_mal_puesto(ruta, texto):
     """UHT exige el .generated.h, y como ÚLTIMO include del fichero."""
@@ -209,6 +231,15 @@ def main():
                               "      devuelve null y la pieza se queda sin malla, invisible\n"
                               "      →  %s" % (rel, num, linea.strip()))
 
+            # 7. Conversor en línea como posición de mundo.
+            for m in RE_CONV_EN_LINEA.finditer(sin_comentarios_ni_cadenas(texto)):
+                num = texto.count("\n", 0, m.start()) + 1
+                fallos.append("%s:%d  %s() metido en %s(): la Z sale del segundo\n"
+                              "      componente de la entrada, que con (X, 0, Z) es cero —cota\n"
+                              "      cero del mundo, 531 m bajo el pueblo—. Guárdalo en una\n"
+                              "      variable y ponle AlturaSueloUE5, o usa RelLocalASueloUE5"
+                              % (rel, num, m.group("conv"), m.group("uso")))
+
             # 5. .generated.h de las cabeceras reflejadas.
             if nombre.endswith(".h"):
                 problema = generated_mal_puesto(ruta, texto)
@@ -232,7 +263,7 @@ def main():
     print("%d ficheros .cpp/.h revisados.\n" % revisados)
     if not fallos:
         print("Sin hallazgos. No garantiza que compile — sólo que no tiene")
-        print("estos seis fallos, que son los que se cuelan al editar a ciegas.")
+        print("estos siete fallos, que son los que se cuelan al editar a ciegas.")
         return 0
 
     for f in fallos:
