@@ -140,14 +140,14 @@ namespace
 		{ TEXT("puente_pieza"),      TEXT("pp_bridge_15_middle|pp_bridge|bridge") },
 
 		// ── ForestPack (34 piezas) para el suelo del monte ────────────────
-		{ TEXT("roca"),              TEXT("pp_rock_moss_grown|pp_rock_pile|roca_grande|rock_01|rock_03") },
+		{ TEXT("roca"),              TEXT("pp_rock_moss_grown|pp_rock_pile|roca_grande|rock_01|rock_02|rock_03|rock_04|rock_05") },
 		{ TEXT("musgo"),             TEXT("pp_forest_mountain_moss|moss") },
-		{ TEXT("seta"),              TEXT("pp_mushroom|mushroom") },
+		{ TEXT("seta"),              TEXT("pp_mushroom|mushroom|shrooms") },
 		{ TEXT("flor"),              TEXT("pp_daffodil|pp_hyacinth|pp_sunflower|fleur") },
 		{ TEXT("prado"),             TEXT("pp_meadow_07|pp_meadow_08|meadow") },
 		{ TEXT("senda"),             TEXT("pp_meadow_path|path") },
 		{ TEXT("hierba_pieza"),      TEXT("pp_grass|grass_07|hierba_larga|multi_stylized_grass") },
-		{ TEXT("seto"),              TEXT("hedgelong|hedgesmall|seto_verde|hedge") },
+		{ TEXT("seto"),              TEXT("hedgelong|hedgelonground|hedgesmall|hedgesmallround|seto_verde|hedge") },
 		{ TEXT("tronco_caido"),      TEXT("tronco_caido|pine_roots|dead_tree_trunk") },
 	};
 
