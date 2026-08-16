@@ -1,14 +1,8 @@
 #include "World/AlsasuaArakilWaterSystem.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
-#include "Components/StaticMeshComponent.h"
-#include "Misc/FileHelper.h"
-#include "Misc/Paths.h"
-#include "Serialization/JsonReader.h"
-#include "Serialization/JsonSerializer.h"
 #include "GeoDataAlsasua.h"
-#include "Kismet/KismetMathLibrary.h"
-#include "Engine/StaticMeshActor.h"
+#include "CargarJsonComun.h"
 
 void UAlsasuaArakilWaterSystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -25,28 +19,29 @@ void UAlsasuaArakilWaterSystem::Deinitialize()
 
 bool UAlsasuaArakilWaterSystem::CargarTramosRio()
 {
-    const FString JsonPath = FPaths::ProjectContentDir() + TEXT("Datos/waterways_unity.json");
-    FString JsonStr;
-    if (!FFileHelper::LoadFileToString(JsonStr, *JsonPath))
+    // Por JsonDatos: hoy la raíz es un array, pero deserializar a TArray contra
+    // una raíz de objeto devuelve false sin decir nada, y así estuvo muerta la
+    // vía férrea entera. Ver CLAUDE.md §11.
+    TArray<TSharedPtr<FJsonValue>> Rios;
+    if (!JsonDatos::CargarArray(TEXT("Datos/waterways_unity.json"), Rios,
+        { TEXT("waterways"), TEXT("rivers") }))
     {
-        UE_LOG(LogTemp, Error, TEXT("ArakilWater: No se pudo cargar waterways_unity.json"));
+        UE_LOG(LogTemp, Error, TEXT("ArakilWater: sin cauces en waterways_unity.json"));
         return false;
     }
 
-    TSharedPtr<FJsonValue> RootVal;
-    TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(JsonStr);
-    if (!FJsonSerializer::Deserialize(Reader, RootVal) || !RootVal.IsValid()) return false;
-
-    const TArray<TSharedPtr<FJsonValue>>* RiversArr;
-    if (!RootVal->TryGetArray(RiversArr)) return false;
-
-    for (const auto& RiverVal : *RiversArr)
+    for (const TSharedPtr<FJsonValue>& RiverVal : Rios)
     {
-        const TSharedPtr<FJsonObject>& River = RiverVal->AsObject();
-        if (!River) continue;
+        const TSharedPtr<FJsonObject> River = RiverVal->AsObject();
+        if (!River.IsValid()) continue;
 
-        const FString Name = River->GetStringField(TEXT("name"));
-        const float Width = River->HasField(TEXT("width")) ? River->GetNumberField(TEXT("width")) : 8.0f;
+        // Un cauce del fichero viene sin nombre: GetStringField sobre un campo
+        // que no está devuelve vacío, pero pedirlo con TryGet lo deja explícito.
+        FString Name;
+        River->TryGetStringField(TEXT("name"), Name);
+        double AnchoM = 8.0;
+        River->TryGetNumberField(TEXT("width"), AnchoM);
+        const float Width = static_cast<float>(AnchoM);
 
         const TArray<TSharedPtr<FJsonValue>>* PtsArr;
         if (!River->TryGetArrayField(TEXT("pts"), PtsArr) || !PtsArr || PtsArr->Num() < 6) continue;
@@ -69,18 +64,28 @@ bool UAlsasuaArakilWaterSystem::CargarTramosRio()
             FVector Centro = (Loc0 + Loc1) * 0.5f;
             float Largo = FVector::Distance(Loc0, Loc1);
 
+            // El ancho separa los dos cauces del valle —el Arakil y el
+            // Altzania, 8 m— de los 71 regatas de monte, que van a 2. Un regato
+            // de ladera no baja ni del mismo color ni a la misma velocidad, y
+            // todos los tramos salían con los mismos parámetros.
+            const bool bMayor = (Width >= 5.0f);
+
             FWaterSegment Seg;
             Seg.Centro = Centro;
+            Seg.Nombre = Name;
+            Seg.bCauceMayor = bMayor;
             Seg.Ancho = Width * 100.0f;
             Seg.Largo = Largo;
-            Seg.Profundidad = 200.0f;
-            Seg.VelocidadFlujo = WaterSpeed;
+            Seg.Profundidad = bMayor ? 200.0f : 40.0f;
+            // El regato corre más y hace más espuma: menos caudal, más pendiente.
+            Seg.VelocidadFlujo = WaterSpeed * (bMayor ? 1.0f : 1.6f);
             Seg.ColorSuperficie = RiverColor;
             Seg.ColorProfundo = FLinearColor(RiverColor.R * 0.3f, RiverColor.G * 0.3f, RiverColor.B * 0.3f, 0.95f);
-            Seg.ColorEspuma = FLinearColor(0.8f, 0.85f, 0.9f, FoamIntensity);
-            Seg.Turbidez = 0.3f;
+            Seg.ColorEspuma = FLinearColor(0.8f, 0.85f, 0.9f, FoamIntensity * (bMayor ? 1.0f : 1.5f));
+            // El Arakil arrastra limo del valle; el regato baja limpio de roca.
+            Seg.Turbidez = bMayor ? 0.35f : 0.12f;
 
-            Tramos.Add(Seg);
+            Tramos.Add(MoveTemp(Seg));
         }
     }
 
@@ -89,41 +94,18 @@ bool UAlsasuaArakilWaterSystem::CargarTramosRio()
     return true;
 }
 
-int32 UAlsasuaArakilWaterSystem::GenerarMallaAgua()
+int32 UAlsasuaArakilWaterSystem::PublicarAgua()
 {
     if (!bCargado && !CargarTramosRio()) return 0;
 
-    UWorld* World = GetWorld();
-    if (!World) return 0;
+    // No se construye nada a propósito. Ver la cabecera: esto ponía un
+    // AStaticMeshActor por tramo —2392— con un Plane escalado y SIN ROTAR,
+    // encima del cauce que UCargadorVias ya drapea desde este mismo fichero.
+    int32 Mayores = 0;
+    for (const FWaterSegment& S : Tramos) if (S.bCauceMayor) ++Mayores;
 
-    int32 Placed = 0;
-    for (const FWaterSegment& Seg : Tramos)
-    {
-        AStaticMeshActor* WaterActor = World->SpawnActor<AStaticMeshActor>(
-            AStaticMeshActor::StaticClass(), Seg.Centro, FRotator::ZeroRotator);
-        if (!WaterActor) continue;
-
-        WaterActor->SetMobility(EComponentMobility::Movable);
-        WaterActor->SetActorScale3D(FVector(Seg.Largo / 100.0f, Seg.Ancho / 100.0f, 0.05f));
-
-        UStaticMesh* PlaneMesh = LoadObject<UStaticMesh>(nullptr,
-            TEXT("/Engine/BasicShapes/Plane.Plane"));
-        if (PlaneMesh)
-            WaterActor->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
-
-        UMaterialInterface* WaterMat = LoadObject<UMaterialInterface>(nullptr,
-            TEXT("/Game/Materiales/M_AguaRio"));
-        if (!WaterMat)
-            WaterMat = LoadObject<UMaterialInterface>(nullptr,
-                TEXT("/Game/Materiales/M_Agua"));
-        if (WaterMat) WaterActor->GetStaticMeshComponent()->SetMaterial(0, WaterMat);
-
-#if WITH_EDITOR
-        WaterActor->SetActorLabel(*FString::Printf(TEXT("Arakil_Agua_%d"), Placed));
-#endif
-        Placed++;
-    }
-
-    UE_LOG(LogTemp, Log, TEXT("ArakilWater: %d tramos de agua generados"), Placed);
-    return Placed;
+    UE_LOG(LogTemp, Log,
+        TEXT("ArakilWater: %d tramos caracterizados (%d de cauce mayor, %d de regato). No crea geometría: el cauce es de UCargadorVias."),
+        Tramos.Num(), Mayores, Tramos.Num() - Mayores);
+    return Tramos.Num();
 }
