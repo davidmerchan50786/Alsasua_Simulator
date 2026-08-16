@@ -510,6 +510,17 @@ posiciones cambian entre runs.
   va **a lo largo** del muro (`AwningShutterSystem`), al revés. Las 1030 puertas
   iban con la escala del otro convenio: 10 cm de ancho y un metro de fondo,
   clavadas de canto en el muro.
+- **Dos ficheros traen lat/lon Y x/z, y no dicen lo mismo.** `landmarks_real.json`
+  (19) y `poi_data.json` (30 de sus 78) llevan las dos cosas. Medidas entre
+  elementos, las distancias por x/z salen **diez veces más pequeñas** que por
+  coordenada geográfica, y la z va **al revés**: el factor es −10, no +10.
+  Colocados por x/z, los 19 landmarks quedan apiñados en 121×134 m y a 120 m de
+  mediana del edificio más cercano, sin que ninguno caiga sobre uno; por lat/lon
+  la mediana baja a 29 m y seis caen justo encima de su footprint —la iglesia, el
+  ayuntamiento, la biblioteca, el mercado—. **Cuando el elemento trae lat/lon,
+  mandan ellas** (`LatLonToUE5`); los 47 POI que no la traen se quedan con su
+  x/z, que además sí alcanzan edificios, o sea que vienen de otra pasada.
+  `VerificarDatasets.py` compara los dos marcos y saca el factor real.
 - **Hay datos cuyas coordenadas no sirven, y tampoco lo dicen.** Distinto de caer
   fuera del mundo: los 56 `señal_comercio` de `signage_data.json` traen 40
   amontonados en diez metros alrededor de `(1891.5, 8572.0)` —que es

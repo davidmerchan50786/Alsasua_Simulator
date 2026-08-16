@@ -25,6 +25,7 @@ compilador. Los avisos hay que mirarlos uno a uno.
 Uso:  python3 Tools/VerificarDatasets.py
 """
 import json
+import math
 import os
 import re
 from collections import defaultdict
@@ -181,6 +182,7 @@ def marcos(datasets):
         print("  UAlsasuaGeoData::MobiliarioAUE5 hace justo eso para el mobiliario.")
 
     fuera_del_mundo(datasets)
+    latlon_contra_xz(datasets)
 
 
 def caja_del_terreno():
@@ -257,6 +259,85 @@ def fuera_del_mundo(datasets):
         print("  diciendo cuántos, con UAlsasuaGeoData::DentroDelTerreno, que es")
         print("  lo que hacen AlsasuaSignPlacer y AlsasuaContainerSystem.")
 
+
+
+def latlon_contra_xz(datasets):
+    """Datasets que traen lat/lon Y x/z, y no dicen lo mismo.
+
+    Dos ficheros —landmarks_real.json y poi_data.json— llevan las dos cosas, y
+    salieron descuadradas: medidas entre elementos, las distancias por x/z son
+    diez veces más pequeñas que por coordenada geográfica, y la z va al revés
+    (el factor sale -10, no +10). Colocar por x/z apiña los 19 landmarks en
+    121x134 m, a 120 m de mediana del edificio más cercano y sin que ninguno
+    caiga sobre uno.
+
+    No hay nada que falle al leerlo: los dos campos son números válidos y quien
+    elija mal se lleva el pueblo entero movido. Esto compara los dos marcos por
+    pares de elementos y saca el factor real, que es lo que delata el problema.
+
+    El veredicto se cierra fuera: lo que decide cuál de los dos sirve es si los
+    elementos caen sobre los footprints de buildings_final.json, y eso se mide
+    aparte. Aquí se avisa de que discrepan.
+    """
+    print("\n\nCoherencia entre lat/lon y x/z\n")
+
+    R = 6371000.0
+    hallazgos = 0
+    for f in sorted(datasets):
+        with open(os.path.join(DATOS, f), encoding="utf-8") as fh:
+            doc = json.load(fh)
+        elems = doc if isinstance(doc, list) else next(
+            (v for v in doc.values() if isinstance(v, list)), [])
+        con = [e for e in elems
+               if isinstance(e, dict) and {"lat", "lon", "x", "z"} <= set(e)]
+        if len(con) < 3:
+            continue
+
+        lat0 = sum(e["lat"] for e in con) / len(con)
+        lon0 = sum(e["lon"] for e in con) / len(con)
+        x0 = sum(e["x"] for e in con) / len(con)
+        z0 = sum(e["z"] for e in con) / len(con)
+        cosl = math.cos(math.radians(lat0))
+
+        fx, fz = [], []
+        for e in con:
+            este = math.radians(e["lon"] - lon0) * R * cosl
+            norte = math.radians(e["lat"] - lat0) * R
+            dx, dz = e["x"] - x0, e["z"] - z0
+            if abs(dx) > 1.0:
+                fx.append(este / dx)
+            if abs(dz) > 1.0:
+                fz.append(norte / dz)
+        if not fx or not fz:
+            continue
+
+        fx.sort()
+        fz.sort()
+        mx, mz = fx[len(fx) // 2], fz[len(fz) // 2]
+
+        # Coherente = la geográfica y la local miden lo mismo y en el mismo
+        # sentido: factor +1 en los dos ejes, con holgura para el datum.
+        ok_x = abs(mx - 1.0) < 0.1
+        ok_z = abs(mz - 1.0) < 0.1
+        if ok_x and ok_z:
+            print("  %-30s %d elementos: los dos marcos coinciden" % (f, len(con)))
+            continue
+
+        hallazgos += 1
+        print("  %-30s %d elementos: NO coinciden" % (f, len(con)))
+        print("       metro geográfico por unidad de x: %+.2f   de z: %+.2f" % (mx, mz))
+        if abs(abs(mx) - abs(mz)) < 0.5 and abs(mx) > 1.5:
+            print("       → x/z vienen a escala 1:%.0f" % abs(mx))
+        if mz < 0:
+            print("       → la z crece hacia el SUR; en el resto del proyecto crece al norte")
+
+    if hallazgos:
+        print("\n  Quien lea uno de estos tiene que elegir marco, y elegir mal")
+        print("  mueve el pueblo entero sin que falle nada. CargadorPOI y")
+        print("  AlsasuaFacadeGenerator usan lat/lon cuando está, que es la que")
+        print("  cae sobre los footprints de buildings_final.json.")
+    else:
+        print("\n  Ningún dataset mezcla los dos marcos de forma incoherente.")
 
 if __name__ == "__main__":
     main()

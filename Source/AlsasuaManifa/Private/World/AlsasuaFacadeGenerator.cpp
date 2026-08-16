@@ -180,11 +180,31 @@ int32 UAlsasuaFacadeGenerator::ColocarLandmarksReales()
 
         const FString Nombre = LO->GetStringField(TEXT("nombre"));
         const FString Tipo = LO->GetStringField(TEXT("tipo"));
-        const float X = LO->GetNumberField(TEXT("x"));
-        const float Z = LO->GetNumberField(TEXT("z"));
+
+        // Por lat/lon, no por x/z.
+        //
+        // Los x/z de landmarks_real.json no cuadran con el pueblo: contra las
+        // lat/lon del mismo fichero, las distancias entre landmarks salen diez
+        // veces más pequeñas y la z va al revés (el factor es -10, no +10). Con
+        // x/z, los 19 quedan apiñados en 121×134 m y a 120 m de mediana del
+        // edificio más cercano —ninguno cae sobre uno—; por lat/lon la mediana
+        // baja a 29 m y seis caen justo encima de su footprint: la iglesia, el
+        // ayuntamiento, la biblioteca, el mercado. poi_data.json arrastra lo
+        // mismo. Tools/VerificarDatasets.py contrasta los dos marcos.
+        double Lat = 0.0, Lon = 0.0;
+        FVector Pos;
+        if (LO->TryGetNumberField(TEXT("lat"), Lat) && LO->TryGetNumberField(TEXT("lon"), Lon))
+        {
+            Pos = UAlsasuaGeoData::LatLonToUE5(Lat, Lon);
+        }
+        else
+        {
+            Pos = UAlsasuaGeoData::AbsLocalToUE5(
+                FVector(LO->GetNumberField(TEXT("x")), 0.0f, LO->GetNumberField(TEXT("z"))));
+        }
+
         // Apoyado en el terreno: con Z = 0 los 19 landmarks quedaban medio
         // kilómetro por debajo del pueblo.
-        FVector Pos = UAlsasuaGeoData::AbsLocalToUE5(FVector(X, 0.0f, Z));
         Pos.Z = UAlsasuaGeoData::AlturaSueloUE5(World, Pos.X, Pos.Y);
 
         AStaticMeshActor* Actor = World->SpawnActor<AStaticMeshActor>(
