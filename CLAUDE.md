@@ -75,7 +75,7 @@ UnrealEditor.exe "AlsasuaSimulator.uproject" /Game/Maps/L_Alsasua ^
 | `AlsasuaWorld` | Generación procedural: `DirectorArranque`, terreno, calles, edificios, POI, puentes | 22 cpp |
 | `AlsasuaEntities` | Base de entidades: NPC, daño, vida | 6 cpp |
 | `AlsasuaGameplay` | GameMode, misiones, manifestación, ciclo visual, clima, guardado, economía | 40 cpp |
-| `AlsasuaManifa` | Port Unity: ~70 sistemas de mundo, GAS, IA, multitud, optimización, UI interna | **214 cpp** |
+| `AlsasuaManifa` | Port Unity: ~70 sistemas de mundo, GAS, IA, multitud, optimización, UI interna | **216 cpp** |
 | `AlsasuaSimulator` | Generadores de edificios y carreteras | 11 cpp |
 | `AlsasuaUI` | Widgets (HUD, pausa, ajustes, menú principal) | 6 cpp |
 | `AlsasuaEditor` | Solo editor: generadores de materiales/mallas, importador de landscape | 21 cpp |
@@ -369,7 +369,8 @@ hay que conservar al escribir código nuevo:
 
    Van ya convertidos `FoliagePainter`, `SidewalkSystem`, `AwningShutterSystem`,
    `GuardrailSystem`, `RooftopDetailSystem`, `DoorEntranceSystem`,
-   `ParkingSystem` y `ContainerSystem`. Ojo con el patrón que los delataba a
+   `ParkingSystem`, `ContainerSystem`, `StreetArtSystem` y
+   `PaintedStreetSignSystem`. Ojo con el patrón que los delataba a
    todos: `LoadObject` de la malla o del material **dentro** del bucle de
    colocación. Si lo ves, casi seguro que también hay un `SpawnActor` al lado.
    Los que quedan con `SpawnActor<AStaticMeshActor>` colocan decenas de piezas,
@@ -485,6 +486,39 @@ posiciones cambian entre runs.
   `UAlsasuaGeoData::DentroDelTerreno`; la caja no se copia a mano en cada
   sistema, y `VerificarDatasets.py` la lee del propio header para no medir
   contra un terreno que ya no existe.
+- **Lo que va en una pared necesita la pared, y nadie la tenía.** Tres sistemas
+  colgaban cosas de una fachada colocándolas en el centroide del barrio o en el
+  eje de la calzada, con el giro sorteado: los 23 murales y grafitis de
+  `AlsasuaStreetArtSystem` (los dos de Herriko en el mismo punto exacto, uno
+  dentro del otro), las placas de calle de `AlsasuaPaintedStreetSignSystem` y los
+  escaparates de `AlsasuaShopFrontSystem`. La pared está en
+  `AlsasuaManifa/Public/World/AlsasuaMuros.h`: los ~6000 tramos del perímetro de
+  los 1030 footprints, con largo y normal saliente, calculados una vez. La normal
+  se decide contra el centroide del footprint porque `buildings_final.json` **no
+  garantiza el sentido de giro** del polígono; sin eso, la mitad de lo que se
+  cuelgue queda pintado por dentro del muro. Y la fachada que da a la calle —la
+  misma para puerta, portal, garaje y escaparate— la elige
+  `AlsasuaDirecciones::LadoDeEntrada`, que es donde vive el punto de calle de OSM.
+- **Escalar un `Plane` en Z no lo pone de pie.** `/Engine/BasicShapes/Plane` es un
+  plano en XY que mira hacia arriba; `SetActorScale3D(Ancho, 0.05, Alto)` da una
+  tira tumbada en el suelo, no un cartel. Le pasaba a los murales, a los grafitis
+  y a las placas de calle a la vez, y no salta a la vista en el código porque la
+  escala *parece* la de un cartel. Para algo vertical, cubo con el grueso en el
+  eje que mira afuera. Y ojo con ese eje: si el yaw mira **afuera** de la fachada
+  (`LadoDeEntrada`, `AlsasuaMuros`), el grueso va en X y el ancho en Y; si el yaw
+  va **a lo largo** del muro (`AwningShutterSystem`), al revés. Las 1030 puertas
+  iban con la escala del otro convenio: 10 cm de ancho y un metro de fondo,
+  clavadas de canto en el muro.
+- **Hay datos cuyas coordenadas no sirven, y tampoco lo dicen.** Distinto de caer
+  fuera del mundo: los 56 `señal_comercio` de `signage_data.json` traen 40
+  amontonados en diez metros alrededor de `(1891.5, 8572.0)` —que es
+  `OriginLocalX/Z`, la constante de centrado, no una dirección— a 126 m del
+  edificio más cercano, y los otros 16 a hasta 216 km. Están dentro de rango, no
+  los caza `DentroDelTerreno`, y colocarlos deja las tiendas en corro en mitad de
+  un prado. Lo aprovechable es el contenido —nombre, tipo de negocio, barrio—, y
+  eso es lo que se usa: la tienda va a una fachada de su barrio, elegida por FNV
+  del nombre para que no se mueva entre arranques. Antes de fiarte de una
+  coordenada, mira la dispersión del conjunto, no un elemento.
 - **Un `LoadObject` dentro del bucle de colocación es el olor del actor por
   pieza.** Los ocho sistemas convertidos a instanciado lo tenían todos, y en
   varios el asset ni siquiera existía: `AlsasuaContainerSystem` pedía la
@@ -496,9 +530,20 @@ posiciones cambian entre runs.
   un fallo visible, pero rompe el arnés de perfilado: si la geometría cambia en
   cada arranque, comparar el CSV de hoy con los números del `RESUMEN_TECNICO.md`
   no mide nada. Lo nuevo va con `FRandomStream` sembrado por el id del elemento
-  (`Id * 2654435761u + <sal>`), que además deja razonar sobre lo que se ve.
-  Quedan una veintena de ficheros de `AlsasuaManifa/World/*` con el patrón
-  antiguo, casi todos en decorado (decals, foliage, detalles de fachada).
+  (`Id * 2654435761u + <sal>`), que además deja razonar sobre lo que se ve. Si
+  el elemento no tiene id —una tienda, un mural— se siembra por FNV del nombre o
+  por el índice, nunca por `GetTypeHash`, cuyo valor no está garantizado entre
+  compilaciones.
+
+  De los 22 ficheros de `AlsasuaManifa/World/*` que quedaban con el patrón
+  antiguo, **13 no los llama nadie** (`EnvironmentalDecals`, `DecalSystem`,
+  `RoadDecalSystem`, `GroundCoverSystem`, `FacadeDetailSystem`…: están en la
+  lista de `AuditarSistemas.py`, así que su aleatoriedad no llega al mundo). De
+  los vivos, los que colocan geometría fija ya van sembrados; los que quedan son
+  de tiempo y parpadeo —`StreetLightController`, `InteriorLightComponent`,
+  `WeatherSystem`, `AmbientAudioSystem`— y ahí el azar por frame es lo que se
+  quiere. `DetailDressingSystem` conserva `RandRange` sólo en sus cinco
+  funciones de respaldo, que corren si falta `street_furniture.json`.
 - **Los datasets son heterogéneos entre elementos.** `street_furniture.json`
   tiene 220 piezas y no todas traen los mismos campos: las fuentes llevan
   `nombre` y `activa`, las paradas `linea` y `con_techo`, y la mayoría ninguno de
