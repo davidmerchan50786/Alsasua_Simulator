@@ -8,6 +8,7 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "GeoDataAlsasua.h"
+#include "CargarJsonComun.h"
 
 void UAlsasuaRoadSurfaceSystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -24,26 +25,19 @@ void UAlsasuaRoadSurfaceSystem::Deinitialize()
 
 bool UAlsasuaRoadSurfaceSystem::CargarSuperficies()
 {
-    const FString JsonPath = FPaths::ProjectContentDir() + TEXT("Datos/roads_unity.json");
-    TArray<FString> Lineas;
-    if (!FFileHelper::LoadFileToStringArray(Lineas, *JsonPath))
+    // roads_unity.json es un array en la raíz, no un objeto con campo "roads".
+    // Esto leía la raíz como FJsonObject, la deserialización devolvía false y el
+    // sistema entero salía por aquí sin decir nada: ni una superficie de calle en
+    // todo el pueblo. JsonDatos::CargarArray se traga cualquiera de las dos formas.
+    TArray<TSharedPtr<FJsonValue>> Arr;
+    if (!JsonDatos::CargarArray(TEXT("Datos/roads_unity.json"), Arr, { TEXT("roads") }))
     {
-        UE_LOG(LogTemp, Error, TEXT("RoadSurface: No se pudo cargar roads_unity.json"));
+        UE_LOG(LogTemp, Error, TEXT("RoadSurface: sin vías en roads_unity.json"));
         return false;
     }
 
-    FString JsonStr;
-    for (const FString& L : Lineas) JsonStr += L;
-
-    TSharedPtr<FJsonObject> Root;
-    TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(JsonStr);
-    if (!FJsonSerializer::Deserialize(Reader, Root) || !Root.IsValid()) return false;
-
-    const TArray<TSharedPtr<FJsonValue>>* Arr;
-    if (!Root->TryGetArrayField(TEXT("roads"), Arr) && !Root->TryGetArrayField(TEXT(""), Arr)) return false;
-
-    Superficies.Empty(Arr->Num());
-    for (const auto& Val : *Arr)
+    Superficies.Empty(Arr.Num());
+    for (const auto& Val : Arr)
     {
         const TSharedPtr<FJsonObject>& Obj = Val->AsObject();
         if (!Obj) continue;

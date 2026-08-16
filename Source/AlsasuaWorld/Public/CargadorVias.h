@@ -3,6 +3,10 @@
 // *_unity.json (marco Unity ABSOLUTO, pts = [x,y,z,...] plano) reutilizando
 // ACalleGenerada como cinta drapeada. Puerto de los generadores OSM de aceras/
 // vías/cauces. Carga incremental para el director.
+//
+// Ojo con la forma de la raíz: cuatro datasets son un array, pero
+// railways_unity.json es un objeto {"rails", "stations"}. Encolar acepta las dos;
+// Tools/VerificarVias.py comprueba que ninguno se pierda por ahí.
 #pragma once
 
 #include "CoreMinimal.h"
@@ -43,6 +47,9 @@ private:
 	TArray<FTrabajoVia> Trabajos;
 
 	// Lee un dataset de pts planos [x,y,z,...] (absoluto) al worklist.
+	// CampoArray: nombre del array cuando la raíz del JSON es un objeto en vez de
+	// un array (railways_unity.json envuelve los trazados en "rails").
 	void Encolar(const FString& RutaRel, FName Tag, float EpsilonCm,
-	             float AnchoDefectoM, bool bAnchoPorTracks);
+	             float AnchoDefectoM, bool bAnchoPorTracks,
+	             const TCHAR* CampoArray = nullptr);
 };
