@@ -7,6 +7,9 @@
 #include "Engine/PointLight.h"
 #include "GeoDataAlsasua.h"
 #include "CargarJsonComun.h"
+#include "World/AlsasuaMallaFab.h"
+#include "Engine/StaticMesh.h"
+#include "Materials/MaterialInterface.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "Serialization/JsonReader.h"
@@ -71,6 +74,23 @@ int32 UAlsasuaTrafficLightSystem::ColocarSemaforos()
         }
     }
 
+    // Las dos mallas eran /Game/CitySample/..., que no está en el repo ni se baja
+    // con él, y no había respaldo: el poste y la caja se creaban como actores sin
+    // malla —invisibles— y lo único que quedaba del semáforo era la luz puntual
+    // flotando a 3,25 m. Por AlsasuaMallaFab entra el semáforo de Fab si está.
+    // Fuera del bucle: eran dos LoadObject por cruce.
+    UStaticMesh* MallaPoste = AlsasuaMallaFab::Resolver(TEXT("semaforo"),
+        TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
+    UStaticMesh* MallaCaja = LoadObject<UStaticMesh>(nullptr,
+        TEXT("/Engine/BasicShapes/Cube.Cube"));
+    if (!MallaPoste || !MallaCaja)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("TrafficLights: sin malla; no se colocan semáforos."));
+        return 0;
+    }
+    UMaterialInterface* MatPoste = LoadObject<UMaterialInterface>(nullptr,
+        TEXT("/Game/Materiales/M_Metal_Negro"));
+
     int32 Placed = 0;
     for (int32 i = 0; i < MaxSemaforos && i < Candidates.Num(); i++)
     {
@@ -85,17 +105,19 @@ int32 UAlsasuaTrafficLightSystem::ColocarSemaforos()
 
         float PostHeight = 350.0f;
 
+        // El cilindro y el cubo del motor miden 100 uu y se centran en su
+        // origen: apoyado en el suelo, el poste va a media altura. Antes se
+        // colocaba con el centro a ras de calzada, así que la mitad del poste
+        // quedaba enterrada — no se notaba porque no tenía malla.
         AStaticMeshActor* PostActor = World->SpawnActor<AStaticMeshActor>(
-            AStaticMeshActor::StaticClass(), Pos, FRotator::ZeroRotator);
+            AStaticMeshActor::StaticClass(),
+            Pos + FVector(0.0f, 0.0f, PostHeight * 0.5f), FRotator::ZeroRotator);
         if (PostActor)
         {
             PostActor->SetMobility(EComponentMobility::Static);
             PostActor->SetActorScale3D(FVector(0.08f, 0.08f, PostHeight / 100.0f));
-
-            UStaticMesh* PoleMesh = LoadObject<UStaticMesh>(nullptr,
-                TEXT("/Game/CitySample/Prop/Kit_StreetLamp_A/Mesh/SM_StreetLamp_A_TrafficLight_Pole"));
-            if (PoleMesh)
-                PostActor->GetStaticMeshComponent()->SetStaticMesh(PoleMesh);
+            PostActor->GetStaticMeshComponent()->SetStaticMesh(MallaPoste);
+            if (MatPoste) PostActor->GetStaticMeshComponent()->SetMaterial(0, MatPoste);
         }
 
         FVector LightPos = Pos;
@@ -107,11 +129,8 @@ int32 UAlsasuaTrafficLightSystem::ColocarSemaforos()
         {
             BoxActor->SetMobility(EComponentMobility::Static);
             BoxActor->SetActorScale3D(FVector(0.25f, 0.25f, 0.7f));
-
-            UStaticMesh* StopLightMesh = LoadObject<UStaticMesh>(nullptr,
-                TEXT("/Game/CitySample/Prop/Kit_StreetLamp_A/Mesh/SM_StreetLamp_A_StopLight_A"));
-            if (StopLightMesh)
-                BoxActor->GetStaticMeshComponent()->SetStaticMesh(StopLightMesh);
+            BoxActor->GetStaticMeshComponent()->SetStaticMesh(MallaCaja);
+            if (MatPoste) BoxActor->GetStaticMeshComponent()->SetMaterial(0, MatPoste);
         }
 
         // Una sola luz por semáforo, no tres. Antes se creaba una APointLight

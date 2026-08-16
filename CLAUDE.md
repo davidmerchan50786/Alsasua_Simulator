@@ -523,9 +523,12 @@ posiciones cambian entre runs.
 - **Un `LoadObject` dentro del bucle de colocación es el olor del actor por
   pieza.** Los ocho sistemas convertidos a instanciado lo tenían todos, y en
   varios el asset ni siquiera existía: `AlsasuaContainerSystem` pedía la
-  papelera a `/Game/CitySample/...`, que no está en el repo, sin fallback — cien
+  papelera a un pack que no está en el repo, sin fallback — cien
   actores sin malla, invisibles, ocupando su sitio en la lista de fases y en el
-  log. Malla nueva, por `AlsasuaMallaFab::Resolver`; material nuevo, por
+  log. Lo mismo las farolas y los doce semáforos, de los que sólo quedaba la
+  luz puntual flotando a 3,25 m. `AuditarAssets.py` lo caza ahora en su sección
+  "pack externo sin degradación": ruta de pack externo + `SetStaticMesh` y ni
+  `AlsasuaMallaFab::Resolver` ni `CargarMaterialConFallback` en el fichero. Malla nueva, por `AlsasuaMallaFab::Resolver`; material nuevo, por
   `CargarMaterialConFallbackSeguro`; los dos, **fuera** del bucle.
 - **Colocar por `FMath::FRand`/`RandRange` hace el pueblo irrepetible.** No es
   un fallo visible, pero rompe el arnés de perfilado: si la geometría cambia en

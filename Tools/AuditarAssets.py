@@ -97,6 +97,44 @@ def inventario_manifest():
     return nombres
 
 
+def packs_sin_respaldo(externas, codigo):
+    """Ficheros que cargan un pack externo sin red debajo.
+
+    CLAUDE.md §6 lo pide explícito: el proyecto tiene que arrancar sin los
+    assets pesados, que son decenas de GB fuera de git. Las dos redes son
+    AlsasuaMallaFab::Resolver para malla y CargarMaterialConFallback* para
+    material. Sin ninguna de las dos, LoadObject devuelve null, SetStaticMesh
+    no hace nada y el actor se queda sin malla — invisible, pero contándose en
+    el log como colocado.
+
+    Se mira por fichero y no por línea: quien usa Resolver en el fichero ya
+    tiene la red puesta, aunque mencione la ruta del pack como preferencia.
+
+    Y sólo cuenta si el fichero pone malla estática. Las rutas blandas de audio
+    y VFX —el trueno, las camas de ambiente— pueden faltar sin
+    romper nada y CLAUDE.md §6 las da por buenas explícitamente; el esqueleto
+    del jugador tampoco se resuelve por AlsasuaMallaFab. El fallo que esto busca
+    es el otro: un actor de malla que se queda sin malla.
+    """
+    porfichero = {}
+    for ruta in externas:
+        for f in codigo.get(ruta, []):
+            porfichero.setdefault(f.split(":")[0], set()).add(ruta)
+
+    salida = {}
+    for fichero, rutas in porfichero.items():
+        try:
+            txt = open(os.path.join(RAIZ, fichero), encoding="utf-8", errors="ignore").read()
+        except OSError:
+            continue
+        if "SetStaticMesh" not in txt:
+            continue
+        if "AlsasuaMallaFab::Resolver" in txt or "CargarMaterialConFallback" in txt:
+            continue
+        salida[fichero] = sorted(rutas)
+    return salida
+
+
 # Raíces que vienen de packs externos (Fab, Megascans, CitySample, importaciones).
 # Que falten es legítimo: el proyecto tiene que arrancar sin ellos y degradar.
 PACKS_EXTERNOS = ("/Game/Megascans", "/Game/Fab", "/Game/CitySample", "/Game/GASP",
@@ -115,6 +153,13 @@ def rutas_generadas():
         for base, _, files in os.walk(sub):
             for f in files:
                 if not f.endswith((".cpp", ".h", ".py")):
+                    continue
+                # Este fichero no cuenta: escribe rutas de ejemplo en su prosa
+                # y en lo que imprime, y al leerse a sí mismo se las daba por
+                # generadas. Bastó nombrar el trueno y la lluvia en un
+                # comentario para que catorce rutas de audio y VFX dejaran de
+                # salir en el informe.
+                if os.path.abspath(os.path.join(base, f)) == os.path.abspath(__file__):
                     continue
                 try:
                     txt = open(os.path.join(base, f), encoding="utf-8", errors="ignore").read()
@@ -289,14 +334,34 @@ def main():
             ok.append(ruta); continue
         rotas[ruta] = usos
 
+    sin_respaldo = packs_sin_respaldo(externas, codigo)
+
     if "--json" in sys.argv:
         print(json.dumps({"rotas": rotas, "ok": ok, "generadas": gen,
-                          "externas": externas}, indent=1, ensure_ascii=False))
+                          "externas": externas,
+                          "sin_respaldo": sin_respaldo}, indent=1, ensure_ascii=False))
         return
 
     print("=" * 74)
     print("  AUDITORÍA DE ASSETS — rutas /Game/ que pide el código")
     print("=" * 74)
+    if sin_respaldo:
+        print()
+        print("=" * 74)
+        print("  PACK EXTERNO SIN DEGRADACIÓN — %d ficheros" % len(sin_respaldo))
+        print("=" * 74)
+        print("  Cargan la malla de un pack que no está en el repo y no pasan")
+        print("  por AlsasuaMallaFab::Resolver ni por CargarMaterialConFallback.")
+        print("  El LoadObject devuelve null, el SetStaticMesh no hace nada y el")
+        print("  actor se queda sin malla: invisible, pero contándose en el log")
+        print("  como colocado. Le pasaba a los cien contenedores, a las farolas")
+        print("  y a los doce semáforos, de los que sólo quedaba la luz flotando.")
+        print("  CLAUDE.md §6: el proyecto tiene que arrancar sin los pesados.")
+        for f, rs in sorted(sin_respaldo.items()):
+            print("\n  %s" % f)
+            for r in rs:
+                print("       %s" % r)
+        print()
     if sin_nombre:
         print()
         print("=" * 74)
