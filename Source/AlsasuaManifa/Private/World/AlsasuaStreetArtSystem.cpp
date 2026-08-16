@@ -7,92 +7,7 @@
 #include "Materials/MaterialInterface.h"
 #include "Math/RandomStream.h"
 #include "GeoDataAlsasua.h"
-#include "CargarJsonComun.h"
-
-namespace
-{
-    /** Un muro del footprint, ya en coordenadas de mundo y con su normal. */
-    struct FLienzo
-    {
-        int32 EdificioId = -1;
-        FString Barrio;
-        FVector2D A;        // extremo del tramo, local relativo (X = x, Y = z)
-        FVector2D B;
-        float LargoM = 0.0f;
-        FVector2D Fuera;    // normal saliente, en local relativo
-        float Yaw = 0.0f;   // yaw de UE5 que mira hacia afuera
-    };
-
-    /**
-     * Muros candidatos: tramos del perímetro de cada edificio, con su normal
-     * saliente y su largo.
-     *
-     * El sentido de la normal se decide contra el centroide del footprint, que
-     * es lo único que distingue "afuera" de "adentro" sin saber el orden de giro
-     * del polígono, y buildings_final.json no lo garantiza.
-     */
-    void RecogerLienzos(float LargoMinimoM, TArray<FLienzo>& Out)
-    {
-        Out.Reset();
-
-        TArray<TSharedPtr<FJsonValue>> Edificios;
-        if (!JsonDatos::CargarArray(TEXT("Datos/buildings_final.json"), Edificios, { TEXT("buildings") }))
-            return;
-
-        for (const TSharedPtr<FJsonValue>& EV : Edificios)
-        {
-            const TSharedPtr<FJsonObject> Edif = EV->AsObject();
-            if (!Edif.IsValid()) continue;
-
-            const TArray<TSharedPtr<FJsonValue>>* Verts = nullptr;
-            if (!Edif->TryGetArrayField(TEXT("vertices"), Verts) || !Verts || Verts->Num() < 3) continue;
-
-            const int32 Id = Edif->HasField(TEXT("id")) ? Edif->GetIntegerField(TEXT("id")) : -1;
-            FString Barrio;
-            Edif->TryGetStringField(TEXT("barrio"), Barrio);
-
-            TArray<FVector2D> Contorno;
-            Contorno.Reserve(Verts->Num());
-            FVector2D Centro(0.0f, 0.0f);
-            for (const TSharedPtr<FJsonValue>& V : *Verts)
-            {
-                const TSharedPtr<FJsonObject> Vert = V->AsObject();
-                if (!Vert.IsValid()) continue;
-                const FVector2D P(Vert->GetNumberField(TEXT("x")), Vert->GetNumberField(TEXT("z")));
-                Contorno.Add(P);
-                Centro += P;
-            }
-            if (Contorno.Num() < 3) continue;
-            Centro /= Contorno.Num();
-
-            for (int32 v = 0; v < Contorno.Num(); ++v)
-            {
-                const FVector2D A = Contorno[v];
-                const FVector2D B = Contorno[(v + 1) % Contorno.Num()];
-                const float L = FVector2D::Distance(A, B);
-                if (L < LargoMinimoM) continue;
-
-                const FVector2D Dir = (B - A) / L;
-                FVector2D N(Dir.Y, -Dir.X);
-                // Si la normal apunta al centroide, es la de dentro: se le da la
-                // vuelta. Sin esto, la mitad de las pintadas quedan pintadas por
-                // el lado de dentro del muro.
-                const FVector2D Medio = (A + B) * 0.5f;
-                if (FVector2D::DotProduct(N, Medio - Centro) < 0.0f) N = -N;
-
-                FLienzo Li;
-                Li.EdificioId = Id;
-                Li.Barrio = Barrio;
-                Li.A = A;
-                Li.B = B;
-                Li.LargoM = L;
-                Li.Fuera = N;
-                Li.Yaw = FMath::RadiansToDegrees(FMath::Atan2(N.Y, N.X));
-                Out.Add(MoveTemp(Li));
-            }
-        }
-    }
-}
+#include "World/AlsasuaMuros.h"
 
 void UAlsasuaStreetArtSystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -137,9 +52,10 @@ int32 UAlsasuaStreetArtSystem::ColocarArteCallejero()
 
     // Un mural necesita paño; una pintada cabe en cualquier muro. Se piden por
     // separado para no meter un mural de 5 m en una medianera de 3.
-    TArray<FLienzo> MurosLargos, MurosCualquiera;
-    RecogerLienzos(6.0f, MurosLargos);
-    RecogerLienzos(2.5f, MurosCualquiera);
+    const TArray<AlsasuaMuros::FMuro>& Muros = AlsasuaMuros::Todos();
+    TArray<int32> MurosLargos, MurosCualquiera;
+    AlsasuaMuros::DeAlMenos(6.0f, MurosLargos);
+    AlsasuaMuros::DeAlMenos(2.5f, MurosCualquiera);
 
     if (MurosCualquiera.Num() == 0)
     {
@@ -190,14 +106,14 @@ int32 UAlsasuaStreetArtSystem::ColocarArteCallejero()
     int32 Placed = 0;
 
     // Pinta una pieza sobre un muro. Devuelve false si no cupo.
-    auto Pintar = [&](const TArray<FLienzo>& Muros, UHierarchicalInstancedStaticMeshComponent* Capa,
+    auto Pintar = [&](const TArray<int32>& Candidatos, UHierarchicalInstancedStaticMeshComponent* Capa,
                       FRandomStream& Sorteo, const FString& Tipo, const TPair<FString, FString>& Texto,
                       float AnchoMin, float AnchoMax, float AltoMin, float AltoMax,
                       float BaseCm, float GruesoCm) -> bool
     {
-        if (!Capa || Muros.Num() == 0) return false;
+        if (!Capa || Candidatos.Num() == 0) return false;
 
-        const FLienzo& L = Muros[Sorteo.RandHelper(Muros.Num())];
+        const AlsasuaMuros::FMuro& L = Muros[Candidatos[Sorteo.RandHelper(Candidatos.Num())]];
 
         float AnchoCm = Sorteo.FRandRange(AnchoMin, AnchoMax);
         // No pintar más ancho que el muro: medio metro de margen a cada lado.
