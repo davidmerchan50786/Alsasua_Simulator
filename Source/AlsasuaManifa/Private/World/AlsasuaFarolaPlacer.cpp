@@ -113,6 +113,14 @@ int32 UAlsasuaFarolaPlacer::ColocarFarolasEnMundo()
             FarolaActor->SetActorScale3D(Col.Escala);
             FarolaActor->GetStaticMeshComponent()->SetStaticMesh(Malla);
 
+            // Por aquí las encuentra ADirectorArranque para colgarles el
+            // controlador que las enciende de noche. Antes las buscaba por
+            // GetName().Contains("farola"), y GetName() devuelve el nombre de
+            // objeto ("StaticMeshActor_42"), no la etiqueta del editor: no
+            // encontraba ninguna y las farolas no se encendían nunca. Tags sí
+            // sobrevive a un build de juego.
+            FarolaActor->Tags.Add(FName(TEXT("Farola")));
+
 #if WITH_EDITOR
             FarolaActor->SetActorLabel(*FString::Printf(TEXT("Farola_%s_%d"),
                 *F.Calle, Placed));

@@ -151,6 +151,16 @@ def main():
               % len(sueltos))
         print("  ejecución —no existen—, pero tampoco hacen lo que dice su nombre.")
 
+    print("\n  OJO con el punto ciego de esta sección: \"lo nombra X\" quiere decir")
+    print("  que hay un NewObject en X, no que ese NewObject llegue a ejecutarse.")
+    print("  Las cuatro fases nocturnas del director —estilos de barrio, ventanas")
+    print("  emissivas, luz interior y control de farolas— tenían su NewObject en")
+    print("  DirectorArranque y adjuntaban CERO componentes: recorrían")
+    print("  GetAllActorsOfClass(AStaticMeshActor) buscando los edificios, que son")
+    print("  AEdificioGenerado y derivan de AActor. El bucle no daba una vuelta y")
+    print("  el log decía que estaban puestos. Un componente \"nombrado\" merece que")
+    print("  se mire sobre qué lista itera quien lo nombra.")
+
     print("\n" + "=" * 74)
     print("  SIN INVESTIGAR — subsistemas fuera de la cadena y sin choque")
     print("=" * 74)

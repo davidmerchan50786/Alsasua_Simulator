@@ -512,6 +512,19 @@ posiciones cambian entre runs.
   va **a lo largo** del muro (`AwningShutterSystem`), al revés. Las 1030 puertas
   iban con la escala del otro convenio: 10 cm de ancho y un metro de fondo,
   clavadas de canto en el muro.
+- **Adjuntar un componente a la lista equivocada no falla: adjunta cero.** Las
+  fases 17-20 colgaban de los edificios el estilo de barrio, las ventanas
+  emissivas y la luz interior recorriendo
+  `GetAllActorsOfClass(World, AStaticMeshActor::StaticClass())`. Los 1030
+  edificios son `AEdificioGenerado`, que deriva de `AActor`: no salen en esa
+  lista, el bucle no da una vuelta y el log dice el número que le toque. Toda la
+  capa nocturna del pueblo llevaba apagada así. Para los edificios,
+  `TActorIterator<AEdificioGenerado>` —que es lo que ya hace la fase 26 con
+  `ACalleGenerada`—; para lo demás, `Tags` y `GetAllActorsWithTag`, porque
+  `GetName()` devuelve el nombre de objeto (`StaticMeshActor_42`) y no la
+  etiqueta que pone `SetActorLabel`, que además sólo existe con `WITH_EDITOR`.
+  Y el componente va **después** de que exista aquello de lo que cuelga: el
+  control de farolas estaba en la 18 y las farolas se colocan en la 24.
 - **Dos ficheros traen lat/lon Y x/z, y no dicen lo mismo.** `landmarks_real.json`
   (19) y `poi_data.json` (30 de sus 78) llevan las dos cosas. Medidas entre
   elementos, las distancias por x/z salen **diez veces más pequeñas** que por

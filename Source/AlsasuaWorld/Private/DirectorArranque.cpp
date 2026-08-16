@@ -24,6 +24,7 @@
 #include "Engine/StaticMeshActor.h"
 #include "ProceduralMeshComponent.h"
 #include "CalleGenerada.h"
+#include "EdificioGenerado.h"
 #include "EngineUtils.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "GeoDataAlsasua.h"
@@ -247,79 +248,53 @@ void ADirectorArranque::IniciarConstruccion()
         UE_LOG(LogTemp, Log, TEXT("DirectorArranque: VisualEffectsManager inicializado."));
     }
 
-    // --- 17. Estilos de barrio reales (materiales por barrio) ---
+    // --- 17-20. Componentes que se cuelgan de los edificios y de las farolas ---
+    //
+    // Las cuatro fases hacían lo mismo y las cuatro adjuntaban CERO componentes:
+    //
+    //   GetAllActorsOfClass(World, AStaticMeshActor::StaticClass(), Arr);
+    //   if (Actor->GetName().Contains(TEXT("Edificio"))) ...
+    //
+    // Los 1030 edificios son AEdificioGenerado, que deriva de AActor y NO de
+    // AStaticMeshActor, así que no salían en esa lista: el filtro por nombre no
+    // llegaba ni a evaluarse. Y aunque hubieran salido, GetName() devuelve el
+    // nombre de objeto ("StaticMeshActor_42"), no la etiqueta del editor que
+    // pone SetActorLabel —que además sólo existe con WITH_EDITOR—.
+    //
+    // O sea: sin estilos de barrio, sin ventanas encendidas de noche, sin luz
+    // interior y sin farolas que se enciendan. Toda la capa nocturna del pueblo,
+    // apagada, con cuatro líneas de log diciendo que estaba puesta.
+    //
+    // Los edificios van por TActorIterator<AEdificioGenerado>, que es lo que ya
+    // se hace en la fase 26 con ACalleGenerada. Las farolas, por etiqueta de
+    // actor: Tags sí sobrevive a un build de juego.
     {
-        TArray<AActor*> EdificiosArr;
-        UGameplayStatics::GetAllActorsOfClass(World, AStaticMeshActor::StaticClass(), EdificiosArr);
-        int32 StyleCount = 0;
-        for (AActor* Actor : EdificiosArr)
+        int32 StyleCount = 0, EmissiveCount = 0, InteriorCount = 0;
+        for (TActorIterator<AEdificioGenerado> It(World); It; ++It)
         {
-            if (!Actor) continue;
-            const FString Label = Actor->GetName();
-            if (Label.Contains(TEXT("Edificio")) || Label.Contains(TEXT("Building")))
-            {
-                UAlsasuaBarrioStyleSystem* Style = NewObject<UAlsasuaBarrioStyleSystem>(Actor);
-                if (Style) { Style->RegisterComponent(); StyleCount++; }
-            }
-        }
-        UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d edificios con estilos de barrio reales."), StyleCount);
-    }
+            AEdificioGenerado* Edificio = *It;
+            if (!Edificio) continue;
 
-    // --- 18. Farolas reales (street_furniture.json) ---
-    {
-        TArray<AActor*> FarolaActors;
-        UGameplayStatics::GetAllActorsOfClass(World, AStaticMeshActor::StaticClass(), FarolaActors);
-        int32 FarolaCount = 0;
-        for (AActor* Actor : FarolaActors)
-        {
-            if (!Actor) continue;
-            const FString Label = Actor->GetName().ToLower();
-            if (Label.Contains(TEXT("farola")))
+            if (UAlsasuaBarrioStyleSystem* Style = NewObject<UAlsasuaBarrioStyleSystem>(Edificio))
             {
-                UAlsasuaStreetLightController* Light = NewObject<UAlsasuaStreetLightController>(Actor);
-                if (Light) { Light->RegisterComponent(); FarolaCount++; }
+                Style->RegisterComponent(); StyleCount++;
+            }
+            if (UAlsasuaBuildingEmissiveComponent* Emissive =
+                    NewObject<UAlsasuaBuildingEmissiveComponent>(Edificio))
+            {
+                Emissive->RegisterComponent(); EmissiveCount++;
+            }
+            if (UAlsasuaInteriorLightComponent* Interior =
+                    NewObject<UAlsasuaInteriorLightComponent>(Edificio))
+            {
+                Interior->RegisterComponent(); InteriorCount++;
             }
         }
-        UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d farolas reales con control automático."), FarolaCount);
+        UE_LOG(LogTemp, Log,
+            TEXT("DirectorArranque: %d edificios con estilo de barrio, %d con ventanas emissivas, %d con luz interior."),
+            StyleCount, EmissiveCount, InteriorCount);
     }
-
-    // --- 19. Ventanas emissivas nocturnas (edificios reales) ---
-    {
-        TArray<AActor*> EdificiosArr;
-        UGameplayStatics::GetAllActorsOfClass(World, AStaticMeshActor::StaticClass(), EdificiosArr);
-        int32 EmissiveCount = 0;
-        for (AActor* Actor : EdificiosArr)
-        {
-            if (!Actor) continue;
-            const FString Label = Actor->GetName();
-            if (Label.Contains(TEXT("Edificio")) || Label.Contains(TEXT("Building")))
-            {
-                UAlsasuaBuildingEmissiveComponent* Emissive =
-                    NewObject<UAlsasuaBuildingEmissiveComponent>(Actor);
-                if (Emissive) { Emissive->RegisterComponent(); EmissiveCount++; }
-            }
-        }
-        UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d edificios con ventanas emissivas."), EmissiveCount);
-    }
-
-    // --- 20. Luces interiores (edificios reales) ---
-    {
-        TArray<AActor*> EdificiosArr;
-        UGameplayStatics::GetAllActorsOfClass(World, AStaticMeshActor::StaticClass(), EdificiosArr);
-        int32 InteriorCount = 0;
-        for (AActor* Actor : EdificiosArr)
-        {
-            if (!Actor) continue;
-            const FString Label = Actor->GetName();
-            if (Label.Contains(TEXT("Edificio")) || Label.Contains(TEXT("Building")))
-            {
-                UAlsasuaInteriorLightComponent* Interior =
-                    NewObject<UAlsasuaInteriorLightComponent>(Actor);
-                if (Interior) { Interior->RegisterComponent(); InteriorCount++; }
-            }
-        }
-        UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d edificios con luces interiores."), InteriorCount);
-    }
+    // El control de farolas va en la 24b: aquí todavía no las ha colocado nadie.
 
     // --- 21. Landmarks y paradas de transporte ---
     // Las ventanas de building_facades.json ya no se generan aparte: las labra
@@ -370,6 +345,26 @@ void ADirectorArranque::IniciarConstruccion()
             const int32 NumFarolas = Farolas->ColocarFarolasEnMundo();
             UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d farolas reales colocadas."), NumFarolas);
         }
+    }
+
+    // --- 24b. Control automático de encendido de las farolas ---
+    // Tiene que ir detrás de la 24: el controlador se cuelga de la farola, y en
+    // las fases 17-20 —donde estaba— todavía no había ninguna colocada. Se
+    // buscan por Tag y no por GetName(), que devuelve el nombre de objeto y no
+    // la etiqueta del editor.
+    {
+        int32 FarolaCount = 0;
+        TArray<AActor*> FarolaActors;
+        UGameplayStatics::GetAllActorsWithTag(World, FName(TEXT("Farola")), FarolaActors);
+        for (AActor* Actor : FarolaActors)
+        {
+            if (!Actor) continue;
+            if (UAlsasuaStreetLightController* Light = NewObject<UAlsasuaStreetLightController>(Actor))
+            {
+                Light->RegisterComponent(); FarolaCount++;
+            }
+        }
+        UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d farolas con control automático."), FarolaCount);
     }
 
     // --- 25. Foliage procedural (hierba, setos, rocas en zonas verdes) ---
