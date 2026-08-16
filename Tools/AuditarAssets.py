@@ -225,7 +225,30 @@ def main():
     generadas = rutas_generadas()
     carpetas_generadas = {r.rsplit("/", 1)[0] for r in generadas}
 
-    rotas, ok, externas, gen = {}, [], [], []
+    # Nombres de asset que algún generador nombra literalmente. Sirve para
+    # separar "la carpeta la genera el proyecto" de "y además crea ESTE asset".
+    #
+    # No basta con partir las rutas /Game/: los generadores casi nunca escriben
+    # la ruta entera, pasan el nombre y la carpeta por separado —
+    # CrearMalla(TEXT("SM_Iglesia"), TEXT("/Game/Landmarks"))— y en Python van en
+    # variables. Así que se recogen también los literales sueltos con prefijo de
+    # asset. Sin esto salían como huecos SM_Iglesia, SM_Banco o M_Terreno_Acera,
+    # que sí los crea alguien.
+    nombres_generados = {r.rsplit("/", 1)[-1] for r in generadas if "/" in r}
+    RE_NOMBRE = re.compile(r'["\'](SM_[A-Za-z0-9_]+|M_[A-Za-z0-9_]+|MI_[A-Za-z0-9_]+|'
+                           r'MPC_[A-Za-z0-9_]+|P_[A-Za-z0-9_]+|NS_[A-Za-z0-9_]+)["\']')
+    for sub in (os.path.join(SOURCE, "AlsasuaEditor"), os.path.join(RAIZ, "Tools")):
+        for base, _, files in os.walk(sub):
+            for f in files:
+                if not f.endswith((".cpp", ".h", ".py")):
+                    continue
+                try:
+                    txt = open(os.path.join(base, f), encoding="utf-8", errors="ignore").read()
+                except OSError:
+                    continue
+                nombres_generados |= set(RE_NOMBRE.findall(txt))
+
+    rotas, ok, externas, gen, sin_nombre = {}, [], [], [], []
     for ruta, usos in sorted(codigo.items()):
         carpeta = ruta.rsplit("/", 1)[0]
         if ruta in disco or carpeta in dirs:
@@ -239,6 +262,18 @@ def main():
         # no casaba con nada y salían 57 alarmas falsas. Una auditoría que grita
         # sin motivo es peor que no tenerla: se deja de mirar.
         if ruta in generadas or carpeta in generadas or carpeta in carpetas_generadas:
+            # Aceptar por carpeta hace falta —los generadores componen el nombre
+            # del asset en tiempo de ejecución, "/Game/Mobiliario/SM_%s"— pero se
+            # traga también lo que nadie crea con ese nombre exacto. Eso no está
+            # roto (todos los cargadores comprueban el null y siguen), pero es una
+            # función visual que nunca va a verse: se cuenta aparte en vez de
+            # darla por buena.
+            # Un nombre acabado en "_" es el prefijo de una ruta que el código
+            # compone con Printf, no un asset; se descarta como en el caso de
+            # abajo.
+            if (nombres_generados and not ruta.endswith("_")
+                    and os.path.basename(ruta) not in nombres_generados):
+                sin_nombre.append(ruta)
             gen.append(ruta); continue
         if ruta.startswith(PACKS_EXTERNOS):
             externas.append(ruta); continue
@@ -257,6 +292,25 @@ def main():
     print("=" * 74)
     print("  AUDITORÍA DE ASSETS — rutas /Game/ que pide el código")
     print("=" * 74)
+    if sin_nombre:
+        print()
+        print("=" * 74)
+        print("  LA CARPETA SÍ, EL ASSET NO — %d rutas" % len(sin_nombre))
+        print("=" * 74)
+        print("  Cuelgan de una carpeta que genera el proyecto, pero ningún")
+        print("  generador crea un asset con ese nombre. No está roto: quien las")
+        print("  carga comprueba el null y sigue. Lo que pasa es que esa función")
+        print("  visual no se ve nunca, y por carpeta la auditoría las daba por")
+        print("  buenas.")
+        porcarpeta = {}
+        for r in sorted(sin_nombre):
+            porcarpeta.setdefault(r.rsplit("/", 1)[0], []).append(r.rsplit("/", 1)[-1])
+        for c, ns in sorted(porcarpeta.items()):
+            print("\n  %s  (%d)" % (c, len(ns)))
+            for n in ns:
+                print("       %s" % n)
+        print()
+
     print("  referenciadas %d = en disco %d + las genera el proyecto %d"
           % (len(codigo), len(ok), len(gen)))
     print("                  + pack externo opcional %d + SIN EXPLICACIÓN %d"

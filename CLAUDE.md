@@ -277,6 +277,14 @@ Se generan **por grafo de nodos** desde `AlsasuaEditor` (`UMaterialEditingLibrar
 no hay shaders `.usf/.ush` custom — por eso el breaking change de Substrate en 5.8
 (`ComputeFinalGBuffer`) no afecta.
 
+Los 29 materiales sueltos que una docena de sistemas cargaba por ruta —`M_Madera`,
+`M_Piedra`, `M_Metal_Guardia`, `M_Toldo`, los `M_Asphalt_*` por barrio…— y que no
+creaba nadie los genera `UCreadorMaterialesSimples`, dentro de `CrearMaterialesPBR`.
+No rompían nada, porque quien los carga comprueba el null y sigue con el material
+de la malla; simplemente esas funciones visuales no se veían nunca, y
+`AuditarAssets.py` los daba por buenos porque la carpeta sí la genera el proyecto.
+Ese hueco ahora sale en su propia sección del informe.
+
 Orden obligatorio: `CrearMaterialEdificio()` crea el **`MPC_Clima`** (escalares
 `Wetness`, `Night`) del que dependen todos los demás. `UClimaSubsystem` conduce
 esos parámetros en runtime. Crear un material que lea el MPC antes de que exista
