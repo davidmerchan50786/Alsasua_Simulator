@@ -128,8 +128,7 @@ int32 UAlsasuaDoorEntranceSystem::ColocarPuertas()
         const TArray<TSharedPtr<FJsonValue>>* VertsArr;
         if (!Bld->TryGetArrayField(TEXT("vertices"), VertsArr) || !VertsArr || VertsArr->Num() < 3) continue;
 
-        // Centroide y caja del footprint, en local relativo: X = x, Y = z.
-        FVector2D Centro(0.f, 0.f);
+        // Caja del footprint, en local relativo: X = x, Y = z.
         FVector2D Min2(TNumericLimits<float>::Max(), TNumericLimits<float>::Max());
         FVector2D Max2(TNumericLimits<float>::Lowest(), TNumericLimits<float>::Lowest());
         for (const auto& V : *VertsArr)
@@ -137,49 +136,25 @@ int32 UAlsasuaDoorEntranceSystem::ColocarPuertas()
             const TSharedPtr<FJsonObject>& Vert = V->AsObject();
             if (!Vert) continue;
             const FVector2D P(Vert->GetNumberField(TEXT("x")), Vert->GetNumberField(TEXT("z")));
-            Centro += P;
             Min2.X = FMath::Min(Min2.X, P.X); Min2.Y = FMath::Min(Min2.Y, P.Y);
             Max2.X = FMath::Max(Max2.X, P.X); Max2.Y = FMath::Max(Max2.Y, P.Y);
         }
-        Centro /= VertsArr->Num();
 
         // Sorteos por id: el color y el toldo eran FRand, así que cambiaban en
         // cada arranque y no se podía razonar sobre lo que se veía.
         FRandomStream Sorteo(Id * 2654435761u + 31);
 
-        // Las cuatro fachadas candidatas: centro de cada lado de la caja, con
-        // el yaw que las hace mirar afuera (+X del mundo es el este, +Y el norte).
-        const FVector2D Lados[4] = {
-            FVector2D(Max2.X, Centro.Y), FVector2D(Min2.X, Centro.Y),
-            FVector2D(Centro.X, Max2.Y), FVector2D(Centro.X, Min2.Y) };
-        const float Yaws[4] = { 0.f, 180.f, 90.f, 270.f };
-
-        // Fachada de entrada: la que da a su calle. Antes era una moneda al aire
-        // (dos FRand por edificio), así que la puerta cambiaba de fachada en cada
-        // arranque; con addr:street de OSM se elige el lado más cercano al eje
-        // de su calle. 374 edificios lo tienen; el resto cae al lado largo.
+        // Fachada de entrada: la que da a su calle. La elige AlsasuaDirecciones,
+        // que es de donde sale el punto de calle de OSM; está ahí y no aquí
+        // porque la misma fachada la usa la puerta de garaje del sistema de
+        // aparcamiento, y tenerla en dos sitios es garantizar que se separen.
         const AlsasuaDirecciones::FDireccion* Dir = AlsasuaDirecciones::De(Id);
-        const bool bHaciaCalle = Dir && Dir->bTienePuntoCalle;
+        const AlsasuaDirecciones::FFachada Fachada =
+            AlsasuaDirecciones::LadoDeEntrada(Id, Min2, Max2, Sorteo);
 
-        int32 Lado = 0;
-        if (bHaciaCalle)
-        {
-            float MejorDist2 = TNumericLimits<float>::Max();
-            for (int32 i = 0; i < 4; ++i)
-            {
-                const float D2 = FVector2D::DistSquared(Lados[i], Dir->PuntoCalle);
-                if (D2 < MejorDist2) { MejorDist2 = D2; Lado = i; }
-            }
-        }
-        else
-        {
-            // Sin calle conocida: el lado largo, con el sentido sorteado por id.
-            const bool bLadoEnX = (Max2.X - Min2.X) >= (Max2.Y - Min2.Y);
-            Lado = (bLadoEnX ? 0 : 2) + (Sorteo.GetFraction() < 0.5f ? 0 : 1);
-        }
-
-        const FVector2D PuertaXZ = Lados[Lado];
-        const float DoorRot = Yaws[Lado];
+        const FVector2D PuertaXZ = Fachada.Punto;
+        const float DoorRot = Fachada.Yaw;
+        const bool bHaciaCalle = Fachada.bHaciaCalle;
 
         // El tercer componente es la altura, no la z local: antes iba
         // DoorOffset.Z, que nunca se rellenaba, y las 1030 puertas acababan
@@ -202,8 +177,12 @@ int32 UAlsasuaDoorEntranceSystem::ColocarPuertas()
         }
         if (bHaciaCalle) ++ConCalle;
 
+        // El eje local X del cubo apunta hacia afuera de la fachada, que es lo
+        // que fija DoorRot. Así que el grueso de la hoja va en X y el ancho en
+        // Y: la escala era (1.0, 0.1, 2.2), o sea una puerta de 10 cm de ancho y
+        // un metro de fondo, clavada de canto en el muro.
         CapaPuertas->AddInstance(FTransform(FRotator(0.f, DoorRot, 0.f), DoorPos,
-            FVector(1.0f, 0.1f, 2.2f)), /*bWorldSpace=*/true);
+            FVector(0.1f, 1.0f, 2.2f)), /*bWorldSpace=*/true);
 
         // Número de portal en la fachada, junto a la puerta.
         if (!Puerta.Portal.IsEmpty())
@@ -231,13 +210,16 @@ int32 UAlsasuaDoorEntranceSystem::ColocarPuertas()
 
         if (Barrio == TEXT("Herriko") && Sorteo.GetFraction() < 0.3f)
         {
-            FVector ToldoPos = DoorPos;
-            ToldoPos.Z += 130.0f;
+            // Un toldo vuela hacia la calle y es más ancho que hondo: 1 m de
+            // vuelo por 2 de ancho, no al revés. Y va centrado en su vuelo, no
+            // en la puerta, o la mitad se queda dentro del edificio.
+            const FRotator Frente(0.f, DoorRot, 0.f);
+            const FVector ToldoPos = DoorPos + Frente.Vector() * 50.f + FVector(0.f, 0.f, 130.f);
 
             if (CapaToldos)
             {
-                CapaToldos->AddInstance(FTransform(FRotator(0.f, DoorRot, 0.f), ToldoPos,
-                    FVector(2.0f, 1.0f, 0.05f)), /*bWorldSpace=*/true);
+                CapaToldos->AddInstance(FTransform(Frente, ToldoPos,
+                    FVector(1.0f, 2.0f, 0.05f)), /*bWorldSpace=*/true);
             }
         }
 

@@ -13,6 +13,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Math/RandomStream.h"
 
 namespace AlsasuaDirecciones
 {
@@ -34,4 +35,39 @@ namespace AlsasuaDirecciones
 
 	/** Dirección del edificio, o null si no tiene ninguna en OSM. */
 	ALSASUAMANIFA_API const FDireccion* De(int32 IdEdificio);
+
+	/** Fachada de un edificio: centro de un lado de su caja y hacia dónde mira. */
+	struct FFachada
+	{
+		/** Centro del lado, en local relativo (X = x, Y = z de los JSON). */
+		FVector2D Punto = FVector2D::ZeroVector;
+
+		/** Yaw de UE5 que mira hacia afuera del edificio (+X este, +Y norte). */
+		float Yaw = 0.0f;
+
+		/** Vector unitario 2D hacia afuera, en local relativo. */
+		FVector2D Fuera = FVector2D(1.0f, 0.0f);
+
+		/** true si el lado se eligió por su addr:street; false si por el lado largo. */
+		bool bHaciaCalle = false;
+	};
+
+	/**
+	 * Lado por el que da a la calle un edificio, dada la caja de su footprint.
+	 *
+	 * Antes esto era una moneda al aire dentro del sistema de puertas: dos FRand
+	 * por edificio, así que la entrada cambiaba de fachada en cada arranque. Con
+	 * el punto de calle de OSM se elige el lado más cercano al eje (374
+	 * edificios); el resto cae al lado largo, con el sentido sorteado.
+	 *
+	 * Vive aquí y no en el sistema de puertas porque la fachada que da a la
+	 * calle es la misma para todo lo que se cuelga de ella —puerta, portal,
+	 * puerta de garaje, escaparate— y tenerla en dos sitios es garantizar que se
+	 * separen.
+	 *
+	 * @param Sorteo  Determinista, sembrado por id: sin él el pueblo cambia en
+	 *                cada arranque y no se puede razonar sobre lo que se ve.
+	 */
+	ALSASUAMANIFA_API FFachada LadoDeEntrada(int32 IdEdificio, const FVector2D& Min2,
+		const FVector2D& Max2, FRandomStream& Sorteo);
 }
