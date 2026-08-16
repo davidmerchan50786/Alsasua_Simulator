@@ -318,8 +318,9 @@ contra su fuente y sacan un informe. Sirven de red donde no hay compilador —
 rodante), `VerificarDatasets.py` (campos que el C++ pide y el JSON no tiene, marcos
 mezclados, elementos fuera del terreno), `AuditarSistemas.py` (sistemas de mundo
 que no llama nadie, y con cuál chocarían),
-`VerificarFuentes.py` (sintaxis: el `;` que se lleva un comentario, delimitadores
-descuadrados, `UnityaUnreal` con los ejes cambiados), `VerificarCallesNavarra.py` (trazado contra el eje catastral),
+`VerificarFuentes.py` (el `;` que se lleva un comentario, delimitadores
+descuadrados, `UnityaUnreal` con los ejes cambiados, CVars `g.*` que nadie
+registra), `VerificarCallesNavarra.py` (trazado contra el eje catastral),
 `AuditarAssets.py` (rutas sin respaldo y mallas bajadas que nadie pide),
 `VerificarGuardado.py` (campos del save que se guardan y no se cargan),
 `AlturasLidarEdificios.py --verificar`, `DescargarCatastroNavarra.py --verificar`.

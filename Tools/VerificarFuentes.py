@@ -10,12 +10,13 @@ de un comentario en AlsasuaFoliagePainter.cpp
 
 y AlsasuaManifa —214 cpp, el módulo gordo— dejó de compilar entero.
 
-Esto no es un compilador ni lo pretende. Son dos comprobaciones baratas que
+Esto no es un compilador ni lo pretende. Son cuatro comprobaciones baratas que
 cazan justo lo que se cuela cuando se edita a ciegas:
 
   1. Sentencia cuyo punto y coma se lo ha tragado un comentario de línea.
   2. Llaves, paréntesis o corchetes descuadrados en un fichero.
   3. UnityaUnreal con los ejes cambiados (ver abajo).
+  4. CVars propias (g.*) que alguien escribe y no registra nadie.
 
 Lo tercero es otra que costó cara. UAlsasuaGeoData::UnityaUnreal espera
 (este, arriba, norte) y devuelve (este_cm, norte_cm, arriba_cm). Media docena de
@@ -96,6 +97,30 @@ def sin_comentarios_ni_cadenas(texto):
     return ''.join(fuera)
 
 
+# CVars del proyecto: se escriben con FindConsoleVariable y se registran con
+# TAutoConsoleVariable. Si nadie las registra, FindConsoleVariable devuelve null
+# y quien las escribe no hace nada — y no se entera. Las tres del menú de
+# opciones (sensibilidad de ratón, invertir Y, vibración de cámara) estuvieron
+# así: las barras se movían y no cambiaban nada.
+RE_CVAR_USO = re.compile(r'FindConsoleVariable\(\s*TEXT\("(g\.[^"]+)"\)')
+RE_CVAR_REG = re.compile(r'TAutoConsoleVariable<[^>]+>\s*\w+\(\s*\n?\s*TEXT\("(g\.[^"]+)"\)')
+
+
+def cvars_sin_registrar(raiz):
+    usadas, registradas = {}, set()
+    for base, _, ficheros in os.walk(raiz):
+        for nombre in ficheros:
+            if not nombre.endswith((".cpp", ".h")):
+                continue
+            ruta = os.path.join(base, nombre)
+            with open(ruta, encoding="utf-8", errors="ignore") as fh:
+                texto = fh.read()
+            for c in RE_CVAR_USO.findall(texto):
+                usadas.setdefault(c, os.path.relpath(ruta, RAIZ))
+            registradas |= set(RE_CVAR_REG.findall(texto))
+    return [(c, f) for c, f in sorted(usadas.items()) if c not in registradas]
+
+
 def main():
     fallos = []
     revisados = 0
@@ -154,10 +179,15 @@ def main():
                 if d != 0:
                     fallos.append("%s  %s descuadrados: %+d" % (rel, que, d))
 
+    for cvar, donde in cvars_sin_registrar(FUENTE):
+        fallos.append("%s  escribe la CVar %s y no la registra nadie:\n"
+                      "      FindConsoleVariable devuelve null y ese ajuste no hace nada"
+                      % (donde, cvar))
+
     print("%d ficheros .cpp/.h revisados.\n" % revisados)
     if not fallos:
         print("Sin hallazgos. No garantiza que compile — sólo que no tiene")
-        print("estos dos fallos, que son los que se cuelan al editar a ciegas.")
+        print("estos cuatro fallos, que son los que se cuelan al editar a ciegas.")
         return 0
 
     for f in fallos:
