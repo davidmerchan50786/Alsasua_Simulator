@@ -416,16 +416,7 @@ void ADirectorArranque::IniciarConstruccion()
         }
     }
 
-    // --- 27. Tráfico procedural (coches aparcados, señales de tráfico) ---
-    {
-        UAlsasuaTrafficSystem* Traffic = World->GetGameInstance()->GetSubsystem<UAlsasuaTrafficSystem>();
-        if (Traffic)
-        {
-            const int32 NumCoches = Traffic->ColocarCocheAparcado();
-            const int32 NumTrafico = Traffic->ColocarSenalesTrafico();
-            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d coches, %d señales tráfico."), NumCoches, NumTrafico);
-        }
-    }
+    // --- 27. (movida a 41b: los coches aparcados necesitan sus plazas) ---
 
     // --- 28. Sistema de iluminación nocturna ---
     {
@@ -563,6 +554,20 @@ void ADirectorArranque::IniciarConstruccion()
         {
             const int32 NumPlazas = Parking->GenerarPlazasAparcamiento();
             UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d plazas de aparcamiento."), NumPlazas);
+        }
+    }
+
+    // --- 41b. Tráfico estático: coches aparcados y señales verticales ---
+    // Va aquí y no en la 27 a propósito: el coche se coloca en una plaza de
+    // AlsasuaParkingSystem, así que las plazas tienen que existir antes. Puesto
+    // en la 27, la lista venía vacía y no aparcaba ni un coche.
+    {
+        UAlsasuaTrafficSystem* Traffic = World->GetGameInstance()->GetSubsystem<UAlsasuaTrafficSystem>();
+        if (Traffic)
+        {
+            const int32 NumCoches = Traffic->ColocarCocheAparcado();
+            const int32 NumTrafico = Traffic->ColocarSenalesTrafico();
+            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d coches, %d señales tráfico."), NumCoches, NumTrafico);
         }
     }
 
