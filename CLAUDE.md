@@ -125,7 +125,11 @@ antes de tocar posiciones. Resumen:
   bus, las 5 fuentes, las señales, los cruces): lo escribieron dos generadores.
   Los dos grupos están separados por 4115 m de hueco en la coordenada norte, así
   que se distinguen sin ambigüedad. Usa `MobiliarioAUE5`, que lo decide por
-  pieza; convertirlo todo como relativo manda esas 29 a 8,6 km del pueblo.
+  pieza; convertirlo todo como relativo manda esas 29 a 8,6 km del pueblo. Y no
+  se distinguen por tipo: hay `papelera` en relativo y `papelera_reciclaje` en
+  absoluto, así que un sistema que lea "las papeleras" toca los dos marcos.
+  Los cuatro que leen ese fichero —`DetailDressing`, `Fountain`, `Farola`,
+  `Container`— ya pasan por `MobiliarioAUE5`.
 
 Usa siempre las funciones (`AbsLocalToUE5`, `RelLocalToUE5`, `LatLonToUE5`,
 `UTMToUE5`, `UE5ToLatLon`), nunca aritmética a mano. El frame UTM↔UE5 usa el
@@ -360,6 +364,14 @@ hay que conservar al escribir código nuevo:
    reparten por el perímetro y por planta, instanciadas. La otra vía válida
    es coser la geometría en una sola sección de `ProceduralMesh`, que es lo que
    hace `AlsasuaVegetationSpawner` con el césped procedural.
+
+   Van ya convertidos `FoliagePainter`, `SidewalkSystem`, `AwningShutterSystem`,
+   `GuardrailSystem`, `RooftopDetailSystem`, `DoorEntranceSystem`,
+   `ParkingSystem` y `ContainerSystem`. Ojo con el patrón que los delataba a
+   todos: `LoadObject` de la malla o del material **dentro** del bucle de
+   colocación. Si lo ves, casi seguro que también hay un `SpawnActor` al lado.
+   Los que quedan con `SpawnActor<AStaticMeshActor>` colocan decenas de piezas,
+   no miles, y ahí la regla no aplica.
 1. **Una sección de `ProceduralMesh` = un draw call.** Las fachadas creaban una
    sección por ventana (~60 000 draw calls y hitches de 8 s al invalidar el
    draw-command cache). Ahora se acumulan verts/tris/normales/UVs con offset de
@@ -467,7 +479,24 @@ posiciones cambian entre runs.
   2783 árboles del LiDAR quedan fuera de los 7200 m del terreno jugable. El actor
   se crea igual, su trazo de suelo no encuentra nada y acaba en cota cero o en la
   de la plaza. `VerificarDatasets.py` los cuenta; quien los lea debe filtrarlos
-  **diciendo cuántos**, no en silencio.
+  **diciendo cuántos**, no en silencio. El filtro es
+  `UAlsasuaGeoData::DentroDelTerreno`; la caja no se copia a mano en cada
+  sistema, y `VerificarDatasets.py` la lee del propio header para no medir
+  contra un terreno que ya no existe.
+- **Un `LoadObject` dentro del bucle de colocación es el olor del actor por
+  pieza.** Los ocho sistemas convertidos a instanciado lo tenían todos, y en
+  varios el asset ni siquiera existía: `AlsasuaContainerSystem` pedía la
+  papelera a `/Game/CitySample/...`, que no está en el repo, sin fallback — cien
+  actores sin malla, invisibles, ocupando su sitio en la lista de fases y en el
+  log. Malla nueva, por `AlsasuaMallaFab::Resolver`; material nuevo, por
+  `CargarMaterialConFallbackSeguro`; los dos, **fuera** del bucle.
+- **Colocar por `FMath::FRand`/`RandRange` hace el pueblo irrepetible.** No es
+  un fallo visible, pero rompe el arnés de perfilado: si la geometría cambia en
+  cada arranque, comparar el CSV de hoy con los números del `RESUMEN_TECNICO.md`
+  no mide nada. Lo nuevo va con `FRandomStream` sembrado por el id del elemento
+  (`Id * 2654435761u + <sal>`), que además deja razonar sobre lo que se ve.
+  Quedan una veintena de ficheros de `AlsasuaManifa/World/*` con el patrón
+  antiguo, casi todos en decorado (decals, foliage, detalles de fachada).
 - **Los datasets son heterogéneos entre elementos.** `street_furniture.json`
   tiene 220 piezas y no todas traen los mismos campos: las fuentes llevan
   `nombre` y `activa`, las paradas `linea` y `con_techo`, y la mayoría ninguno de
