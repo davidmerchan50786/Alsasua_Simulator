@@ -120,6 +120,119 @@ def main():
         print("  `return`, ese sistema no hace nada y no lo dice. Míralos uno a uno:")
         print("  puede ser un campo opcional legítimo o un sistema entero muerto.")
 
+    marcos(datasets)
+
+
+# Hueco mínimo en la coordenada norte para sospechar de dos marcos. Un dataset en
+# un solo marco reparte sus piezas por el pueblo sin dejar kilómetros vacíos; dos
+# marcos superpuestos dejan un salto del orden de OZ=8570.
+#
+# Un umbral fijo NO vale, y conviene recordar por qué: cortar por z>6000 marcaba
+# también trees_unity.json (2783 árboles repartidos de forma continua, con un
+# "salto" de 1 m justo en el corte) y signage_data.json. Los dos están en un solo
+# marco; era el umbral el que partía una distribución continua por la mitad.
+HUECO_MINIMO_M = 2000.0
+
+
+def marcos(datasets):
+    """Avisa de los datasets que mezclan local relativo y local absoluto.
+
+    street_furniture.json lo hace: 191 de sus 220 piezas están en relativo y 29
+    en absoluto, porque las escribieron dos generadores distintos. Convertirlo
+    entero con un solo marco manda un grupo u otro a 8,6 km del pueblo, que es lo
+    que le pasaba al mobiliario. Y no se nota: las piezas existen, tienen malla y
+    están colocadas, sólo que fuera del terreno.
+
+    Esto es un indicio, no un veredicto: mide el mayor hueco en la coordenada
+    norte. Míralo antes de creértelo.
+    """
+    print("\n\nDatasets sospechosos de mezclar marcos (hueco en la coordenada norte)\n")
+    hallazgos = 0
+    for f, info in datasets.items():
+        if "x" not in info["claves"] or "z" not in info["claves"]:
+            continue
+        with open(os.path.join(DATOS, f), encoding="utf-8") as fh:
+            doc = json.load(fh)
+        elems = doc if isinstance(doc, list) else next(
+            (v for v in doc.values() if isinstance(v, list)), [])
+
+        zs = sorted(e["z"] for e in elems
+                    if isinstance(e, dict) and isinstance(e.get("z"), (int, float)))
+        if len(zs) < 4:
+            continue
+
+        hueco, corte = 0.0, None
+        for a, b in zip(zs, zs[1:]):
+            if b - a > hueco:
+                hueco, corte = b - a, (a, b)
+        if hueco < HUECO_MINIMO_M:
+            continue
+
+        bajos = sum(1 for z in zs if z <= corte[0])
+        hallazgos += 1
+        print("  %-30s %d por debajo y %d por encima de un hueco de %.0f m"
+              % (f, bajos, len(zs) - bajos, hueco))
+        print("      el salto va de z=%.1f a z=%.1f; OZ vale 8570" % corte)
+
+    if not hallazgos:
+        print("  Ninguno: cada dataset posicional está en un solo marco.")
+    else:
+        print("\n  Si son dos marcos, quien lo lea tiene que decidirlo por elemento.")
+        print("  UAlsasuaGeoData::MobiliarioAUE5 hace justo eso para el mobiliario.")
+
+    fuera_del_mundo(datasets)
+
+
+# El terreno jugable son 7200×7200 m centrados en (1918, 8570) local absoluto.
+OX, OZ, SEMILADO_M = 1918.0, 8570.0, 3600.0
+
+
+def fuera_del_mundo(datasets):
+    """Elementos con coordenadas fuera del terreno, en cualquiera de los marcos.
+
+    signage_data.json trae 30 de sus 126 señales así: hasta 123 km al oeste y 215
+    km al sur, todas de los tipos que el generador situaba por dirección. Nadie se
+    entera, porque colocar una señal a 200 km no falla: el actor se crea, su trazo
+    de suelo no encuentra terreno y cae a la cota de la plaza. Sólo estira los
+    límites del mundo y se lleva un actor por delante.
+    """
+    print("\n\nElementos fuera del terreno jugable, en los dos marcos\n")
+    hallazgos = 0
+    for f, info in datasets.items():
+        if "x" not in info["claves"] or "z" not in info["claves"]:
+            continue
+        with open(os.path.join(DATOS, f), encoding="utf-8") as fh:
+            doc = json.load(fh)
+        elems = doc if isinstance(doc, list) else next(
+            (v for v in doc.values() if isinstance(v, list)), [])
+
+        fuera, total, peor = 0, 0, 0.0
+        for e in elems:
+            if not isinstance(e, dict):
+                continue
+            x, z = e.get("x"), e.get("z")
+            if not isinstance(x, (int, float)) or not isinstance(z, (int, float)):
+                continue
+            total += 1
+            # Se da por bueno si cabe leyéndolo como absoluto O como relativo:
+            # sólo se cuenta lo que no encaja de ninguna de las dos formas.
+            dentro = any(abs(ax - OX) <= SEMILADO_M and abs(az - OZ) <= SEMILADO_M
+                         for ax, az in ((x, z), (x + OX, z + OZ)))
+            if not dentro:
+                fuera += 1
+                peor = max(peor, min(abs(x - OX), abs(x)) / 1000.0,
+                           min(abs(z - OZ), abs(z)) / 1000.0)
+        if fuera:
+            hallazgos += 1
+            print("  %-30s %d de %d fuera (el más lejano, a unos %.0f km)"
+                  % (f, fuera, total, peor))
+
+    if not hallazgos:
+        print("  Ninguno.")
+    else:
+        print("\n  Colocarlos no falla y no avisa. Quien los lea debería filtrarlos")
+        print("  diciendo cuántos, que es lo que hace AlsasuaSignPlacer.")
+
 
 if __name__ == "__main__":
     main()

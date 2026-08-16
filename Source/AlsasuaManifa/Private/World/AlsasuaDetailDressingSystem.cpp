@@ -83,7 +83,12 @@ void UAlsasuaDetailDressingSystem::CargarMueblesReales(UWorld* World)
         // La Y del JSON es altura sobre el suelo, no cota absoluta: se suma a
         // la del terreno. Antes se tomaba como cota y las 220 piezas de
         // mobiliario quedaban a 531 m por debajo del pueblo.
-        FVector Pos = UAlsasuaGeoData::RelLocalToUE5(FVector(X, Y, Z));
+        //
+        // Y el marco no es el mismo para todas: street_furniture.json mezcla
+        // relativo y absoluto. Convertirlo todo como relativo mandaba las 29
+        // piezas absolutas —las 12 paradas de bus, las 5 fuentes, las señales,
+        // los cruces— a 8,6 km del pueblo. MobiliarioAUE5 lo decide por pieza.
+        FVector Pos = UAlsasuaGeoData::MobiliarioAUE5(FVector(X, Y, Z));
         Pos.Z += UAlsasuaGeoData::AlturaSueloUE5(GetWorld(), Pos.X, Pos.Y);
 
         // street_furniture.json trae "rotacion" por pieza y se estaba ignorando:

@@ -97,9 +97,27 @@ int32 UAlsasuaSignPlacer::ColocarSenalesEnMundo()
     struct FModelo { UStaticMesh* Malla; AjusteMalla::FColocacion Col; };
     TMap<FString, FModelo> Cache;
 
-    int32 Placed = 0;
+    // 30 de las 126 señales de signage_data.json traen coordenadas basura: hasta
+    // 123 km al oeste y 215 km al sur, todas de tipo señal_comercio o
+    // señal_informativa, que son las que el generador situaba por dirección
+    // cuando la encontraba. No hay forma de colocarlas bien —no se sabe dónde
+    // van—, así que se dejan fuera y se dice cuántas: colocarlas estira los
+    // límites del mundo y su trazo de suelo no encuentra terreno.
+    // El terreno jugable son 7200×7200 m centrados en (191800, 857000) cm.
+    const double CentroX = 191800.0, CentroY = 857000.0, SemiladoCm = 360000.0;
+
+    int32 Placed = 0, Descartadas = 0;
     for (const FSignEntry& S : Senales)
     {
+        {
+            const FVector P = UAlsasuaGeoData::AbsLocalToUE5(FVector(S.X, 0.0, S.Z));
+            if (FMath::Abs(P.X - CentroX) > SemiladoCm || FMath::Abs(P.Y - CentroY) > SemiladoCm)
+            {
+                ++Descartadas;
+                continue;
+            }
+        }
+
         const FString Clave = MallaDe(S.Tipo);
         FModelo& M = Cache.FindOrAdd(Clave);
         if (!M.Malla)
@@ -133,6 +151,8 @@ int32 UAlsasuaSignPlacer::ColocarSenalesEnMundo()
         }
     }
 
-    UE_LOG(LogTemp, Log, TEXT("SignPlacer: %d senales colocadas en el mundo"), Placed);
+    UE_LOG(LogTemp, Log,
+        TEXT("SignPlacer: %d señales colocadas, %d descartadas por caer fuera del terreno"),
+        Placed, Descartadas);
     return Placed;
 }

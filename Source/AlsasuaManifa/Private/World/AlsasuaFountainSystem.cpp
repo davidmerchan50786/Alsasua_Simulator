@@ -46,7 +46,10 @@ int32 UAlsasuaFountainSystem::ColocarFuentes()
 
                 const float X = Obj->GetNumberField(TEXT("x"));
                 const float Z = Obj->GetNumberField(TEXT("z"));
-                Fuente.Posicion = UAlsasuaGeoData::AbsLocalToUE5(FVector(X, 0.0f, Z));
+                // Las 5 fuentes del dataset están en absoluto, pero
+                // street_furniture mezcla marcos: MobiliarioAUE5 lo decide por
+                // pieza y así no depende de que sigan siendo todas del mismo.
+                Fuente.Posicion = UAlsasuaGeoData::MobiliarioAUE5(FVector(X, 0.0f, Z));
                 Fuente.Posicion.Z = UAlsasuaGeoData::AlturaSueloUE5(GetWorld(),
                     Fuente.Posicion.X, Fuente.Posicion.Y);
                 Fuente.Radio = 100.0f;

@@ -76,8 +76,12 @@ int32 UAlsasuaFarolaPlacer::ColocarFarolasEnMundo()
     for (const FFarolaEntry& F : Farolas)
     {
         // Media altura sobre el terreno, no sobre el nivel del mar.
-        FVector Loc = UAlsasuaGeoData::RelLocalASueloUE5(GetWorld(), FVector(F.X, 0.0f, F.Z),
-            F.AlturaM * 50.0f);
+        // Las dos farolas del dataset están en relativo, pero street_furniture
+        // mezcla marcos: si mañana se añade una en absoluto, esto la coloca donde
+        // toca en vez de a 8,6 km. La cota se apoya después.
+        FVector Loc = UAlsasuaGeoData::MobiliarioAUE5(FVector(F.X, 0.0f, F.Z));
+        Loc.Z = UAlsasuaGeoData::AlturaSueloUE5(GetWorld(), Loc.X, Loc.Y)
+              + F.AlturaM * 50.0f;
 
         AStaticMeshActor* FarolaActor = World->SpawnActor<AStaticMeshActor>(
             AStaticMeshActor::StaticClass(), Loc, FRotator(0, F.Rotacion, 0));

@@ -59,6 +59,13 @@ FVector UAlsasuaGeoData::RelLocalToUE5(const FVector& RelLocalPos)
     return FVector(Ax * 100.0, Az * 100.0, RelLocalPos.Y * 100.0);
 }
 
+FVector UAlsasuaGeoData::MobiliarioAUE5(const FVector& LocalPos)
+{
+    // El porqué del 6000 y de que se mire la Z y no la X está en el header.
+    constexpr double CorteNorte = 6000.0;
+    return (LocalPos.Z > CorteNorte) ? AbsLocalToUE5(LocalPos) : RelLocalToUE5(LocalPos);
+}
+
 // ============================================================
 //  Cota del terreno
 // ============================================================

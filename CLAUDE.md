@@ -117,10 +117,15 @@ antes de tocar posiciones. Resumen:
 
 **Qué JSON viene en qué espacio** (documentado en el header, y es fácil equivocarse):
 
-- Relativo (necesitan `RelLocalToUE5`): `roads_unity.json`, `street_furniture.json`,
-  `buildings_final.json`.
+- Relativo (necesitan `RelLocalToUE5`): `roads_unity.json`, `buildings_final.json`.
 - **Absoluto** (usar `AbsLocalToUE5`): `trees_unity.json`, `signage_data.json`,
-  `waterways_unity.json`.
+  `waterways_unity.json`, `greenspaces_unity.json`.
+- **Mezclado**: `street_furniture.json` trae los dos. 191 de sus 220 piezas en
+  relativo (papeleras, bancos, bolardos…) y 29 en absoluto (las 12 paradas de
+  bus, las 5 fuentes, las señales, los cruces): lo escribieron dos generadores.
+  Los dos grupos están separados por 4115 m de hueco en la coordenada norte, así
+  que se distinguen sin ambigüedad. Usa `MobiliarioAUE5`, que lo decide por
+  pieza; convertirlo todo como relativo manda esas 29 a 8,6 km del pueblo.
 
 Usa siempre las funciones (`AbsLocalToUE5`, `RelLocalToUE5`, `LatLonToUE5`,
 `UTMToUE5`, `UE5ToLatLon`), nunca aritmética a mano. El frame UTM↔UE5 usa el
@@ -292,7 +297,9 @@ esos parámetros en runtime. Crear un material que lea el MPC antes de que exist
 Los que empiezan por `Verificar`/`Auditar` no montan nada: contrastan lo que hay
 contra su fuente y sacan un informe. Sirven de red donde no hay compilador —
 `VerificarVias.py` (formas de raíz de los datasets de vía y sitio para el material
-rodante), `VerificarDatasets.py` (campos que el C++ pide y el JSON no tiene),
+rodante), `VerificarDatasets.py` (campos que el C++ pide y el JSON no tiene, marcos
+mezclados, elementos fuera del terreno), `AuditarSistemas.py` (sistemas de mundo
+que no llama nadie, y con cuál chocarían),
 `VerificarFuentes.py` (sintaxis: el `;` que se lleva un comentario, delimitadores
 descuadrados, `UnityaUnreal` con los ejes cambiados), `VerificarCallesNavarra.py` (trazado contra el eje catastral),
 `AuditarAssets.py` (rutas sin respaldo y mallas bajadas que nadie pide),
@@ -427,6 +434,12 @@ posiciones cambian entre runs.
   de `UCargadorCalles` (fase 4). Los dos siguen ahí, pero el primero sólo aporta
   su ficha botánica y el segundo publica el firme por id de vía para que lo
   aplique el director sobre las cintas que ya existen.
+- **Hay datos que caen fuera del mundo y colocarlos no falla.** 31 de las 126
+  señales de `signage_data.json` traen coordenadas de hasta 216 km, y 280 de los
+  2783 árboles del LiDAR quedan fuera de los 7200 m del terreno jugable. El actor
+  se crea igual, su trazo de suelo no encuentra nada y acaba en cota cero o en la
+  de la plaza. `VerificarDatasets.py` los cuenta; quien los lea debe filtrarlos
+  **diciendo cuántos**, no en silencio.
 - **Los datasets son heterogéneos entre elementos.** `street_furniture.json`
   tiene 220 piezas y no todas traen los mismos campos: las fuentes llevan
   `nombre` y `activa`, las paradas `linea` y `con_techo`, y la mayoría ninguno de

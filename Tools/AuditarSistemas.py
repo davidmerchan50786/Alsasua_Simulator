@@ -1,0 +1,140 @@
+"""
+AuditarSistemas.py — Qué sistemas de mundo no llama nadie, y con qué chocarían.
+
+AlsasuaManifa/World tiene del orden de 78 clases de sistema. ADirectorArranque
+menciona unas 40; el resto no aparece en la cadena de arranque ni lo llama ningún
+otro fichero. Parte de eso es normal —componentes que se adjuntan, actores que se
+colocan en el nivel, utilidades estáticas— y parte son sistemas escritos, nunca
+enchufados y nunca ejecutados.
+
+Lo que este script NO hace es decirte que los enchufes. Enchufar a ciegas ya salió
+mal: al arreglar los cargadores rotos resultó que AlsasuaTreePlacer replantaba los
+2783 árboles que UCargadorArboles ya siembra, y AlsasuaRoadSurfaceSystem ponía un
+cubo sobre cada cinta que UCargadorCalles ya tenía puesta. Un sistema huérfano que
+lee el mismo JSON que uno ya enchufado es sospechoso de duplicar trabajo, no de
+faltar.
+
+Así que por cada huérfano se dice qué datasets toca y quién más los toca estando
+ya en la cadena. Con eso la decisión es informada en vez de adivinada.
+
+Uso:  python3 Tools/AuditarSistemas.py
+"""
+import os
+import re
+from collections import defaultdict
+
+RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+FUENTE = os.path.join(RAIZ, "Source")
+DIRECTOR = os.path.join(FUENTE, "AlsasuaWorld", "Private", "DirectorArranque.cpp")
+MUNDO_H = os.path.join(FUENTE, "AlsasuaManifa", "Public", "World")
+
+RE_CLASE = re.compile(r'class ALSASUAMANIFA_API ([UA]\w+)\s*:\s*public\s+(\w+)')
+RE_DATASET = re.compile(r'Datos/([A-Za-z_0-9]+\.json)')
+
+# Bases que no necesitan que el director las llame para existir: un componente lo
+# adjunta su actor, un actor se coloca en el nivel, y un subsistema se crea solo.
+# Aun así, si el subsistema sólo actúa cuando alguien invoca su Colocar*/Aplicar*,
+# estar creado no es estar haciendo nada — por eso salen igual, marcados.
+PASIVAS = ("UActorComponent", "USceneComponent", "UPrimitiveComponent", "AActor",
+           "AVolume", "ACharacter", "APawn")
+
+
+def cuerpo(clase):
+    """Ruta del .cpp de una clase, si está donde toca."""
+    p = os.path.join(FUENTE, "AlsasuaManifa", "Private", "World", clase[1:] + ".cpp")
+    return p if os.path.exists(p) else None
+
+
+def main():
+    with open(DIRECTOR, encoding="utf-8") as fh:
+        director = fh.read()
+
+    # Datasets que ya toca alguien enchufado en la cadena.
+    clases = {}
+    for nombre in sorted(os.listdir(MUNDO_H)):
+        if not nombre.endswith(".h"):
+            continue
+        with open(os.path.join(MUNDO_H, nombre), encoding="utf-8", errors="ignore") as fh:
+            texto = fh.read()
+        for m in RE_CLASE.finditer(texto):
+            clases[m.group(1)] = m.group(2)
+
+    datasets_de = {}
+    for c in clases:
+        p = cuerpo(c)
+        datasets_de[c] = set()
+        if p:
+            with open(p, encoding="utf-8", errors="ignore") as fh:
+                datasets_de[c] = set(RE_DATASET.findall(fh.read()))
+
+    enchufados = [c for c in clases if c in director]
+    huerfanos = [c for c in clases if c not in director]
+
+    # Quién más lee cada dataset, contando también los cargadores de World.
+    lectores = defaultdict(set)
+    for base, _, ficheros in os.walk(FUENTE):
+        for nombre in ficheros:
+            if not nombre.endswith(".cpp"):
+                continue
+            ruta = os.path.join(base, nombre)
+            with open(ruta, encoding="utf-8", errors="ignore") as fh:
+                for d in RE_DATASET.findall(fh.read()):
+                    lectores[d].add(os.path.splitext(nombre)[0])
+
+    print("%d clases en AlsasuaManifa/World: %d en la cadena de arranque, %d fuera.\n"
+          % (len(clases), len(enchufados), len(huerfanos)))
+
+    conflicto, limpios, pasivos = [], [], []
+    for c in sorted(huerfanos):
+        base = clases[c]
+        ds = datasets_de[c]
+        # ¿Alguno de sus datasets lo lee ya alguien que sí está en la cadena?
+        choque = set()
+        for d in ds:
+            for otro in lectores[d]:
+                cand = "U" + otro
+                if cand in director or otro in ("CargadorArboles", "CargadorCalles",
+                                                "CargadorVias", "CargadorEdificios",
+                                                "CargadorPoligonos", "CargadorPOI",
+                                                "CargadorPuentes", "AlsasuaVegetationSpawner"):
+                    if otro != c[1:]:
+                        choque.add("%s (%s)" % (otro, d))
+        if choque:
+            conflicto.append((c, sorted(choque)))
+        elif base in PASIVAS:
+            pasivos.append((c, base))
+        else:
+            limpios.append((c, base, sorted(ds)))
+
+    print("=" * 74)
+    print("  RIESGO DE DUPLICADO — leen un dataset que ya trabaja otro")
+    print("=" * 74)
+    if not conflicto:
+        print("  Ninguno.")
+    for c, ch in conflicto:
+        print("  %s" % c)
+        for x in ch:
+            print("        ya lo trabaja %s" % x)
+    print("\n  Antes de enchufar uno de estos, mira qué construye el otro. Puede que")
+    print("  su aportación no sea colocar nada, sino publicar un dato para que lo")
+    print("  aplique quien ya tiene la geometría puesta.")
+
+    print("\n" + "=" * 74)
+    print("  PASIVOS — componentes, actores y volúmenes")
+    print("=" * 74)
+    print("  No los llama el director porque no se llaman: se adjuntan o se colocan.")
+    for c, b in pasivos:
+        print("  %-40s : %s" % (c, b))
+
+    print("\n" + "=" * 74)
+    print("  SIN INVESTIGAR — subsistemas fuera de la cadena y sin choque")
+    print("=" * 74)
+    for c, b, ds in limpios:
+        print("  %-40s : %-26s %s" % (c, b, ", ".join(ds) if ds else ""))
+    print("\n  Existen, se compilan y no se ejecutan. Cada uno hay que mirarlo: unos")
+    print("  están apagados a propósito (los semáforos, por perfilado) y otros")
+    print("  simplemente nunca se enchufaron.")
+
+
+if __name__ == "__main__":
+    main()
