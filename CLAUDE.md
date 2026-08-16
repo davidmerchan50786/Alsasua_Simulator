@@ -350,7 +350,10 @@ hay que conservar al escribir código nuevo:
    `UAlsasuaFoliagePainter` estaba escrito con un `AStaticMeshActor` por mata:
    con las 273 zonas verdes salían decenas de miles de actores. Ahora siembra en
    `UHierarchicalInstancedStaticMeshComponent`, uno por tipo de planta — doce mil
-   instancias en ocho draw calls, con culling y LOD de serie. La otra vía válida
+   instancias en ocho draw calls, con culling y LOD de serie. Lo mismo
+   `UAlsasuaSidewalkSystem`, que ponía un actor por losa de acera: 5038 losas,
+   5038 draw calls, y encima dos `LoadObject` de material por losa dentro del
+   bucle. Ahora son dos capas instanciadas, una por acabado. La otra vía válida
    es coser la geometría en una sola sección de `ProceduralMesh`, que es lo que
    hace `AlsasuaVegetationSpawner` con el césped procedural.
 1. **Una sección de `ProceduralMesh` = un draw call.** Las fachadas creaban una
