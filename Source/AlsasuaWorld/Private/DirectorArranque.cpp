@@ -22,6 +22,9 @@
 #include "Serialization/JsonSerializer.h"
 #include "Engine/StaticMeshActor.h"
 #include "ProceduralMeshComponent.h"
+#include "CalleGenerada.h"
+#include "EngineUtils.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "GeoDataAlsasua.h"
 #include "AlsasuaVegetationSpawner.h"
 #include "World/AlsasuaAtmosphereController.h"
@@ -341,13 +344,20 @@ void ADirectorArranque::IniciarConstruccion()
         }
     }
 
-    // --- 23. Árboles reales con especies (trees_unity.json + 8 especies de Navarra) ---
+    // --- 23. Ficha botánica de las especies de Navarra ---
+    // Los 2783 árboles los planta UCargadorArboles en la fase 2, del mismo
+    // trees_unity.json, con la especie que trae el dato, escala por altura real
+    // y un HISM por especie. Esta fase leía el mismo fichero y plantaba otros
+    // 2783, uno por actor, encima de los primeros. Mientras su cargador estuvo
+    // roto no se notó; en cuanto se arregló, era un bosque duplicado y 2783 draw
+    // calls. Se queda cargando su tabla —nombres en euskera y castellano, radio
+    // de copa, color de follaje, que eso no lo tiene nadie más— y no replanta.
     {
         UAlsasuaTreePlacer* Trees = World->GetGameInstance()->GetSubsystem<UAlsasuaTreePlacer>();
-        if (Trees)
+        if (Trees && Trees->CargarArboles())
         {
-            const int32 NumArboles = Trees->ColocarArbolesReales();
-            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d árboles reales con especies."), NumArboles);
+            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d fichas de árbol (plantados en la fase 2)."),
+                Trees->GetArboles().Num());
         }
     }
 
@@ -371,13 +381,37 @@ void ADirectorArranque::IniciarConstruccion()
         }
     }
 
-    // --- 26. Superficies de calle (asfalto, adoquín, grava por tipo de vía) ---
+    // --- 26. Firme por tipo de vía (asfalto, adoquín, asfalto gastado, grava) ---
+    // Se tiñen las cintas que ya puso UCargadorCalles en la fase 4, no se
+    // construye calzada nueva: el sistema de MANIFA clasifica y aquí, que es
+    // WORLD y sí ve a ACalleGenerada, se aplica. Cero actores y cero draw calls
+    // añadidos. Antes cada tramo era un cubo aplastado sobre la cinta.
     {
         UAlsasuaRoadSurfaceSystem* Roads = World->GetGameInstance()->GetSubsystem<UAlsasuaRoadSurfaceSystem>();
         if (Roads)
         {
-            const int32 NumRoads = Roads->AplicarSuperficiesEnMundo();
-            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d tramos de superficie."), NumRoads);
+            int32 NumRoads = 0;
+            for (TActorIterator<ACalleGenerada> It(World); It; ++It)
+            {
+                ACalleGenerada* C = *It;
+                if (!C || !C->Malla) continue;
+
+                FString Firme;
+                FLinearColor Color = FLinearColor::Black;
+                if (!Roads->FirmeDe(C->Id, Firme, Color)) continue;
+
+                if (UMaterialInstanceDynamic* MID = C->Malla->CreateDynamicMaterialInstance(0))
+                {
+                    // El nombre del parámetro depende de qué material haya
+                    // cargado la calle (el de Fab o el propio). Si no lo tiene,
+                    // SetVectorParameterValue no hace nada y la calle se queda
+                    // con su color de tipo, que es el comportamiento de antes.
+                    MID->SetVectorParameterValue(FName(TEXT("Color")), Color);
+                    MID->SetVectorParameterValue(FName(TEXT("BaseColor")), Color);
+                }
+                ++NumRoads;
+            }
+            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: firme aplicado a %d calles."), NumRoads);
         }
     }
 

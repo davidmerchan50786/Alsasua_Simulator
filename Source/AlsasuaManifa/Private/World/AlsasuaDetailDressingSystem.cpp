@@ -256,9 +256,13 @@ void UAlsasuaDetailDressingSystem::ColocarBuzones(UWorld* World)
     for (int32 i = 0; i < MaxBuzones; i++)
     {
         FString Calle = Calles[FMath::RandRange(0, Calles.Num() - 1)];
-        FVector Pos = UAlsasuaGeoData::UnityaUnreal(FVector(
-            1891.0f + FMath::RandRange(-5.0f, 5.0f),
-            8570.0f + FMath::RandRange(-5.0f, 5.0f), 0));
+        // Las otras cuatro funciones de este fichero ya lo hacen bien; ésta y
+        // ColocarBancos se quedaron con la forma vieja, que mete la coordenada
+        // norte en el eje vertical y deja la Y del mundo en cero.
+        FVector Pos = UAlsasuaGeoData::AbsLocalToUE5(FVector(
+            1891.0f + FMath::RandRange(-5.0f, 5.0f), 0.0,
+            8570.0f + FMath::RandRange(-5.0f, 5.0f)));
+        Pos.Z = UAlsasuaGeoData::AlturaSueloUE5(GetWorld(), Pos.X, Pos.Y);
 
         FDetailItem Item;
         Item.Tipo = TEXT("buzon");
@@ -316,9 +320,10 @@ void UAlsasuaDetailDressingSystem::ColocarBancos(UWorld* World)
 {
     for (int32 i = 0; i < MaxBancos; i++)
     {
-        FVector Pos = UAlsasuaGeoData::UnityaUnreal(FVector(
-            1891.0f + FMath::RandRange(-6.0f, 6.0f),
-            8571.0f + FMath::RandRange(-6.0f, 6.0f), 0));
+        FVector Pos = UAlsasuaGeoData::AbsLocalToUE5(FVector(
+            1891.0f + FMath::RandRange(-6.0f, 6.0f), 0.0,
+            8571.0f + FMath::RandRange(-6.0f, 6.0f)));
+        Pos.Z = UAlsasuaGeoData::AlturaSueloUE5(GetWorld(), Pos.X, Pos.Y);
 
         FDetailItem Item;
         Item.Tipo = TEXT("banco");

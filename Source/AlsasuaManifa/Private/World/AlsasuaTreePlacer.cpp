@@ -174,7 +174,10 @@ bool UAlsasuaTreePlacer::CargarArboles()
         const float Z = Obj->GetNumberField(TEXT("z"));
         const float Altura = Obj->HasField(TEXT("altura")) ? Obj->GetNumberField(TEXT("altura")) : 10.0f;
 
-        Tree.PosicionUnreal = UAlsasuaGeoData::UnityaUnreal(FVector(X, Z, 0));
+        // trees_unity.json es local ABSOLUTO. Esto pasaba (este, norte, 0) a una
+        // función que espera (este, arriba, norte): la coordenada norte acababa
+        // en el eje vertical. Mientras el cargador estuvo roto no se notó.
+        Tree.PosicionUnreal = UAlsasuaGeoData::AbsLocalToUE5(FVector(X, 0.0, Z));
         Tree.Especie = AsignarEspecie(Altura);
         Tree.Escala = FMath::Clamp(Altura / 15.0f, 0.5f, 2.0f);
         Tree.Rotacion = FMath::FRandRange(0.0f, 360.0f);

@@ -57,6 +57,8 @@ bool UAlsasuaArakilWaterSystem::CargarTramosRio()
             float PX = (*PtsArr)[i]->AsNumber();
             float PY = (*PtsArr)[i + 1]->AsNumber();
             float PZ = (*PtsArr)[i + 2]->AsNumber();
+            // pts es plano [x,y,z,...], así que PY ya es la componente vertical:
+            // el orden que espera UnityaUnreal. // ejes ok
             Points.Add(UAlsasuaGeoData::UnityaUnreal(FVector(PX, PY, PZ)));
         }
 

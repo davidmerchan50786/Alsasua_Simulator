@@ -127,6 +127,21 @@ Usa siempre las funciones (`AbsLocalToUE5`, `RelLocalToUE5`, `LatLonToUE5`,
 origen LiDAR `(566033, 4741332)`, **distinto** de `OriginLocalX/Z` — están ahí
 para centrado local, no para UTM.
 
+**`UnityaUnreal` es la que muerde.** Recibe `(este, arriba, norte)` y devuelve
+`(este_cm, norte_cm, arriba_cm)` — la vertical va **en medio**, no al final.
+Escribir `UnityaUnreal(FVector(X, Z, 0))` con `Z` = norte compila, no avisa, y
+mete la coordenada norte en el eje vertical: la pieza acaba sobre la línea
+norte=0 y flotando a la altura de su propia coordenada norte, que en este pueblo
+son más de 800 m en el aire. Le pasó a seis sistemas a la vez. Para un par
+(este, norte) usa `AbsLocalToUE5(FVector(X, 0, Z))` o `RelLocalToUE5`, que no
+tienen ese hueco; `UnityaUnreal` sólo cuando el dato ya trae la vertical en
+medio, como los `pts` planos `[x,y,z,...]`. `Tools/VerificarFuentes.py` lo caza;
+si tu caso es de los legítimos, márcalo con `// ejes ok`.
+
+Y la Z no sale del conversor: esas funciones devuelven `Z = 0`. Hay que apoyarla
+con `AlturaSueloUE5(World, X, Y)` o usar `RelLocalASueloUE5`. Un `Pos.Z += 300`
+sobre un cero deja la pieza medio kilómetro bajo el pueblo.
+
 Cota de referencia: Herriko Plaza a 531.94 m → `CotaPlazaCm = 53194`.
 
 ### Ortofoto PNOA
@@ -279,7 +294,7 @@ contra su fuente y sacan un informe. Sirven de red donde no hay compilador —
 `VerificarVias.py` (formas de raíz de los datasets de vía y sitio para el material
 rodante), `VerificarDatasets.py` (campos que el C++ pide y el JSON no tiene),
 `VerificarFuentes.py` (sintaxis: el `;` que se lleva un comentario, delimitadores
-descuadrados), `VerificarCallesNavarra.py` (trazado contra el eje catastral),
+descuadrados, `UnityaUnreal` con los ejes cambiados), `VerificarCallesNavarra.py` (trazado contra el eje catastral),
 `AuditarAssets.py` (rutas sin respaldo y mallas bajadas que nadie pide),
 `AlturasLidarEdificios.py --verificar`, `DescargarCatastroNavarra.py --verificar`.
 
@@ -403,6 +418,15 @@ posiciones cambian entre runs.
   (`AlsasuaCore/Public/CargarJsonComun.h`), que se traga las dos formas y avisa
   cuando no encuentra nada. `Tools/VerificarDatasets.py` compara lo que pide el
   C++ con lo que hay en el dato.
+- **Antes de revivir un sistema, mira si su trabajo ya lo hace otro.** Varias
+  fases de `AlsasuaManifa/World/*` duplican lo que ya construyó un cargador de
+  `AlsasuaWorld` sobre el mismo JSON, y mientras estuvieron rotas no se notó.
+  `AlsasuaTreePlacer` (fase 23) replantaba los 2783 árboles que `UCargadorArboles`
+  (fase 2) ya siembra en HISM, uno por actor y encima de los primeros;
+  `AlsasuaRoadSurfaceSystem` (fase 26) ponía un cubo aplastado sobre cada cinta
+  de `UCargadorCalles` (fase 4). Los dos siguen ahí, pero el primero sólo aporta
+  su ficha botánica y el segundo publica el firme por id de vía para que lo
+  aplique el director sobre las cintas que ya existen.
 - **Los datasets son heterogéneos entre elementos.** `street_furniture.json`
   tiene 220 piezas y no todas traen los mismos campos: las fuentes llevan
   `nombre` y `activa`, las paradas `linea` y `con_techo`, y la mayoría ninguno de

@@ -80,7 +80,14 @@ int32 UAlsasuaShopFrontSystem::ColocarTiendasEnMundo()
     int32 Placed = 0;
     for (const FShopFront& Tienda : Tiendas)
     {
-        FVector Loc = UAlsasuaGeoData::UnityaUnreal(FVector(Tienda.X, Tienda.Z, 0));
+        // UnityaUnreal espera (este, arriba, norte) y aquí se le pasaba
+        // (este, norte, 0): la coordenada norte acababa en el eje vertical y la
+        // Y del mundo en cero. Los escaparates salían alineados sobre la línea
+        // norte=0 y flotando a la altura de su propia coordenada norte, más de
+        // ochocientos metros en el aire. No se veía porque el cargador de
+        // fachadas fallaba antes y la lista de tiendas estaba vacía.
+        FVector Loc = UAlsasuaGeoData::AbsLocalToUE5(FVector(Tienda.X, 0.0, Tienda.Z));
+        Loc.Z = UAlsasuaGeoData::AlturaSueloUE5(World, Loc.X, Loc.Y);
 
         AStaticMeshActor* ShopActor = World->SpawnActor<AStaticMeshActor>(
             AStaticMeshActor::StaticClass(), Loc, FRotator(0, Tienda.Rotacion, 0));

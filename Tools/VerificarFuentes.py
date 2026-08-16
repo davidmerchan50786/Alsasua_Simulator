@@ -15,6 +15,15 @@ cazan justo lo que se cuela cuando se edita a ciegas:
 
   1. Sentencia cuyo punto y coma se lo ha tragado un comentario de línea.
   2. Llaves, paréntesis o corchetes descuadrados en un fichero.
+  3. UnityaUnreal con los ejes cambiados (ver abajo).
+
+Lo tercero es otra que costó cara. UAlsasuaGeoData::UnityaUnreal espera
+(este, arriba, norte) y devuelve (este_cm, norte_cm, arriba_cm). Media docena de
+sistemas le pasaban (este, norte, 0): la coordenada norte acababa en el eje
+vertical y la Y del mundo en cero, así que colocaban todo alineado sobre la
+línea norte=0 y flotando a la altura de su propia coordenada norte —Alsasua está
+sobre los 8570 en local, o sea más de ochocientos metros en el aire—. Compila
+perfecto y no avisa de nada.
 
 Uso:  python3 Tools/VerificarFuentes.py      (salida != 0 si encuentra algo)
 """
@@ -24,6 +33,16 @@ import sys
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FUENTE = os.path.join(RAIZ, "Source")
+
+# UnityaUnreal(FVector(este, arriba, norte)). Se mira el argumento del medio: si
+# no es un cero literal, lo que hay ahí es casi seguro la coordenada norte.
+RE_UNITY = re.compile(
+    r'UnityaUnreal\s*\(\s*FVector\('
+    r'(?P<este>[^,()]*(?:\([^()]*\))?[^,()]*),'
+    r'(?P<arriba>[^,()]*(?:\([^()]*\))?[^,()]*),'
+    r'(?P<norte>[^()]*(?:\([^()]*\))?[^()]*)\)', re.S)
+RE_CERO = re.compile(r'\s*0(\.0*)?[fF]?\s*')
+
 
 def cegar_literales(linea):
     """Devuelve la línea con el contenido de los literales sustituido por
@@ -108,6 +127,23 @@ def main():
                     continue
                 fallos.append("%s:%d  falta ';' — se lo ha llevado el comentario\n"
                               "      %s" % (rel, num, linea.strip()))
+
+            # 3. UnityaUnreal con la coordenada norte en el eje vertical.
+            lineas = texto.splitlines()
+            for m in RE_UNITY.finditer(texto):
+                arriba = m.group("arriba").strip()
+                if RE_CERO.fullmatch(arriba):
+                    continue
+                num = texto.count("\n", 0, m.start()) + 1
+                # Hay un caso legítimo: los datasets con pts planos [x,y,z,...]
+                # ya traen la vertical en medio. Se marca con "// ejes ok" en las
+                # dos líneas de arriba, que es lo bastante incómodo como para que
+                # nadie lo ponga sin mirarlo.
+                if any("ejes ok" in l for l in lineas[max(0, num - 3):num]):
+                    continue
+                fallos.append("%s:%d  UnityaUnreal con los ejes cambiados: el 2º\n"
+                              "      argumento es 'arriba', no 'norte'  →  %s"
+                              % (rel, num, " ".join(m.group(0).split())))
 
             # 2. Delimitadores descuadrados.
             limpio = sin_comentarios_ni_cadenas(texto)
