@@ -30,8 +30,11 @@ COLA = [
     ("railways_unity.json",  "Via",    14.0, 2.5, True,  "rails"),
     ("waterways_unity.json", "Agua",  -20.0, 6.0, False, None),
     ("caminos_unity.json",   "Camino",  6.0, 3.0, False, None),
-    ("tunnels_unity.json",   "Tunel",   8.0, 4.0, False, None),
 ]
+
+# Los túneles ya no los encola UCargadorVias: sus bocas las levanta ATunelAlsasua
+# en la fase 3b. Se comprueban aparte, más abajo.
+TUNELES = "tunnels_unity.json"
 
 
 def leer(ruta, campo):
@@ -94,13 +97,39 @@ def main():
             fallos += 1
 
     print("\n  %d trazados en total." % total)
-    print("  Los túneles se encolan pero PasoPresupuesto los cuenta sin construir")
-    print("  malla, a la espera de ATunelAlsasua.")
     if fallos:
         raise SystemExit("\n  %d dataset(s) no producen nada. Eso es el bug." % fallos)
     print("  Ningún dataset se pierde por la forma de su raíz.")
 
     rodante()
+    tuneles()
+
+
+def tuneles():
+    """Réplica de ATunelAlsasua::Construir: dónde caen las dos bocas de cada uno.
+
+    La polilínea de cada túnel es más larga que el túnel —length_m es la galería
+    y el trazado sigue por fuera de los portales—, así que las bocas no van en
+    los extremos del trazado sino a media longitud declarada de su centro.
+    """
+    with open(os.path.join(DATOS, TUNELES), encoding="utf-8") as f:
+        doc = json.load(f)
+    print("\n  Bocas de túnel (ATunelAlsasua, fase 3b)")
+    print("  %-34s %8s %9s %7s %s" % ("túnel", "ancho", "trazado", "galería", "bocas"))
+    bocas = 0
+    for t in doc:
+        p = t.get("pts", [])
+        pts = [(p[i], p[i + 2]) for i in range(0, len(p) - 2, 3)]
+        if len(pts) < 2:
+            continue
+        largo = sum(math.dist(a, b) for a, b in zip(pts, pts[1:]))
+        galeria = t.get("length_m", largo)
+        bocas += 2
+        print("  %-34s %6.1f m %7.0f m %6.0f m %5d"
+              % ((t.get("name") or "(sin nombre)")[:34], t.get("width", 6.0),
+                 largo, galeria, 2))
+    print("  %d bocas en una sola sección de ProceduralMesh." % bocas)
+    print("  No se agujerea el terreno: son los portales, no la galería.")
 
 
 # Mismos valores que AlsasuaFerrocarrilSystem.cpp.

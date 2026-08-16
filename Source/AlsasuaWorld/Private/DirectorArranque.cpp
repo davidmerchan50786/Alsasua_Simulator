@@ -5,6 +5,7 @@
 #include "MuestreadorAltura.h"
 #include "CargadorArboles.h"
 #include "CargadorVias.h"
+#include "TunelAlsasua.h"
 #include "CargadorCalles.h"
 #include "CargadorPoligonos.h"
 #include "CargadorEdificios.h"
@@ -146,6 +147,21 @@ void ADirectorArranque::IniciarConstruccion()
     {
         Vias->Cargar();
         UE_LOG(LogTemp, Log, TEXT("DirectorArranque: Vías férreas cargadas."));
+    }
+
+    // --- 3b. Bocas de los cinco túneles (tunnels_unity.json) ---
+    // Detrás de las vías porque apoya cada portal con un trazo contra el terreno,
+    // y antes de calles y edificios para no engancharse a ellos. No agujerea el
+    // monte: son las bocas, no la galería (ver TunelAlsasua.h).
+    ATunelAlsasua* Tuneles = World->SpawnActor<ATunelAlsasua>(
+        ATunelAlsasua::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator);
+    if (Tuneles)
+    {
+#if WITH_EDITOR
+        Tuneles->SetActorLabel(TEXT("Alsasua_Tuneles"));
+#endif
+        const int32 NumBocas = Tuneles->Construir();
+        UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d bocas de túnel."), NumBocas);
     }
 
     // --- 4. Calles (roads_unity.json real) ---
@@ -602,8 +618,22 @@ void ADirectorArranque::IniciarConstruccion()
     }
 
     // --- 46. Semáforos en intersecciones ---
+    // Estaba saltada con un log de "skip para perfilado" desde que se midió el
+    // arranque, así que el sistema no se ejecutaba nunca. Vuelve a la cadena
+    // detrás de bSemaforos, que es lo que hay que bajar para volver a medir sin
+    // ellos en vez de comentar la fase.
+    if (bSemaforos)
     {
-        UE_LOG(LogTemp, Log, TEXT("DirectorArranque: skip semáforos para perfilado"));
+        UAlsasuaTrafficLightSystem* Lights = World->GetGameInstance()->GetSubsystem<UAlsasuaTrafficLightSystem>();
+        if (Lights)
+        {
+            const int32 NumSem = Lights->ColocarSemaforos();
+            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d semáforos con ciclo."), NumSem);
+        }
+    }
+    else
+    {
+        UE_LOG(LogTemp, Log, TEXT("DirectorArranque: semáforos desactivados (bSemaforos)."));
     }
 
     // --- 47. Toldos y persianas en edificios ---

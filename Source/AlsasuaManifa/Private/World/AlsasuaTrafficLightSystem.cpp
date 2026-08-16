@@ -6,6 +6,7 @@
 #include "Components/PointLightComponent.h"
 #include "Engine/PointLight.h"
 #include "GeoDataAlsasua.h"
+#include "CargarJsonComun.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "Serialization/JsonReader.h"
@@ -24,32 +25,23 @@ int32 UAlsasuaTrafficLightSystem::ColocarSemaforos()
     Semaforos.Empty();
 
     TArray<FVector> JunctionPoints;
-    const FString JsonPath = FPaths::ProjectContentDir() + TEXT("Datos/roads_unity.json");
-    TArray<FString> Lines;
-    if (FFileHelper::LoadFileToStringArray(Lines, *JsonPath))
+    TArray<TSharedPtr<FJsonValue>> RoadsArr;
+    if (JsonDatos::CargarArray(TEXT("Datos/roads_unity.json"), RoadsArr, { TEXT("roads") }))
     {
-        FString Js;
-        for (const FString& L : Lines) Js += L;
-
-        TArray<TSharedPtr<FJsonValue>> RoadsArr;
-        TSharedRef<TJsonReader<>> Rd = TJsonReaderFactory<>::Create(Js);
-        if (FJsonSerializer::Deserialize(Rd, RoadsArr))
+        for (const auto& RV : RoadsArr)
         {
-            for (const auto& RV : RoadsArr)
-            {
-                const TSharedPtr<FJsonObject>& Road = RV->AsObject();
-                if (!Road) continue;
-                const TArray<TSharedPtr<FJsonValue>>* PtsArr;
-                if (!Road->TryGetArrayField(TEXT("points"), PtsArr)) continue;
-                if (PtsArr->Num() < 2) continue;
+            const TSharedPtr<FJsonObject>& Road = RV->AsObject();
+            if (!Road) continue;
+            const TArray<TSharedPtr<FJsonValue>>* PtsArr;
+            if (!Road->TryGetArrayField(TEXT("points"), PtsArr)) continue;
+            if (PtsArr->Num() < 2) continue;
 
-                for (const auto& PV : *PtsArr)
-                {
-                    const TSharedPtr<FJsonObject>& PO = PV->AsObject();
-                    if (!PO) continue;
-                    JunctionPoints.Add(UAlsasuaGeoData::RelLocalASueloUE5(GetWorld(),
-                        FVector(PO->GetNumberField(TEXT("x")), 0.0f, PO->GetNumberField(TEXT("z")))));
-                }
+            for (const auto& PV : *PtsArr)
+            {
+                const TSharedPtr<FJsonObject>& PO = PV->AsObject();
+                if (!PO) continue;
+                JunctionPoints.Add(UAlsasuaGeoData::RelLocalASueloUE5(GetWorld(),
+                    FVector(PO->GetNumberField(TEXT("x")), 0.0f, PO->GetNumberField(TEXT("z")))));
             }
         }
     }
@@ -122,36 +114,90 @@ int32 UAlsasuaTrafficLightSystem::ColocarSemaforos()
                 BoxActor->GetStaticMeshComponent()->SetStaticMesh(StopLightMesh);
         }
 
-        for (int32 L = 0; L < 3; L++)
+        // Una sola luz por semáforo, no tres. Antes se creaba una APointLight
+        // por LED y se encendían las tres a la vez: rojo, ámbar y verde
+        // simultáneos, 36 luces para 12 cruces. El color y la intensidad los
+        // manda ahora la fase del ciclo.
+        FVector LedPos = LightPos;
+        LedPos.Z -= 25.0f;
+        if (APointLight* Led = World->SpawnActor<APointLight>(
+                APointLight::StaticClass(), LedPos, FRotator::ZeroRotator))
         {
-            FVector LedPos = LightPos;
-            LedPos.Z -= (L * 25.0f);
-
-            APointLight* Led = World->SpawnActor<APointLight>(
-                APointLight::StaticClass(), LedPos, FRotator::ZeroRotator);
-            if (Led)
+            if (UPointLightComponent* PL = Cast<UPointLightComponent>(Led->GetLightComponent()))
             {
-                FLinearColor LedColor;
-                if (L == 0) LedColor = FLinearColor(0.8f, 0.0f, 0.0f);
-                else if (L == 1) LedColor = FLinearColor(0.8f, 0.6f, 0.0f);
-                else LedColor = FLinearColor(0.0f, 0.7f, 0.0f);
-
-			UPointLightComponent* PointLightComp = Cast<UPointLightComponent>(Led->GetLightComponent());
-			if (PointLightComp)
-			{
-				PointLightComp->SetIntensity(L == 0 ? 2000.0f : 200.0f);
-				PointLightComp->SetLightColor(LedColor);
-				PointLightComp->SetAttenuationRadius(200.0f);
-				PointLightComp->SetSourceRadius(5.0f);
-			}
+                PL->SetAttenuationRadius(200.0f);
+                PL->SetSourceRadius(5.0f);
             }
+            Light.Luz = Led;
         }
+
+        // Desfase repartido por el ciclo entero: doce cruces cambiando a la vez
+        // no pasa en ningún pueblo.
+        const float Ciclo = SegVerde + SegAmbar + SegRojo;
+        Light.Desfase = Ciclo * (float)i / (float)FMath::Max(1, MaxSemaforos);
 
         Semaforos.Add(Light);
         Placed++;
     }
 
-    UE_LOG(LogTemp, Log, TEXT("TrafficLights: %d semaforos en intersecciones reales (%d candidatos)"),
+    // Fase inicial ya puesta: si no, hasta el primer tick todos salen apagados.
+    Aplicar();
+
+    UE_LOG(LogTemp, Log, TEXT("TrafficLights: %d semáforos en intersecciones reales (%d candidatos)"),
         Placed, Candidates.Num());
     return Placed;
+}
+
+EFaseSemaforo UAlsasuaTrafficLightSystem::FaseEn(float TiempoCiclo) const
+{
+    if (TiempoCiclo < SegVerde)            return EFaseSemaforo::Verde;
+    if (TiempoCiclo < SegVerde + SegAmbar) return EFaseSemaforo::Ambar;
+    return EFaseSemaforo::Rojo;
+}
+
+void UAlsasuaTrafficLightSystem::Aplicar()
+{
+    const float Ciclo = FMath::Max(1.f, SegVerde + SegAmbar + SegRojo);
+    for (FTrafficLight& S : Semaforos)
+    {
+        if (!S.bActivo || !S.Luz) continue;
+
+        S.Fase = FaseEn(FMath::Fmod(Reloj + S.Desfase, Ciclo));
+
+        FLinearColor Color;
+        float Intensidad;
+        switch (S.Fase)
+        {
+        case EFaseSemaforo::Verde: Color = FLinearColor(0.0f, 0.7f, 0.1f); Intensidad = 1200.f; break;
+        case EFaseSemaforo::Ambar: Color = FLinearColor(0.9f, 0.55f, 0.0f); Intensidad = 1600.f; break;
+        default:                   Color = FLinearColor(0.9f, 0.05f, 0.0f); Intensidad = 2000.f; break;
+        }
+
+        if (UPointLightComponent* PL = Cast<UPointLightComponent>(S.Luz->GetLightComponent()))
+        {
+            PL->SetLightColor(Color);
+            PL->SetIntensity(Intensidad);
+        }
+    }
+}
+
+void UAlsasuaTrafficLightSystem::Tick(float DeltaTime)
+{
+    if (Semaforos.Num() == 0) return;
+    Reloj += DeltaTime;
+
+    // Los setters de luz invalidan el draw-cache de la escena, así que van a
+    // 4 Hz como el sol, el skylight y la niebla (regla 2 del RESUMEN_TECNICO).
+    // Un semáforo no necesita más: la fase más corta dura tres segundos.
+    DesdeUltimoRefresco += DeltaTime;
+    if (DesdeUltimoRefresco < 0.25f) return;
+    DesdeUltimoRefresco = 0.f;
+
+    Aplicar();
+}
+
+void UAlsasuaTrafficLightSystem::Deinitialize()
+{
+    Semaforos.Empty();
+    Super::Deinitialize();
 }

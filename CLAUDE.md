@@ -174,13 +174,18 @@ comentadas**, en orden de dependencia, publicando progreso en
 1b. `UCargadorPoligonos` — 5 plazas + 273 zonas verdes como superficies drapeadas.
 1c. `ATerrenoLejano` — anillo de relieve de 60×60 km con el hueco del terreno
    jugable, para que el mundo no se corte en seco a 3,6 km (ver §5b).
-2. `UCargadorArboles` (LiDAR) → `UCargadorVias` (ferrocarril, caminos, túneles;
-   también genera los ríos como cintas drapeadas) → `UCargadorCalles` →
+2. `UCargadorArboles` (LiDAR) → `UCargadorVias` (ferrocarril, aceras, caminos;
+   también genera los ríos como cintas drapeadas) → `ATunelAlsasua` (fase 3b:
+   las diez bocas de los cinco túneles) → `UCargadorCalles` →
    `UCargadorEdificios` → tejado modular → Herriko Plaza → `UCargadorPuentes` →
    `UCargadorPOI` → vegetación.
 3. Fases 13-51: sistemas de `AlsasuaManifa/World/*` (atmósfera, post-process por
    zonas, estilos de barrio, fachadas, farolas, señales, tráfico, aceras,
    marcas viales, semáforos, cables aéreos, clima, audio…).
+46. `UAlsasuaTrafficLightSystem` — semáforos con ciclo, detrás de
+   `ADirectorArranque::bSemaforos`. La fase estuvo saltada con un log de "skip
+   para perfilado", así que el sistema no corría nunca; para volver a medir sin
+   ellos se baja la bandera, no se comenta la fase.
 52. `UAlsasuaFerrocarrilSystem` — material rodante en la playa de vías. Va el
    último **a propósito**: un tren tiene colisión, y colocado antes cualquier
    sistema que se apoye por raycast y pase por la estación se subiría al techo
@@ -462,6 +467,14 @@ posiciones cambian entre runs.
   aquel día; el diagnóstico y las reglas de §5 siguen vigentes. Para compilar y
   lanzar hoy, `README.md` o este fichero. (El `.uproject` decía 5.4 en
   `Description`; corregido a 5.8, que es lo que fija `EngineAssociation`.)
+- **Los túneles son bocas, no galería.** `ATunelAlsasua` levanta los diez
+  portales de los cinco túneles de `tunnels_unity.json` (los dos ferroviarios,
+  el de la N-1, el de la A-10 y el del Plazaola). No agujerea el terreno:
+  `ATerrenoGenerado` es una malla procedural de 4033² afinada al detalle y
+  recortarle un hueco es una operación de terreno, así que **el túnel no se
+  atraviesa**. Cavar la galería sin poder entrar sería geometría enterrada
+  pagando draw calls. Antes `UCargadorVias` los encolaba y los descartaba,
+  contándolos como construidos.
 - `UImportadorLandscape` **aborta** si el nivel es World Partition
   (`IsPartitionedWorld()`) en vez de crear un landscape roto. Para el primer
   arranque, usa un nivel **Empty**, o importa a mano por Landscape Mode con los
