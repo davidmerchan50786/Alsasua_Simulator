@@ -10,13 +10,17 @@ de un comentario en AlsasuaFoliagePainter.cpp
 
 y AlsasuaManifa —214 cpp, el módulo gordo— dejó de compilar entero.
 
-Esto no es un compilador ni lo pretende. Son cuatro comprobaciones baratas que
+Esto no es un compilador ni lo pretende. Son cinco comprobaciones baratas que
 cazan justo lo que se cuela cuando se edita a ciegas:
 
   1. Sentencia cuyo punto y coma se lo ha tragado un comentario de línea.
   2. Llaves, paréntesis o corchetes descuadrados en un fichero.
   3. UnityaUnreal con los ejes cambiados (ver abajo).
   4. CVars propias (g.*) que alguien escribe y no registra nadie.
+  5. Cabecera con tipo reflejado (UCLASS/USTRUCT/UENUM) y su .generated.h
+     ausente o sin ser el último include. UHT lo pide con error, no con aviso:
+     sin él no se llega ni al compilador. AlsasuaInputIDs.h llevaba un
+     UENUM(BlueprintType) sin el include.
 
 Lo tercero es otra que costó cara. UAlsasuaGeoData::UnityaUnreal espera
 (este, arriba, norte) y devuelve (este_cm, norte_cm, arriba_cm). Media docena de
@@ -121,6 +125,23 @@ def cvars_sin_registrar(raiz):
     return [(c, f) for c, f in sorted(usadas.items()) if c not in registradas]
 
 
+RE_MACRO_REFLEJADA = re.compile(r'^\s*(UCLASS|USTRUCT|UENUM|UINTERFACE)\s*\(')
+
+
+def generated_mal_puesto(ruta, texto):
+    """UHT exige el .generated.h, y como ÚLTIMO include del fichero."""
+    lineas = texto.splitlines()
+    if not any(RE_MACRO_REFLEJADA.match(l) for l in lineas):
+        return None
+    incluidos = [(i, l) for i, l in enumerate(lineas) if l.strip().startswith("#include")]
+    generados = [(i, l) for i, l in incluidos if ".generated.h" in l]
+    if not generados:
+        return "tipo reflejado sin #include del .generated.h"
+    if incluidos and generados[-1][0] != incluidos[-1][0]:
+        return "el .generated.h no es el último include"
+    return None
+
+
 def main():
     fallos = []
     revisados = 0
@@ -170,6 +191,12 @@ def main():
                               "      argumento es 'arriba', no 'norte'  →  %s"
                               % (rel, num, " ".join(m.group(0).split())))
 
+            # 5. .generated.h de las cabeceras reflejadas.
+            if nombre.endswith(".h"):
+                problema = generated_mal_puesto(ruta, texto)
+                if problema:
+                    fallos.append("%s  %s" % (rel, problema))
+
             # 2. Delimitadores descuadrados.
             limpio = sin_comentarios_ni_cadenas(texto)
             for abre, cierra, que in (('{', '}', 'llaves'),
@@ -187,7 +214,7 @@ def main():
     print("%d ficheros .cpp/.h revisados.\n" % revisados)
     if not fallos:
         print("Sin hallazgos. No garantiza que compile — sólo que no tiene")
-        print("estos cuatro fallos, que son los que se cuelan al editar a ciegas.")
+        print("estos cinco fallos, que son los que se cuelan al editar a ciegas.")
         return 0
 
     for f in fallos:

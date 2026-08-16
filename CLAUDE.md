@@ -320,7 +320,7 @@ mezclados, elementos fuera del terreno), `AuditarSistemas.py` (sistemas de mundo
 que no llama nadie, y con cuál chocarían),
 `VerificarFuentes.py` (el `;` que se lleva un comentario, delimitadores
 descuadrados, `UnityaUnreal` con los ejes cambiados, CVars `g.*` que nadie
-registra), `VerificarCallesNavarra.py` (trazado contra el eje catastral),
+registra, `.generated.h` ausente en cabecera reflejada), `VerificarCallesNavarra.py` (trazado contra el eje catastral),
 `AuditarAssets.py` (rutas sin respaldo y mallas bajadas que nadie pide),
 `VerificarGuardado.py` (campos del save que se guardan y no se cargan),
 `AlturasLidarEdificios.py --verificar`, `DescargarCatastroNavarra.py --verificar`.
