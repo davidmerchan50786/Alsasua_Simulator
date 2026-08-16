@@ -8,6 +8,10 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "GeoDataAlsasua.h"
+#include "World/AlsasuaMallaFab.h"
+#include "Components/SceneComponent.h"
+#include "Components/HierarchicalInstancedStaticMeshComponent.h"
+#include "Engine/StaticMesh.h"
 
 void UAlsasuaGuardrailSystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -33,6 +37,31 @@ int32 UAlsasuaGuardrailSystem::ColocarBarandillas()
     Barandillas.Empty();
     int32 Placed = 0;
 
+    // Una capa instanciada, no un actor por tramo: son 761 tramos sólo en los
+    // barrios de monte, y 1647 si se cuentan las calles residenciales.
+    UStaticMesh* Malla = AlsasuaMallaFab::Resolver(TEXT("guarda_barandas"),
+        TEXT("/Engine/BasicShapes/Cube.Cube"));
+    if (!Malla) return 0;
+
+    if (Host) Host->Destroy();
+    Host = World->SpawnActor<AActor>(AActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator);
+    if (!Host) return 0;
+    Host->SetRootComponent(NewObject<USceneComponent>(Host, TEXT("Raiz")));
+    Host->GetRootComponent()->RegisterComponent();
+#if WITH_EDITOR
+    Host->SetActorLabel(TEXT("Barandillas"));
+#endif
+
+    UHierarchicalInstancedStaticMeshComponent* Capa =
+        NewObject<UHierarchicalInstancedStaticMeshComponent>(Host, TEXT("ISM_Barandillas"));
+    Capa->SetStaticMesh(Malla);
+    Capa->SetupAttachment(Host->GetRootComponent());
+    Capa->SetMobility(EComponentMobility::Static);
+    // Colisión sí: una barandilla que no para es peor que ninguna.
+    Capa->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+    Capa->SetCastShadow(false);
+    Capa->RegisterComponent();
+
     for (const auto& RoadVal : *RoadsArr)
     {
         const TSharedPtr<FJsonObject>& Road = RoadVal->AsObject();
@@ -41,8 +70,17 @@ int32 UAlsasuaGuardrailSystem::ColocarBarandillas()
         const FString Type = Road->HasField(TEXT("type")) ? Road->GetStringField(TEXT("type")) : TEXT("");
         const FString Barrio = Road->HasField(TEXT("barrio")) ? Road->GetStringField(TEXT("barrio")) : TEXT("");
 
-        bool bNeedsGuardrail = (Type == TEXT("bridge") || Type == TEXT("residential") ||
-            Barrio == TEXT("Errota") || Barrio == TEXT("Monte"));
+        // La fase se llama "barandillas en puentes y zonas de riesgo", y eso es
+        // Errota y Monte, que son los barrios de ladera. El tipo "bridge" no
+        // existe en roads_unity.json —los puentes los construye UCargadorPuentes
+        // desde waterways_unity.json— así que esa condición nunca casaba.
+        //
+        // "residential" sí casaba, y son 1023 de los 1647 tramos: quitamiedos de
+        // carretera a lo largo de todas las calles del casco, que no es lo que
+        // hay en Altsasu ni lo que la fase dice hacer. Queda detrás de una
+        // bandera, apagada, en vez de borrado: si alguien lo quería, se enciende.
+        const bool bZonaDeRiesgo = (Barrio == TEXT("Errota") || Barrio == TEXT("Monte"));
+        const bool bNeedsGuardrail = bZonaDeRiesgo || (bEnCallesResidenciales && Type == TEXT("residential"));
 
         if (!bNeedsGuardrail) continue;
 
@@ -76,38 +114,16 @@ int32 UAlsasuaGuardrailSystem::ColocarBarandillas()
             GR.Tipo = Type;
             GR.Barrio = Barrio;
 
-            AStaticMeshActor* GuardrailActor = World->SpawnActor<AStaticMeshActor>(
-                AStaticMeshActor::StaticClass(), GuardrailPos, FRotator(0, Angle, 0));
-            if (GuardrailActor)
-            {
-                GuardrailActor->SetMobility(EComponentMobility::Static);
-                GuardrailActor->SetActorScale3D(FVector(Largo / 100.0f, 0.15f, AlturaBarandilla / 100.0f));
-
-                UStaticMesh* RailingMesh = LoadObject<UStaticMesh>(nullptr,
-                    TEXT("/Game/CitySample/Prop/Kit_Railing_A/Mesh/SM_Railing_A_Railing_N01"));
-                if (RailingMesh)
-                    GuardrailActor->GetStaticMeshComponent()->SetStaticMesh(RailingMesh);
-
-                UMaterialInterface* GRMat = LoadObject<UMaterialInterface>(nullptr,
-                    TEXT("/Game/Materiales/M_Metal_Guardia"));
-                if (!GRMat)
-                    GRMat = LoadObject<UMaterialInterface>(nullptr,
-                        TEXT("/Game/Materiales/M_Metal"));
-
-                if (GRMat)
-                    GuardrailActor->GetStaticMeshComponent()->SetMaterial(0, GRMat);
-
-#if WITH_EDITOR
-                GuardrailActor->SetActorLabel(*FString::Printf(TEXT("Barandilla_%s_%d"),
-                    *Barrio.Left(8), Placed));
-#endif
-            }
+            Capa->AddInstance(FTransform(FRotator(0.f, Angle, 0.f), GuardrailPos,
+                FVector(Largo / 100.0f, 0.1f, AlturaBarandilla / 100.0f)), /*bWorldSpace=*/true);
 
             Barandillas.Add(GR);
             Placed++;
         }
     }
 
-    UE_LOG(LogTemp, Log, TEXT("Guardrails: %d barandillas en puentes y zonas peligrosas"), Placed);
+    UE_LOG(LogTemp, Log,
+        TEXT("Guardrails: %d barandillas en una capa instanciada (residenciales: %s)."),
+        Placed, bEnCallesResidenciales ? TEXT("sí") : TEXT("no"));
     return Placed;
 }
