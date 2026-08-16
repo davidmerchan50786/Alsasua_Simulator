@@ -3,7 +3,6 @@
 #include "World/AlsasuaDirecciones.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
-#include "Engine/StaticMeshActor.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "CollisionQueryParams.h"
@@ -13,6 +12,10 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "GeoDataAlsasua.h"
+#include "Components/SceneComponent.h"
+#include "Components/HierarchicalInstancedStaticMeshComponent.h"
+#include "Engine/StaticMesh.h"
+#include "Materials/MaterialInterface.h"
 
 namespace
 {
@@ -67,6 +70,52 @@ int32 UAlsasuaDoorEntranceSystem::ColocarPuertas()
         TEXT("marron"), TEXT("verde_oscuro"), TEXT("azul_oscuro"),
         TEXT("rojo"), TEXT("gris"), TEXT("negro"), TEXT("blanco")
     };
+
+    // Dos capas instanciadas: una de puertas (hasta 1030) y otra de toldos de
+    // entrada. Antes era un AStaticMeshActor por pieza, con el LoadObject del
+    // material dentro del bucle.
+    //
+    // El número de portal NO se puede instanciar —es un UTextRenderComponent—
+    // así que sigue siendo un componente, pero colgado del actor anfitrión en
+    // vez de uno propio por puerta. Son los mismos que antes; lo que desaparece
+    // son los mil actores que los sostenían.
+    UStaticMesh* MallaPuerta = AlsasuaMallaFab::Resolver(TEXT("puerta"),
+        TEXT("/Engine/BasicShapes/Cube.Cube"));
+    UStaticMesh* MallaToldo = AlsasuaMallaFab::Resolver(TEXT("toldo"),
+        TEXT("/Engine/BasicShapes/Plane.Plane"));
+    if (!MallaPuerta) return 0;
+
+    UMaterialInterface* MatPuerta = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Puerta"));
+    if (!MatPuerta) MatPuerta = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Madera"));
+    UMaterialInterface* MatToldo = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Toldo"));
+
+    if (Host) Host->Destroy();
+    Host = World->SpawnActor<AActor>(AActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator);
+    if (!Host) return 0;
+    Host->SetRootComponent(NewObject<USceneComponent>(Host, TEXT("Raiz")));
+    Host->GetRootComponent()->RegisterComponent();
+#if WITH_EDITOR
+    Host->SetActorLabel(TEXT("PuertasYPortales"));
+#endif
+
+    auto CrearCapa = [&](const TCHAR* Nombre, UStaticMesh* M, UMaterialInterface* Mat)
+        -> UHierarchicalInstancedStaticMeshComponent*
+    {
+        if (!M) return nullptr;
+        UHierarchicalInstancedStaticMeshComponent* C =
+            NewObject<UHierarchicalInstancedStaticMeshComponent>(Host, Nombre);
+        C->SetStaticMesh(M);
+        if (Mat) C->SetMaterial(0, Mat);
+        C->SetupAttachment(Host->GetRootComponent());
+        C->SetMobility(EComponentMobility::Static);
+        C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+        C->SetCastShadow(false);
+        C->RegisterComponent();
+        return C;
+    };
+    UHierarchicalInstancedStaticMeshComponent* CapaPuertas = CrearCapa(TEXT("ISM_Puertas"), MallaPuerta, MatPuerta);
+    UHierarchicalInstancedStaticMeshComponent* CapaToldos  = CrearCapa(TEXT("ISM_ToldosEntrada"), MallaToldo, MatToldo);
+    if (!CapaPuertas) return 0;
 
     for (const auto& BldVal : *BuildingsArr)
     {
@@ -153,58 +202,31 @@ int32 UAlsasuaDoorEntranceSystem::ColocarPuertas()
         }
         if (bHaciaCalle) ++ConCalle;
 
-        AStaticMeshActor* PuertaActor = World->SpawnActor<AStaticMeshActor>(
-            AStaticMeshActor::StaticClass(), DoorPos, FRotator(0, DoorRot, 0));
-        if (PuertaActor)
+        CapaPuertas->AddInstance(FTransform(FRotator(0.f, DoorRot, 0.f), DoorPos,
+            FVector(1.0f, 0.1f, 2.2f)), /*bWorldSpace=*/true);
+
+        // Número de portal en la fachada, junto a la puerta.
+        if (!Puerta.Portal.IsEmpty())
         {
-            PuertaActor->SetMobility(EComponentMobility::Static);
-            PuertaActor->SetActorScale3D(FVector(1.0f, 0.1f, 2.2f));
+            UTextRenderComponent* Rotulo = NewObject<UTextRenderComponent>(Host);
+            Rotulo->RegisterComponent();
+            Rotulo->AttachToComponent(Host->GetRootComponent(),
+                FAttachmentTransformRules::KeepWorldTransform);
+            Rotulo->SetText(FText::FromString(Puerta.Portal));
+            Rotulo->SetWorldSize(24.f);
+            Rotulo->SetTextRenderColor(FColor(240, 238, 230));
+            Rotulo->SetHorizontalAlignment(EHTA_Center);
+            Rotulo->SetVerticalAlignment(EVRTA_TextCenter);
 
-            UStaticMesh* CubeMesh = AlsasuaMallaFab::Resolver(TEXT("puerta"),
-                    TEXT("/Engine/BasicShapes/Cube.Cube"));
-            if (CubeMesh)
-                PuertaActor->GetStaticMeshComponent()->SetStaticMesh(CubeMesh);
-
-            UMaterialInterface* PuertaMat = LoadObject<UMaterialInterface>(nullptr,
-                TEXT("/Game/Materiales/M_Puerta"));
-            if (!PuertaMat)
-                PuertaMat = LoadObject<UMaterialInterface>(nullptr,
-                    TEXT("/Game/Materiales/M_Madera"));
-
-            if (PuertaMat)
-                PuertaActor->GetStaticMeshComponent()->SetMaterial(0, PuertaMat);
-
-#if WITH_EDITOR
-            PuertaActor->SetActorLabel(*FString::Printf(TEXT("Puerta_%d_%s%s"), Id, *Barrio.Left(6),
-                Puerta.Portal.IsEmpty() ? TEXT("") : *FString::Printf(TEXT("_%s"), *Puerta.Portal)));
-#endif
-
-            // Número de portal en la fachada, junto a la puerta.
-            if (!Puerta.Portal.IsEmpty())
-            {
-                UTextRenderComponent* Rotulo = NewObject<UTextRenderComponent>(PuertaActor);
-                Rotulo->RegisterComponent();
-                Rotulo->AttachToComponent(PuertaActor->GetRootComponent(),
-                    FAttachmentTransformRules::KeepWorldTransform);
-                // El actor de la puerta va escalado (1, 0.1, 2.2): sin escala
-                // absoluta el número saldría aplastado diez veces en un eje.
-                Rotulo->SetUsingAbsoluteScale(true);
-                Rotulo->SetText(FText::FromString(Puerta.Portal));
-                Rotulo->SetWorldSize(24.f);
-                Rotulo->SetTextRenderColor(FColor(240, 238, 230));
-                Rotulo->SetHorizontalAlignment(EHTA_Center);
-                Rotulo->SetVerticalAlignment(EVRTA_TextCenter);
-
-                const FRotator Frente(0.f, DoorRot, 0.f);
-                const FVector Fuera = Frente.Vector();
-                const FVector Lateral = FVector::CrossProduct(FVector::UpVector, Fuera);
-                Rotulo->SetWorldLocation(DoorPos + Fuera * 8.f + Lateral * 75.f + FVector(0.f, 0.f, 95.f));
-                // Si el número saliera del revés, es este giro: UTextRender
-                // mira por su +X y basta sumar 180 al yaw.
-                Rotulo->SetWorldRotation(Frente);
-                Rotulo->SetCullDistance(8000.f);   // un portal no se lee a 80 m
-                ++Rotulos;
-            }
+            const FRotator Frente(0.f, DoorRot, 0.f);
+            const FVector Fuera = Frente.Vector();
+            const FVector Lateral = FVector::CrossProduct(FVector::UpVector, Fuera);
+            Rotulo->SetWorldLocation(DoorPos + Fuera * 8.f + Lateral * 75.f + FVector(0.f, 0.f, 95.f));
+            // Si el número saliera del revés, es este giro: UTextRender mira por
+            // su +X y basta sumar 180 al yaw.
+            Rotulo->SetWorldRotation(Frente);
+            Rotulo->SetCullDistance(8000.f);   // un portal no se lee a 80 m
+            ++Rotulos;
         }
 
         if (Barrio == TEXT("Herriko") && Sorteo.GetFraction() < 0.3f)
@@ -212,26 +234,10 @@ int32 UAlsasuaDoorEntranceSystem::ColocarPuertas()
             FVector ToldoPos = DoorPos;
             ToldoPos.Z += 130.0f;
 
-            AStaticMeshActor* ToldoActor = World->SpawnActor<AStaticMeshActor>(
-                AStaticMeshActor::StaticClass(), ToldoPos, FRotator(0, DoorRot, 0));
-            if (ToldoActor)
+            if (CapaToldos)
             {
-                ToldoActor->SetMobility(EComponentMobility::Static);
-                ToldoActor->SetActorScale3D(FVector(2.0f, 1.0f, 0.05f));
-
-                UStaticMesh* PlaneMesh = LoadObject<UStaticMesh>(nullptr,
-                    TEXT("/Engine/BasicShapes/Plane.Plane"));
-                if (PlaneMesh)
-                    ToldoActor->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
-
-                UMaterialInterface* ToldoMat = LoadObject<UMaterialInterface>(nullptr,
-                    TEXT("/Game/Materiales/M_Toldo"));
-                if (ToldoMat)
-                    ToldoActor->GetStaticMeshComponent()->SetMaterial(0, ToldoMat);
-
-#if WITH_EDITOR
-                ToldoActor->SetActorLabel(*FString::Printf(TEXT("ToldoEntrada_%d"), Id));
-#endif
+                CapaToldos->AddInstance(FTransform(FRotator(0.f, DoorRot, 0.f), ToldoPos,
+                    FVector(2.0f, 1.0f, 0.05f)), /*bWorldSpace=*/true);
             }
         }
 

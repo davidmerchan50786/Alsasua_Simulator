@@ -1,13 +1,18 @@
 #include "World/AlsasuaRooftopDetailSystem.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
-#include "Engine/StaticMeshActor.h"
 #include "Components/StaticMeshComponent.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "GeoDataAlsasua.h"
+#include "World/AlsasuaMallaFab.h"
+#include "Components/SceneComponent.h"
+#include "Components/HierarchicalInstancedStaticMeshComponent.h"
+#include "Engine/StaticMesh.h"
+#include "Materials/MaterialInterface.h"
+#include "Math/RandomStream.h"
 #include "AlturasLidarComun.h"
 
 void UAlsasuaRooftopDetailSystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -30,6 +35,44 @@ int32 UAlsasuaRooftopDetailSystem::ColocarDetallesCubierta()
 
     Items.Empty();
     int32 Placed = 0;
+
+    // Una capa instanciada por tipo de remate. Antes era un AStaticMeshActor por
+    // pieza —del orden de mil— y, dentro de la lambda que lo creaba, un
+    // LoadObject de malla y otro de material POR PIEZA.
+    if (Host) Host->Destroy();
+    Host = World->SpawnActor<AActor>(AActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator);
+    if (!Host) return 0;
+    Host->SetRootComponent(NewObject<USceneComponent>(Host, TEXT("Raiz")));
+    Host->GetRootComponent()->RegisterComponent();
+#if WITH_EDITOR
+    Host->SetActorLabel(TEXT("Cubiertas"));
+#endif
+
+    TMap<FString, UHierarchicalInstancedStaticMeshComponent*> Capas;
+    auto CapaDe = [&](const FString& Tipo, const TCHAR* MeshPath, const TCHAR* MatPath)
+        -> UHierarchicalInstancedStaticMeshComponent*
+    {
+        if (UHierarchicalInstancedStaticMeshComponent** F = Capas.Find(Tipo)) return *F;
+
+        // Si hay algo bajado de Fab para ese tipo se prefiere; si no, la
+        // primitiva del motor que ya se usaba.
+        UStaticMesh* M = AlsasuaMallaFab::Resolver(Tipo, MeshPath);
+        if (!M) return nullptr;
+
+        UHierarchicalInstancedStaticMeshComponent* C =
+            NewObject<UHierarchicalInstancedStaticMeshComponent>(Host, *(TEXT("ISM_") + Tipo));
+        C->SetStaticMesh(M);
+        if (UMaterialInterface* Mat = LoadObject<UMaterialInterface>(nullptr, MatPath))
+            C->SetMaterial(0, Mat);
+        C->SetupAttachment(Host->GetRootComponent());
+        C->SetMobility(EComponentMobility::Static);
+        // Trastos de cubierta: no se pisan y su sombra no se ve desde la calle.
+        C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+        C->SetCastShadow(false);
+        C->RegisterComponent();
+        Capas.Add(Tipo, C);
+        return C;
+    };
 
     for (const auto& BldVal : BuildingsArr)
     {
@@ -74,44 +117,36 @@ int32 UAlsasuaRooftopDetailSystem::ColocarDetallesCubierta()
         const bool bFlatRoof = RoofTipo.Contains(TEXT("cemento"));
         const bool bPitchedRoof = RoofTipo.Contains(TEXT("pizarra")) || RoofTipo.Contains(TEXT("teja"));
 
+        // Sorteo por id, no FRand: si no, la cubierta cambia en cada arranque y
+        // el pueblo no es el mismo dos veces.
+        FRandomStream Sorteo(Id * 2654435761u + 7);
+
         auto CrearItem = [&](const FString& Tipo, const TCHAR* MeshPath,
             const TCHAR* MatPath, float SX, float SY, float SZ, float OffX, float OffZ)
         {
-            FVector Pos = RoofCenter + FVector(OffX, OffZ, 0);
+            UHierarchicalInstancedStaticMeshComponent* Capa = CapaDe(Tipo, MeshPath, MatPath);
+            if (!Capa) return;
 
-            AStaticMeshActor* Actor = World->SpawnActor<AStaticMeshActor>(
-                AStaticMeshActor::StaticClass(), Pos, FRotator(0, FMath::RandRange(0.0f, 360.0f), 0));
-            if (!Actor) return;
-
-            Actor->SetMobility(EComponentMobility::Static);
-            Actor->SetActorScale3D(FVector(SX, SY, SZ));
-
-            UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, MeshPath);
-            if (Mesh) Actor->GetStaticMeshComponent()->SetStaticMesh(Mesh);
-
-            UMaterialInterface* Mat = LoadObject<UMaterialInterface>(nullptr, MatPath);
-            if (Mat) Actor->GetStaticMeshComponent()->SetMaterial(0, Mat);
-
-#if WITH_EDITOR
-            Actor->SetActorLabel(*FString::Printf(TEXT("Cubierta_%s_%d_%s"),
-                *Tipo.Left(8), Id, *Barrio.Left(6)));
-#endif
+            const FVector Pos = RoofCenter + FVector(OffX, OffZ, 0);
+            const float Yaw = Sorteo.FRandRange(0.f, 360.f);
+            Capa->AddInstance(FTransform(FRotator(0.f, Yaw, 0.f), Pos, FVector(SX, SY, SZ)),
+                /*bWorldSpace=*/true);
 
             FRooftopItem Item;
             Item.BuildingId = Id;
             Item.Tipo = Tipo;
             Item.Posicion = Pos;
-            Item.Rotacion = Actor->GetActorRotation().Yaw;
+            Item.Rotacion = Yaw;
             Item.Escala = SX;
             Item.Barrio = Barrio;
             Items.Add(Item);
             Placed++;
         };
 
-        if (bPitchedRoof && FMath::FRand() < 0.4f)
+        if (bPitchedRoof && Sorteo.GetFraction() < 0.4f)
         {
-            float OffX = FMath::RandRange(-200.0f, 200.0f);
-            float OffZ = FMath::RandRange(-200.0f, 200.0f);
+            float OffX = Sorteo.FRandRange(-200.0f, 200.0f);
+            float OffZ = Sorteo.FRandRange(-200.0f, 200.0f);
             CrearItem(TEXT("antena"),
                 TEXT("/Engine/EngineMeshes/Cylinder"),
                 TEXT("/Engine/EngineMaterials/DefaultMaterial"),
@@ -122,30 +157,30 @@ int32 UAlsasuaRooftopDetailSystem::ColocarDetallesCubierta()
         // (Roof_Prop_Chimney_Stone) apoyada en la cumbrera real del edificio.
         // Aquí eran un cubo del motor en un punto al azar de la cubierta.
 
-        if (bFlatRoof && FMath::FRand() < 0.3f)
+        if (bFlatRoof && Sorteo.GetFraction() < 0.3f)
         {
-            float OffX = FMath::RandRange(-100.0f, 100.0f);
-            float OffZ = FMath::RandRange(-100.0f, 100.0f);
+            float OffX = Sorteo.FRandRange(-100.0f, 100.0f);
+            float OffZ = Sorteo.FRandRange(-100.0f, 100.0f);
             CrearItem(TEXT("deposito_agua"),
                 TEXT("/Engine/EngineMeshes/Cylinder"),
                 TEXT("/Engine/EngineMaterials/DefaultMaterial"),
                 1.0f, 1.0f, 1.5f, OffX, OffZ);
         }
 
-        if (bFlatRoof && FMath::FRand() < 0.2f)
+        if (bFlatRoof && Sorteo.GetFraction() < 0.2f)
         {
-            float OffX = FMath::RandRange(-200.0f, 200.0f);
-            float OffZ = FMath::RandRange(-200.0f, 200.0f);
+            float OffX = Sorteo.FRandRange(-200.0f, 200.0f);
+            float OffZ = Sorteo.FRandRange(-200.0f, 200.0f);
             CrearItem(TEXT("placa_solar"),
                 TEXT("/Engine/EngineMeshes/Plane"),
                 TEXT("/Engine/EngineMaterials/DefaultMaterial"),
                 2.0f, 1.5f, 0.02f, OffX, OffZ);
         }
 
-        if (FMath::FRand() < 0.15f)
+        if (Sorteo.GetFraction() < 0.15f)
         {
-            float OffX = FMath::RandRange(-150.0f, 150.0f);
-            float OffZ = FMath::RandRange(-150.0f, 150.0f);
+            float OffX = Sorteo.FRandRange(-150.0f, 150.0f);
+            float OffZ = Sorteo.FRandRange(-150.0f, 150.0f);
             CrearItem(TEXT("satelital"),
                 TEXT("/Engine/EngineMeshes/Cylinder"),
                 TEXT("/Engine/EngineMaterials/DefaultMaterial"),
