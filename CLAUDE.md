@@ -353,7 +353,11 @@ hay que conservar al escribir código nuevo:
    instancias en ocho draw calls, con culling y LOD de serie. Lo mismo
    `UAlsasuaSidewalkSystem`, que ponía un actor por losa de acera: 5038 losas,
    5038 draw calls, y encima dos `LoadObject` de material por losa dentro del
-   bucle. Ahora son dos capas instanciadas, una por acabado. La otra vía válida
+   bucle. Ahora son dos capas instanciadas, una por acabado. Y
+   `UAlsasuaAwningShutterSystem`, el peor de todos: 17537 persianas a actor por
+   pieza, apiladas además en el centroide del edificio — un bloque de 7,7 m con
+   132 ventanas se llevaba una columna de 398 m atravesando el tejado. Ahora se
+   reparten por el perímetro y por planta, instanciadas. La otra vía válida
    es coser la geometría en una sola sección de `ProceduralMesh`, que es lo que
    hace `AlsasuaVegetationSpawner` con el césped procedural.
 1. **Una sección de `ProceduralMesh` = un draw call.** Las fachadas creaban una
