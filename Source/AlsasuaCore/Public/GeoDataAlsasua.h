@@ -135,6 +135,31 @@ public:
     static constexpr float TraceUp = 500000.0f;
     static constexpr float TraceDown = -500000.0f;
 
+    /**
+     * Caja del terreno jugable (cm): 7200×7200 m centrados aquí.
+     *
+     * Hace falta porque hay datos que caen fuera y colocarlos no falla: 31 de
+     * las 126 señales de signage_data.json llegan a 216 km, y 280 de los 2783
+     * árboles del LiDAR quedan fuera. El actor se crea igual, su trazo de suelo
+     * no encuentra nada y acaba a cota cero o a la de la plaza. Quien lea esos
+     * datos tiene que filtrarlos diciendo cuántos.
+     *
+     * Está aquí y no en cada sistema porque son los límites del mundo, no una
+     * decisión de quien coloca: los llevaban copiados a mano AlsasuaSignPlacer y
+     * Tools/VerificarDatasets.py, y tres copias de una constante son tres
+     * oportunidades de que una se quede atrás.
+     */
+    static constexpr double CentroTerrenoXCm = 191800.0;
+    static constexpr double CentroTerrenoYCm = 857000.0;
+    static constexpr double SemiTerrenoCm    = 360000.0;
+
+    /** ¿Cae este punto del mundo dentro del terreno jugable? */
+    static bool DentroDelTerreno(const FVector& UE5Pos)
+    {
+        return FMath::Abs(UE5Pos.X - CentroTerrenoXCm) <= SemiTerrenoCm
+            && FMath::Abs(UE5Pos.Y - CentroTerrenoYCm) <= SemiTerrenoCm;
+    }
+
     // --- UTM Zone 30N constants (WGS84) ---
     static constexpr double UTM_A = 6378137.0;           // WGS84 semi-major axis
     static constexpr double UTM_F = 1.0 / 298.257223563; // WGS84 flattening

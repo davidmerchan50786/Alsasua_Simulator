@@ -103,19 +103,14 @@ int32 UAlsasuaSignPlacer::ColocarSenalesEnMundo()
     // cuando la encontraba. No hay forma de colocarlas bien —no se sabe dónde
     // van—, así que se dejan fuera y se dice cuántas: colocarlas estira los
     // límites del mundo y su trazo de suelo no encuentra terreno.
-    // El terreno jugable son 7200×7200 m centrados en (191800, 857000) cm.
-    const double CentroX = 191800.0, CentroY = 857000.0, SemiladoCm = 360000.0;
-
+    // La caja del terreno vive en UAlsasuaGeoData; estaba copiada aquí a mano.
     int32 Placed = 0, Descartadas = 0;
     for (const FSignEntry& S : Senales)
     {
+        if (!UAlsasuaGeoData::DentroDelTerreno(UAlsasuaGeoData::AbsLocalToUE5(FVector(S.X, 0.0, S.Z))))
         {
-            const FVector P = UAlsasuaGeoData::AbsLocalToUE5(FVector(S.X, 0.0, S.Z));
-            if (FMath::Abs(P.X - CentroX) > SemiladoCm || FMath::Abs(P.Y - CentroY) > SemiladoCm)
-            {
-                ++Descartadas;
-                continue;
-            }
+            ++Descartadas;
+            continue;
         }
 
         const FString Clave = MallaDe(S.Tipo);

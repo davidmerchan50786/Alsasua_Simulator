@@ -183,8 +183,31 @@ def marcos(datasets):
     fuera_del_mundo(datasets)
 
 
-# El terreno jugable son 7200×7200 m centrados en (1918, 8570) local absoluto.
-OX, OZ, SEMILADO_M = 1918.0, 8570.0, 3600.0
+def caja_del_terreno():
+    """Caja del terreno jugable, leída de GeoDataAlsasua.h.
+
+    En metros locales absolutos, que es como vienen los JSON. El C++ la tiene en
+    centímetros de mundo (CentroTerrenoXCm/YCm y SemiTerrenoCm) y ahí es donde
+    manda: si alguien reajusta el terreno, este script se entera solo en vez de
+    seguir midiendo contra una caja que ya no existe.
+
+    Si no se puede leer el header se cae a los valores de hoy, para que el script
+    siga sirviendo en un clon incompleto, pero avisando.
+    """
+    cabecera = os.path.join(RAIZ, "Source", "AlsasuaCore", "Public", "GeoDataAlsasua.h")
+    try:
+        with open(cabecera, encoding="utf-8") as fh:
+            src = fh.read()
+        semi_cm = float(re.search(r"SemiTerrenoCm\s*=\s*([0-9.]+)", src).group(1))
+        ox = float(re.search(r"\bOX\s*=\s*([0-9.]+)", src).group(1))
+        oz = float(re.search(r"\bOZ\s*=\s*([0-9.]+)", src).group(1))
+        return ox, oz, semi_cm / 100.0
+    except (OSError, AttributeError, ValueError):
+        print("  (aviso: no pude leer la caja de GeoDataAlsasua.h; uso 7200x7200 m)")
+        return 1918.0, 8570.0, 3600.0
+
+
+OX, OZ, SEMILADO_M = caja_del_terreno()
 
 
 def fuera_del_mundo(datasets):
@@ -231,7 +254,8 @@ def fuera_del_mundo(datasets):
         print("  Ninguno.")
     else:
         print("\n  Colocarlos no falla y no avisa. Quien los lea debería filtrarlos")
-        print("  diciendo cuántos, que es lo que hace AlsasuaSignPlacer.")
+        print("  diciendo cuántos, con UAlsasuaGeoData::DentroDelTerreno, que es")
+        print("  lo que hacen AlsasuaSignPlacer y AlsasuaContainerSystem.")
 
 
 if __name__ == "__main__":

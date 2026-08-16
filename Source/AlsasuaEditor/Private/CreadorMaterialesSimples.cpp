@@ -66,6 +66,18 @@ namespace
 		// ── Toldo: lona, sin set propio en Content/Textures ─────────────────
 		{ TEXT("/Game/Materiales"), TEXT("M_Toldo"),            TEXT(""),            FLinearColor(0.55f, 0.15f, 0.14f),   0.f, 0.85f, 0.f },
 
+		// ── Contenedores de basura (AlsasuaContainerSystem) ─────────────────
+		// El sistema llevaba una tabla de colores por tipo que no aplicaba a
+		// nada: ponía DefaultMaterial en los cien y la tabla se quedaba mirando.
+		// Y el reparto era "Placed % 5", así que a una papelera de calle le
+		// tocaba ser el contenedor del vidrio. Ahora hay un material por tipo y
+		// el tipo sale del dato. Colores de la recogida en Navarra.
+		{ TEXT("/Game/Materiales"), TEXT("M_Contenedor_Resto"),    TEXT("MetalPlate"), FLinearColor(0.18f, 0.18f, 0.19f), 120.f, 0.55f, 0.3f },
+		{ TEXT("/Game/Materiales"), TEXT("M_Contenedor_Papel"),    TEXT("MetalPlate"), FLinearColor(0.05f, 0.22f, 0.55f), 120.f, 0.55f, 0.3f },
+		{ TEXT("/Game/Materiales"), TEXT("M_Contenedor_Envases"),  TEXT("MetalPlate"), FLinearColor(0.85f, 0.68f, 0.05f), 120.f, 0.55f, 0.3f },
+		{ TEXT("/Game/Materiales"), TEXT("M_Contenedor_Vidrio"),   TEXT("MetalPlate"), FLinearColor(0.08f, 0.42f, 0.16f), 120.f, 0.55f, 0.3f },
+		{ TEXT("/Game/Materiales"), TEXT("M_Contenedor_Organico"), TEXT("MetalPlate"), FLinearColor(0.35f, 0.22f, 0.10f), 120.f, 0.55f, 0.3f },
+
 		// ── Vehículos (DynamicTrafficSystem) ────────────────────────────────
 		{ TEXT("/Game/Materiales"), TEXT("M_Vehiculo_Base"),    TEXT("MetalPlate"),  FLinearColor(0.20f, 0.21f, 0.24f), 200.f, 0.25f, 0.9f },
 		{ TEXT("/Game/Materiales"), TEXT("M_Vehiculo_Blanco"),  TEXT("MetalPlate"),  FLinearColor(0.82f, 0.83f, 0.84f), 200.f, 0.25f, 0.9f },
