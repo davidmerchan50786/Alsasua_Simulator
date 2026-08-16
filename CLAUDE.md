@@ -143,9 +143,12 @@ tienen ese hueco; `UnityaUnreal` sólo cuando el dato ya trae la vertical en
 medio, como los `pts` planos `[x,y,z,...]`. `Tools/VerificarFuentes.py` lo caza;
 si tu caso es de los legítimos, márcalo con `// ejes ok`.
 
-Y la Z no sale del conversor: esas funciones devuelven `Z = 0`. Hay que apoyarla
-con `AlturaSueloUE5(World, X, Y)` o usar `RelLocalASueloUE5`. Un `Pos.Z += 300`
-sobre un cero deja la pieza medio kilómetro bajo el pueblo.
+Y la cota tampoco sale del conversor. `AbsLocalToUE5` y `RelLocalToUE5` propagan
+el **segundo** componente del vector de entrada a la Z de salida, así que con el
+patrón habitual `(X, 0, Z)` la Z sale en cero — que es cota cero del mundo, 531 m
+por debajo del pueblo. Hay que apoyarla con `AlturaSueloUE5(World, X, Y)` o usar
+`RelLocalASueloUE5`. Un `Pos.Z += 300` sobre ese cero deja la pieza medio
+kilómetro bajo tierra.
 
 Cota de referencia: Herriko Plaza a 531.94 m → `CotaPlazaCm = 53194`.
 
