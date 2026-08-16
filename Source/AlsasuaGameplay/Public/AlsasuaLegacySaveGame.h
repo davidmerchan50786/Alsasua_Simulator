@@ -46,7 +46,15 @@ public:
 	UPROPERTY() FVector RespawnPos = FVector::ZeroVector;
 
 	// --- Datos de disfraz (consolidado) ---
+	/** 1 = encubierto, 0 = a cara descubierta. Es UDisfrazSubsystem::bEncubierto. */
 	UPROPERTY() int32 DisfrazType = 0;
+	/**
+	 * SIN IMPLEMENTAR: no hay sistema de durabilidad de disfraz. Viene del save
+	 * de Manifa y se conserva para no romper los guardados que ya lo tienen
+	 * escrito; UGuardadoSubsystem le ponía un 1.0f fijo y nadie lo leía. Lo que
+	 * sí existe es el enfriamiento de UDisfrazSubsystem tras delatarte, y ése es
+	 * de sesión, no de partida. Si algún día hay durabilidad, éste es su hueco.
+	 */
 	UPROPERTY() float DisfrazDurability = 1.f;
 
 	// Metadatos.

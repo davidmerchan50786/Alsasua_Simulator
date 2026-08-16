@@ -314,6 +314,7 @@ que no llama nadie, y con cuál chocarían),
 `VerificarFuentes.py` (sintaxis: el `;` que se lleva un comentario, delimitadores
 descuadrados, `UnityaUnreal` con los ejes cambiados), `VerificarCallesNavarra.py` (trazado contra el eje catastral),
 `AuditarAssets.py` (rutas sin respaldo y mallas bajadas que nadie pide),
+`VerificarGuardado.py` (campos del save que se guardan y no se cargan),
 `AlturasLidarEdificios.py --verificar`, `DescargarCatastroNavarra.py --verificar`.
 
 Sin compilador en Linux, `VerificarFuentes.py` y `VerificarDatasets.py` son lo

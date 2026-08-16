@@ -77,6 +77,10 @@ bool UGuardadoSubsystem::GuardarEnSlot(int32 Slot)
 	if (const UMisionesSubsystem* Mi = GI->GetSubsystem<UMisionesSubsystem>())
 	{
 		S->MisionActual = Mi->MisionActualId();
+		// CompletedMissionIDs existía en el save y no lo escribía nadie: al cargar
+		// el log decía "0 misiones completadas" con la campaña a medias, porque
+		// el subsistema tampoco llevaba la cuenta. Ahora la lleva y se guarda.
+		S->CompletedMissionIDs = Mi->IdsCompletadas();
 	}
 
 	if (const URespawnSubsystem* Rs = GI->GetSubsystem<URespawnSubsystem>())
@@ -88,7 +92,9 @@ bool UGuardadoSubsystem::GuardarEnSlot(int32 Slot)
 	if (const UDisfrazSubsystem* Df = GI->GetSubsystem<UDisfrazSubsystem>())
 	{
 		S->DisfrazType = Df->bEncubierto ? 1 : 0;
-		S->DisfrazDurability = 1.0f;
+		// DisfrazDurability se queda con su valor por defecto: no hay sistema de
+		// durabilidad que lo alimente. Escribir aquí un 1.0f fijo sólo servía
+		// para que pareciera que se guardaba algo. El porqué, en el header.
 	}
 
 	if (APawn* Jug = UGameplayStatics::GetPlayerPawn(W, 0))
@@ -156,8 +162,25 @@ bool UGuardadoSubsystem::CargarDeSlot(int32 Slot)
 		}
 	}
 
+	// El disfraz se guardaba y no se restauraba: quien salvara estando
+	// encubierto reaparecía a cara descubierta, con la policía reconociéndole
+	// otra vez. DisfrazType es 1 encubierto y 0 a cara descubierta, tal y como
+	// lo escribe GuardarEnSlot.
+	// Se asigna el estado, no se llama a Alternar(): esa es la acción de juego y
+	// se niega a encubrirte mientras corre el enfriamiento de haberte delatado,
+	// así que restaurar una partida podría fallar en silencio según cuándo se
+	// cargue. DisfrazType es 1 encubierto y 0 a cara descubierta, como lo
+	// escribe GuardarEnSlot.
+	if (UDisfrazSubsystem* Df = GI->GetSubsystem<UDisfrazSubsystem>())
+	{
+		Df->bEncubierto = (S->DisfrazType == 1);
+	}
+
 	if (UMisionesSubsystem* Mi = GI->GetSubsystem<UMisionesSubsystem>())
 	{
+		// Las completadas primero: si no, la misión que se reanuda podría
+		// encadenar con una que ya estaba hecha.
+		Mi->RestaurarCompletadas(S->CompletedMissionIDs);
 		if (!S->MisionActual.IsNone())
 		{
 			Mi->IniciarMision(S->MisionActual);
