@@ -33,7 +33,7 @@ COLA = [
 ]
 
 # Los túneles ya no los encola UCargadorVias: sus bocas las levanta ATunelAlsasua
-# en la fase 3b. Se comprueban aparte, más abajo.
+# en la fase 51b. Se comprueban aparte, más abajo.
 TUNELES = "tunnels_unity.json"
 
 
@@ -114,7 +114,7 @@ def tuneles():
     """
     with open(os.path.join(DATOS, TUNELES), encoding="utf-8") as f:
         doc = json.load(f)
-    print("\n  Bocas de túnel (ATunelAlsasua, fase 3b)")
+    print("\n  Bocas de túnel (ATunelAlsasua, fase 51b)")
     print("  %-34s %8s %9s %7s %s" % ("túnel", "ancho", "trazado", "galería", "bocas"))
     bocas = 0
     for t in doc:

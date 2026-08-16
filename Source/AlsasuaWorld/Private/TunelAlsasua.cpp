@@ -11,7 +11,9 @@ ATunelAlsasua::ATunelAlsasua()
 	PrimaryActorTick.bCanEverTick = false;
 	Malla = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("Malla"));
 	SetRootComponent(Malla);
-	Malla->SetMobility(EComponentMobility::Static);
+	// Sin tocar la movilidad, como ACalleGenerada y APoligonoSuelo: la sección se
+	// crea en runtime desde el director y forzarla a Static aquí va a contrapelo
+	// de eso.
 }
 
 void ATunelAlsasua::AnadirBoca(const FVector& CentroCm, const FVector2D& DirXY, float AnchoCm,
@@ -25,9 +27,14 @@ void ATunelAlsasua::AnadirBoca(const FVector& CentroCm, const FVector2D& DirXY, 
 
 	const float SemiVano = AnchoCm * 0.5f;
 	const float SemiExt  = SemiVano + MarcoCm;
-	// El arranque del arco: por debajo el hastial es recto, como en los túneles
-	// de la Sakana. Medio punto justo por encima.
-	const float AlturaRecta = AlturaLibreCm - SemiVano;
+	// Arranque del arco: por debajo el hastial es recto, como en los túneles de
+	// la Sakana, y de ahí para arriba medio punto. El mínimo no es cosmético: el
+	// de la A-10 mide 14 m de ancho, o sea 7 m de semivano, y restarlo de los
+	// 6,2 m de altura libre por defecto daba un arranque NEGATIVO — el hastial
+	// se metía bajo tierra y la boca salía del revés. Con el clamp, la clave
+	// queda en AlturaRecta + SemiVano, que para ese túnel son 8,5 m: lo que mide
+	// una boca de autovía de dos carriles.
+	const float AlturaRecta = FMath::Max(150.f, AlturaLibreCm - SemiVano);
 	const FColor Hormigon(150, 148, 143, 255);
 
 	// Un anillo de puntos: para cada ángulo del contorno, el del vano y el del
@@ -52,19 +59,30 @@ void ATunelAlsasua::AnadirBoca(const FVector& CentroCm, const FVector2D& DirXY, 
 
 	// Cinta entre los dos contornos: eso es el frente del marco, con el vano
 	// vacío en medio. Sin tapar el hueco, que es justo lo que se ve del túnel.
-	const int32 Base = V.Num();
-	for (int32 i = 0; i < Vano.Num(); ++i)
+	//
+	// Se emite por las dos caras, con su propio juego de vértices y su normal
+	// invertida. No es por no saber de qué lado quedaba el frente —que también:
+	// aquí no hay forma de comprobar el sentido de giro sin compilar y mirarlo—
+	// sino porque un marco de boca se ve desde fuera al acercarte y desde dentro
+	// al asomarte, y una sola cara desaparecería por culling en uno de los dos.
+	// Son veinte triángulos más por boca.
+	for (int32 Cara = 0; Cara < 2; ++Cara)
 	{
-		V.Add(Vano[i]);      N.Add(NormalFuera);  C.Add(Hormigon);
-		UV.Add(FVector2D((float)i / (float)Vano.Num(), 0.f));
-		V.Add(Exterior[i]);  N.Add(NormalFuera);  C.Add(Hormigon);
-		UV.Add(FVector2D((float)i / (float)Vano.Num(), 1.f));
-	}
-	for (int32 i = 0; i + 1 < Vano.Num(); ++i)
-	{
-		const int32 a = Base + i * 2, b = a + 1, c = a + 2, d = a + 3;
-		T.Add(a); T.Add(c); T.Add(b);
-		T.Add(b); T.Add(c); T.Add(d);
+		const FVector Nrm = (Cara == 0) ? NormalFuera : -NormalFuera;
+		const int32 Base = V.Num();
+
+		for (int32 i = 0; i < Vano.Num(); ++i)
+		{
+			const float U0 = (float)i / (float)FMath::Max(1, Vano.Num() - 1);
+			V.Add(Vano[i]);      N.Add(Nrm);  C.Add(Hormigon);  UV.Add(FVector2D(U0, 0.f));
+			V.Add(Exterior[i]);  N.Add(Nrm);  C.Add(Hormigon);  UV.Add(FVector2D(U0, 1.f));
+		}
+		for (int32 i = 0; i + 1 < Vano.Num(); ++i)
+		{
+			const int32 a = Base + i * 2, b = a + 1, c = a + 2, d = a + 3;
+			if (Cara == 0) { T.Add(a); T.Add(c); T.Add(b);  T.Add(b); T.Add(c); T.Add(d); }
+			else           { T.Add(a); T.Add(b); T.Add(c);  T.Add(b); T.Add(d); T.Add(c); }
+		}
 	}
 }
 

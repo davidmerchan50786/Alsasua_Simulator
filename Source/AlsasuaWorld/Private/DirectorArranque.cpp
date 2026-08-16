@@ -149,21 +149,6 @@ void ADirectorArranque::IniciarConstruccion()
         UE_LOG(LogTemp, Log, TEXT("DirectorArranque: Vías férreas cargadas."));
     }
 
-    // --- 3b. Bocas de los cinco túneles (tunnels_unity.json) ---
-    // Detrás de las vías porque apoya cada portal con un trazo contra el terreno,
-    // y antes de calles y edificios para no engancharse a ellos. No agujerea el
-    // monte: son las bocas, no la galería (ver TunelAlsasua.h).
-    ATunelAlsasua* Tuneles = World->SpawnActor<ATunelAlsasua>(
-        ATunelAlsasua::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator);
-    if (Tuneles)
-    {
-#if WITH_EDITOR
-        Tuneles->SetActorLabel(TEXT("Alsasua_Tuneles"));
-#endif
-        const int32 NumBocas = Tuneles->Construir();
-        UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d bocas de túnel."), NumBocas);
-    }
-
     // --- 4. Calles (roads_unity.json real) ---
     UCargadorCalles* Calles = World->GetSubsystem<UCargadorCalles>();
     if (Calles)
@@ -683,6 +668,26 @@ void ADirectorArranque::IniciarConstruccion()
         {
             const int32 NumPainted = PaintedSigns->ColocarRotulosPintados();
             UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d rótulos pintados bilingües."), NumPainted);
+        }
+    }
+
+    // --- 51b. Bocas de los cinco túneles (tunnels_unity.json) ---
+    // Al final por lo mismo que el material rodante: el marco de hormigón tiene
+    // colisión, y colocado antes cualquier sistema que se apoye por raycast y
+    // pase por la boca se subiría encima del dintel. Su propio trazo de suelo
+    // agradece llegar el último: los portales de la N-1 y la A-10 caen sobre la
+    // calzada que entra en el túnel, no sobre el monte pelado. No agujerea el
+    // terreno: son las bocas, no la galería (ver TunelAlsasua.h).
+    {
+        ATunelAlsasua* Tuneles = World->SpawnActor<ATunelAlsasua>(
+            ATunelAlsasua::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator);
+        if (Tuneles)
+        {
+#if WITH_EDITOR
+            Tuneles->SetActorLabel(TEXT("Alsasua_Tuneles"));
+#endif
+            const int32 NumBocas = Tuneles->Construir();
+            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d bocas de túnel."), NumBocas);
         }
     }
 

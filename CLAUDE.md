@@ -175,8 +175,7 @@ comentadas**, en orden de dependencia, publicando progreso en
 1c. `ATerrenoLejano` — anillo de relieve de 60×60 km con el hueco del terreno
    jugable, para que el mundo no se corte en seco a 3,6 km (ver §5b).
 2. `UCargadorArboles` (LiDAR) → `UCargadorVias` (ferrocarril, aceras, caminos;
-   también genera los ríos como cintas drapeadas) → `ATunelAlsasua` (fase 3b:
-   las diez bocas de los cinco túneles) → `UCargadorCalles` →
+   también genera los ríos como cintas drapeadas) → `UCargadorCalles` →
    `UCargadorEdificios` → tejado modular → Herriko Plaza → `UCargadorPuentes` →
    `UCargadorPOI` → vegetación.
 3. Fases 13-51: sistemas de `AlsasuaManifa/World/*` (atmósfera, post-process por
@@ -186,10 +185,13 @@ comentadas**, en orden de dependencia, publicando progreso en
    `ADirectorArranque::bSemaforos`. La fase estuvo saltada con un log de "skip
    para perfilado", así que el sistema no corría nunca; para volver a medir sin
    ellos se baja la bandera, no se comenta la fase.
-52. `UAlsasuaFerrocarrilSystem` — material rodante en la playa de vías. Va el
-   último **a propósito**: un tren tiene colisión, y colocado antes cualquier
-   sistema que se apoye por raycast y pase por la estación se subiría al techo
-   de un vagón (ver el aviso de más abajo).
+51b. `ATunelAlsasua` — las diez bocas de los cinco túneles.
+52. `UAlsasuaFerrocarrilSystem` — material rodante en la playa de vías.
+
+Las dos últimas van ahí **a propósito**: un tren y un marco de hormigón tienen
+colisión, y colocados antes, cualquier sistema que se apoye por raycast y pase
+por la estación o por una boca se subiría al techo de un vagón o al dintel (ver
+el aviso de más abajo).
 
 Si añades una fase, ponla **donde toque en la cadena** y mantén la numeración y
 el `Progreso`. El terreno va siempre primero: el resto hace raycast contra él
