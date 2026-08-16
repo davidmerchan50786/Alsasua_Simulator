@@ -323,6 +323,7 @@ descuadrados, `UnityaUnreal` con los ejes cambiados, CVars `g.*` que nadie
 registra, `.generated.h` ausente en cabecera reflejada), `VerificarCallesNavarra.py` (trazado contra el eje catastral),
 `AuditarAssets.py` (rutas sin respaldo y mallas bajadas que nadie pide),
 `VerificarGuardado.py` (campos del save que se guardan y no se cargan),
+`VerificarDialogos.py` (los árboles de Content/Dialogs entran enteros),
 `AlturasLidarEdificios.py --verificar`, `DescargarCatastroNavarra.py --verificar`.
 
 Sin compilador en Linux, `VerificarFuentes.py` y `VerificarDatasets.py` son lo
