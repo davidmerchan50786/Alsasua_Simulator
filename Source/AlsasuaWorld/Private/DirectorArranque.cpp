@@ -484,13 +484,17 @@ void ADirectorArranque::IniciarConstruccion()
         }
     }
 
-    // --- 34. Terreno multi-capa por barrio ---
+    // --- 34. Firme por barrio (clasifica, no construye) ---
+    // Va antes que las aceras (fase 37), que son quien lee la tabla. Antes esto
+    // soltaba nueve planos opacos de un kilómetro de lado —ocho de ellos
+    // apilados en el origen del mundo, a 1,9 km del pueblo y 531 m por debajo—
+    // y aun bien colocados habrían tapado la ortofoto PNOA del terreno.
     {
         UAlsasuaTerrainLayersSystem* Terrain = World->GetGameInstance()->GetSubsystem<UAlsasuaTerrainLayersSystem>();
         if (Terrain)
         {
-            Terrain->GenerarSueloCiudad();
-            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: Terreno multi-capa por barrio generado."));
+            const int32 NumBarrios = Terrain->PublicarFirmePorBarrio();
+            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: firme publicado para %d barrios."), NumBarrios);
         }
     }
 

@@ -1,5 +1,7 @@
 #include "World/AlsasuaSidewalkSystem.h"
 #include "World/AlsasuaMallaFab.h"
+#include "World/AlsasuaTerrainLayersSystem.h"
+#include "Engine/GameInstance.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "Misc/FileHelper.h"
@@ -35,6 +37,11 @@ int32 UAlsasuaSidewalkSystem::GenerarAceras()
 
     int32 Placed = 0;
     Acera.Empty();
+
+    // Tabla de firme por barrio. Si el subsistema no está, se sigue con la regla
+    // de siempre en vez de dejar el pueblo entero de hormigón.
+    const UAlsasuaTerrainLayersSystem* Firme = World->GetGameInstance()
+        ? World->GetGameInstance()->GetSubsystem<UAlsasuaTerrainLayersSystem>() : nullptr;
 
     // --- Una capa instanciada por acabado, no un actor por losa ------------
     // Los materiales se resuelven UNA vez. Antes se hacían dos LoadObject por
@@ -130,7 +137,12 @@ int32 UAlsasuaSidewalkSystem::GenerarAceras()
                 const FTransform T(FRotator(0.f, Angle, 0.f), SidewalkCenter,
                     FVector(Largo / 100.0f, AnchoAceras / 100.0f, 0.15f));
 
-                const bool bPiedra = (Barrio == TEXT("Herriko") || Barrio == TEXT("Harrobieta"));
+                // Qué barrio va empedrado lo dice AlsasuaTerrainLayersSystem,
+                // que es quien tiene la tabla de firme por barrio. Estaba
+                // copiado aquí como "Herriko o Harrobieta", y una regla de
+                // pueblo en dos sitios es una regla que se separa.
+                const bool bPiedra = Firme ? Firme->BarrioEmpedrado(Barrio)
+                                           : (Barrio == TEXT("Herriko") || Barrio == TEXT("Harrobieta"));
                 (bPiedra ? CapaPiedra : CapaHormigon)->AddInstance(T, /*bWorldSpace=*/true);
 
                 FSidewalkSegment Seg;

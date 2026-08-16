@@ -1,10 +1,6 @@
 #include "World/AlsasuaTerrainLayersSystem.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
-#include "Engine/StaticMeshActor.h"
-#include "Components/StaticMeshComponent.h"
-#include "Components/BoxComponent.h"
-#include "GeoDataAlsasua.h"
 
 void UAlsasuaTerrainLayersSystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -16,79 +12,49 @@ void UAlsasuaTerrainLayersSystem::CrearLayers()
 {
     Layers.Empty();
 
-    Layers.Add(FBarrioTerrainLayer{TEXT("Herriko"), TEXT("/Game/Materiales/Pavimentos/M_Piedra_Herriko"), 1500.0f, -10.0f});
-    Layers.Add(FBarrioTerrainLayer{TEXT("Zelai"), TEXT("/Game/Materiales/Pavimentos/M_Asphalt_Zelai"), 2000.0f, 0.0f});
-    Layers.Add(FBarrioTerrainLayer{TEXT("Intxostia"), TEXT("/Game/Materiales/Pavimentos/M_Asphalt_Intxostia"), 2500.0f, 0.0f});
-    Layers.Add(FBarrioTerrainLayer{TEXT("SanPedro"), TEXT("/Game/Materiales/Pavimentos/M_Asphalt_SanPedro"), 2000.0f, 0.0f});
-    Layers.Add(FBarrioTerrainLayer{TEXT("Errota"), TEXT("/Game/Materiales/Pavimentos/M_Gravel_Errota"), 1500.0f, -5.0f});
-    Layers.Add(FBarrioTerrainLayer{TEXT("Harrobieta"), TEXT("/Game/Materiales/Pavimentos/M_Piedra_Harrobieta"), 1500.0f, -10.0f});
-    Layers.Add(FBarrioTerrainLayer{TEXT("Ferroviario"), TEXT("/Game/Materiales/Pavimentos/M_Asphalt_Ferroviario"), 2000.0f, 0.0f});
-    Layers.Add(FBarrioTerrainLayer{TEXT("Monte"), TEXT("/Game/Materiales/Naturaleza/M_Tierra_Monte"), 3000.0f, -15.0f});
+    // Los ocho barrios de nighborhoods.json, con el firme que se ve en cada uno.
+    // Los materiales los crea UCreadorMaterialesSimples; sin ellos, quien los
+    // pida se queda con el material de su malla y no se rompe nada.
+    Layers.Add({ TEXT("Herriko"),     TEXT("/Game/Materiales/Pavimentos/M_Piedra_Herriko"),      1500.0f, -10.0f, true  });
+    Layers.Add({ TEXT("Zelai"),       TEXT("/Game/Materiales/Pavimentos/M_Asphalt_Zelai"),       2000.0f,   0.0f, false });
+    Layers.Add({ TEXT("Intxostia"),   TEXT("/Game/Materiales/Pavimentos/M_Asphalt_Intxostia"),   2500.0f,   0.0f, false });
+    Layers.Add({ TEXT("SanPedro"),    TEXT("/Game/Materiales/Pavimentos/M_Asphalt_SanPedro"),    2000.0f,   0.0f, false });
+    Layers.Add({ TEXT("Errota"),      TEXT("/Game/Materiales/Pavimentos/M_Gravel_Errota"),       1500.0f,  -5.0f, false });
+    Layers.Add({ TEXT("Harrobieta"),  TEXT("/Game/Materiales/Pavimentos/M_Piedra_Harrobieta"),   1500.0f, -10.0f, true  });
+    Layers.Add({ TEXT("Ferroviario"), TEXT("/Game/Materiales/Pavimentos/M_Asphalt_Ferroviario"), 2000.0f,   0.0f, false });
+    // La ruta era /Game/Materiales/Naturaleza/M_Tierra_Monte y el generador lo
+    // crea en Pavimentos: la carpeta existe, el asset no, y quien lo pide
+    // comprueba el null y sigue, así que Monte se quedaba sin firme en silencio.
+    Layers.Add({ TEXT("Monte"),       TEXT("/Game/Materiales/Pavimentos/M_Tierra_Monte"),        3000.0f, -15.0f, false });
 }
 
-void UAlsasuaTerrainLayersSystem::AplicarMaterialesPorBarrio()
+FString UAlsasuaTerrainLayersSystem::MaterialDeBarrio(const FString& Barrio) const
 {
-    UWorld* World = GetWorld();
-    if (!World) return;
-
-    for (const FBarrioTerrainLayer& Layer : Layers)
+    for (const FBarrioTerrainLayer& L : Layers)
     {
-        AStaticMeshActor* FloorActor = World->SpawnActor<AStaticMeshActor>(
-            AStaticMeshActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator);
-        if (!FloorActor) continue;
-
-        FloorActor->SetMobility(EComponentMobility::Static);
-
-        UStaticMesh* PlaneMesh = LoadObject<UStaticMesh>(nullptr,
-            TEXT("/Engine/BasicShapes/Plane.Plane"));
-        if (PlaneMesh)
-            FloorActor->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
-
-        float Scale = 1000.0f;
-        FloorActor->SetActorScale3D(FVector(Scale, Scale, 1.0f));
-
-        UMaterialInterface* Mat = LoadObject<UMaterialInterface>(nullptr, *Layer.MaterialPath);
-        if (Mat)
-            FloorActor->GetStaticMeshComponent()->SetMaterial(0, Mat);
-
-#if WITH_EDITOR
-        FloorActor->SetActorLabel(*FString::Printf(TEXT("Suelo_%s"), *Layer.Barrio));
-#endif
+        if (L.Barrio == Barrio) return L.MaterialPath;
     }
-
-    UE_LOG(LogTemp, Log, TEXT("TerrainLayers: %d capas de suelo creadas"), Layers.Num());
+    return FString();
 }
 
-void UAlsasuaTerrainLayersSystem::GenerarSueloCiudad()
+bool UAlsasuaTerrainLayersSystem::BarrioEmpedrado(const FString& Barrio) const
 {
-    UWorld* World = GetWorld();
-    if (!World) return;
+    for (const FBarrioTerrainLayer& L : Layers)
+    {
+        if (L.Barrio == Barrio) return L.bEmpedrado;
+    }
+    return false;
+}
 
-    float Scale = 1000.0f;
-    FVector CiudadCenter = UAlsasuaGeoData::UnityaUnreal(FVector(1900.0f, 0.0f, 8570.0f));
+int32 UAlsasuaTerrainLayersSystem::PublicarFirmePorBarrio()
+{
+    // No se construye nada a propósito. Ver la cabecera: esto ponía nueve planos
+    // opacos de un kilómetro, ocho de ellos apilados en el origen del mundo.
+    int32 Empedrados = 0;
+    for (const FBarrioTerrainLayer& L : Layers) if (L.bEmpedrado) ++Empedrados;
 
-    AStaticMeshActor* Suelo = World->SpawnActor<AStaticMeshActor>(
-        AStaticMeshActor::StaticClass(), CiudadCenter, FRotator::ZeroRotator);
-    if (!Suelo) return;
-
-    Suelo->SetMobility(EComponentMobility::Static);
-    Suelo->SetActorScale3D(FVector(Scale, Scale, 1.0f));
-
-    UStaticMesh* PlaneMesh = LoadObject<UStaticMesh>(nullptr,
-        TEXT("/Engine/BasicShapes/Plane.Plane"));
-    if (PlaneMesh)
-        Suelo->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
-
-    UMaterialInterface* SueloMat = LoadObject<UMaterialInterface>(nullptr,
-        TEXT("/Game/Materiales/M_Suelo_Ciudad"));
-    if (SueloMat)
-        Suelo->GetStaticMeshComponent()->SetMaterial(0, SueloMat);
-
-#if WITH_EDITOR
-    Suelo->SetActorLabel(TEXT("Suelo_Base_Altsasu"));
-#endif
-
-    AplicarMaterialesPorBarrio();
-
-    UE_LOG(LogTemp, Log, TEXT("TerrainLayers: Suelo base de la ciudad generado"));
+    UE_LOG(LogTemp, Log,
+        TEXT("TerrainLayers: firme publicado para %d barrios (%d empedrados). No crea geometría: lo consume quien pavimenta."),
+        Layers.Num(), Empedrados);
+    return Layers.Num();
 }
