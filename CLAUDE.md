@@ -326,7 +326,8 @@ adjunta nadie, que son 23 y antes se daban por buenos suponiendo que ya los
 adjuntaría su actor),
 `VerificarFuentes.py` (el `;` que se lleva un comentario, delimitadores
 descuadrados, `UnityaUnreal` con los ejes cambiados, CVars `g.*` que nadie
-registra, `.generated.h` ausente en cabecera reflejada), `VerificarCallesNavarra.py` (trazado contra el eje catastral),
+registra, `.generated.h` ausente en cabecera reflejada, rutas
+`/Engine/EngineMeshes/` que no existen), `VerificarCallesNavarra.py` (trazado contra el eje catastral),
 `AuditarAssets.py` (rutas sin respaldo y mallas bajadas que nadie pide),
 `VerificarGuardado.py` (campos del save que se guardan y no se cargan),
 `VerificarDialogos.py` (los árboles de Content/Dialogs entran enteros),

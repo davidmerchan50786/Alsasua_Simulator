@@ -148,7 +148,7 @@ int32 UAlsasuaRooftopDetailSystem::ColocarDetallesCubierta()
             float OffX = Sorteo.FRandRange(-200.0f, 200.0f);
             float OffZ = Sorteo.FRandRange(-200.0f, 200.0f);
             CrearItem(TEXT("antena"),
-                TEXT("/Engine/EngineMeshes/Cylinder"),
+                TEXT("/Engine/BasicShapes/Cylinder.Cylinder"),
                 TEXT("/Engine/EngineMaterials/DefaultMaterial"),
                 0.05f, 0.05f, 3.0f, OffX, OffZ);
         }
@@ -162,7 +162,7 @@ int32 UAlsasuaRooftopDetailSystem::ColocarDetallesCubierta()
             float OffX = Sorteo.FRandRange(-100.0f, 100.0f);
             float OffZ = Sorteo.FRandRange(-100.0f, 100.0f);
             CrearItem(TEXT("deposito_agua"),
-                TEXT("/Engine/EngineMeshes/Cylinder"),
+                TEXT("/Engine/BasicShapes/Cylinder.Cylinder"),
                 TEXT("/Engine/EngineMaterials/DefaultMaterial"),
                 1.0f, 1.0f, 1.5f, OffX, OffZ);
         }
@@ -172,7 +172,7 @@ int32 UAlsasuaRooftopDetailSystem::ColocarDetallesCubierta()
             float OffX = Sorteo.FRandRange(-200.0f, 200.0f);
             float OffZ = Sorteo.FRandRange(-200.0f, 200.0f);
             CrearItem(TEXT("placa_solar"),
-                TEXT("/Engine/EngineMeshes/Plane"),
+                TEXT("/Engine/BasicShapes/Plane.Plane"),
                 TEXT("/Engine/EngineMaterials/DefaultMaterial"),
                 2.0f, 1.5f, 0.02f, OffX, OffZ);
         }
@@ -182,7 +182,7 @@ int32 UAlsasuaRooftopDetailSystem::ColocarDetallesCubierta()
             float OffX = Sorteo.FRandRange(-150.0f, 150.0f);
             float OffZ = Sorteo.FRandRange(-150.0f, 150.0f);
             CrearItem(TEXT("satelital"),
-                TEXT("/Engine/EngineMeshes/Cylinder"),
+                TEXT("/Engine/BasicShapes/Cylinder.Cylinder"),
                 TEXT("/Engine/EngineMaterials/DefaultMaterial"),
                 0.3f, 0.3f, 0.8f, OffX, OffZ);
         }

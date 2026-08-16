@@ -10,7 +10,7 @@ de un comentario en AlsasuaFoliagePainter.cpp
 
 y AlsasuaManifa —214 cpp, el módulo gordo— dejó de compilar entero.
 
-Esto no es un compilador ni lo pretende. Son cinco comprobaciones baratas que
+Esto no es un compilador ni lo pretende. Son seis comprobaciones baratas que
 cazan justo lo que se cuela cuando se edita a ciegas:
 
   1. Sentencia cuyo punto y coma se lo ha tragado un comentario de línea.
@@ -21,6 +21,11 @@ cazan justo lo que se cuela cuando se edita a ciegas:
      ausente o sin ser el último include. UHT lo pide con error, no con aviso:
      sin él no se llega ni al compilador. AlsasuaInputIDs.h llevaba un
      UENUM(BlueprintType) sin el include.
+  6. Rutas /Engine/EngineMeshes/, que no existen: las formas básicas del motor
+     están en /Engine/BasicShapes/. LoadObject devuelve null y la pieza se queda
+     sin malla —invisible, pero ocupando su sitio en el log y en la lista de
+     fases—. Lo tenían las antenas, los depósitos y las placas solares de
+     AlsasuaRooftopDetailSystem, y las cinco fuentes del pueblo.
 
 Lo tercero es otra que costó cara. UAlsasuaGeoData::UnityaUnreal espera
 (este, arriba, norte) y devuelve (este_cm, norte_cm, arriba_cm). Media docena de
@@ -191,6 +196,19 @@ def main():
                               "      argumento es 'arriba', no 'norte'  →  %s"
                               % (rel, num, " ".join(m.group(0).split())))
 
+            # 6. Rutas /Engine/EngineMeshes/, que no existen.
+            for num, linea in enumerate(texto.splitlines(), 1):
+                if "/Engine/EngineMeshes/" not in linea:
+                    continue
+                # Vale mencionarla en un comentario para explicar por qué se
+                # cambió; lo que no vale es cargarla.
+                if cegar_literales(linea).lstrip().startswith(("//", "*")):
+                    continue
+                fallos.append("%s:%d  /Engine/EngineMeshes/ no existe: las formas\n"
+                              "      básicas están en /Engine/BasicShapes/. LoadObject\n"
+                              "      devuelve null y la pieza se queda sin malla, invisible\n"
+                              "      →  %s" % (rel, num, linea.strip()))
+
             # 5. .generated.h de las cabeceras reflejadas.
             if nombre.endswith(".h"):
                 problema = generated_mal_puesto(ruta, texto)
@@ -214,7 +232,7 @@ def main():
     print("%d ficheros .cpp/.h revisados.\n" % revisados)
     if not fallos:
         print("Sin hallazgos. No garantiza que compile — sólo que no tiene")
-        print("estos cinco fallos, que son los que se cuelan al editar a ciegas.")
+        print("estos seis fallos, que son los que se cuelan al editar a ciegas.")
         return 0
 
     for f in fallos:
