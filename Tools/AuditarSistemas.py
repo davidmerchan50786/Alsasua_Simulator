@@ -70,16 +70,29 @@ def main():
     enchufados = [c for c in clases if c in director]
     huerfanos = [c for c in clases if c not in director]
 
-    # Quién más lee cada dataset, contando también los cargadores de World.
+    # Quién más lee cada dataset, contando también los cargadores de World; y qué
+    # otro fichero nombra cada clase, que es lo que distingue un componente que
+    # alguien adjunta de uno que no existe en ninguna parte.
     lectores = defaultdict(set)
+    nombradores = defaultdict(set)
     for base, _, ficheros in os.walk(FUENTE):
         for nombre in ficheros:
-            if not nombre.endswith(".cpp"):
+            if not nombre.endswith((".cpp", ".h")):
                 continue
             ruta = os.path.join(base, nombre)
+            propio = os.path.splitext(nombre)[0]
             with open(ruta, encoding="utf-8", errors="ignore") as fh:
-                for d in RE_DATASET.findall(fh.read()):
-                    lectores[d].add(os.path.splitext(nombre)[0])
+                texto = fh.read()
+            if nombre.endswith(".cpp"):
+                for d in RE_DATASET.findall(texto):
+                    lectores[d].add(propio)
+            for c in clases:
+                # El .h y el .cpp de la propia clase no cuentan como que alguien
+                # la use: lo que se busca es un tercero que la nombre.
+                if propio == c[1:]:
+                    continue
+                if re.search(r'\b%s\b' % re.escape(c), texto):
+                    nombradores[c].add(propio)
 
     print("%d clases en AlsasuaManifa/World: %d en la cadena de arranque, %d fuera.\n"
           % (len(clases), len(enchufados), len(huerfanos)))
@@ -123,8 +136,20 @@ def main():
     print("  PASIVOS — componentes, actores y volúmenes")
     print("=" * 74)
     print("  No los llama el director porque no se llaman: se adjuntan o se colocan.")
+    print("  Pero eso hay que comprobarlo, no suponerlo: un componente que nadie")
+    print("  adjunta está tan muerto como un subsistema que nadie invoca, y aquí")
+    print("  se daba por bueno sin mirar. Se marca quién lo nombra.\n")
     for c, b in pasivos:
-        print("  %-40s : %s" % (c, b))
+        quien = sorted(nombradores.get(c, set()))
+        if quien:
+            print("  %-40s : %-22s lo nombra %s" % (c, b, ", ".join(quien[:3])))
+        else:
+            print("  %-40s : %-22s NADIE LO ADJUNTA" % (c, b))
+    sueltos = [c for c, _ in pasivos if not nombradores.get(c)]
+    if sueltos:
+        print("\n  %d sin un solo fichero que los nombre. No cuestan nada en tiempo de"
+              % len(sueltos))
+        print("  ejecución —no existen—, pero tampoco hacen lo que dice su nombre.")
 
     print("\n" + "=" * 74)
     print("  SIN INVESTIGAR — subsistemas fuera de la cadena y sin choque")

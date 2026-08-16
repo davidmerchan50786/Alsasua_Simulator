@@ -127,7 +127,12 @@ def rutas_generadas():
     return out
 
 
-RE_RESOLVER = re.compile(r'Resolver\(\s*TEXT\("([^"]+)"\)', re.S)
+# El tipo no siempre llega a Resolver() como literal. AlsasuaRooftopDetailSystem
+# lo pasa por un lambda —CrearItem(TEXT("antena"), ...) → CapaDe(Tipo, ...) →
+# Resolver(Tipo, ...)—, así que mirando sólo Resolver( se le escapaban cuatro
+# tipos sin entrada en la tabla, y con ellos la Antena_TV y la Placa_Solar que
+# Meshy había generado para este pueblo. Se miran también los envoltorios.
+RE_RESOLVER = re.compile(r'(?:Resolver|CrearItem|CapaDe)\(\s*TEXT\("([^"]+)"\)', re.S)
 RE_TABLA = re.compile(r'\{\s*TEXT\("([^"]+)"\),\s*TEXT\(')
 
 

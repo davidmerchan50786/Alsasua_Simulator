@@ -321,7 +321,9 @@ contra su fuente y sacan un informe. Sirven de red donde no hay compilador —
 `VerificarVias.py` (formas de raíz de los datasets de vía y sitio para el material
 rodante), `VerificarDatasets.py` (campos que el C++ pide y el JSON no tiene, marcos
 mezclados, elementos fuera del terreno), `AuditarSistemas.py` (sistemas de mundo
-que no llama nadie, y con cuál chocarían),
+que no llama nadie, y con cuál chocarían; también los `UActorComponent` que no
+adjunta nadie, que son 23 y antes se daban por buenos suponiendo que ya los
+adjuntaría su actor),
 `VerificarFuentes.py` (el `;` que se lleva un comentario, delimitadores
 descuadrados, `UnityaUnreal` con los ejes cambiados, CVars `g.*` que nadie
 registra, `.generated.h` ausente en cabecera reflejada), `VerificarCallesNavarra.py` (trazado contra el eje catastral),

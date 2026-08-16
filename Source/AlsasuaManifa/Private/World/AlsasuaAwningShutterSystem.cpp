@@ -90,7 +90,10 @@ int32 UAlsasuaAwningShutterSystem::ColocarToldosYPersianas()
     // cada uno eran más de dieciocho mil actores, la regla 0 por goleada.
     UStaticMesh* MallaToldo = AlsasuaMallaFab::Resolver(TEXT("toldo"),
         TEXT("/Engine/BasicShapes/Plane.Plane"));
-    UStaticMesh* MallaPersiana = AlsasuaMallaFab::Resolver(TEXT("ventana"),
+    // "persiana", no "ventana": la clave de ventana devuelve el hueco del kit
+    // modular, y lo que se coloca aquí es la persiana de delante. Meshy generó
+    // Persiana_Española para este pueblo y ninguna clave la alcanzaba.
+    UStaticMesh* MallaPersiana = AlsasuaMallaFab::Resolver(TEXT("persiana"),
         TEXT("/Engine/BasicShapes/Plane.Plane"));
     if (!MallaToldo || !MallaPersiana) return 0;
 

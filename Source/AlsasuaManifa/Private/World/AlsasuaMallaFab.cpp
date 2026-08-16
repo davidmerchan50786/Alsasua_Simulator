@@ -116,6 +116,28 @@ namespace
 		{ TEXT("tejado_pieza"),      TEXT("roof_straight_side|roof_concave_side|roof_convex_side") },
 		{ TEXT("chimenea"),          TEXT("roof_prop_chimney_stone|roof_prop_chimney|chimenea_piedra|chimney") },
 
+		// ── Remates de tejado y fachada ────────────────────────────────────
+		// Los pedía AlsasuaRooftopDetailSystem y no había entrada para ninguno,
+		// así que los cuatro caían a la forma básica del motor. Y Meshy había
+		// generado Antena_TV, Placa_Solar, Balcon_Hierro y Persiana_Española
+		// para este pueblo: bajados y sin que ninguna clave los alcanzara.
+		//
+		// No los cazaba AuditarAssets.py porque el tipo no llega a Resolver()
+		// como literal, sino por el parámetro de un lambda; el script mira
+		// ahora también los literales de CrearItem/CapaDe.
+		{ TEXT("antena"),            TEXT("antena_tv|antena|tv_antenna|antenna|aerial") },
+		// "deposito_agua" estaba sólo como palabra clave dentro de
+		// cuadro_electrico, que es otra cosa: como tipo no tenía entrada, así que
+		// el depósito de cubierta caía al cubo.
+		{ TEXT("deposito_agua"),     TEXT("deposito_agua|deposito|water_tank|tank|cistern") },
+		{ TEXT("satelital"),         TEXT("antena_parabolica|parabolica|satellite_dish|satellite|dish") },
+		{ TEXT("placa_solar"),       TEXT("placa_solar|panel_solar|solar_panel|solar") },
+		{ TEXT("tendedero"),         TEXT("tendedero|clothesline|drying_rack") },
+		{ TEXT("balcon"),            TEXT("balcon_hierro|balcon|balcony|railing_balcony") },
+		// La persiana tenía su modelo y se pedía con la clave "ventana", que
+		// devuelve el hueco de la ventana, no la persiana de delante.
+		{ TEXT("persiana"),          TEXT("persiana_espanola|persiana_española|persiana|shutter|window_shutter") },
+
 		// Piezas de remate que ensambla UAlsasuaTejadoModular. Sólo la familia
 		// Straight: en este kit Concave/Convex son variantes de planta curva, y
 		// los footprints del LIDAR son polígonos de lados rectos.
