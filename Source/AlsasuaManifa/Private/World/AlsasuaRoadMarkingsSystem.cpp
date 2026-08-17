@@ -138,9 +138,12 @@ int32 UAlsasuaRoadMarkingsSystem::GenerarMarcas()
             const TSharedPtr<FJsonObject>& P1 = (*PointsArr)[i + 1]->AsObject();
             if (!P0 || !P1) continue;
 
-            FVector Loc0 = UAlsasuaGeoData::RelLocalASueloUE5(GetWorld(), FVector(
+            // Superficie, no terreno: la marca va pintada sobre el firme, y el
+            // firme está 12 cm por encima del terreno (ACalleGenerada::EpsilonCm).
+            // Los +2 cm de más abajo cuentan desde el asfalto, no desde el suelo.
+            FVector Loc0 = UAlsasuaGeoData::RelLocalASuperficieUE5(GetWorld(), FVector(
                 P0->GetNumberField(TEXT("x")), 0.0f, P0->GetNumberField(TEXT("z"))));
-            FVector Loc1 = UAlsasuaGeoData::RelLocalASueloUE5(GetWorld(), FVector(
+            FVector Loc1 = UAlsasuaGeoData::RelLocalASuperficieUE5(GetWorld(), FVector(
                 P1->GetNumberField(TEXT("x")), 0.0f, P1->GetNumberField(TEXT("z"))));
 
             FVector Centro = (Loc0 + Loc1) * 0.5f;

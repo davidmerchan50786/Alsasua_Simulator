@@ -1,0 +1,116 @@
+# Verificación estática de Alsasua Simulator.
+#
+# Este repo no tenía CI, y no por descuido: es un proyecto de Unreal 5.8 para
+# Windows y no hay runner de GitHub con el motor instalado, así que compilar en
+# la nube no es gratis. Pero los verificadores de Tools/ son Python puro y sí
+# corren en cualquier sitio, y son lo único que hoy separa un error tonto de
+# main. Ponerlos en un gate cuesta un minuto de CPU por PR.
+#
+# El trabajo de compilar sigue estando fuera: ver el job "compilar" de abajo.
+name: Verificar
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  estatica:
+    name: Verificadores estáticos
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Los verificadores leen Content/Datos/*.json y Content/Terreno/, que
+          # están en LFS. Sin esto se descargan como punteros de texto y
+          # VerificarDatasets falla al parsearlos.
+          lfs: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # Cada uno por separado y con `continue-on-error: false` implícito: si uno
+      # falla queremos saber CUÁL, no que el paso entero diga "algo pasó".
+      - name: VerificarFuentes (sintaxis que no caza nadie)
+        run: python3 Tools/VerificarFuentes.py
+
+      - name: VerificarDatasets (campos, marcos y elementos fuera del mundo)
+        run: python3 Tools/VerificarDatasets.py
+
+      - name: VerificarVias (formas de raíz de los datasets de vía)
+        run: python3 Tools/VerificarVias.py
+
+      - name: VerificarGuardado (round-trip del save)
+        run: python3 Tools/VerificarGuardado.py
+
+      - name: VerificarDialogos (los árboles de Content/Dialogs entran enteros)
+        run: python3 Tools/VerificarDialogos.py
+
+      - name: AuditarSistemas (sistemas fuera de la cadena y duplicados)
+        run: python3 Tools/AuditarSistemas.py
+
+      - name: AuditarAssets (rutas sin respaldo, packs sin degradación)
+        run: python3 Tools/AuditarAssets.py
+
+  rutas:
+    name: Sin rutas de máquina
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # CLAUDE.md §7: ningún script puede llevar rutas absolutas de una máquina
+      # concreta. Los standalone derivan la raíz de su propia ubicación y los de
+      # editor usan unreal.Paths.project_dir(). Ya se migraron once ficheros que
+      # las tenían; esto es para que no vuelvan.
+      #
+      # Las menciones en comentarios de migración son legítimas, así que sólo se
+      # mira lo que no es comentario.
+      - name: Buscar rutas absolutas de Windows en Tools/
+        run: |
+          set -e
+          hallazgos=$(grep -rnE '[A-Z]:\\\\' Tools/ --include='*.py' \
+            | grep -vE ':\s*#' | grep -vE '"""' || true)
+          if [ -n "$hallazgos" ]; then
+            echo "Rutas absolutas de máquina en Tools/ (CLAUDE.md §7):"
+            echo "$hallazgos"
+            exit 1
+          fi
+          echo "Ninguna."
+
+  # ---------------------------------------------------------------------------
+  # Compilar de verdad. Necesita un runner con UE 5.8 instalado, que GitHub no
+  # ofrece: hay que registrar uno propio con las etiquetas [self-hosted, windows,
+  # ue5.8]. Mientras no exista, este job no se encola y el PR no se queda colgado
+  # esperándolo.
+  #
+  # Es el único paso que convierte "verificado estáticamente" en "compila".
+  # ---------------------------------------------------------------------------
+  compilar:
+    name: Build.bat (runner propio con UE 5.8)
+    needs: estatica
+    if: vars.RUNNER_UE58 == 'true'
+    runs-on: [self-hosted, windows, ue5.8]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Compilar el editor
+        shell: cmd
+        env:
+          # Se deja como variable para no clavar la ruta de una instalación
+          # concreta, que es justo lo que §7 prohíbe en los scripts.
+          UE_ROOT: ${{ vars.UE_ROOT }}
+        run: |
+          if "%UE_ROOT%"=="" (
+            echo Falta la variable de repositorio UE_ROOT ^(p.ej. C:\Program Files\Epic Games\UE_5.8^)
+            exit /b 1
+          )
+          "%UE_ROOT%\Engine\Build\BatchFiles\Build.bat" ^
+            AlsasuaSimulatorEditor Win64 Development ^
+            -Project="%GITHUB_WORKSPACE%\AlsasuaSimulator.uproject" -WaitMutex

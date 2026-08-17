@@ -20,6 +20,10 @@ public:
 	void GenerarTodoAhora();
 
 	float AlturaEnMundo(float X, float Y) const;
+
+	/** ¿Hay heightmap cargado? Sin él, AlturaEnMundo devuelve LocZ y no sirve
+	 *  como fuente de cota. Público para que lo pueda mirar el muestreador. */
+	bool TieneHeightmap() const { return AlturasRAW.Num() > 0; }
 	FVector NormalEnMundo(float X, float Y) const;
 
 	UPROPERTY(EditAnywhere, Category="Terreno") int32 SizeChunkPx = 128;
@@ -91,6 +95,11 @@ public:
 	double HeightMaxCm = 64399.8;
 
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
+
+	/** Registra este terreno como fuente de cota de UAlsasuaGeoData::AlturaSueloUE5,
+	 *  para que la altura de suelo salga del heightmap y no de un LineTrace. */
+	void RegistrarComoMuestreadorDeCota();
 	virtual void Tick(float DeltaTime) override;
 
 private:
