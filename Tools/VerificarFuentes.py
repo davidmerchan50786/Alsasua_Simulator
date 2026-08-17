@@ -10,7 +10,7 @@ de un comentario en AlsasuaFoliagePainter.cpp
 
 y AlsasuaManifa —214 cpp, el módulo gordo— dejó de compilar entero.
 
-Esto no es un compilador ni lo pretende. Son siete comprobaciones baratas que
+Esto no es un compilador ni lo pretende. Son ocho comprobaciones baratas que
 cazan justo lo que se cuela cuando se edita a ciegas:
 
   1. Sentencia cuyo punto y coma se lo ha tragado un comentario de línea.
@@ -33,6 +33,11 @@ cazan justo lo que se cuela cuando se edita a ciegas:
      un SpawnActor o un AddInstance no queda sitio donde apoyarlo en el
      terreno. Hay que pasarlo por una variable y ponerle la Z con
      AlturaSueloUE5, o usar RelLocalASueloUE5.
+  8. #include de una cabecera del propio proyecto que ya no existe. Es un error
+     de compilación de los que no se ven al leer el diff: al retirar
+     AlsasuaLODManager quedó su include en DirectorArranque.cpp, en otro módulo
+     y a 50 líneas de distancia de nada que lo mencionara. Se miran sólo los
+     includes que resuelven contra Source/, no los del motor.
 
 Lo que esto NO caza, y conviene saberlo: la comprobación 3 sólo salta cuando el
 segundo argumento de UnityaUnreal NO es cero. El caso contrario —cero literal,
@@ -169,9 +174,68 @@ def generated_mal_puesto(ruta, texto):
     return None
 
 
+RE_INCLUDE = re.compile(r'^\s*#\s*include\s+"([^"]+)"', re.M)
+
+
+def cabeceras_del_proyecto(raiz):
+    """
+    {ruta relativa tal como se escribe en un #include} -> True.
+
+    UBT resuelve los includes contra los Public/ y Private/ de cada módulo, así
+    que "World/AlsasuaMuros.h" y "AlsasuaMuros.h" son las dos formas válidas de
+    la misma cabecera. Se indexan las dos, y también los sufijos intermedios.
+    """
+    validas = set()
+    for base, _, ficheros in os.walk(raiz):
+        for nombre in ficheros:
+            if not nombre.endswith(".h"):
+                continue
+            rel = os.path.relpath(os.path.join(base, nombre), raiz).replace(os.sep, "/")
+            partes = rel.split("/")
+            # Desde el primer Public/ o Private/ hacia abajo es lo que ve UBT.
+            for i, p in enumerate(partes):
+                if p in ("Public", "Private"):
+                    for j in range(i + 1, len(partes)):
+                        validas.add("/".join(partes[j:]))
+                    break
+            else:
+                validas.add(nombre)
+            validas.add(nombre)
+    return validas
+
+
+def includes_rotos(rel, texto, validas, generadas):
+    """Includes con comillas que no resuelven ni a Source/ ni a nada del motor.
+
+    Sólo se acusa lo que TIENE pinta de ser del proyecto: una cabecera cuyo
+    nombre empieza por Alsasua o que cuelga de una carpeta que existe en
+    Source/. Así el motor y los plugins no generan ruido.
+    """
+    salida = []
+    for m in RE_INCLUDE.finditer(texto):
+        inc = m.group(1)
+        if inc in validas or inc in generadas:
+            continue
+        hoja = inc.split("/")[-1]
+        if hoja in validas:
+            continue
+        if hoja.endswith(".generated.h"):
+            continue
+        if not hoja.startswith("Alsasua"):
+            continue
+        num = texto.count("\n", 0, m.start()) + 1
+        salida.append("%s:%d  #include \"%s\" y esa cabecera no está en Source/.\n"
+                      "      Si el fichero se ha retirado, el include se retira con él"
+                      % (rel, num, inc))
+    return salida
+
+
 def main():
     fallos = []
     revisados = 0
+    validas = cabeceras_del_proyecto(FUENTE)
+    # Las .generated.h las escribe UHT en Intermediate/, no están en Source/.
+    generadas = {h.replace(".h", ".generated.h") for h in validas}
 
     for base, _, ficheros in os.walk(FUENTE):
         for nombre in sorted(ficheros):
@@ -240,6 +304,9 @@ def main():
                               "      variable y ponle AlturaSueloUE5, o usa RelLocalASueloUE5"
                               % (rel, num, m.group("conv"), m.group("uso")))
 
+            # 8. Includes que apuntan a una cabecera del proyecto que ya no está.
+            fallos.extend(includes_rotos(rel, texto, validas, generadas))
+
             # 5. .generated.h de las cabeceras reflejadas.
             if nombre.endswith(".h"):
                 problema = generated_mal_puesto(ruta, texto)
@@ -263,7 +330,7 @@ def main():
     print("%d ficheros .cpp/.h revisados.\n" % revisados)
     if not fallos:
         print("Sin hallazgos. No garantiza que compile — sólo que no tiene")
-        print("estos siete fallos, que son los que se cuelan al editar a ciegas.")
+        print("estos ocho fallos, que son los que se cuelan al editar a ciegas.")
         return 0
 
     for f in fallos:

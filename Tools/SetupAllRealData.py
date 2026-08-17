@@ -116,7 +116,6 @@ def main():
         "AlsasuaNightLightingSystem.h/.cpp",
         "AlsasuaWeatherSystem.h/.cpp",
         "AlsasuaAmbientAudioSystem.h/.cpp",
-        "AlsasuaLODManager.h/.cpp",
         "AlsasuaCollisionSystem.h/.cpp",
         "AlsasuaVFXManager.h/.cpp"
     ]

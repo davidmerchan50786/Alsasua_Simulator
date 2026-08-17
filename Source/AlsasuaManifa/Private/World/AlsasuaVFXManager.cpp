@@ -10,14 +10,33 @@ void UAlsasuaVFXManager::Initialize(FSubsystemCollectionBase& Collection)
 {
     Super::Initialize(Collection);
 
-    RainSystem = LoadObject<UNiagaraSystem>(nullptr, TEXT("/Game/Effects/NS_Rain"));
-    LeafSystem = LoadObject<UNiagaraSystem>(nullptr, TEXT("/Game/Effects/NS_Leaves"));
-    DustSystem = LoadObject<UNiagaraSystem>(nullptr, TEXT("/Game/Effects/NS_Dust"));
+    // Los tres LoadObject que había aquí se hacían al arrancar la partida,
+    // pasara lo que pasara: tres cargas síncronas de assets que sólo hacen
+    // falta si alguien llama a Spawn*, y de momento no llama nadie. En un clon
+    // recién hecho —los Niagara los crea Tools/create_niagara_vfx.py, no
+    // vienen en git— además soltaban tres avisos en el log del arranque.
+    // Ahora se cargan la primera vez que se piden.
+}
+
+UNiagaraSystem* UAlsasuaVFXManager::Resolver(TObjectPtr<UNiagaraSystem>& Cache,
+                                             const TCHAR* Ruta, bool& bIntentado)
+{
+    if (Cache) return Cache;
+    if (bIntentado) return nullptr;   // no reintentar una ruta que no está
+    bIntentado = true;
+    Cache = LoadObject<UNiagaraSystem>(nullptr, Ruta);
+    if (!Cache)
+    {
+        UE_LOG(LogTemp, Warning,
+            TEXT("VFXManager: no está %s. Se crea con Tools/create_niagara_vfx.py."), Ruta);
+    }
+    return Cache;
 }
 
 void UAlsasuaVFXManager::SpawnRainParticles(float Intensity)
 {
-    if (!RainSystem || Intensity < 0.05f) return;
+    UNiagaraSystem* Rain = Resolver(RainSystem, TEXT("/Game/Effects/NS_Rain"), bRainIntentado);
+    if (!Rain || Intensity < 0.05f) return;
 
     UWorld* World = GetWorld();
     if (!World) return;
@@ -30,7 +49,7 @@ void UAlsasuaVFXManager::SpawnRainParticles(float Intensity)
     if (!ActiveRain)
     {
         ActiveRain = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-            World, RainSystem, Loc, FRotator::ZeroRotator,
+            World, Rain, Loc, FRotator::ZeroRotator,
             FVector(1.0f), true, true);
     }
 
@@ -43,7 +62,8 @@ void UAlsasuaVFXManager::SpawnRainParticles(float Intensity)
 
 void UAlsasuaVFXManager::SpawnLeafParticles(float WindSpeed)
 {
-    if (!LeafSystem || WindSpeed < 5.0f) return;
+    UNiagaraSystem* Leaf = Resolver(LeafSystem, TEXT("/Game/Effects/NS_Leaves"), bLeafIntentado);
+    if (!Leaf || WindSpeed < 5.0f) return;
 
     UWorld* World = GetWorld();
     if (!World) return;
@@ -56,7 +76,7 @@ void UAlsasuaVFXManager::SpawnLeafParticles(float WindSpeed)
     if (!ActiveLeaf)
     {
         ActiveLeaf = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-            World, LeafSystem, Loc, FRotator::ZeroRotator,
+            World, Leaf, Loc, FRotator::ZeroRotator,
             FVector(1.0f), true, true);
     }
 
@@ -69,7 +89,8 @@ void UAlsasuaVFXManager::SpawnLeafParticles(float WindSpeed)
 
 void UAlsasuaVFXManager::SpawnDustParticles()
 {
-    if (!DustSystem) return;
+    UNiagaraSystem* Dust = Resolver(DustSystem, TEXT("/Game/Effects/NS_Dust"), bDustIntentado);
+    if (!Dust) return;
 
     UWorld* World = GetWorld();
     if (!World) return;
@@ -79,7 +100,7 @@ void UAlsasuaVFXManager::SpawnDustParticles()
 
     FVector Loc = PC->GetPawn()->GetActorLocation();
     UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-        World, DustSystem, Loc, FRotator::ZeroRotator,
+        World, Dust, Loc, FRotator::ZeroRotator,
         FVector(1.0f), true, true);
 }
 

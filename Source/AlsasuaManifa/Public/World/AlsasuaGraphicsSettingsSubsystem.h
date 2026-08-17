@@ -14,6 +14,11 @@ class ALSASUAMANIFA_API UAlsasuaGraphicsSettingsSubsystem : public UWorldSubsyst
     GENERATED_BODY()
 
 public:
+    /** Sólo en mundos de partida (Game/PIE): esto toca CVars de render globales
+     *  al proceso, y creado en el mundo del editor le cambiaba la calidad al
+     *  editor por el mero hecho de abrir un nivel. */
+    virtual bool ShouldCreateSubsystem(UObject* Outer) const override;
+
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
     UFUNCTION(BlueprintCallable, Category = "AAA|Video")

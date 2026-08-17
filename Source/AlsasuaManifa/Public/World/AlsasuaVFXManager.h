@@ -23,9 +23,18 @@ public:
     void StopAllParticles();
 
 private:
-    UPROPERTY() class UNiagaraSystem* RainSystem = nullptr;
-    UPROPERTY() class UNiagaraSystem* LeafSystem = nullptr;
-    UPROPERTY() class UNiagaraSystem* DustSystem = nullptr;
+    /** Carga perezosa y una sola vez: si la ruta no está, se dice y no se
+     *  reintenta en cada llamada. */
+    class UNiagaraSystem* Resolver(TObjectPtr<class UNiagaraSystem>& Cache,
+                                   const TCHAR* Ruta, bool& bIntentado);
+
+    UPROPERTY() TObjectPtr<class UNiagaraSystem> RainSystem = nullptr;
+    UPROPERTY() TObjectPtr<class UNiagaraSystem> LeafSystem = nullptr;
+    UPROPERTY() TObjectPtr<class UNiagaraSystem> DustSystem = nullptr;
     UPROPERTY() class UNiagaraComponent* ActiveRain = nullptr;
     UPROPERTY() class UNiagaraComponent* ActiveLeaf = nullptr;
+
+    bool bRainIntentado = false;
+    bool bLeafIntentado = false;
+    bool bDustIntentado = false;
 };

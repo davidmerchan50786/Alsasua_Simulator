@@ -31,6 +31,19 @@ MUNDO_H = os.path.join(FUENTE, "AlsasuaManifa", "Public", "World")
 RE_CLASE = re.compile(r'class ALSASUAMANIFA_API ([UA]\w+)\s*:\s*public\s+(\w+)')
 RE_DATASET = re.compile(r'Datos/([A-Za-z_0-9]+\.json)')
 
+# Puntos de entrada que llama el MOTOR, sin que nadie los invoque desde el
+# proyecto. Un UWorldSubsystem que sobreescribe Initialize corre en todos los
+# mundos —editor, PIE, cocción— aunque no aparezca en DirectorArranque; un
+# UTickableWorldSubsystem que sobreescribe Tick corre en cada frame.
+#
+# Este script decía de ellos "existen, se compilan y no se ejecutan", y de los
+# seis que listaba eso sólo era cierto de uno. Es peor que un falso positivo:
+# invita a enchufar algo que ya está corriendo, y esconde a los que corren MAL.
+# UAlsasuaLODManager ticaba a 60 Hz y barría el mundo entero cada 5 s para
+# llenar dos listas que siempre salían vacías, y salía aquí como inofensivo.
+ENTRADAS_MOTOR = ("Initialize", "Deinitialize", "Tick", "OnWorldBeginPlay",
+                  "PostInitialize", "BeginPlay", "Deinitialize")
+
 # Bases que no necesitan que el director las llame para existir: un componente lo
 # adjunta su actor, un actor se coloca en el nivel, y un subsistema se crea solo.
 # Aun así, si el subsistema sólo actúa cuando alguien invoca su Colocar*/Aplicar*,
@@ -60,12 +73,19 @@ def main():
             clases[m.group(1)] = m.group(2)
 
     datasets_de = {}
+    entradas_de = {}
     for c in clases:
         p = cuerpo(c)
         datasets_de[c] = set()
+        entradas_de[c] = []
         if p:
             with open(p, encoding="utf-8", errors="ignore") as fh:
-                datasets_de[c] = set(RE_DATASET.findall(fh.read()))
+                texto = fh.read()
+            datasets_de[c] = set(RE_DATASET.findall(texto))
+            for e in ENTRADAS_MOTOR:
+                if re.search(r'\b%s::%s\s*\(' % (re.escape(c), e), texto):
+                    if e not in entradas_de[c]:
+                        entradas_de[c].append(e)
 
     enchufados = [c for c in clases if c in director]
     huerfanos = [c for c in clases if c not in director]
@@ -161,13 +181,44 @@ def main():
     print("  el log decía que estaban puestos. Un componente \"nombrado\" merece que")
     print("  se mire sobre qué lista itera quien lo nombra.")
 
+    # "Fuera de la cadena" no es "no se ejecuta": el motor arranca solo a todo
+    # subsistema que sobreescriba Initialize, y tica solo al que sobreescriba
+    # Tick. Separarlos es la diferencia entre "nunca se enchufó" y "lleva
+    # corriendo todo este tiempo y nadie lo estaba mirando".
+    solos = [(c, b, ds) for c, b, ds in limpios if entradas_de[c]]
+    inertes = [(c, b, ds) for c, b, ds in limpios if not entradas_de[c]]
+
     print("\n" + "=" * 74)
-    print("  SIN INVESTIGAR — subsistemas fuera de la cadena y sin choque")
+    print("  ARRANCAN SOLOS — el motor los llama, el director no")
     print("=" * 74)
-    for c, b, ds in limpios:
+    if not solos:
+        print("  Ninguno.")
+    for c, b, ds in solos:
+        quien = sorted(nombradores.get(c, set()))
+        print("  %-40s : %s" % (c, b))
+        print("        %-32s corre por %s" % ("", ", ".join(entradas_de[c])))
+        if quien:
+            print("        %-32s su API la usa %s" % ("", ", ".join(quien[:3])))
+        if ds:
+            print("        %-32s lee %s" % ("", ", ".join(ds)))
+    print("\n  Estos SÍ se ejecutan, en todos los mundos y sin pasar por el director.")
+    print("  No hay que enchufarlos: hay que mirar qué hacen al arrancar, porque lo")
+    print("  hacen también en el editor, en cada PIE y durante la cocción. Un")
+    print("  Initialize que aplica un perfil gráfico, o un Tick que barre el mundo,")
+    print("  no es código dormido: es código que corre y que nadie ha revisado.")
+
+    print("\n" + "=" * 74)
+    print("  INERTES — sin llamante y sin punto de entrada del motor")
+    print("=" * 74)
+    if not inertes:
+        print("  Ninguno.")
+    for c, b, ds in inertes:
+        quien = sorted(nombradores.get(c, set()))
         print("  %-40s : %-26s %s" % (c, b, ", ".join(ds) if ds else ""))
-    print("\n  Existen, se compilan y no se ejecutan. Cada uno hay que mirarlo: unos")
-    print("  están apagados a propósito (los semáforos, por perfilado) y otros")
+        if quien:
+            print("        lo nombra %s" % ", ".join(quien[:3]))
+    print("\n  Estos existen, se compilan y de verdad no se ejecutan. Unos están")
+    print("  apagados a propósito (los semáforos, por perfilado) y otros")
     print("  simplemente nunca se enchufaron.")
 
 
