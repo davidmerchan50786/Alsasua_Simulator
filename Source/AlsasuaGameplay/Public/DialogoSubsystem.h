@@ -11,6 +11,8 @@
 // (Hablante, Texto, ¿tiene opciones?)
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnNodoMostrado, const FString&, Hablante, const FString&, Texto, bool, bTieneOpciones);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDialogoFin);
+// (¿pasó?, lo sacado en el dado, el modificador por apoyo, la dificultad)
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnTiradaResuelta, bool, bExito, int32, Dado, int32, Modificador, int32, Dificultad);
 
 UCLASS()
 class ALSASUAGAMEPLAY_API UDialogoSubsystem : public UGameInstanceSubsystem
@@ -20,6 +22,7 @@ class ALSASUAGAMEPLAY_API UDialogoSubsystem : public UGameInstanceSubsystem
 public:
 	UPROPERTY(BlueprintAssignable) FOnNodoMostrado OnNodoMostrado;
 	UPROPERTY(BlueprintAssignable) FOnDialogoFin   OnDialogoFin;
+	UPROPERTY(BlueprintAssignable) FOnTiradaResuelta OnTiradaResuelta;
 
 	UFUNCTION(BlueprintCallable, Category="Dialogo") void Iniciar(UConversacionDialogo* Conv);
 
@@ -47,6 +50,24 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Dialogo") FString TextoActual() const { return Actual ? Actual->Texto : FString(); }
 	UFUNCTION(BlueprintCallable, Category="Dialogo") TArray<FString> OpcionesActuales() const;
 
+	/**
+	 * Lo mismo, pero diciendo cuáles son tirada, contra qué y con qué
+	 * probabilidad ahora mismo. OpcionesActuales() sigue devolviendo sólo los
+	 * textos para no romper a quien ya la use.
+	 */
+	UFUNCTION(BlueprintCallable, Category="Dialogo")
+	TArray<FOpcionMostrable> OpcionesDetalladas() const;
+
+	/**
+	 * Modificador que el apoyo popular pone en la tirada, de -5 a +5.
+	 *
+	 * Apoyo va de 0 a 100 y el punto neutro es 50, así que el modificador es
+	 * (Apoyo-50)/10. Con las dificultades del dato (10-16) eso deja entre un 25%
+	 * y un 55% con el pueblo indiferente, y mueve la aguja de verdad en los
+	 * extremos: es el mismo eje que ya conduce la economía y la IA.
+	 */
+	UFUNCTION(BlueprintPure, Category="Dialogo") int32 ModificadorApoyo() const;
+
 	// Avanza: elige una opción (índice) o continúa la línea automática (Elegir(-1)).
 	UFUNCTION(BlueprintCallable, Category="Dialogo") void Elegir(int32 Indice);
 	UFUNCTION(BlueprintCallable, Category="Dialogo") void Terminar();
@@ -58,4 +79,12 @@ private:
 	UPROPERTY() UConversacionDialogo* Conversacion = nullptr;
 	const FNodoDialogo* Actual = nullptr;
 	void IrA(FName Id);
+
+	/** Tiradas ya falladas en esta conversación, "<nodo>:<índice>". Una tirada
+	 *  fallida se queda fallada: sin esto se reintenta pulsando el botón otra
+	 *  vez, y la dificultad no significa nada. Se vacía al terminar. */
+	TSet<FString> TiradasFalladas;
+
+	static FString ClaveTirada(FName Nodo, int32 Indice);
+	bool TiradaDisponible(int32 Indice) const;
 };
