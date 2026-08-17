@@ -18,7 +18,7 @@
 #include "AlsasuaRiotControlSubsystem.generated.h"
 
 class UPointLightComponent;
-class UParticleSystemComponent;
+class UNiagaraComponent;
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Niveles de escalada del disturbio.
@@ -137,7 +137,7 @@ struct FRiotInstance
 
 	/** Componente de partículas de la bengala. */
 	UPROPERTY()
-	TObjectPtr<UParticleSystemComponent> FlareParticles = nullptr;
+	TObjectPtr<UNiagaraComponent> FlareParticles = nullptr;
 
 	/** true si el disturbio sigue activo. */
 	bool bIsActive = true;

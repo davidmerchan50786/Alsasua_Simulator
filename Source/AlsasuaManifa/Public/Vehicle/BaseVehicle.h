@@ -5,7 +5,7 @@
 #include "AlsasuaTypes.h"
 #include "BaseVehicle.generated.h"
 
-class UParticleSystem;
+class UNiagaraSystem;
 class USoundBase;
 
 UCLASS()
@@ -69,7 +69,7 @@ protected:
 
 private:
     UPROPERTY()
-    TObjectPtr<UParticleSystem> CachedExplosionVFX = nullptr;
+    TObjectPtr<UNiagaraSystem> CachedExplosionVFX = nullptr;
 
     UPROPERTY()
     TObjectPtr<USoundBase> CachedExplosionSFX = nullptr;
