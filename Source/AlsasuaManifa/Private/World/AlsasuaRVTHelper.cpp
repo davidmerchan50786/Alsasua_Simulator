@@ -7,7 +7,7 @@ void AAlsasuaRVTHelper::BeginPlay()
 {
     Super::BeginPlay();
     CachedMPC = LoadObject<UMaterialParameterCollection>(
-        nullptr, TEXT("/Game/Materials/MPC_AlsasuaGlobal.MPC_AlsasuaGlobal"));
+        nullptr, TEXT("/Game/Materiales/MPC_Clima.MPC_Clima"));
 }
 
 void AAlsasuaRVTHelper::PaintWetnessAtLocation(FVector Location, float Intensity, float Radius)

@@ -7,7 +7,7 @@ void UAlsasuaCinemaDirector::Initialize(FSubsystemCollectionBase& Collection)
 {
     Super::Initialize(Collection);
     CachedMPC = LoadObject<UMaterialParameterCollection>(
-        nullptr, TEXT("/Game/Materials/MPC_AlsasuaGlobal.MPC_AlsasuaGlobal"));
+        nullptr, TEXT("/Game/Materiales/MPC_Clima.MPC_Clima"));
 }
 
 void UAlsasuaCinemaDirector::Tick(float DeltaTime)
