@@ -277,6 +277,12 @@ void ADirectorArranque::IniciarConstruccion()
 
             if (UAlsasuaBarrioStyleSystem* Style = NewObject<UAlsasuaBarrioStyleSystem>(Edificio))
             {
+                // El barrio se le pasa desde aquí: MANIFA no puede ver a
+                // AEdificioGenerado, porque la dependencia va WORLD → MANIFA.
+                // El componente lo sacaba de Owner->GetName(), que es
+                // "EdificioGenerado_42", así que los 1030 caían al estilo por
+                // defecto y los ocho barrios salían iguales.
+                Style->Barrio = Edificio->Barrio;
                 Style->RegisterComponent(); StyleCount++;
             }
             if (UAlsasuaBuildingEmissiveComponent* Emissive =
