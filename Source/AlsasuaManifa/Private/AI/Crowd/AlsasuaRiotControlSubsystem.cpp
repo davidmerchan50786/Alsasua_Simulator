@@ -12,7 +12,9 @@
 #include "Engine/OverlapResult.h"
 #include "Engine/Engine.h"
 #include "TimerManager.h"
-#include "Particles/ParticleSystemComponent.h"
+#include "NiagaraSystem.h"
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -238,22 +240,23 @@ void UAlsasuaRiotControlSubsystem::SpawnFlareEffects(FRiotInstance& Riot)
 	}
 
 	// ── Partículas de humo rojo ──────────────────────────────────────────────
-	// Buscar sistema de partículas por defecto.
-	UParticleSystem* PSFlare = LoadObject<UParticleSystem>(
+	// Niagara y NS_Humo, no Cascade y P_Fire: P_Fire no lo crea nadie, así que
+	// este LoadObject devolvía null y de la bengala sólo quedaba la luz roja
+	// flotando. Los sistemas NS_* los fabrica Tools/create_niagara_vfx.py, y
+	// son los que usa el resto del proyecto.
+	UNiagaraSystem* NSFlare = LoadObject<UNiagaraSystem>(
 		nullptr,
-		TEXT("/Game/Effects/P_Fire"),  // Fallback
+		TEXT("/Game/VFX/NS_Humo.NS_Humo"),
 		nullptr,
 		LOAD_None);
 
-	if (PSFlare != nullptr)
+	if (NSFlare != nullptr)
 	{
-		Riot.FlareParticles = UGameplayStatics::SpawnEmitterAtLocation(
+		Riot.FlareParticles = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
 			World,
-			PSFlare,
+			NSFlare,
 			Riot.Epicenter + FVector(0.f, 0.f, 20.f),
-			FRotator::ZeroRotator,
-			true,
-			EPSCPoolMethod::AutoRelease);
+			FRotator::ZeroRotator);
 	}
 }
 
@@ -270,7 +273,7 @@ void UAlsasuaRiotControlSubsystem::CleanupFlareEffects(FRiotInstance& Riot)
 
 	if (Riot.FlareParticles != nullptr)
 	{
-		Riot.FlareParticles->DeactivateSystem();
+		Riot.FlareParticles->Deactivate();
 		Riot.FlareParticles = nullptr;
 	}
 }

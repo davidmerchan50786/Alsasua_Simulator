@@ -4,7 +4,8 @@
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
-#include "Particles/ParticleSystem.h"
+#include "NiagaraSystem.h"
+#include "NiagaraFunctionLibrary.h"
 
 ABaseVehicle::ABaseVehicle()
 {
@@ -23,8 +24,13 @@ ABaseVehicle::ABaseVehicle()
 void ABaseVehicle::BeginPlay()
 {
     Super::BeginPlay();
-    CachedExplosionVFX = LoadObject<UParticleSystem>(
-        nullptr, TEXT("/Game/VFX/P_Explosion.P_Explosion"));
+    // Niagara y NS_ExplosionCoche, no Cascade y P_Explosion. P_Explosion no lo
+    // crea nadie —Tools/create_niagara_vfx.py fabrica NS_*, que es lo que usan
+    // VehiculoJugable, VehiculoAmbiente y ArmasComponent—, así que este
+    // LoadObject devolvía null y los vehículos de esta clase explotaban sin
+    // efecto. Era el único sitio del proyecto que seguía en Cascade.
+    CachedExplosionVFX = LoadObject<UNiagaraSystem>(
+        nullptr, TEXT("/Game/VFX/NS_ExplosionCoche.NS_ExplosionCoche"));
     CachedExplosionSFX = LoadObject<USoundBase>(
         nullptr, TEXT("/Game/Audio/SC_Explosion.SC_Explosion"));
 }
@@ -67,9 +73,12 @@ void ABaseVehicle::RecibirDano(int32 Cantidad, FVector Origen, ETipoDano Tipo)
         if (MovementComponent) MovementComponent->StopMovementImmediately();
 
         // Detonate with explosion effect.
-        UGameplayStatics::SpawnEmitterAtLocation(GetWorld(),
-            CachedExplosionVFX,
-            GetActorLocation(), GetActorRotation(), true);
+        if (CachedExplosionVFX)
+        {
+            UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(),
+                CachedExplosionVFX,
+                GetActorLocation(), GetActorRotation());
+        }
         UGameplayStatics::PlaySoundAtLocation(GetWorld(),
             CachedExplosionSFX,
             GetActorLocation());
