@@ -134,7 +134,10 @@ void UCargadorVias::PrepararCarga()
 	Encolar(TEXT("Datos/railways_unity.json"),  TEXT("Via"),   14.f,  2.5f, true, TEXT("rails"));
 	Encolar(TEXT("Datos/waterways_unity.json"), TEXT("Agua"), -20.f,  6.f, false);   // río un poco hundido
 	Encolar(TEXT("Datos/caminos_unity.json"),   TEXT("Camino"), 6.f,  3.f, false);   // pistas/senderos de monte
-	Encolar(TEXT("Datos/tunnels_unity.json"),   TEXT("Tunel"),  8.f,  4.f, false);   // túneles (placeholder hasta ATunelAlsasua)
+	// Los túneles ya no se encolan aquí: sus bocas las levanta ATunelAlsasua en
+	// la fase 3b, que es quien sabe dónde están los portales. Encolarlos ponía
+	// una cinta de calzada por encima del monte, por eso PasoPresupuesto los
+	// descartaba y este cargador contaba cinco vías que no construía.
 	UE_LOG(LogTemp, Log, TEXT("[Vias] %d vías en cola"), Trabajos.Num());
 }
 
@@ -145,10 +148,6 @@ bool UCargadorVias::PasoPresupuesto(double PresupuestoMs)
 	while (Idx < Trabajos.Num())
 	{
 		const FTrabajoVia& T = Trabajos[Idx++];
-
-		// Túneles: datos cargados para uso futuro de ATunelAlsasua (paso 3).
-		// Por ahora se omite la malla visible para evitar artefactos en superficie.
-		if (T.Tag == TEXT("Tunel")) { ++Construidas; continue; }
 
 		FActorSpawnParameters SP;
 		SP.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -200,6 +199,6 @@ int32 UCargadorVias::Cargar()
 	const int32 MaxIter = 10000;
 	while (!PasoPresupuesto(1000.0) && ++IterGuard < MaxIter) {}
 	if (IterGuard >= MaxIter) UE_LOG(LogTemp, Warning, TEXT("[Vias] Iteration guard reached (%d)"), MaxIter);
-	UE_LOG(LogTemp, Log, TEXT("[Vias] %d vías construidas (aceras+ferrocarril+ríos+caminos+túneles)"), Construidas);
+	UE_LOG(LogTemp, Log, TEXT("[Vias] %d vías construidas (aceras+ferrocarril+ríos+caminos)"), Construidas);
 	return Construidas;
 }

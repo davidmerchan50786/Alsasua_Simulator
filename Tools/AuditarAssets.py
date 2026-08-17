@@ -97,6 +97,44 @@ def inventario_manifest():
     return nombres
 
 
+def packs_sin_respaldo(externas, codigo):
+    """Ficheros que cargan un pack externo sin red debajo.
+
+    CLAUDE.md §6 lo pide explícito: el proyecto tiene que arrancar sin los
+    assets pesados, que son decenas de GB fuera de git. Las dos redes son
+    AlsasuaMallaFab::Resolver para malla y CargarMaterialConFallback* para
+    material. Sin ninguna de las dos, LoadObject devuelve null, SetStaticMesh
+    no hace nada y el actor se queda sin malla — invisible, pero contándose en
+    el log como colocado.
+
+    Se mira por fichero y no por línea: quien usa Resolver en el fichero ya
+    tiene la red puesta, aunque mencione la ruta del pack como preferencia.
+
+    Y sólo cuenta si el fichero pone malla estática. Las rutas blandas de audio
+    y VFX —el trueno, las camas de ambiente— pueden faltar sin
+    romper nada y CLAUDE.md §6 las da por buenas explícitamente; el esqueleto
+    del jugador tampoco se resuelve por AlsasuaMallaFab. El fallo que esto busca
+    es el otro: un actor de malla que se queda sin malla.
+    """
+    porfichero = {}
+    for ruta in externas:
+        for f in codigo.get(ruta, []):
+            porfichero.setdefault(f.split(":")[0], set()).add(ruta)
+
+    salida = {}
+    for fichero, rutas in porfichero.items():
+        try:
+            txt = open(os.path.join(RAIZ, fichero), encoding="utf-8", errors="ignore").read()
+        except OSError:
+            continue
+        if "SetStaticMesh" not in txt:
+            continue
+        if "AlsasuaMallaFab::Resolver" in txt or "CargarMaterialConFallback" in txt:
+            continue
+        salida[fichero] = sorted(rutas)
+    return salida
+
+
 # Raíces que vienen de packs externos (Fab, Megascans, CitySample, importaciones).
 # Que falten es legítimo: el proyecto tiene que arrancar sin ellos y degradar.
 PACKS_EXTERNOS = ("/Game/Megascans", "/Game/Fab", "/Game/CitySample", "/Game/GASP",
@@ -116,6 +154,13 @@ def rutas_generadas():
             for f in files:
                 if not f.endswith((".cpp", ".h", ".py")):
                     continue
+                # Este fichero no cuenta: escribe rutas de ejemplo en su prosa
+                # y en lo que imprime, y al leerse a sí mismo se las daba por
+                # generadas. Bastó nombrar el trueno y la lluvia en un
+                # comentario para que catorce rutas de audio y VFX dejaran de
+                # salir en el informe.
+                if os.path.abspath(os.path.join(base, f)) == os.path.abspath(__file__):
+                    continue
                 try:
                     txt = open(os.path.join(base, f), encoding="utf-8", errors="ignore").read()
                 except OSError:
@@ -127,7 +172,12 @@ def rutas_generadas():
     return out
 
 
-RE_RESOLVER = re.compile(r'Resolver\(\s*TEXT\("([^"]+)"\)', re.S)
+# El tipo no siempre llega a Resolver() como literal. AlsasuaRooftopDetailSystem
+# lo pasa por un lambda —CrearItem(TEXT("antena"), ...) → CapaDe(Tipo, ...) →
+# Resolver(Tipo, ...)—, así que mirando sólo Resolver( se le escapaban cuatro
+# tipos sin entrada en la tabla, y con ellos la Antena_TV y la Placa_Solar que
+# Meshy había generado para este pueblo. Se miran también los envoltorios.
+RE_RESOLVER = re.compile(r'(?:Resolver|CrearItem|CapaDe)\(\s*TEXT\("([^"]+)"\)', re.S)
 RE_TABLA = re.compile(r'\{\s*TEXT\("([^"]+)"\),\s*TEXT\(')
 
 
@@ -225,7 +275,30 @@ def main():
     generadas = rutas_generadas()
     carpetas_generadas = {r.rsplit("/", 1)[0] for r in generadas}
 
-    rotas, ok, externas, gen = {}, [], [], []
+    # Nombres de asset que algún generador nombra literalmente. Sirve para
+    # separar "la carpeta la genera el proyecto" de "y además crea ESTE asset".
+    #
+    # No basta con partir las rutas /Game/: los generadores casi nunca escriben
+    # la ruta entera, pasan el nombre y la carpeta por separado —
+    # CrearMalla(TEXT("SM_Iglesia"), TEXT("/Game/Landmarks"))— y en Python van en
+    # variables. Así que se recogen también los literales sueltos con prefijo de
+    # asset. Sin esto salían como huecos SM_Iglesia, SM_Banco o M_Terreno_Acera,
+    # que sí los crea alguien.
+    nombres_generados = {r.rsplit("/", 1)[-1] for r in generadas if "/" in r}
+    RE_NOMBRE = re.compile(r'["\'](SM_[A-Za-z0-9_]+|M_[A-Za-z0-9_]+|MI_[A-Za-z0-9_]+|'
+                           r'MPC_[A-Za-z0-9_]+|P_[A-Za-z0-9_]+|NS_[A-Za-z0-9_]+)["\']')
+    for sub in (os.path.join(SOURCE, "AlsasuaEditor"), os.path.join(RAIZ, "Tools")):
+        for base, _, files in os.walk(sub):
+            for f in files:
+                if not f.endswith((".cpp", ".h", ".py")):
+                    continue
+                try:
+                    txt = open(os.path.join(base, f), encoding="utf-8", errors="ignore").read()
+                except OSError:
+                    continue
+                nombres_generados |= set(RE_NOMBRE.findall(txt))
+
+    rotas, ok, externas, gen, sin_nombre = {}, [], [], [], []
     for ruta, usos in sorted(codigo.items()):
         carpeta = ruta.rsplit("/", 1)[0]
         if ruta in disco or carpeta in dirs:
@@ -239,6 +312,18 @@ def main():
         # no casaba con nada y salían 57 alarmas falsas. Una auditoría que grita
         # sin motivo es peor que no tenerla: se deja de mirar.
         if ruta in generadas or carpeta in generadas or carpeta in carpetas_generadas:
+            # Aceptar por carpeta hace falta —los generadores componen el nombre
+            # del asset en tiempo de ejecución, "/Game/Mobiliario/SM_%s"— pero se
+            # traga también lo que nadie crea con ese nombre exacto. Eso no está
+            # roto (todos los cargadores comprueban el null y siguen), pero es una
+            # función visual que nunca va a verse: se cuenta aparte en vez de
+            # darla por buena.
+            # Un nombre acabado en "_" es el prefijo de una ruta que el código
+            # compone con Printf, no un asset; se descarta como en el caso de
+            # abajo.
+            if (nombres_generados and not ruta.endswith("_")
+                    and os.path.basename(ruta) not in nombres_generados):
+                sin_nombre.append(ruta)
             gen.append(ruta); continue
         if ruta.startswith(PACKS_EXTERNOS):
             externas.append(ruta); continue
@@ -249,14 +334,53 @@ def main():
             ok.append(ruta); continue
         rotas[ruta] = usos
 
+    sin_respaldo = packs_sin_respaldo(externas, codigo)
+
     if "--json" in sys.argv:
         print(json.dumps({"rotas": rotas, "ok": ok, "generadas": gen,
-                          "externas": externas}, indent=1, ensure_ascii=False))
+                          "externas": externas,
+                          "sin_respaldo": sin_respaldo}, indent=1, ensure_ascii=False))
         return
 
     print("=" * 74)
     print("  AUDITORÍA DE ASSETS — rutas /Game/ que pide el código")
     print("=" * 74)
+    if sin_respaldo:
+        print()
+        print("=" * 74)
+        print("  PACK EXTERNO SIN DEGRADACIÓN — %d ficheros" % len(sin_respaldo))
+        print("=" * 74)
+        print("  Cargan la malla de un pack que no está en el repo y no pasan")
+        print("  por AlsasuaMallaFab::Resolver ni por CargarMaterialConFallback.")
+        print("  El LoadObject devuelve null, el SetStaticMesh no hace nada y el")
+        print("  actor se queda sin malla: invisible, pero contándose en el log")
+        print("  como colocado. Le pasaba a los cien contenedores, a las farolas")
+        print("  y a los doce semáforos, de los que sólo quedaba la luz flotando.")
+        print("  CLAUDE.md §6: el proyecto tiene que arrancar sin los pesados.")
+        for f, rs in sorted(sin_respaldo.items()):
+            print("\n  %s" % f)
+            for r in rs:
+                print("       %s" % r)
+        print()
+    if sin_nombre:
+        print()
+        print("=" * 74)
+        print("  LA CARPETA SÍ, EL ASSET NO — %d rutas" % len(sin_nombre))
+        print("=" * 74)
+        print("  Cuelgan de una carpeta que genera el proyecto, pero ningún")
+        print("  generador crea un asset con ese nombre. No está roto: quien las")
+        print("  carga comprueba el null y sigue. Lo que pasa es que esa función")
+        print("  visual no se ve nunca, y por carpeta la auditoría las daba por")
+        print("  buenas.")
+        porcarpeta = {}
+        for r in sorted(sin_nombre):
+            porcarpeta.setdefault(r.rsplit("/", 1)[0], []).append(r.rsplit("/", 1)[-1])
+        for c, ns in sorted(porcarpeta.items()):
+            print("\n  %s  (%d)" % (c, len(ns)))
+            for n in ns:
+                print("       %s" % n)
+        print()
+
     print("  referenciadas %d = en disco %d + las genera el proyecto %d"
           % (len(codigo), len(ok), len(gen)))
     print("                  + pack externo opcional %d + SIN EXPLICACIÓN %d"

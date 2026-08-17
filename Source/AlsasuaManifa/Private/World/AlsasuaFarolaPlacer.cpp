@@ -9,6 +9,9 @@
 #include "Serialization/JsonSerializer.h"
 #include "GeoDataAlsasua.h"
 #include "CargarJsonComun.h"
+#include "AjusteMallaComun.h"
+#include "World/AlsasuaMallaFab.h"
+#include "Engine/StaticMesh.h"
 
 void UAlsasuaFarolaPlacer::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -68,26 +71,55 @@ int32 UAlsasuaFarolaPlacer::ColocarFarolasEnMundo()
 
     int32 Placed = 0;
 
-    UStaticMesh* LampMesh1 = LoadObject<UStaticMesh>(nullptr,
-        TEXT("/Game/CitySample/Prop/Kit_StreetLamp_A/Mesh/SM_StreetLamp_A_Pole_Large"));
-    UStaticMesh* LampMesh2 = LoadObject<UStaticMesh>(nullptr,
-        TEXT("/Game/CitySample/Prop/Kit_StreetLamp_B/Mesh/SM_StreetLamp_B"));
+    // La malla era /Game/CitySample/..., que no está en el repo ni se baja con
+    // él, y no había respaldo: las farolas se creaban como actores sin malla,
+    // invisibles, contándose en el log como colocadas. Por AlsasuaMallaFab entra
+    // la farola de Fab si está, la propia de /Game/Mobiliario si no, y el
+    // cilindro del motor como último recurso.
+    UStaticMesh* Malla = AlsasuaMallaFab::Resolver(TEXT("farola_decorativa"),
+        TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
+    if (!Malla)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("FarolaPlacer: sin malla; no se colocan las %d farolas."), Farolas.Num());
+        return 0;
+    }
+    const bool bDeFab = AlsasuaMallaFab::VieneDeFab(TEXT("farola_decorativa"));
 
     for (const FFarolaEntry& F : Farolas)
     {
+        // Sin esto, una farola de Fab entra con su tamaño de catálogo y el
+        // cilindro del motor con su metro de alto: la altura del dataset no la
+        // aplicaba nadie.
+        const AjusteMalla::FColocacion Col = AjusteMalla::Calcular(
+            Malla, FVector(0.25f, 0.25f, FMath::Max(2.0f, F.AlturaM)),
+            bDeFab, AjusteMalla::EEncaje::Alto);
+        if (!Col.bValido) continue;
+
         // Media altura sobre el terreno, no sobre el nivel del mar.
-        FVector Loc = UAlsasuaGeoData::RelLocalASueloUE5(GetWorld(), FVector(F.X, 0.0f, F.Z),
-            F.AlturaM * 50.0f);
+        // Las dos farolas del dataset están en relativo, pero street_furniture
+        // mezcla marcos: si mañana se añade una en absoluto, esto la coloca donde
+        // toca en vez de a 8,6 km. La cota se apoya después.
+        FVector Loc = UAlsasuaGeoData::MobiliarioAUE5(FVector(F.X, 0.0f, F.Z));
+        Loc.Z = UAlsasuaGeoData::AlturaSueloUE5(GetWorld(), Loc.X, Loc.Y) + Col.SubirCm;
 
         AStaticMeshActor* FarolaActor = World->SpawnActor<AStaticMeshActor>(
-            AStaticMeshActor::StaticClass(), Loc, FRotator(0, F.Rotacion, 0));
+            AStaticMeshActor::StaticClass(), Loc,
+            FRotator(0.f, F.Rotacion + Col.YawExtra, 0.f));
         if (FarolaActor)
         {
-            FarolaActor->SetMobility(EComponentMobility::Movable);
+            // Una farola no se mueve: era Movable, que además la deja fuera de
+            // la iluminación estática.
+            FarolaActor->SetMobility(EComponentMobility::Static);
+            FarolaActor->SetActorScale3D(Col.Escala);
+            FarolaActor->GetStaticMeshComponent()->SetStaticMesh(Malla);
 
-            UStaticMesh* MeshToUse = (Placed % 2 == 0) ? LampMesh1 : LampMesh2;
-            if (MeshToUse)
-                FarolaActor->GetStaticMeshComponent()->SetStaticMesh(MeshToUse);
+            // Por aquí las encuentra ADirectorArranque para colgarles el
+            // controlador que las enciende de noche. Antes las buscaba por
+            // GetName().Contains("farola"), y GetName() devuelve el nombre de
+            // objeto ("StaticMeshActor_42"), no la etiqueta del editor: no
+            // encontraba ninguna y las farolas no se encendían nunca. Tags sí
+            // sobrevive a un build de juego.
+            FarolaActor->Tags.Add(FName(TEXT("Farola")));
 
 #if WITH_EDITOR
             FarolaActor->SetActorLabel(*FString::Printf(TEXT("Farola_%s_%d"),

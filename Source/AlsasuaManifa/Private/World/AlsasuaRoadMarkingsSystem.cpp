@@ -62,6 +62,33 @@ int32 UAlsasuaRoadMarkingsSystem::GenerarMarcas()
     int32 TotalLineas = 0;
     int32 TotalStop = 0;
 
+    // Cuántas vías podrían llevar paso de cebra y línea de stop. Sólo mira el
+    // tipo, sin geometría, y sirve para repartir el tope por todo el pueblo.
+    //
+    // Sin esto, el tope se gasta en las primeras vías del fichero —que no viene
+    // ordenado por nada geográfico— y el resto se queda sin una sola marca: 30
+    // pasos de cebra de 269 candidatas y 20 líneas de stop de 194, todos
+    // amontonados al principio del recorrido.
+    int32 CandCruces = 0, CandStop = 0;
+    for (const auto& RV : *RoadsArr)
+    {
+        const TSharedPtr<FJsonObject>& R = RV->AsObject();
+        if (!R) continue;
+        const FString T = R->HasField(TEXT("type")) ? R->GetStringField(TEXT("type")) : TEXT("");
+        if (T == TEXT("residential") || T == TEXT("tertiary")) ++CandCruces;
+        if (T == TEXT("residential")) ++CandStop;
+    }
+    int32 VistasCruce = 0, VistasStop = 0;
+
+    // Se admite la marca sólo mientras vaya por detrás de su cuota, que es lo
+    // que reparte los huecos por todo el trazado en vez de cortar de golpe.
+    auto TocaAhora = [](int32 Vistas, int32 Candidatas, int32 Puestas, int32 Tope) -> bool
+    {
+        if (Candidatas <= 0) return false;
+        const int32 Objetivo = FMath::Min(Tope, Candidatas);
+        return Puestas <= static_cast<int32>(static_cast<int64>(Vistas) * Objetivo / Candidatas);
+    };
+
     UInstancedStaticMeshComponent* LineasISM = nullptr;
     UInstancedStaticMeshComponent* CrucesISM = nullptr;
     UInstancedStaticMeshComponent* StopISM = nullptr;
@@ -122,7 +149,17 @@ int32 UAlsasuaRoadMarkingsSystem::GenerarMarcas()
             float Largo = FVector::Distance(Loc0, Loc1);
             float Angle = FMath::RadiansToDegrees(FMath::Atan2(Direccion.Y, Direccion.X));
 
-            if (RoadWidth >= 6.0f && TotalLineas < MaxLineasCentrales && Largo > 300.0f)
+            // Línea central: en las de doble sentido con calzada de verdad, o
+            // sea las 75 tertiary —las salidas a Gipuzkoa y Urdiain— y la A-10.
+            //
+            // El criterio era `RoadWidth >= 6`, y mirando los anchos que hay en
+            // roads_unity.json eso son exactamente la autovía (11 m) y sus 50
+            // enlaces (6 m): la línea central se pintaba SÓLO en la autovía y en
+            // ninguna calle. Y un enlace es de sentido único, así que ahí
+            // tampoco va.
+            const bool bDobleSentido = (Type == TEXT("tertiary") || Type == TEXT("motorway"));
+
+            if (bDobleSentido && TotalLineas < MaxLineasCentrales && Largo > 300.0f)
             {
                 FRoadMarking LineaCentral;
                 LineaCentral.Tipo = TEXT("linea_central");
@@ -147,7 +184,23 @@ int32 UAlsasuaRoadMarkingsSystem::GenerarMarcas()
                 TotalLineas++;
             }
 
-            if (i == 0 && TotalCruces < MaxCrucesPeatonales)
+            // Paso de cebra en el arranque del trazado. OSM parte las vías en
+            // los cruces, así que el primer punto de un tramo suele ser un nudo,
+            // que es donde va un paso.
+            //
+            // Faltaba el filtro por tipo: se pintaba en el arranque de
+            // cualquiera de las 489 vías, la A-10 y sus 50 enlaces incluidos.
+            // Un paso de peatones en la autovía.
+            const bool bCalleDePueblo = (Type == TEXT("residential") || Type == TEXT("tertiary"));
+
+            bool bTocaCruce = false;
+            if (bCalleDePueblo && i == 0)
+            {
+                bTocaCruce = TocaAhora(VistasCruce, CandCruces, TotalCruces, MaxCrucesPeatonales);
+                ++VistasCruce;
+            }
+
+            if (bTocaCruce)
             {
                 FRoadMarking Cruce;
                 Cruce.Tipo = TEXT("cruce_peatonal");
@@ -161,9 +214,15 @@ int32 UAlsasuaRoadMarkingsSystem::GenerarMarcas()
 
                 if (CrucesISM)
                 {
-                    for (int32 s = 0; s < 5; s++)
+                    // Las cinco bandas, centradas en la calzada. El reparto era
+                    // `W/2 - s*W/5` para s de 0 a 4, o sea de +0,5W a -0,3W: el
+                    // paso quedaba descentrado un décimo del ancho, con una
+                    // banda fuera de la calzada por un lado y hueco por el otro.
+                    const int32 NumBandas = 5;
+                    for (int32 s = 0; s < NumBandas; s++)
                     {
-                        FVector StripePos = Loc0 + Normal * (Cruce.Ancho * 0.5f - s * Cruce.Ancho / 5.0f);
+                        const float Desvio = Cruce.Ancho * ((s + 0.5f) / NumBandas - 0.5f);
+                        FVector StripePos = Loc0 + Normal * Desvio;
                         StripePos.Z += 2.0f;
                         FTransform Transform;
                         Transform.SetLocation(StripePos);
@@ -177,7 +236,17 @@ int32 UAlsasuaRoadMarkingsSystem::GenerarMarcas()
                 TotalCruces++;
             }
 
-            if (Type == TEXT("residential") && i == PointsArr->Num() - 2 && TotalStop < MaxLineasStop)
+            // Línea de stop en el final del trazado: OSM parte las vías en los
+            // cruces, así que el último punto de un tramo residencial es la
+            // salida a otra calle.
+            bool bTocaStop = false;
+            if (Type == TEXT("residential") && i == PointsArr->Num() - 2)
+            {
+                bTocaStop = TocaAhora(VistasStop, CandStop, TotalStop, MaxLineasStop);
+                ++VistasStop;
+            }
+
+            if (bTocaStop)
             {
                 FRoadMarking Stop;
                 Stop.Tipo = TEXT("linea_stop");

@@ -2,6 +2,7 @@
 #include "Engine/World.h"
 #include "Components/StaticMeshComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "Components/MeshComponent.h"
 
 UAlsasuaBarrioStyleSystem::UAlsasuaBarrioStyleSystem()
 {
@@ -19,8 +20,16 @@ void UAlsasuaBarrioStyleSystem::ApplyBarrioStyles()
 	AActor* Owner = GetOwner();
 	if (!Owner) return;
 
-	// Detectar barrio por nombre del actor
-	const FString Label = Owner->GetName().ToLower();
+	// El barrio lo pone ADirectorArranque al colgar el componente: es él quien
+	// es capa WORLD y ve el AEdificioGenerado del que sale.
+	//
+	// Antes se sacaba de Owner->GetName().ToLower(), y el nombre de objeto de un
+	// AEdificioGenerado es "EdificioGenerado_42": no contiene "herriko" ni
+	// ninguno de los otros, así que los 1030 caían al estilo por defecto y los
+	// ocho barrios se veían iguales. Se cae a GetName() sólo por si esto acaba
+	// colgado de algo que no es un edificio.
+	FString Label = Barrio.ToLower();
+	if (Label.IsEmpty()) Label = Owner->GetName().ToLower();
 
 	FLinearColor FachadaColor = FLinearColor(0.75f, 0.72f, 0.65f); // Default: piedra
 	FLinearColor TejadoColor = FLinearColor(0.7f, 0.35f, 0.15f);   // Default: terracota
@@ -88,8 +97,18 @@ void UAlsasuaBarrioStyleSystem::ApplyBarrioStyles()
 		const int32 NumMats = Mesh->GetNumMaterials();
 		for (int32 i = 0; i < NumMats; ++i)
 		{
+			// El material del edificio no es un MID: lo pone el cargador tal
+			// cual. Con `if (!MID) continue` no se escribía en ninguno, así que
+			// aunque el barrio se hubiera detectado bien no se habría visto.
 			UMaterialInstanceDynamic* MID = Cast<UMaterialInstanceDynamic>(Mesh->GetMaterial(i));
-			if (!MID) continue;
+			if (!MID)
+			{
+				UMaterialInterface* Base = Mesh->GetMaterial(i);
+				if (!Base) continue;
+				MID = UMaterialInstanceDynamic::Create(Base, this);
+				if (!MID) continue;
+				Mesh->SetMaterial(i, MID);
+			}
 
 			// Detectar si es tejado o fachada por índice
 			if (i == 0)

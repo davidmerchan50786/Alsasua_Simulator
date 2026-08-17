@@ -1,8 +1,6 @@
 #include "World/AlsasuaRoadSurfaceSystem.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
-#include "Engine/StaticMeshActor.h"
-#include "Components/StaticMeshComponent.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "Serialization/JsonReader.h"
@@ -19,6 +17,7 @@ void UAlsasuaRoadSurfaceSystem::Initialize(FSubsystemCollectionBase& Collection)
 void UAlsasuaRoadSurfaceSystem::Deinitialize()
 {
     Superficies.Empty();
+    PorId.Empty();
     bCargado = false;
     Super::Deinitialize();
 }
@@ -37,6 +36,7 @@ bool UAlsasuaRoadSurfaceSystem::CargarSuperficies()
     }
 
     Superficies.Empty(Arr.Num());
+    PorId.Empty(Arr.Num());
     for (const auto& Val : Arr)
     {
         const TSharedPtr<FJsonObject>& Obj = Val->AsObject();
@@ -48,6 +48,7 @@ bool UAlsasuaRoadSurfaceSystem::CargarSuperficies()
         if (!FirstPt) continue;
 
         FRoadSurfaceEntry Entry;
+        Entry.Id = Obj->HasField(TEXT("id")) ? (int32)Obj->GetIntegerField(TEXT("id")) : -1;
         Entry.Nombre = Obj->HasField(TEXT("name")) ? Obj->GetStringField(TEXT("name")) : TEXT("");
         Entry.Calle = Entry.Nombre;
         Entry.X = FirstPt->GetNumberField(TEXT("x")) + UAlsasuaGeoData::OX;
@@ -68,6 +69,7 @@ bool UAlsasuaRoadSurfaceSystem::CargarSuperficies()
         else if (Entry.Ancho < 5.0f)
             Entry.Material = TEXT("asphalt_worn");
 
+        if (Entry.Id >= 0) PorId.Add(Entry.Id, Superficies.Num());
         Superficies.Add(Entry);
     }
 
@@ -76,70 +78,30 @@ bool UAlsasuaRoadSurfaceSystem::CargarSuperficies()
     return true;
 }
 
-int32 UAlsasuaRoadSurfaceSystem::AplicarSuperficiesEnMundo()
+bool UAlsasuaRoadSurfaceSystem::FirmeDe(int32 Id, FString& OutMaterial, FLinearColor& OutColor) const
 {
-    if (!bCargado && !CargarSuperficies()) return 0;
+    // Lo pide ADirectorArranque (fase 26) para teñir las ACalleGenerada que
+    // UCargadorCalles ya dejó drapeadas en la fase 4. Aquí no se construye nada:
+    // este sistema clasifica el firme, no pone calzada.
+    // El asfalto va aparte y como constante, no como entrada de la tabla: es el
+    // valor al que se cae cuando el firme no está en ella, y sacarlo de la
+    // propia tabla hace que el respaldo dependa de que la tabla lo tenga.
+    // Colores[...] es FindChecked en UE, así que el día que alguien renombre la
+    // clave "asphalt" el fallback no degrada: revienta.
+    static const FLinearColor Asfalto(0.15f, 0.15f, 0.15f);
+    static const TMap<FString, FLinearColor> Colores = {
+        { TEXT("asphalt"),      Asfalto },
+        { TEXT("cobblestone"),  FLinearColor(0.45f, 0.40f, 0.35f) },
+        { TEXT("asphalt_worn"), FLinearColor(0.25f, 0.24f, 0.23f) },
+        { TEXT("gravel"),       FLinearColor(0.55f, 0.50f, 0.45f) },
+    };
 
-    UWorld* World = GetWorld();
-    if (!World) return 0;
+    const int32* Idx = PorId.Find(Id);
+    if (!Idx || !Superficies.IsValidIndex(*Idx)) return false;
 
-    static TMap<FString, UStaticMesh*> MaterialMeshes;
-    if (MaterialMeshes.Num() == 0)
-    {
-        MaterialMeshes.Add(TEXT("asphalt"), LoadObject<UStaticMesh>(nullptr,
-            TEXT("/Engine/BasicShapes/Cube.Cube")));
-        MaterialMeshes.Add(TEXT("cobblestone"), LoadObject<UStaticMesh>(nullptr,
-            TEXT("/Engine/BasicShapes/Cube.Cube")));
-        MaterialMeshes.Add(TEXT("asphalt_worn"), LoadObject<UStaticMesh>(nullptr,
-            TEXT("/Engine/BasicShapes/Cube.Cube")));
-        MaterialMeshes.Add(TEXT("gravel"), LoadObject<UStaticMesh>(nullptr,
-            TEXT("/Engine/BasicShapes/Cube.Cube")));
-    }
-
-    static TMap<FString, FLinearColor> MaterialColors;
-    if (MaterialColors.Num() == 0)
-    {
-        MaterialColors.Add(TEXT("asphalt"), FLinearColor(0.15f, 0.15f, 0.15f));
-        MaterialColors.Add(TEXT("cobblestone"), FLinearColor(0.45f, 0.40f, 0.35f));
-        MaterialColors.Add(TEXT("asphalt_worn"), FLinearColor(0.25f, 0.24f, 0.23f));
-        MaterialColors.Add(TEXT("gravel"), FLinearColor(0.55f, 0.50f, 0.45f));
-    }
-
-    int32 Placed = 0;
-    for (const FRoadSurfaceEntry& Entry : Superficies)
-    {
-        FVector Loc = UAlsasuaGeoData::UnityaUnreal(FVector(Entry.X, Entry.Z, 0));
-
-        AStaticMeshActor* RoadActor = World->SpawnActor<AStaticMeshActor>(
-            AStaticMeshActor::StaticClass(), Loc, FRotator::ZeroRotator);
-        if (RoadActor)
-        {
-            RoadActor->SetMobility(EComponentMobility::Movable);
-
-            float ScaleX = Entry.Ancho * 100.0f;
-            RoadActor->SetActorScale3D(FVector(ScaleX / 100.0f, ScaleX / 100.0f, 0.1f));
-
-            UStaticMesh** Mesh = MaterialMeshes.Find(Entry.Material);
-            if (Mesh && *Mesh)
-                RoadActor->GetStaticMeshComponent()->SetStaticMesh(*Mesh);
-
-            FLinearColor* Color = MaterialColors.Find(Entry.Material);
-            if (Color)
-            {
-                if (UMaterialInstanceDynamic* DynMat = RoadActor->GetStaticMeshComponent()->CreateDynamicMaterialInstance(0))
-                {
-                    DynMat->SetVectorParameterValue(FName(TEXT("Color")), *Color);
-                }
-            }
-
-#if WITH_EDITOR
-            RoadActor->SetActorLabel(*FString::Printf(TEXT("Road_%s_%s"),
-                *Entry.Material, *Entry.Nombre.Left(20)));
-#endif
-            Placed++;
-        }
-    }
-
-    UE_LOG(LogTemp, Log, TEXT("RoadSurface: %d tramos de calle colocados"), Placed);
-    return Placed;
+    const FRoadSurfaceEntry& E = Superficies[*Idx];
+    OutMaterial = E.Material;
+    const FLinearColor* C = Colores.Find(E.Material);
+    OutColor = C ? *C : Asfalto;
+    return true;
 }

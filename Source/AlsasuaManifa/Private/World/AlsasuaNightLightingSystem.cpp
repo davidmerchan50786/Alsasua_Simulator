@@ -1,10 +1,6 @@
 #include "World/AlsasuaNightLightingSystem.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
-#include "Engine/StaticMeshActor.h"
-#include "Components/StaticMeshComponent.h"
-#include "Materials/MaterialInstanceDynamic.h"
-#include "Kismet/GameplayStatics.h"
 #include "World/Time/TimeOfDayManager.h"
 
 UAlsasuaNightLightingSystem::UAlsasuaNightLightingSystem()
@@ -16,26 +12,8 @@ UAlsasuaNightLightingSystem::UAlsasuaNightLightingSystem()
 void UAlsasuaNightLightingSystem::BeginPlay()
 {
     Super::BeginPlay();
-    CacheNightActors();
 }
 
-void UAlsasuaNightLightingSystem::CacheNightActors()
-{
-    UWorld* World = GetWorld();
-    if (!World) return;
-
-    // Las farolas las lleva UAlsasuaStreetLightController, uno por farola: si
-    // este sistema también les escribía la intensidad, las dos escrituras se
-    // pisaban a 0.5 s y 0.15 s y todo el alumbrado latía.
-    UGameplayStatics::GetAllActorsOfClass(World, AStaticMeshActor::StaticClass(), Edificios);
-    Edificios.RemoveAll([](AActor* A) {
-        const FString L = A->GetName();
-        return !L.Contains(TEXT("Edificio")) && !L.Contains(TEXT("Building")) && !L.Contains(TEXT("Tienda_"));
-    });
-
-    bEdificiosCached = true;
-    UE_LOG(LogTemp, Log, TEXT("NightLighting: %d edificios con ventanas nocturnas"), Edificios.Num());
-}
 
 void UAlsasuaNightLightingSystem::UpdateNightFactor()
 {
@@ -67,53 +45,10 @@ void UAlsasuaNightLightingSystem::UpdateNightFactor()
     }
 }
 
-void UAlsasuaNightLightingSystem::UpdateEdificios()
-{
-    for (AActor* Edificio : Edificios)
-    {
-        if (!Edificio) continue;
-
-        // Un brillo fijo por edificio en vez de FRandRange en cada tick: cada
-        // medio segundo las ventanas de todo el pueblo cambiaban de intensidad.
-        const uint32 Seed = GetTypeHash(Edificio->GetFName());
-        const float Bias = (float)(Seed & 0xFFFF) / 65535.f;
-        const bool bIsComercio = Edificio->GetName().Contains(TEXT("Tienda"));
-
-        TArray<UStaticMeshComponent*> Meshes;
-        Edificio->GetComponents<UStaticMeshComponent>(Meshes);
-        for (UStaticMeshComponent* Mesh : Meshes)
-        {
-            UMaterialInterface* Mat = Mesh->GetMaterial(0);
-            if (!Mat) continue;
-
-            UMaterialInstanceDynamic* DynMat = Cast<UMaterialInstanceDynamic>(Mat);
-            if (!DynMat)
-            {
-                DynMat = UMaterialInstanceDynamic::Create(Mat, this);
-                if (!DynMat) continue;
-                Mesh->SetMaterial(0, DynMat);
-            }
-
-            if (bIsComercio)
-            {
-                DynMat->SetVectorParameterValue(TEXT("EmissiveColor"), NeonColorComercio);
-                DynMat->SetScalarParameterValue(TEXT("EmissivePower"), NightFactor * 3.0f);
-            }
-            else
-            {
-                DynMat->SetScalarParameterValue(TEXT("EmissivePower"),
-                    NightFactor * FMath::Lerp(WindowEmissiveMin, WindowEmissiveMax, Bias));
-            }
-        }
-    }
-}
 
 void UAlsasuaNightLightingSystem::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-    if (!bEdificiosCached) CacheNightActors();
-
     UpdateNightFactor();
-    UpdateEdificios();
 }

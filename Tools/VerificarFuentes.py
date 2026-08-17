@@ -10,11 +10,44 @@ de un comentario en AlsasuaFoliagePainter.cpp
 
 y AlsasuaManifa —214 cpp, el módulo gordo— dejó de compilar entero.
 
-Esto no es un compilador ni lo pretende. Son dos comprobaciones baratas que
+Esto no es un compilador ni lo pretende. Son siete comprobaciones baratas que
 cazan justo lo que se cuela cuando se edita a ciegas:
 
   1. Sentencia cuyo punto y coma se lo ha tragado un comentario de línea.
   2. Llaves, paréntesis o corchetes descuadrados en un fichero.
+  3. UnityaUnreal con los ejes cambiados (ver abajo).
+  4. CVars propias (g.*) que alguien escribe y no registra nadie.
+  5. Cabecera con tipo reflejado (UCLASS/USTRUCT/UENUM) y su .generated.h
+     ausente o sin ser el último include. UHT lo pide con error, no con aviso:
+     sin él no se llega ni al compilador. AlsasuaInputIDs.h llevaba un
+     UENUM(BlueprintType) sin el include.
+  6. Rutas /Engine/EngineMeshes/, que no existen: las formas básicas del motor
+     están en /Engine/BasicShapes/. LoadObject devuelve null y la pieza se queda
+     sin malla —invisible, pero ocupando su sitio en el log y en la lista de
+     fases—. Lo tenían las antenas, los depósitos y las placas solares de
+     AlsasuaRooftopDetailSystem, y las cinco fuentes del pueblo.
+  7. Conversor de coordenadas usado EN LÍNEA como posición de mundo. Los tres
+     —AbsLocalToUE5, RelLocalToUE5, UnityaUnreal— dejan la Z en el segundo
+     componente de la entrada, que con el patrón habitual (X, 0, Z) es cero:
+     cota cero del mundo, 531 m por debajo del pueblo. Metido directamente en
+     un SpawnActor o un AddInstance no queda sitio donde apoyarlo en el
+     terreno. Hay que pasarlo por una variable y ponerle la Z con
+     AlturaSueloUE5, o usar RelLocalASueloUE5.
+
+Lo que esto NO caza, y conviene saberlo: la comprobación 3 sólo salta cuando el
+segundo argumento de UnityaUnreal NO es cero. El caso contrario —cero literal,
+ejes bien, pero la Z de salida sin apoyar después— es legítimo a medias y no se
+distingue por sintaxis; la 7 cubre sólo la variante en línea. A CargadorPOI se le
+coló por ahí: UnityaUnreal(x, 0.0, z) con los ejes correctos y la Z a cero para
+siempre.
+
+Lo tercero es otra que costó cara. UAlsasuaGeoData::UnityaUnreal espera
+(este, arriba, norte) y devuelve (este_cm, norte_cm, arriba_cm). Media docena de
+sistemas le pasaban (este, norte, 0): la coordenada norte acababa en el eje
+vertical y la Y del mundo en cero, así que colocaban todo alineado sobre la
+línea norte=0 y flotando a la altura de su propia coordenada norte —Alsasua está
+sobre los 8570 en local, o sea más de ochocientos metros en el aire—. Compila
+perfecto y no avisa de nada.
 
 Uso:  python3 Tools/VerificarFuentes.py      (salida != 0 si encuentra algo)
 """
@@ -24,6 +57,16 @@ import sys
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FUENTE = os.path.join(RAIZ, "Source")
+
+# UnityaUnreal(FVector(este, arriba, norte)). Se mira el argumento del medio: si
+# no es un cero literal, lo que hay ahí es casi seguro la coordenada norte.
+RE_UNITY = re.compile(
+    r'UnityaUnreal\s*\(\s*FVector\('
+    r'(?P<este>[^,()]*(?:\([^()]*\))?[^,()]*),'
+    r'(?P<arriba>[^,()]*(?:\([^()]*\))?[^,()]*),'
+    r'(?P<norte>[^()]*(?:\([^()]*\))?[^()]*)\)', re.S)
+RE_CERO = re.compile(r'\s*0(\.0*)?[fF]?\s*')
+
 
 def cegar_literales(linea):
     """Devuelve la línea con el contenido de los literales sustituido por
@@ -77,6 +120,55 @@ def sin_comentarios_ni_cadenas(texto):
     return ''.join(fuera)
 
 
+# CVars del proyecto: se escriben con FindConsoleVariable y se registran con
+# TAutoConsoleVariable. Si nadie las registra, FindConsoleVariable devuelve null
+# y quien las escribe no hace nada — y no se entera. Las tres del menú de
+# opciones (sensibilidad de ratón, invertir Y, vibración de cámara) estuvieron
+# así: las barras se movían y no cambiaban nada.
+RE_CVAR_USO = re.compile(r'FindConsoleVariable\(\s*TEXT\("(g\.[^"]+)"\)')
+RE_CVAR_REG = re.compile(r'TAutoConsoleVariable<[^>]+>\s*\w+\(\s*\n?\s*TEXT\("(g\.[^"]+)"\)')
+
+
+def cvars_sin_registrar(raiz):
+    usadas, registradas = {}, set()
+    for base, _, ficheros in os.walk(raiz):
+        for nombre in ficheros:
+            if not nombre.endswith((".cpp", ".h")):
+                continue
+            ruta = os.path.join(base, nombre)
+            with open(ruta, encoding="utf-8", errors="ignore") as fh:
+                texto = fh.read()
+            for c in RE_CVAR_USO.findall(texto):
+                usadas.setdefault(c, os.path.relpath(ruta, RAIZ))
+            registradas |= set(RE_CVAR_REG.findall(texto))
+    return [(c, f) for c, f in sorted(usadas.items()) if c not in registradas]
+
+
+RE_MACRO_REFLEJADA = re.compile(r'^\s*(UCLASS|USTRUCT|UENUM|UINTERFACE)\s*\(')
+
+# Conversor de coordenadas metido directamente donde se espera una posición de
+# mundo. Ahí ya no hay dónde apoyar la cota: el valor entra tal cual, con la Z
+# que le tocara. Se busca el uso y el conversor en la misma llamada.
+RE_CONV_EN_LINEA = re.compile(
+    r'(?P<uso>SpawnActor\s*<[^>]*>|AddInstance|SetWorldLocation|SetActorLocation|'
+    r'SetRelativeLocation)\s*\([^;]{0,400}?'
+    r'(?P<conv>AbsLocalToUE5|RelLocalToUE5|UnityaUnreal)\s*\(', re.S)
+
+
+def generated_mal_puesto(ruta, texto):
+    """UHT exige el .generated.h, y como ÚLTIMO include del fichero."""
+    lineas = texto.splitlines()
+    if not any(RE_MACRO_REFLEJADA.match(l) for l in lineas):
+        return None
+    incluidos = [(i, l) for i, l in enumerate(lineas) if l.strip().startswith("#include")]
+    generados = [(i, l) for i, l in incluidos if ".generated.h" in l]
+    if not generados:
+        return "tipo reflejado sin #include del .generated.h"
+    if incluidos and generados[-1][0] != incluidos[-1][0]:
+        return "el .generated.h no es el último include"
+    return None
+
+
 def main():
     fallos = []
     revisados = 0
@@ -109,6 +201,51 @@ def main():
                 fallos.append("%s:%d  falta ';' — se lo ha llevado el comentario\n"
                               "      %s" % (rel, num, linea.strip()))
 
+            # 3. UnityaUnreal con la coordenada norte en el eje vertical.
+            lineas = texto.splitlines()
+            for m in RE_UNITY.finditer(texto):
+                arriba = m.group("arriba").strip()
+                if RE_CERO.fullmatch(arriba):
+                    continue
+                num = texto.count("\n", 0, m.start()) + 1
+                # Hay un caso legítimo: los datasets con pts planos [x,y,z,...]
+                # ya traen la vertical en medio. Se marca con "// ejes ok" en las
+                # dos líneas de arriba, que es lo bastante incómodo como para que
+                # nadie lo ponga sin mirarlo.
+                if any("ejes ok" in l for l in lineas[max(0, num - 3):num]):
+                    continue
+                fallos.append("%s:%d  UnityaUnreal con los ejes cambiados: el 2º\n"
+                              "      argumento es 'arriba', no 'norte'  →  %s"
+                              % (rel, num, " ".join(m.group(0).split())))
+
+            # 6. Rutas /Engine/EngineMeshes/, que no existen.
+            for num, linea in enumerate(texto.splitlines(), 1):
+                if "/Engine/EngineMeshes/" not in linea:
+                    continue
+                # Vale mencionarla en un comentario para explicar por qué se
+                # cambió; lo que no vale es cargarla.
+                if cegar_literales(linea).lstrip().startswith(("//", "*")):
+                    continue
+                fallos.append("%s:%d  /Engine/EngineMeshes/ no existe: las formas\n"
+                              "      básicas están en /Engine/BasicShapes/. LoadObject\n"
+                              "      devuelve null y la pieza se queda sin malla, invisible\n"
+                              "      →  %s" % (rel, num, linea.strip()))
+
+            # 7. Conversor en línea como posición de mundo.
+            for m in RE_CONV_EN_LINEA.finditer(sin_comentarios_ni_cadenas(texto)):
+                num = texto.count("\n", 0, m.start()) + 1
+                fallos.append("%s:%d  %s() metido en %s(): la Z sale del segundo\n"
+                              "      componente de la entrada, que con (X, 0, Z) es cero —cota\n"
+                              "      cero del mundo, 531 m bajo el pueblo—. Guárdalo en una\n"
+                              "      variable y ponle AlturaSueloUE5, o usa RelLocalASueloUE5"
+                              % (rel, num, m.group("conv"), m.group("uso")))
+
+            # 5. .generated.h de las cabeceras reflejadas.
+            if nombre.endswith(".h"):
+                problema = generated_mal_puesto(ruta, texto)
+                if problema:
+                    fallos.append("%s  %s" % (rel, problema))
+
             # 2. Delimitadores descuadrados.
             limpio = sin_comentarios_ni_cadenas(texto)
             for abre, cierra, que in (('{', '}', 'llaves'),
@@ -118,10 +255,15 @@ def main():
                 if d != 0:
                     fallos.append("%s  %s descuadrados: %+d" % (rel, que, d))
 
+    for cvar, donde in cvars_sin_registrar(FUENTE):
+        fallos.append("%s  escribe la CVar %s y no la registra nadie:\n"
+                      "      FindConsoleVariable devuelve null y ese ajuste no hace nada"
+                      % (donde, cvar))
+
     print("%d ficheros .cpp/.h revisados.\n" % revisados)
     if not fallos:
         print("Sin hallazgos. No garantiza que compile — sólo que no tiene")
-        print("estos dos fallos, que son los que se cuelan al editar a ciegas.")
+        print("estos siete fallos, que son los que se cuelan al editar a ciegas.")
         return 0
 
     for f in fallos:

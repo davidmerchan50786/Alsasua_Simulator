@@ -4,8 +4,29 @@
 #include "AlsasuaFacadeDetailSystem.generated.h"
 
 /**
- * Sistema de detalles de fachada: balcones, persianas, macetas.
- * Añade micro-detalle a los edificios para dar realismo.
+ * Sistema de detalles de fachada: balcones, persianas, macetas, toldos y
+ * aparatos de aire. Puerto de Unity.
+ *
+ * DORMIDO, y conviene saber por qué antes de despertarlo.
+ *
+ * Ningún fichero lo adjunta a nada (lo dice Tools/AuditarSistemas.py, sección
+ * PASIVOS), así que hoy no cuesta nada. Pero enchufarlo tal cual no arreglaría
+ * nada, por dos razones:
+ *
+ *  - Todo lo que coloca es un UBoxComponent sin colisión. Una UShapeComponent no
+ *    se dibuja fuera del editor: los cinco tipos de detalle son invisibles en
+ *    -game. Los colores de persiana y de flor se sortean y se tiran, porque no
+ *    hay nada a lo que aplicárselos. Para que se vieran haría falta malla e
+ *    instanciado (regla 0: son cinco por planta y hay 1030 edificios).
+ *  - Sus persianas y sus toldos ya los pone AlsasuaAwningShutterSystem sobre el
+ *    perímetro real del footprint, mientras que aquí las medidas del edificio
+ *    son constantes inventadas (800x1200 cm, 2-4 plantas al azar) y el offset
+ *    lateral multiplica dos sorteos distintos por dos componentes del mismo
+ *    vector Right, que no da un punto sobre esa dirección sino uno cualquiera.
+ *
+ * Lo que sí aportaría, y no lo hace nadie más, son los balcones, las macetas y
+ * los aparatos de aire. Ese es el trozo que merece rehacerse; el resto sería
+ * duplicar (CLAUDE.md §11).
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class ALSASUAMANIFA_API UAlsasuaFacadeDetailSystem : public UActorComponent

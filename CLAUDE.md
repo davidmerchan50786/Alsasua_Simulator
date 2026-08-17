@@ -75,7 +75,7 @@ UnrealEditor.exe "AlsasuaSimulator.uproject" /Game/Maps/L_Alsasua ^
 | `AlsasuaWorld` | Generación procedural: `DirectorArranque`, terreno, calles, edificios, POI, puentes | 22 cpp |
 | `AlsasuaEntities` | Base de entidades: NPC, daño, vida | 6 cpp |
 | `AlsasuaGameplay` | GameMode, misiones, manifestación, ciclo visual, clima, guardado, economía | 40 cpp |
-| `AlsasuaManifa` | Port Unity: ~70 sistemas de mundo, GAS, IA, multitud, optimización, UI interna | **214 cpp** |
+| `AlsasuaManifa` | Port Unity: ~70 sistemas de mundo, GAS, IA, multitud, optimización, UI interna | **216 cpp** |
 | `AlsasuaSimulator` | Generadores de edificios y carreteras | 11 cpp |
 | `AlsasuaUI` | Widgets (HUD, pausa, ajustes, menú principal) | 6 cpp |
 | `AlsasuaEditor` | Solo editor: generadores de materiales/mallas, importador de landscape | 21 cpp |
@@ -117,15 +117,42 @@ antes de tocar posiciones. Resumen:
 
 **Qué JSON viene en qué espacio** (documentado en el header, y es fácil equivocarse):
 
-- Relativo (necesitan `RelLocalToUE5`): `roads_unity.json`, `street_furniture.json`,
-  `buildings_final.json`.
+- Relativo (necesitan `RelLocalToUE5`): `roads_unity.json`, `buildings_final.json`.
 - **Absoluto** (usar `AbsLocalToUE5`): `trees_unity.json`, `signage_data.json`,
-  `waterways_unity.json`.
+  `waterways_unity.json`, `greenspaces_unity.json`.
+- **Mezclado**: `street_furniture.json` trae los dos. 191 de sus 220 piezas en
+  relativo (papeleras, bancos, bolardos…) y 29 en absoluto (las 12 paradas de
+  bus, las 5 fuentes, las señales, los cruces): lo escribieron dos generadores.
+  Los dos grupos están separados por 4115 m de hueco en la coordenada norte, así
+  que se distinguen sin ambigüedad. Usa `MobiliarioAUE5`, que lo decide por
+  pieza; convertirlo todo como relativo manda esas 29 a 8,6 km del pueblo. Y no
+  se distinguen por tipo: hay `papelera` en relativo y `papelera_reciclaje` en
+  absoluto, así que un sistema que lea "las papeleras" toca los dos marcos.
+  Los cuatro que leen ese fichero —`DetailDressing`, `Fountain`, `Farola`,
+  `Container`— ya pasan por `MobiliarioAUE5`.
 
 Usa siempre las funciones (`AbsLocalToUE5`, `RelLocalToUE5`, `LatLonToUE5`,
 `UTMToUE5`, `UE5ToLatLon`), nunca aritmética a mano. El frame UTM↔UE5 usa el
 origen LiDAR `(566033, 4741332)`, **distinto** de `OriginLocalX/Z` — están ahí
 para centrado local, no para UTM.
+
+**`UnityaUnreal` es la que muerde.** Recibe `(este, arriba, norte)` y devuelve
+`(este_cm, norte_cm, arriba_cm)` — la vertical va **en medio**, no al final.
+Escribir `UnityaUnreal(FVector(X, Z, 0))` con `Z` = norte compila, no avisa, y
+mete la coordenada norte en el eje vertical: la pieza acaba sobre la línea
+norte=0 y flotando a la altura de su propia coordenada norte, que en este pueblo
+son más de 800 m en el aire. Le pasó a seis sistemas a la vez. Para un par
+(este, norte) usa `AbsLocalToUE5(FVector(X, 0, Z))` o `RelLocalToUE5`, que no
+tienen ese hueco; `UnityaUnreal` sólo cuando el dato ya trae la vertical en
+medio, como los `pts` planos `[x,y,z,...]`. `Tools/VerificarFuentes.py` lo caza;
+si tu caso es de los legítimos, márcalo con `// ejes ok`.
+
+Y la cota tampoco sale del conversor. `AbsLocalToUE5` y `RelLocalToUE5` propagan
+el **segundo** componente del vector de entrada a la Z de salida, así que con el
+patrón habitual `(X, 0, Z)` la Z sale en cero — que es cota cero del mundo, 531 m
+por debajo del pueblo. Hay que apoyarla con `AlturaSueloUE5(World, X, Y)` o usar
+`RelLocalASueloUE5`. Un `Pos.Z += 300` sobre ese cero deja la pieza medio
+kilómetro bajo tierra.
 
 Cota de referencia: Herriko Plaza a 531.94 m → `CotaPlazaCm = 53194`.
 
@@ -151,17 +178,24 @@ comentadas**, en orden de dependencia, publicando progreso en
 1b. `UCargadorPoligonos` — 5 plazas + 273 zonas verdes como superficies drapeadas.
 1c. `ATerrenoLejano` — anillo de relieve de 60×60 km con el hueco del terreno
    jugable, para que el mundo no se corte en seco a 3,6 km (ver §5b).
-2. `UCargadorArboles` (LiDAR) → `UCargadorVias` (ferrocarril, caminos, túneles;
+2. `UCargadorArboles` (LiDAR) → `UCargadorVias` (ferrocarril, aceras, caminos;
    también genera los ríos como cintas drapeadas) → `UCargadorCalles` →
    `UCargadorEdificios` → tejado modular → Herriko Plaza → `UCargadorPuentes` →
    `UCargadorPOI` → vegetación.
 3. Fases 13-51: sistemas de `AlsasuaManifa/World/*` (atmósfera, post-process por
    zonas, estilos de barrio, fachadas, farolas, señales, tráfico, aceras,
    marcas viales, semáforos, cables aéreos, clima, audio…).
-52. `UAlsasuaFerrocarrilSystem` — material rodante en la playa de vías. Va el
-   último **a propósito**: un tren tiene colisión, y colocado antes cualquier
-   sistema que se apoye por raycast y pase por la estación se subiría al techo
-   de un vagón (ver el aviso de más abajo).
+46. `UAlsasuaTrafficLightSystem` — semáforos con ciclo, detrás de
+   `ADirectorArranque::bSemaforos`. La fase estuvo saltada con un log de "skip
+   para perfilado", así que el sistema no corría nunca; para volver a medir sin
+   ellos se baja la bandera, no se comenta la fase.
+51b. `ATunelAlsasua` — las diez bocas de los cinco túneles.
+52. `UAlsasuaFerrocarrilSystem` — material rodante en la playa de vías.
+
+Las dos últimas van ahí **a propósito**: un tren y un marco de hormigón tienen
+colisión, y colocados antes, cualquier sistema que se apoye por raycast y pase
+por la estación o por una boca se subiría al techo de un vagón o al dintel (ver
+el aviso de más abajo).
 
 Si añades una fase, ponla **donde toque en la cadena** y mantén la numeración y
 el `Progreso`. El terreno va siempre primero: el resto hace raycast contra él
@@ -254,6 +288,14 @@ Se generan **por grafo de nodos** desde `AlsasuaEditor` (`UMaterialEditingLibrar
 no hay shaders `.usf/.ush` custom — por eso el breaking change de Substrate en 5.8
 (`ComputeFinalGBuffer`) no afecta.
 
+Los 29 materiales sueltos que una docena de sistemas cargaba por ruta —`M_Madera`,
+`M_Piedra`, `M_Metal_Guardia`, `M_Toldo`, los `M_Asphalt_*` por barrio…— y que no
+creaba nadie los genera `UCreadorMaterialesSimples`, dentro de `CrearMaterialesPBR`.
+No rompían nada, porque quien los carga comprueba el null y sigue con el material
+de la malla; simplemente esas funciones visuales no se veían nunca, y
+`AuditarAssets.py` los daba por buenos porque la carpeta sí la genera el proyecto.
+Ese hueco ahora sale en su propia sección del informe.
+
 Orden obligatorio: `CrearMaterialEdificio()` crea el **`MPC_Clima`** (escalares
 `Wetness`, `Night`) del que dependen todos los demás. `UClimaSubsystem` conduce
 esos parámetros en runtime. Crear un material que lea el MPC antes de que exista
@@ -277,10 +319,20 @@ esos parámetros en runtime. Crear un material que lea el MPC antes de que exist
 Los que empiezan por `Verificar`/`Auditar` no montan nada: contrastan lo que hay
 contra su fuente y sacan un informe. Sirven de red donde no hay compilador —
 `VerificarVias.py` (formas de raíz de los datasets de vía y sitio para el material
-rodante), `VerificarDatasets.py` (campos que el C++ pide y el JSON no tiene),
-`VerificarFuentes.py` (sintaxis: el `;` que se lleva un comentario, delimitadores
-descuadrados), `VerificarCallesNavarra.py` (trazado contra el eje catastral),
+rodante), `VerificarDatasets.py` (campos que el C++ pide y el JSON no tiene, marcos
+mezclados, elementos fuera del terreno), `AuditarSistemas.py` (sistemas de mundo
+que no llama nadie, y con cuál chocarían; también los `UActorComponent` que no
+adjunta nadie, que son 23 y antes se daban por buenos suponiendo que ya los
+adjuntaría su actor),
+`VerificarFuentes.py` (el `;` que se lleva un comentario, delimitadores
+descuadrados, `UnityaUnreal` con los ejes cambiados, CVars `g.*` que nadie
+registra, `.generated.h` ausente en cabecera reflejada, rutas
+`/Engine/EngineMeshes/` que no existen, y conversor de coordenadas metido en
+línea donde se espera una posición de mundo — ahí ya no hay dónde apoyar la
+cota), `VerificarCallesNavarra.py` (trazado contra el eje catastral),
 `AuditarAssets.py` (rutas sin respaldo y mallas bajadas que nadie pide),
+`VerificarGuardado.py` (campos del save que se guardan y no se cargan),
+`VerificarDialogos.py` (los árboles de Content/Dialogs entran enteros),
 `AlturasLidarEdificios.py --verificar`, `DescargarCatastroNavarra.py --verificar`.
 
 Sin compilador en Linux, `VerificarFuentes.py` y `VerificarDatasets.py` son lo
@@ -307,9 +359,25 @@ hay que conservar al escribir código nuevo:
    `UAlsasuaFoliagePainter` estaba escrito con un `AStaticMeshActor` por mata:
    con las 273 zonas verdes salían decenas de miles de actores. Ahora siembra en
    `UHierarchicalInstancedStaticMeshComponent`, uno por tipo de planta — doce mil
-   instancias en ocho draw calls, con culling y LOD de serie. La otra vía válida
+   instancias en ocho draw calls, con culling y LOD de serie. Lo mismo
+   `UAlsasuaSidewalkSystem`, que ponía un actor por losa de acera: 5038 losas,
+   5038 draw calls, y encima dos `LoadObject` de material por losa dentro del
+   bucle. Ahora son dos capas instanciadas, una por acabado. Y
+   `UAlsasuaAwningShutterSystem`, el peor de todos: 17537 persianas a actor por
+   pieza, apiladas además en el centroide del edificio — un bloque de 7,7 m con
+   132 ventanas se llevaba una columna de 398 m atravesando el tejado. Ahora se
+   reparten por el perímetro y por planta, instanciadas. La otra vía válida
    es coser la geometría en una sola sección de `ProceduralMesh`, que es lo que
    hace `AlsasuaVegetationSpawner` con el césped procedural.
+
+   Van ya convertidos `FoliagePainter`, `SidewalkSystem`, `AwningShutterSystem`,
+   `GuardrailSystem`, `RooftopDetailSystem`, `DoorEntranceSystem`,
+   `ParkingSystem`, `ContainerSystem`, `StreetArtSystem` y
+   `PaintedStreetSignSystem`. Ojo con el patrón que los delataba a
+   todos: `LoadObject` de la malla o del material **dentro** del bucle de
+   colocación. Si lo ves, casi seguro que también hay un `SpawnActor` al lado.
+   Los que quedan con `SpawnActor<AStaticMeshActor>` colocan decenas de piezas,
+   no miles, y ahí la regla no aplica.
 1. **Una sección de `ProceduralMesh` = un draw call.** Las fachadas creaban una
    sección por ventana (~60 000 draw calls y hitches de 8 s al invalidar el
    draw-command cache). Ahora se acumulan verts/tris/normales/UVs con offset de
@@ -403,6 +471,109 @@ posiciones cambian entre runs.
   (`AlsasuaCore/Public/CargarJsonComun.h`), que se traga las dos formas y avisa
   cuando no encuentra nada. `Tools/VerificarDatasets.py` compara lo que pide el
   C++ con lo que hay en el dato.
+- **Antes de revivir un sistema, mira si su trabajo ya lo hace otro.** Varias
+  fases de `AlsasuaManifa/World/*` duplican lo que ya construyó un cargador de
+  `AlsasuaWorld` sobre el mismo JSON, y mientras estuvieron rotas no se notó.
+  `AlsasuaTreePlacer` (fase 23) replantaba los 2783 árboles que `UCargadorArboles`
+  (fase 2) ya siembra en HISM, uno por actor y encima de los primeros;
+  `AlsasuaRoadSurfaceSystem` (fase 26) ponía un cubo aplastado sobre cada cinta
+  de `UCargadorCalles` (fase 4). Los dos siguen ahí, pero el primero sólo aporta
+  su ficha botánica y el segundo publica el firme por id de vía para que lo
+  aplique el director sobre las cintas que ya existen.
+- **Hay datos que caen fuera del mundo y colocarlos no falla.** 31 de las 126
+  señales de `signage_data.json` traen coordenadas de hasta 216 km, y 280 de los
+  2783 árboles del LiDAR quedan fuera de los 7200 m del terreno jugable. El actor
+  se crea igual, su trazo de suelo no encuentra nada y acaba en cota cero o en la
+  de la plaza. `VerificarDatasets.py` los cuenta; quien los lea debe filtrarlos
+  **diciendo cuántos**, no en silencio. El filtro es
+  `UAlsasuaGeoData::DentroDelTerreno`; la caja no se copia a mano en cada
+  sistema, y `VerificarDatasets.py` la lee del propio header para no medir
+  contra un terreno que ya no existe.
+- **Lo que va en una pared necesita la pared, y nadie la tenía.** Tres sistemas
+  colgaban cosas de una fachada colocándolas en el centroide del barrio o en el
+  eje de la calzada, con el giro sorteado: los 23 murales y grafitis de
+  `AlsasuaStreetArtSystem` (los dos de Herriko en el mismo punto exacto, uno
+  dentro del otro), las placas de calle de `AlsasuaPaintedStreetSignSystem` y los
+  escaparates de `AlsasuaShopFrontSystem`. La pared está en
+  `AlsasuaManifa/Public/World/AlsasuaMuros.h`: los ~6000 tramos del perímetro de
+  los 1030 footprints, con largo y normal saliente, calculados una vez. La normal
+  se decide contra el centroide del footprint porque `buildings_final.json` **no
+  garantiza el sentido de giro** del polígono; sin eso, la mitad de lo que se
+  cuelgue queda pintado por dentro del muro. Y la fachada que da a la calle —la
+  misma para puerta, portal, garaje y escaparate— la elige
+  `AlsasuaDirecciones::LadoDeEntrada`, que es donde vive el punto de calle de OSM.
+- **Escalar un `Plane` en Z no lo pone de pie.** `/Engine/BasicShapes/Plane` es un
+  plano en XY que mira hacia arriba; `SetActorScale3D(Ancho, 0.05, Alto)` da una
+  tira tumbada en el suelo, no un cartel. Le pasaba a los murales, a los grafitis
+  y a las placas de calle a la vez, y no salta a la vista en el código porque la
+  escala *parece* la de un cartel. Para algo vertical, cubo con el grueso en el
+  eje que mira afuera. Y ojo con ese eje: si el yaw mira **afuera** de la fachada
+  (`LadoDeEntrada`, `AlsasuaMuros`), el grueso va en X y el ancho en Y; si el yaw
+  va **a lo largo** del muro (`AwningShutterSystem`), al revés. Las 1030 puertas
+  iban con la escala del otro convenio: 10 cm de ancho y un metro de fondo,
+  clavadas de canto en el muro.
+- **Adjuntar un componente a la lista equivocada no falla: adjunta cero.** Las
+  fases 17-20 colgaban de los edificios el estilo de barrio, las ventanas
+  emissivas y la luz interior recorriendo
+  `GetAllActorsOfClass(World, AStaticMeshActor::StaticClass())`. Los 1030
+  edificios son `AEdificioGenerado`, que deriva de `AActor`: no salen en esa
+  lista, el bucle no da una vuelta y el log dice el número que le toque. Toda la
+  capa nocturna del pueblo llevaba apagada así. Para los edificios,
+  `TActorIterator<AEdificioGenerado>` —que es lo que ya hace la fase 26 con
+  `ACalleGenerada`—; para lo demás, `Tags` y `GetAllActorsWithTag`, porque
+  `GetName()` devuelve el nombre de objeto (`StaticMeshActor_42`) y no la
+  etiqueta que pone `SetActorLabel`, que además sólo existe con `WITH_EDITOR`.
+  Y el componente va **después** de que exista aquello de lo que cuelga: el
+  control de farolas estaba en la 18 y las farolas se colocan en la 24.
+- **Dos ficheros traen lat/lon Y x/z, y no dicen lo mismo.** `landmarks_real.json`
+  (19) y `poi_data.json` (30 de sus 78) llevan las dos cosas. Medidas entre
+  elementos, las distancias por x/z salen **diez veces más pequeñas** que por
+  coordenada geográfica, y la z va **al revés**: el factor es −10, no +10.
+  Colocados por x/z, los 19 landmarks quedan apiñados en 121×134 m y a 120 m de
+  mediana del edificio más cercano, sin que ninguno caiga sobre uno; por lat/lon
+  la mediana baja a 29 m y seis caen justo encima de su footprint —la iglesia, el
+  ayuntamiento, la biblioteca, el mercado—. **Cuando el elemento trae lat/lon,
+  mandan ellas** (`LatLonToUE5`); los 47 POI que no la traen se quedan con su
+  x/z, que además sí alcanzan edificios, o sea que vienen de otra pasada.
+  `VerificarDatasets.py` compara los dos marcos y saca el factor real.
+- **Hay datos cuyas coordenadas no sirven, y tampoco lo dicen.** Distinto de caer
+  fuera del mundo: los 56 `señal_comercio` de `signage_data.json` traen 40
+  amontonados en diez metros alrededor de `(1891.5, 8572.0)` —que es
+  `OriginLocalX/Z`, la constante de centrado, no una dirección— a 126 m del
+  edificio más cercano, y los otros 16 a hasta 216 km. Están dentro de rango, no
+  los caza `DentroDelTerreno`, y colocarlos deja las tiendas en corro en mitad de
+  un prado. Lo aprovechable es el contenido —nombre, tipo de negocio, barrio—, y
+  eso es lo que se usa: la tienda va a una fachada de su barrio, elegida por FNV
+  del nombre para que no se mueva entre arranques. Antes de fiarte de una
+  coordenada, mira la dispersión del conjunto, no un elemento.
+- **Un `LoadObject` dentro del bucle de colocación es el olor del actor por
+  pieza.** Los ocho sistemas convertidos a instanciado lo tenían todos, y en
+  varios el asset ni siquiera existía: `AlsasuaContainerSystem` pedía la
+  papelera a un pack que no está en el repo, sin fallback — cien
+  actores sin malla, invisibles, ocupando su sitio en la lista de fases y en el
+  log. Lo mismo las farolas y los doce semáforos, de los que sólo quedaba la
+  luz puntual flotando a 3,25 m. `AuditarAssets.py` lo caza ahora en su sección
+  "pack externo sin degradación": ruta de pack externo + `SetStaticMesh` y ni
+  `AlsasuaMallaFab::Resolver` ni `CargarMaterialConFallback` en el fichero. Malla nueva, por `AlsasuaMallaFab::Resolver`; material nuevo, por
+  `CargarMaterialConFallbackSeguro`; los dos, **fuera** del bucle.
+- **Colocar por `FMath::FRand`/`RandRange` hace el pueblo irrepetible.** No es
+  un fallo visible, pero rompe el arnés de perfilado: si la geometría cambia en
+  cada arranque, comparar el CSV de hoy con los números del `RESUMEN_TECNICO.md`
+  no mide nada. Lo nuevo va con `FRandomStream` sembrado por el id del elemento
+  (`Id * 2654435761u + <sal>`), que además deja razonar sobre lo que se ve. Si
+  el elemento no tiene id —una tienda, un mural— se siembra por FNV del nombre o
+  por el índice, nunca por `GetTypeHash`, cuyo valor no está garantizado entre
+  compilaciones.
+
+  De los 22 ficheros de `AlsasuaManifa/World/*` que quedaban con el patrón
+  antiguo, **13 no los llama nadie** (`EnvironmentalDecals`, `DecalSystem`,
+  `RoadDecalSystem`, `GroundCoverSystem`, `FacadeDetailSystem`…: están en la
+  lista de `AuditarSistemas.py`, así que su aleatoriedad no llega al mundo). De
+  los vivos, los que colocan geometría fija ya van sembrados; los que quedan son
+  de tiempo y parpadeo —`StreetLightController`, `InteriorLightComponent`,
+  `WeatherSystem`, `AmbientAudioSystem`— y ahí el azar por frame es lo que se
+  quiere. `DetailDressingSystem` conserva `RandRange` sólo en sus cinco
+  funciones de respaldo, que corren si falta `street_furniture.json`.
 - **Los datasets son heterogéneos entre elementos.** `street_furniture.json`
   tiene 220 piezas y no todas traen los mismos campos: las fuentes llevan
   `nombre` y `activa`, las paradas `linea` y `con_techo`, y la mayoría ninguno de
@@ -413,6 +584,14 @@ posiciones cambian entre runs.
   aquel día; el diagnóstico y las reglas de §5 siguen vigentes. Para compilar y
   lanzar hoy, `README.md` o este fichero. (El `.uproject` decía 5.4 en
   `Description`; corregido a 5.8, que es lo que fija `EngineAssociation`.)
+- **Los túneles son bocas, no galería.** `ATunelAlsasua` levanta los diez
+  portales de los cinco túneles de `tunnels_unity.json` (los dos ferroviarios,
+  el de la N-1, el de la A-10 y el del Plazaola). No agujerea el terreno:
+  `ATerrenoGenerado` es una malla procedural de 4033² afinada al detalle y
+  recortarle un hueco es una operación de terreno, así que **el túnel no se
+  atraviesa**. Cavar la galería sin poder entrar sería geometría enterrada
+  pagando draw calls. Antes `UCargadorVias` los encolaba y los descartaba,
+  contándolos como construidos.
 - `UImportadorLandscape` **aborta** si el nivel es World Partition
   (`IsPartitionedWorld()`) en vez de crear un landscape roto. Para el primer
   arranque, usa un nivel **Empty**, o importa a mano por Landscape Mode con los

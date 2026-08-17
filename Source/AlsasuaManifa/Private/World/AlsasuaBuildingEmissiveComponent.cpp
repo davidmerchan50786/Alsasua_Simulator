@@ -2,8 +2,8 @@
 #include "World/Time/TimeOfDayManager.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInterface.h"
-#include "Components/StaticMeshComponent.h"
-#include "Engine/StaticMeshActor.h"
+#include "Components/MeshComponent.h"
+#include "Math/RandomStream.h"
 #include "Engine/World.h"
 
 UAlsasuaBuildingEmissiveComponent::UAlsasuaBuildingEmissiveComponent()
@@ -23,17 +23,29 @@ void UAlsasuaBuildingEmissiveComponent::SetupWindowMaterials()
 	AActor* Owner = GetOwner();
 	if (!Owner) return;
 
-	TArray<UStaticMeshComponent*> MeshComps;
-	Owner->GetComponents<UStaticMeshComponent>(MeshComps);
+	// UMeshComponent, no UStaticMeshComponent: la malla de un AEdificioGenerado
+	// es un UProceduralMeshComponent, que deriva de UMeshComponent y NO de
+	// UStaticMeshComponent. Buscando la clase equivocada la lista salía vacía y
+	// las ventanas nocturnas de los 1030 edificios no se encendían — el mismo
+	// fallo de clase que dejaba el componente sin adjuntar en la fase 19.
+	TArray<UMeshComponent*> MeshComps;
+	Owner->GetComponents<UMeshComponent>(MeshComps);
+
+	// Qué ventanas quedan encendidas: sembrado por el nombre del actor, no por
+	// FRand. Con FRand el pueblo se ilumina distinto en cada arranque y el CSV
+	// de perfilado deja de ser comparable con el anterior.
+	uint32 Semilla = 2166136261u;
+	for (TCHAR C : Owner->GetName()) { Semilla ^= static_cast<uint32>(C); Semilla *= 16777619u; }
+	FRandomStream Sorteo(static_cast<int32>(Semilla));
 
 	const int32 TotalWindows = WindowRows * WindowCols;
 	WindowOnOff.SetNum(TotalWindows);
 	for (int32 i = 0; i < TotalWindows; ++i)
 	{
-		WindowOnOff[i] = (FMath::FRand() < NightOnProbability);
+		WindowOnOff[i] = (Sorteo.GetFraction() < NightOnProbability);
 	}
 
-	for (UStaticMeshComponent* SMC : MeshComps)
+	for (UMeshComponent* SMC : MeshComps)
 	{
 		if (!SMC) continue;
 

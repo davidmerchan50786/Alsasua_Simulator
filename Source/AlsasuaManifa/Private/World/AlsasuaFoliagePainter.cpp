@@ -26,83 +26,65 @@ void UAlsasuaFoliagePainter::Deinitialize()
 
 void UAlsasuaFoliagePainter::InicializarTipos()
 {
-    Tipos.Empty(20);
-
     const FString Base = TEXT("/Game/AssetsImportados/Naturaleza");
 
-    FFoliageTypeData Grass02;
-    Grass02.Nombre = TEXT("Hierba_Larga");
-    // No hay grass_02: "diffus" era la textura, no la malla.
-    Grass02.AssetPath = Base + TEXT("/multi_stylized_grass/01_d");
-    Grass02.EscalaMin = 0.5f;
-    Grass02.EscalaMax = 1.5f;
-    Grass02.Densidad = 3.0f;
-    Grass02.Tipo = TEXT("hierba");
-    Tipos.Add(Grass02);
+    // El pack Naturaleza trae cinco rocas, cinco setos y cinco matas de maleza, y
+    // aquí se usaban dos, dos y una. El resto llevaba descargado sin que nadie lo
+    // pidiera, y la zona verde salía con la misma piedra repetida por todas
+    // partes. Cada tipo es una capa de HISM, o sea un draw call: pasar de ocho a
+    // diecisiete cuesta nueve, y el número de instancias no sube porque el tope
+    // (MaxInstancias) es global y se reparte entre las capas que haya.
+    //
+    // La densidad es relativa entre tipos, no absoluta: manda el reparto, así que
+    // al añadir variantes de un mismo tipo se baja la de cada una para que la
+    // familia siga pesando lo mismo en el conjunto.
+    struct FReceta { const TCHAR* Nombre; const TCHAR* Ruta; float Min; float Max; float Densidad; const TCHAR* Tipo; };
+    static const FReceta Recetas[] = {
+        // Hierba: la capa base, la más densa.
+        // No hay grass_02: "diffus" era la textura, no la malla.
+        { TEXT("Hierba_Larga"),  TEXT("/multi_stylized_grass/01_d"), 0.5f, 1.5f, 3.0f, TEXT("hierba") },
+        { TEXT("Hierba_Media"),  TEXT("/multi_stylized_grass/02_d"), 0.5f, 1.3f, 2.0f, TEXT("hierba") },
+        // La malla repite el nombre de la carpeta.
+        { TEXT("Hierba_Corta"),  TEXT("/grass_07/grass_07"),         0.3f, 1.0f, 4.0f, TEXT("hierba") },
 
-    FFoliageTypeData Grass07;
-    Grass07.Nombre = TEXT("Hierba_Corta");
-    // La malla repite el nombre de la carpeta.
-    Grass07.AssetPath = Base + TEXT("/grass_07/grass_07");
-    Grass07.EscalaMin = 0.3f;
-    Grass07.EscalaMax = 1.0f;
-    Grass07.Densidad = 4.0f;
-    Grass07.Tipo = TEXT("hierba");
-    Tipos.Add(Grass07);
+        // Setos: los cinco del pack. Los Round rematan esquinas y dan variedad de
+        // silueta en el mismo seto largo.
+        { TEXT("Seto_Largo"),        TEXT("/Hedges/Long/HedgeLong"),           0.8f, 1.2f, 0.25f, TEXT("seto") },
+        { TEXT("Seto_Largo_Round"),  TEXT("/Hedges/LongRound/HedgeLongRound"), 0.8f, 1.2f, 0.25f, TEXT("seto") },
+        { TEXT("Seto_Pequeno"),      TEXT("/Hedges/Small/HedgeSmall"),         0.6f, 1.0f, 0.35f, TEXT("seto") },
+        { TEXT("Seto_Peq_Round"),    TEXT("/Hedges/SmallRound/HedgeSmallRound"), 0.6f, 1.0f, 0.35f, TEXT("seto") },
 
-    FFoliageTypeData HedgeLong;
-    HedgeLong.Nombre = TEXT("Seto_Largo");
-    HedgeLong.AssetPath = Base + TEXT("/Hedges/Long/HedgeLong");
-    HedgeLong.EscalaMin = 0.8f;
-    HedgeLong.EscalaMax = 1.2f;
-    HedgeLong.Densidad = 0.5f;
-    HedgeLong.Tipo = TEXT("seto");
-    Tipos.Add(HedgeLong);
+        // Rocas: las cinco. rock_05 viene con el nombre de fichero con dos puntos
+        // (rock_05..fbx) y el .obj sin ellos, así que se apunta al nombre limpio,
+        // que es lo que deja el importador.
+        { TEXT("Roca_01"), TEXT("/rocks/01/rock_01"), 0.5f, 2.0f, 0.06f, TEXT("roca") },
+        { TEXT("Roca_02"), TEXT("/rocks/02/rock_02"), 0.5f, 1.8f, 0.06f, TEXT("roca") },
+        { TEXT("Roca_03"), TEXT("/rocks/03/rock_03"), 0.3f, 1.5f, 0.06f, TEXT("roca") },
+        { TEXT("Roca_04"), TEXT("/rocks/04/rock_04"), 0.4f, 1.6f, 0.06f, TEXT("roca") },
+        { TEXT("Roca_05"), TEXT("/rocks/05/rock_05"), 0.4f, 1.7f, 0.06f, TEXT("roca") },
 
-    FFoliageTypeData HedgeSmall;
-    HedgeSmall.Nombre = TEXT("Seto_Pequeno");
-    HedgeSmall.AssetPath = Base + TEXT("/Hedges/Small/HedgeSmall");
-    HedgeSmall.EscalaMin = 0.6f;
-    HedgeSmall.EscalaMax = 1.0f;
-    HedgeSmall.Densidad = 0.7f;
-    HedgeSmall.Tipo = TEXT("seto");
-    Tipos.Add(HedgeSmall);
+        // Maleza: las cinco de tiny_weeds_2.
+        { TEXT("Maleza_01"), TEXT("/tiny_weeds_2/01"), 0.3f, 0.8f, 0.4f, TEXT("maleza") },
+        { TEXT("Maleza_02"), TEXT("/tiny_weeds_2/02"), 0.3f, 0.8f, 0.4f, TEXT("maleza") },
+        { TEXT("Maleza_03"), TEXT("/tiny_weeds_2/03"), 0.3f, 0.8f, 0.4f, TEXT("maleza") },
+        { TEXT("Maleza_04"), TEXT("/tiny_weeds_2/04"), 0.3f, 0.8f, 0.4f, TEXT("maleza") },
+        { TEXT("Maleza_05"), TEXT("/tiny_weeds_2/05"), 0.3f, 0.8f, 0.4f, TEXT("maleza") },
 
-    FFoliageTypeData Rock01;
-    Rock01.Nombre = TEXT("Roca_01");
-    Rock01.AssetPath = Base + TEXT("/rocks/01/rock_01");
-    Rock01.EscalaMin = 0.5f;
-    Rock01.EscalaMax = 2.0f;
-    Rock01.Densidad = 0.2f;
-    Rock01.Tipo = TEXT("roca");
-    Tipos.Add(Rock01);
+        { TEXT("Hiedra"),    TEXT("/tiny_weeds_3/ivy/ivy_default"), 0.5f, 1.0f, 1.0f, TEXT("hiedra") },
+    };
 
-    FFoliageTypeData Rock03;
-    Rock03.Nombre = TEXT("Roca_03");
-    Rock03.AssetPath = Base + TEXT("/rocks/03/rock_03");
-    Rock03.EscalaMin = 0.3f;
-    Rock03.EscalaMax = 1.5f;
-    Rock03.Densidad = 0.15f;
-    Rock03.Tipo = TEXT("roca");
-    Tipos.Add(Rock03);
-
-    FFoliageTypeData Weed01;
-    Weed01.Nombre = TEXT("Maleza_01");
-    Weed01.AssetPath = Base + TEXT("/tiny_weeds_2/01");
-    Weed01.EscalaMin = 0.3f;
-    Weed01.EscalaMax = 0.8f;
-    Weed01.Densidad = 2.0f;
-    Weed01.Tipo = TEXT("maleza");
-    Tipos.Add(Weed01);
-
-    FFoliageTypeData Ivy;
-    Ivy.Nombre = TEXT("Hiedra");
-    Ivy.AssetPath = Base + TEXT("/tiny_weeds_3/ivy/ivy_default");
-    Ivy.EscalaMin = 0.5f;
-    Ivy.EscalaMax = 1.0f;
-    Ivy.Densidad = 1.0f;
-    Ivy.Tipo = TEXT("hiedra");
-    Tipos.Add(Ivy);
+    Tipos.Empty(UE_ARRAY_COUNT(Recetas));
+    for (const FReceta& R : Recetas)
+    {
+        FFoliageTypeData D;
+        D.Nombre = R.Nombre;
+        D.AssetPath = Base + R.Ruta;
+        D.EscalaMin = R.Min;
+        D.EscalaMax = R.Max;
+        D.Densidad = R.Densidad;
+        D.Tipo = R.Tipo;
+        Tipos.Add(D);
+    }
 
     bCargado = true;
 }

@@ -164,6 +164,7 @@ void UMisionesSubsystem::CompletarMision()
 
 	const FName Sig = Actual->Siguiente;
 	const FName Hecha = Actual->Id;
+	Completadas.Add(Hecha);
 	OnMisionCompletada.Broadcast(Hecha);
 	UE_LOG(LogTemp, Log, TEXT("[Misiones] completada %s"), *Hecha.ToString());
 
@@ -237,4 +238,21 @@ void UMisionesSubsystem::ConstruirMisionesDemo()
 		M01->Objetivos.Add(o);
 	}
 	RegistrarMision(M01);
+}
+
+TArray<FString> UMisionesSubsystem::IdsCompletadas() const
+{
+	TArray<FString> Out;
+	Out.Reserve(Completadas.Num());
+	for (const FName& Id : Completadas) Out.Add(Id.ToString());
+	// Ordenado para que dos guardados de la misma partida salgan iguales: un TSet
+	// no promete orden y si no, el fichero cambia sin que cambie el progreso.
+	Out.Sort();
+	return Out;
+}
+
+void UMisionesSubsystem::RestaurarCompletadas(const TArray<FString>& Ids)
+{
+	Completadas.Empty(Ids.Num());
+	for (const FString& S : Ids) Completadas.Add(FName(*S));
 }

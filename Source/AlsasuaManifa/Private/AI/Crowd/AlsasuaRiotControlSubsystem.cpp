@@ -41,13 +41,11 @@ void UAlsasuaRiotControlSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 	FlareMarkerISMC->CastShadow = false;
 	FlareMarkerISMC->SetCanEverAffectNavigation(false);
 
+	// La primera ruta era /Engine/EngineMeshes/SM_Cube, que no existe: siempre
+	// devolvía null y siempre acababa aquí. Las formas básicas del motor están
+	// en /Engine/BasicShapes/, y el nombre del asset se repite en la ruta.
 	UStaticMesh* Mesh = LoadObject<UStaticMesh>(
-		nullptr, TEXT("/Engine/EngineMeshes/SM_Cube"), nullptr, LOAD_None);
-	if (Mesh == nullptr)
-	{
-		Mesh = LoadObject<UStaticMesh>(
-			nullptr, TEXT("/Engine/BasicShapes/Cube"), nullptr, LOAD_None);
-	}
+		nullptr, TEXT("/Engine/BasicShapes/Cube.Cube"), nullptr, LOAD_None);
 	if (Mesh != nullptr)
 	{
 		FlareMarkerISMC->SetStaticMesh(Mesh);
