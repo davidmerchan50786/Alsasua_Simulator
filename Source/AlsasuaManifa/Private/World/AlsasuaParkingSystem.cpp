@@ -180,7 +180,9 @@ int32 UAlsasuaParkingSystem::PintarPlazasDeCalle(UHierarchicalInstancedStaticMes
         // La cota se muestrea en la propia plaza, no en el eje de la calle: el
         // bordillo de una calle en pendiente no está a la altura del centro de
         // la calzada.
-        const FVector Pos = UAlsasuaGeoData::RelLocalASueloUE5(
+        // Y de la superficie, no del terreno: la plaza se pinta sobre el firme,
+        // que va 12 cm por encima del suelo (ACalleGenerada::EpsilonCm).
+        const FVector Pos = UAlsasuaGeoData::RelLocalASuperficieUE5(
             World, FVector(C.XZ.X, 0.0f, C.XZ.Y));
 
         FRandomStream Sorteo(static_cast<int32>(C.Semilla));
