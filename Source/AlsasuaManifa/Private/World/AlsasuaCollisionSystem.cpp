@@ -12,66 +12,37 @@ void UAlsasuaCollisionSystem::Initialize(FSubsystemCollectionBase& Collection)
     Super::Initialize(Collection);
 }
 
-int32 UAlsasuaCollisionSystem::GenerarColisionesEdificios()
+int32 UAlsasuaCollisionSystem::RepasarColisionesDeProps()
 {
     UWorld* World = GetWorld();
     if (!World) return 0;
 
-    TArray<AActor*> Buildings;
-    UGameplayStatics::GetAllActorsOfClass(World, AStaticMeshActor::StaticClass(), Buildings);
+    // Sólo AStaticMeshActor: edificios y calles no son de esta clase y además ya
+    // vienen con BlockAll de su propio constructor. Ver la cabecera.
+    TArray<AActor*> Props;
+    UGameplayStatics::GetAllActorsOfClass(World, AStaticMeshActor::StaticClass(), Props);
 
-    int32 CollisionsAdded = 0;
-    for (AActor* Actor : Buildings)
+    int32 Repasados = 0;
+    for (AActor* Actor : Props)
     {
         if (!Actor) continue;
-        const FString Label = Actor->GetName();
-        if (!Label.Contains(TEXT("Edificio")) && !Label.Contains(TEXT("Building")))
-            continue;
 
         UStaticMeshComponent* Mesh = Actor->FindComponentByClass<UStaticMeshComponent>();
-        if (!Mesh) continue;
+        if (!Mesh || !Mesh->GetStaticMesh()) continue;
 
-        if (!Mesh->IsSimulatingPhysics() && Mesh->GetCollisionEnabled() == ECollisionEnabled::NoCollision)
-        {
-            Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-            Mesh->SetCollisionObjectType(ECC_WorldStatic);
-            Mesh->SetCollisionResponseToAllChannels(ECR_Block);
-            CollisionsAdded++;
-        }
+        // Sin malla o ya con colisión, no hay nada que hacer. Y lo que simula
+        // física se deja en paz.
+        if (Mesh->IsSimulatingPhysics()) continue;
+        if (Mesh->GetCollisionEnabled() != ECollisionEnabled::NoCollision) continue;
+
+        Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+        Mesh->SetCollisionObjectType(ECC_WorldStatic);
+        Mesh->SetCollisionResponseToAllChannels(ECR_Block);
+        ++Repasados;
     }
 
-    UE_LOG(LogTemp, Log, TEXT("CollisionSystem: %d colisiones de edificios generadas"), CollisionsAdded);
-    return CollisionsAdded;
-}
-
-int32 UAlsasuaCollisionSystem::GenerarColisionesCalles()
-{
-    UWorld* World = GetWorld();
-    if (!World) return 0;
-
-    TArray<AActor*> Roads;
-    UGameplayStatics::GetAllActorsOfClass(World, AStaticMeshActor::StaticClass(), Roads);
-
-    int32 CollisionsAdded = 0;
-    for (AActor* Actor : Roads)
-    {
-        if (!Actor) continue;
-        const FString Label = Actor->GetName();
-        if (!Label.Contains(TEXT("Road_")) && !Label.Contains(TEXT("Calle_")) && !Label.Contains(TEXT("Rio_")))
-            continue;
-
-        UStaticMeshComponent* Mesh = Actor->FindComponentByClass<UStaticMeshComponent>();
-        if (!Mesh) continue;
-
-        if (!Mesh->IsSimulatingPhysics() && Mesh->GetCollisionEnabled() == ECollisionEnabled::NoCollision)
-        {
-            Mesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-            Mesh->SetCollisionObjectType(ECC_WorldStatic);
-            Mesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-            CollisionsAdded++;
-        }
-    }
-
-    UE_LOG(LogTemp, Log, TEXT("CollisionSystem: %d colisiones de calles generadas"), CollisionsAdded);
-    return CollisionsAdded;
+    UE_LOG(LogTemp, Log,
+        TEXT("CollisionSystem: %d props sin colisión repasados de %d AStaticMeshActor (edificios y calles ya vienen con BlockAll)"),
+        Repasados, Props.Num());
+    return Repasados;
 }

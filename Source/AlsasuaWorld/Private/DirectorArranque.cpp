@@ -448,15 +448,18 @@ void ADirectorArranque::IniciarConstruccion()
         }
     }
 
-    // --- 31. Colisiones de edificios y calles ---
+    // --- 31. Repaso de colisión de props ---
+    // Edificios y calles NO pasan por aquí, y es correcto: AEdificioGenerado y
+    // ACalleGenerada ya hacen SetCollisionProfileName("BlockAll") y crean sus
+    // secciones con bCreateCollision. Antes esta fase decía generarlas y
+    // recorría GetAllActorsOfClass(AStaticMeshActor), donde no está ninguno de
+    // los dos: dos bucles que no daban una vuelta.
     {
         UAlsasuaCollisionSystem* Collisions = World->GetGameInstance()->GetSubsystem<UAlsasuaCollisionSystem>();
         if (Collisions)
         {
-            const int32 ColEdificios = Collisions->GenerarColisionesEdificios();
-            const int32 ColCalles = Collisions->GenerarColisionesCalles();
-            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d colisiones edificios, %d calles."),
-                ColEdificios, ColCalles);
+            const int32 Repasados = Collisions->RepasarColisionesDeProps();
+            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d props sin colisión repasados."), Repasados);
         }
     }
 
