@@ -83,8 +83,14 @@ bool UAlsasuaRoadSurfaceSystem::FirmeDe(int32 Id, FString& OutMaterial, FLinearC
     // Lo pide ADirectorArranque (fase 26) para teñir las ACalleGenerada que
     // UCargadorCalles ya dejó drapeadas en la fase 4. Aquí no se construye nada:
     // este sistema clasifica el firme, no pone calzada.
+    // El asfalto va aparte y como constante, no como entrada de la tabla: es el
+    // valor al que se cae cuando el firme no está en ella, y sacarlo de la
+    // propia tabla hace que el respaldo dependa de que la tabla lo tenga.
+    // Colores[...] es FindChecked en UE, así que el día que alguien renombre la
+    // clave "asphalt" el fallback no degrada: revienta.
+    static const FLinearColor Asfalto(0.15f, 0.15f, 0.15f);
     static const TMap<FString, FLinearColor> Colores = {
-        { TEXT("asphalt"),      FLinearColor(0.15f, 0.15f, 0.15f) },
+        { TEXT("asphalt"),      Asfalto },
         { TEXT("cobblestone"),  FLinearColor(0.45f, 0.40f, 0.35f) },
         { TEXT("asphalt_worn"), FLinearColor(0.25f, 0.24f, 0.23f) },
         { TEXT("gravel"),       FLinearColor(0.55f, 0.50f, 0.45f) },
@@ -96,6 +102,6 @@ bool UAlsasuaRoadSurfaceSystem::FirmeDe(int32 Id, FString& OutMaterial, FLinearC
     const FRoadSurfaceEntry& E = Superficies[*Idx];
     OutMaterial = E.Material;
     const FLinearColor* C = Colores.Find(E.Material);
-    OutColor = C ? *C : Colores[TEXT("asphalt")];
+    OutColor = C ? *C : Asfalto;
     return true;
 }
