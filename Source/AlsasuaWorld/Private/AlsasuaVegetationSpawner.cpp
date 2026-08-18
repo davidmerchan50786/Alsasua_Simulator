@@ -1,6 +1,7 @@
 #include "AlsasuaVegetationSpawner.h"
 #include "ProceduralMeshComponent.h"
 #include "GeoDataAlsasua.h"
+#include "MuestreadorAltura.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "Serialization/JsonReader.h"
@@ -17,6 +18,7 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 {
 	UWorld* World = GetWorld();
 	if (!World) return 0;
+	const UMuestreadorAltura* Alturas = World->GetSubsystem<UMuestreadorAltura>();
 
 	// Load greenspaces data
 	const FString RutaGS = FPaths::Combine(FPaths::ProjectContentDir(), TEXT("Datos/greenspaces_unity.json"));
@@ -169,7 +171,8 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 				const float CR   = FMath::DegreesToRadians(Yaw);
 				const FVector XD(FMath::Cos(CR), FMath::Sin(CR), 0.f);
 				const FVector YD(-XD.Y, XD.X, 0.f);
-				const FVector Base(TestPt.X, TestPt.Y, 0.f);
+				const float Suelo = Alturas ? Alturas->AlturaMundo(TestPt) : 0.f;
+				const FVector Base(TestPt.X, TestPt.Y, Suelo + 2.f);
 				const FVector Top(0.f, 0.f, H);
 
 				// Color verde con variación natural
@@ -192,7 +195,8 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 				const float H    = Rng.FRandRange(45.f, 110.f);  // altura (cm)
 				const float W    = H * 0.75f;                    // semi-ancho
 				const float Yaw  = Rng.FRandRange(0.f, 360.f);
-				const FVector Base(TestPt.X, TestPt.Y, 0.f);
+				const float Suelo = Alturas ? Alturas->AlturaMundo(TestPt) : 0.f;
+				const FVector Base(TestPt.X, TestPt.Y, Suelo + 2.f);
 				const FVector Top(0.f, 0.f, H);
 
 				const uint8 G = (uint8)Rng.RandRange(60, 115);
