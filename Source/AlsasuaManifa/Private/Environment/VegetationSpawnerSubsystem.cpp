@@ -1,5 +1,6 @@
 #include "Environment/VegetationSpawnerSubsystem.h"
 #include "Engine/World.h"
+#include "EngineUtils.h"
 #include "Landscape.h"
 #include "LandscapeInfo.h"
 #include "LandscapeDataAccess.h"
@@ -41,53 +42,53 @@ void UVegetationSpawnerSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 	AutoDiscoverLandscapeAndSpawn();
 }
 
-static void ExecRebuildVegetation(UWorld* World, const TCHAR* Cmd, FOutputDevice& Ar)
+static void ExecRebuildVegetation(UWorld* World)
 {
 	if (!World)
 	{
-		Ar.Log(TEXT("VegetationSpawnerSubsystem: no world"));
+		UE_LOG(LogTemp, Log, TEXT("VegetationSpawnerSubsystem: no world"));
 		return;
 	}
 
 	if (UVegetationSpawnerSubsystem* Subsystem = World->GetSubsystem<UVegetationSpawnerSubsystem>())
 	{
 		Subsystem->DebugRebuildVegetation();
-		Ar.Log(TEXT("VegetationSpawnerSubsystem: rebuild requested"));
+		UE_LOG(LogTemp, Log, TEXT("VegetationSpawnerSubsystem: rebuild requested"));
 	}
 	else
 	{
-		Ar.Log(TEXT("VegetationSpawnerSubsystem: subsystem not found"));
+		UE_LOG(LogTemp, Log, TEXT("VegetationSpawnerSubsystem: subsystem not found"));
 	}
 }
 
 static FAutoConsoleCommandWithWorld RebuildVegetationCommand(
 	TEXT("rebuildvegetation"),
 	TEXT("Rebuild vegetation from the current world"),
-	ExecRebuildVegetation);
+	FConsoleCommandWithWorldDelegate::CreateStatic(&ExecRebuildVegetation));
 
-static void ExecForcedTestSpawn(UWorld* World, const TCHAR* Cmd, FOutputDevice& Ar)
+static void ExecForcedTestSpawn(UWorld* World)
 {
 	if (!World)
 	{
-		Ar.Log(TEXT("VegetationSpawnerSubsystem: no world"));
+		UE_LOG(LogTemp, Log, TEXT("VegetationSpawnerSubsystem: no world"));
 		return;
 	}
 
 	if (UVegetationSpawnerSubsystem* Subsystem = World->GetSubsystem<UVegetationSpawnerSubsystem>())
 	{
 		Subsystem->RunForcedTestSpawn();
-		Ar.Log(TEXT("VegetationSpawnerSubsystem: forced test spawn requested"));
+		UE_LOG(LogTemp, Log, TEXT("VegetationSpawnerSubsystem: forced test spawn requested"));
 	}
 	else
 	{
-		Ar.Log(TEXT("VegetationSpawnerSubsystem: subsystem not found"));
+		UE_LOG(LogTemp, Log, TEXT("VegetationSpawnerSubsystem: subsystem not found"));
 	}
 }
 
 static FAutoConsoleCommandWithWorld ForcedTestSpawnCommand(
 	TEXT("forcedtestspawn"),
 	TEXT("Force a simple HISM test spawn using a default engine mesh"),
-	ExecForcedTestSpawn);
+	FConsoleCommandWithWorldDelegate::CreateStatic(&ExecForcedTestSpawn));
 
 void UVegetationSpawnerSubsystem::Deinitialize()
 {
@@ -228,11 +229,11 @@ void UVegetationSpawnerSubsystem::PopulateVegetationTypesFromContent()
 
 	IAssetRegistry& AssetRegistry = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry")).Get();
 	TArray<FAssetData> AssetDataList;
-	AssetRegistry.GetAssetsByClass(UVegetationType::StaticClass()->GetFName(), AssetDataList);
+	AssetRegistry.GetAssetsByClass(UVegetationType::StaticClass()->GetClassPathName(), AssetDataList);
 
 	for (const FAssetData& AssetData : AssetDataList)
 	{
-		FString AssetPath = AssetData.ObjectPath.ToString();
+		FString AssetPath = AssetData.GetSoftObjectPath().ToString();
 		if (!AssetPath.Contains(TEXT("Vegetation/DataAssets")) && !AssetPath.Contains(TEXT("Vegetation")))
 		{
 			continue;

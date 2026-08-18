@@ -142,7 +142,7 @@ public:
 	FString DefaultLUTPath = TEXT("/Game/LUTs/LUT_Neutral");
 
 	UFUNCTION(BlueprintCallable, Category = "ColorGrading")
-	void ApplyBarrioLUT(EBarrioStyle Barrio);
+	void ApplyBarrioLUT(EBarrioStyle Estilo);
 
 	UFUNCTION(BlueprintCallable, Category = "ColorGrading")
 	EBarrioStyle GetBarrioStyleAtLocation(const FVector& WorldLocation);

@@ -144,7 +144,7 @@ void UAlsasuaBarrioStyleSystem::ApplyBarrioStyles()
 	Owner->GetComponents<UPrimitiveComponent>(Primitives);
 	for (UPrimitiveComponent* Prim : Primitives)
 	{
-		if (!Prim || Prim->IsPendingKill())
+		if (!IsValid(Prim))
 		{
 			continue;
 		}
@@ -154,7 +154,7 @@ void UAlsasuaBarrioStyleSystem::ApplyBarrioStyles()
 	UE_LOG(LogTemp, Log, TEXT("BarrioStyleSystem: owner=%s barrio=%d colors=%s"), *Owner->GetName(), (int32)BarrioStyle, *GetDebugStyleSummary());
 }
 
-void UAlsasuaBarrioStyleSystem::ApplyBarrioLUT(EBarrioStyle Barrio)
+void UAlsasuaBarrioStyleSystem::ApplyBarrioLUT(EBarrioStyle Estilo)
 {
 	if (!bEnableColorMatching)
 	{
@@ -167,7 +167,7 @@ void UAlsasuaBarrioStyleSystem::ApplyBarrioLUT(EBarrioStyle Barrio)
 		return;
 	}
 
-	UTexture2D* LUT = BarrioLUTs.FindRef(Barrio);
+	UTexture2D* LUT = BarrioLUTs.FindRef(Estilo);
 	if (!LUT)
 	{
 		const FString AssetPath = DefaultLUTPath;
@@ -180,11 +180,11 @@ void UAlsasuaBarrioStyleSystem::ApplyBarrioLUT(EBarrioStyle Barrio)
 	}
 	if (!LUT)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("BarrioStyleSystem: LUT missing for barrio=%d owner=%s"), (int32)Barrio, *Owner->GetName());
+		UE_LOG(LogTemp, Warning, TEXT("BarrioStyleSystem: LUT missing for barrio=%d owner=%s"), (int32)Estilo, *Owner->GetName());
 		return;
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("BarrioStyleSystem: applying LUT for barrio=%d owner=%s"), (int32)Barrio, *Owner->GetName());
+	UE_LOG(LogTemp, Log, TEXT("BarrioStyleSystem: applying LUT for barrio=%d owner=%s"), (int32)Estilo, *Owner->GetName());
 
 	TArray<UPrimitiveComponent*> Primitives;
 	Owner->GetComponents<UPrimitiveComponent>(Primitives);
