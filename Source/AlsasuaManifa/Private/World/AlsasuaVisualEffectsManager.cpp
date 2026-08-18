@@ -13,7 +13,7 @@ void UAlsasuaVisualEffectsManager::Initialize(FSubsystemCollectionBase& Collecti
 	Collection.InitializeDependency<UWeatherSubsystem>();
 
 	CachedMPC = LoadObject<UMaterialParameterCollection>(
-		nullptr, TEXT("/Game/Materials/MPC_AlsasuaGlobal.MPC_AlsasuaGlobal"));
+		nullptr, TEXT("/Game/Materiales/MPC_Clima.MPC_Clima"));
 }
 
 void UAlsasuaVisualEffectsManager::Tick(float DeltaTime)

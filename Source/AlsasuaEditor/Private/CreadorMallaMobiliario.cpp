@@ -10,7 +10,7 @@ namespace
 	// Paleta del mobiliario de Alsasua. Va a color por vértice, y los
 	// materiales la usan de tinte: M_Mobiliario sobre la veta de madera y
 	// M_Metal sobre la chapa.
-	const FLinearColor Madera      (0.42f, 0.26f, 0.14f);
+	const FLinearColor MaderaMobiliario(0.42f, 0.26f, 0.14f);
 	const FLinearColor HierroVerde (0.10f, 0.18f, 0.13f);   // verde Navarra
 	const FLinearColor HierroNegro (0.06f, 0.06f, 0.07f);
 	const FLinearColor Fundicion   (0.20f, 0.20f, 0.22f);
@@ -34,12 +34,12 @@ bool UCreadorMallaMobiliario::GenerarBanco()
 	for (int32 i = 0; i < 5; ++i)
 	{
 		const float Y = -18.f + i * 9.f;
-		C.Caja(FVector(0.f, Y, 45.f), FVector(180.f, 7.f, 4.f), Madera);
+		C.Caja(FVector(0.f, Y, 45.f), FVector(180.f, 7.f, 4.f), MaderaMobiliario);
 	}
 	// Tres listones de respaldo, inclinados de forma sencilla por altura.
 	for (int32 i = 0; i < 3; ++i)
 	{
-		C.Caja(FVector(0.f, 20.f + i * 1.5f, 60.f + i * 9.f), FVector(180.f, 6.f, 4.f), Madera);
+		C.Caja(FVector(0.f, 20.f + i * 1.5f, 60.f + i * 9.f), FVector(180.f, 6.f, 4.f), MaderaMobiliario);
 	}
 	// Pies: pata y zapata a cada lado.
 	for (int32 s = -1; s <= 1; s += 2)
@@ -164,7 +164,7 @@ bool UCreadorMallaMobiliario::GenerarParadaBus()
 
 	C.Caja(FVector(0.f, 0.f, 236.f), FVector(410.f, 145.f, 12.f), HierroVerde);   // techo
 	C.Caja(FVector(0.f, 65.f, 140.f), FVector(390.f, 4.f, 180.f), Piedra);        // trasera (cristal)
-	C.Caja(FVector(0.f, 20.f, 45.f), FVector(340.f, 40.f, 5.f), Madera);          // asiento
+	C.Caja(FVector(0.f, 20.f, 45.f), FVector(340.f, 40.f, 5.f), MaderaMobiliario); // asiento
 	for (int32 s = -1; s <= 1; s += 2)
 	{
 		C.Caja(FVector(s * 150.f, 20.f, 22.f), FVector(8.f, 36.f, 44.f), HierroVerde);
