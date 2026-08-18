@@ -42,6 +42,23 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Misiones") bool HayMision() const { return Estado == EEstadoMision::Activa && Actual != nullptr; }
 	UFUNCTION(BlueprintCallable, Category="Misiones") FString TituloActual() const { return Actual ? Actual->Titulo : FString(); }
 	UFUNCTION(BlueprintCallable, Category="Misiones") FName MisionActualId() const { return Actual ? Actual->Id : NAME_None; }
+
+	/**
+	 * Misiones ya completadas en esta partida.
+	 *
+	 * No existía: CompletarMision emitía OnMisionCompletada y no dejaba constancia
+	 * de nada, así que el guardado escribía un CompletedMissionIDs siempre vacío y
+	 * al cargar el log decía "0 misiones completadas" incluso con la campaña a
+	 * medias. El progreso se perdía entero en cada carga.
+	 */
+	UFUNCTION(BlueprintCallable, Category="Misiones")
+	bool EstaCompletada(FName Id) const { return Completadas.Contains(Id); }
+
+	/** Para el guardado. Se devuelve como FString porque así viaja en el save. */
+	TArray<FString> IdsCompletadas() const;
+
+	/** Para la carga. Sustituye la lista, no la acumula. */
+	void RestaurarCompletadas(const TArray<FString>& Ids);
 	UFUNCTION(BlueprintCallable, Category="Misiones") TArray<FString> ObjetivosTexto() const;
 
 	// Marcador de objetivo (waypoint en el HUD).
@@ -54,6 +71,7 @@ public:
 	virtual bool IsTickable() const override { return !IsTemplate(); }
 
 private:
+	TSet<FName> Completadas;
 	UPROPERTY() TMap<FName, UMisionDef*> Registro;
 	UPROPERTY() UMisionDef* Actual = nullptr;
 	TArray<FObjetivoMision> ObjetivosActivos;

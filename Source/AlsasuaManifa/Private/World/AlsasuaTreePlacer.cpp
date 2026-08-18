@@ -8,6 +8,7 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "GeoDataAlsasua.h"
+#include "CargarJsonComun.h"
 
 void UAlsasuaTreePlacer::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -152,29 +153,18 @@ FString UAlsasuaTreePlacer::AsignarEspecie(float AlturaLIDAR) const
 
 bool UAlsasuaTreePlacer::CargarArboles()
 {
-    const FString JsonPath = FPaths::ProjectContentDir() + TEXT("Datos/trees_unity.json");
-    TArray<FString> Lineas;
-    if (!FFileHelper::LoadFileToStringArray(Lineas, *JsonPath))
+    // trees_unity.json es un array de 2783 árboles en la raíz, no un objeto con
+    // campo "trees". La deserialización a FJsonObject fallaba y esto salía por
+    // aquí: el pueblo se quedaba sin los árboles con especie ni un aviso.
+    TArray<TSharedPtr<FJsonValue>> Arr;
+    if (!JsonDatos::CargarArray(TEXT("Datos/trees_unity.json"), Arr, { TEXT("trees") }))
     {
-        UE_LOG(LogTemp, Error, TEXT("TreePlacer: No se pudo cargar trees_unity.json"));
+        UE_LOG(LogTemp, Error, TEXT("TreePlacer: sin árboles en trees_unity.json"));
         return false;
     }
 
-    FString JsonStr;
-    for (const FString& L : Lineas) JsonStr += L;
-
-    TSharedPtr<FJsonObject> Root;
-    TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(JsonStr);
-    if (!FJsonSerializer::Deserialize(Reader, Root) || !Root.IsValid()) return false;
-
-    const TArray<TSharedPtr<FJsonValue>>* Arr;
-    if (!Root->TryGetArrayField(TEXT("trees"), Arr))
-    {
-        if (!Root->TryGetArrayField(TEXT(""), Arr)) return false;
-    }
-
-    Arboles.Empty(Arr->Num());
-    for (const auto& Val : *Arr)
+    Arboles.Empty(Arr.Num());
+    for (const auto& Val : Arr)
     {
         const TSharedPtr<FJsonObject>& Obj = Val->AsObject();
         if (!Obj) continue;
@@ -184,7 +174,10 @@ bool UAlsasuaTreePlacer::CargarArboles()
         const float Z = Obj->GetNumberField(TEXT("z"));
         const float Altura = Obj->HasField(TEXT("altura")) ? Obj->GetNumberField(TEXT("altura")) : 10.0f;
 
-        Tree.PosicionUnreal = UAlsasuaGeoData::UnityaUnreal(FVector(X, Z, 0));
+        // trees_unity.json es local ABSOLUTO. Esto pasaba (este, norte, 0) a una
+        // función que espera (este, arriba, norte): la coordenada norte acababa
+        // en el eje vertical. Mientras el cargador estuvo roto no se notó.
+        Tree.PosicionUnreal = UAlsasuaGeoData::AbsLocalToUE5(FVector(X, 0.0, Z));
         Tree.Especie = AsignarEspecie(Altura);
         Tree.Escala = FMath::Clamp(Altura / 15.0f, 0.5f, 2.0f);
         Tree.Rotacion = FMath::FRandRange(0.0f, 360.0f);

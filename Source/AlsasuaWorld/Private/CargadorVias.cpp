@@ -51,17 +51,39 @@ void UCargadorVias::OnWorldBeginPlay(UWorld& InWorld)
 }
 
 void UCargadorVias::Encolar(const FString& RutaRel, FName Tag, float EpsilonCm,
-                            float AnchoDefectoM, bool bAnchoPorTracks)
+                            float AnchoDefectoM, bool bAnchoPorTracks,
+                            const TCHAR* CampoArray)
 {
 	const FString Ruta = FPaths::Combine(FPaths::ProjectContentDir(), RutaRel);
 	FString Texto;
 	if (!FFileHelper::LoadFileToString(Texto, *Ruta))
 	{ UE_LOG(LogTemp, Warning, TEXT("[Vias] omito %s (no existe)"), *Ruta); return; }
 
+	// Cuatro de los cinco datasets son un array en la raíz, pero railways_unity.json
+	// es un objeto {"rails":[...], "stations":[...]} porque además de los trazados
+	// lleva los dos apeaderos. Deserializar a TArray contra una raíz de objeto
+	// devuelve false, así que la vía férrea entera se caía en silencio: 86
+	// trazados y 38,7 km sin construir, y el director registrando "cargadas".
+	// Por eso el tipo de raíz se resuelve aquí y no en el llamante.
 	TArray<TSharedPtr<FJsonValue>> Arr;
-	const TSharedRef<TJsonReader<>> R = TJsonReaderFactory<>::Create(Texto);
-	if (!FJsonSerializer::Deserialize(R, Arr)) return;
+	{
+		const TSharedRef<TJsonReader<>> R = TJsonReaderFactory<>::Create(Texto);
+		if (!FJsonSerializer::Deserialize(R, Arr))
+		{
+			TSharedPtr<FJsonObject> Doc;
+			const TSharedRef<TJsonReader<>> R2 = TJsonReaderFactory<>::Create(Texto);
+			const TArray<TSharedPtr<FJsonValue>>* Campo = nullptr;
+			if (!CampoArray || !FJsonSerializer::Deserialize(R2, Doc) || !Doc.IsValid()
+				|| !Doc->TryGetArrayField(CampoArray, Campo) || !Campo)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("[Vias] %s no tiene la forma esperada"), *Ruta);
+				return;
+			}
+			Arr = *Campo;
+		}
+	}
 
+	int32 Encoladas = 0;
 	for (const TSharedPtr<FJsonValue>& Val : Arr)
 	{
 		const TSharedPtr<FJsonObject> O = Val->AsObject();
@@ -85,13 +107,33 @@ void UCargadorVias::Encolar(const FString& RutaRel, FName Tag, float EpsilonCm,
 
 		double AnchoM = AnchoDefectoM;
 		if (bAnchoPorTracks)
-			AnchoM = 1.6 * FMath::Max(1.0, O->HasField(TEXT("tracks")) ? O->GetNumberField(TEXT("tracks")) : 1.0) + 1.0;
+		{
+			// El andén no es plataforma de balasto: es solado, y va con el ancho
+			// y el acabado de una acera. OSM lo mete en la misma capa que la vía.
+			if (T.Tipo == TEXT("platform"))
+			{
+				T.Tag = TEXT("Acera");
+				AnchoM = 4.0;
+			}
+			else
+			{
+				// OSM etiqueta cada vía como un way independiente, así que aquí
+				// tracks siempre vale 1 y el ancho es el de una plataforma de vía
+				// única: traviesa de 2,6 m más los hombros de balasto, ~4,4 m. Con
+				// la fórmula anterior (1,6·tracks+1) salían 2,6 m, la traviesa
+				// pelada. Cabe de sobra en la playa de vías, que las separa 4,5 m.
+				AnchoM = 1.6 * FMath::Max(1.0, O->HasField(TEXT("tracks")) ? O->GetNumberField(TEXT("tracks")) : 1.0) + 2.8;
+			}
+		}
 		else if (O->HasField(TEXT("width")))
 			AnchoM = O->GetNumberField(TEXT("width"));
 		T.AnchoCm = (float)(AnchoM * 100.0);
 
 		Trabajos.Add(MoveTemp(T));
+		++Encoladas;
 	}
+
+	UE_LOG(LogTemp, Log, TEXT("[Vias] %s: %d trazados"), *RutaRel, Encoladas);
 }
 
 void UCargadorVias::PrepararCarga()
@@ -99,10 +141,13 @@ void UCargadorVias::PrepararCarga()
 	if (bPreparado) return;
 	bPreparado = true;
 	Encolar(TEXT("Datos/footways_unity.json"),  TEXT("Acera"),  8.f,  3.f, false);
-	Encolar(TEXT("Datos/railways_unity.json"),  TEXT("Via"),   14.f,  2.5f, true);
+	Encolar(TEXT("Datos/railways_unity.json"),  TEXT("Via"),   14.f,  2.5f, true, TEXT("rails"));
 	Encolar(TEXT("Datos/waterways_unity.json"), TEXT("Agua"), -20.f,  6.f, false);   // río un poco hundido
 	Encolar(TEXT("Datos/caminos_unity.json"),   TEXT("Camino"), 6.f,  3.f, false);   // pistas/senderos de monte
-	Encolar(TEXT("Datos/tunnels_unity.json"),   TEXT("Tunel"),  8.f,  4.f, false);   // túneles (placeholder hasta ATunelAlsasua)
+	// Los túneles ya no se encolan aquí: sus bocas las levanta ATunelAlsasua en
+	// la fase 3b, que es quien sabe dónde están los portales. Encolarlos ponía
+	// una cinta de calzada por encima del monte, por eso PasoPresupuesto los
+	// descartaba y este cargador contaba cinco vías que no construía.
 	UE_LOG(LogTemp, Log, TEXT("[Vias] %d vías en cola"), Trabajos.Num());
 }
 
@@ -113,10 +158,6 @@ bool UCargadorVias::PasoPresupuesto(double PresupuestoMs)
 	while (Idx < Trabajos.Num())
 	{
 		const FTrabajoVia& T = Trabajos[Idx++];
-
-		// Túneles: datos cargados para uso futuro de ATunelAlsasua (paso 3).
-		// Por ahora se omite la malla visible para evitar artefactos en superficie.
-		if (T.Tag == TEXT("Tunel")) { ++Construidas; continue; }
 
 		FActorSpawnParameters SP;
 		SP.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -169,7 +210,7 @@ int32 UCargadorVias::Cargar()
 	const int32 MaxIter = 10000;
 	while (!PasoPresupuesto(1000.0) && ++IterGuard < MaxIter) {}
 	if (IterGuard >= MaxIter) UE_LOG(LogTemp, Warning, TEXT("[Vias] Iteration guard reached (%d)"), MaxIter);
-	UE_LOG(LogTemp, Log, TEXT("[Vias] %d vías construidas (aceras+ferrocarril+ríos+caminos+túneles)"), Construidas);
+	UE_LOG(LogTemp, Log, TEXT("[Vias] %d vías construidas (aceras+ferrocarril+ríos+caminos)"), Construidas);
 	UE_LOG(LogTemp, Log, TEXT("[Vias] %s"), *GetDebugSummary());
 	return Construidas;
 }

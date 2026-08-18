@@ -65,3 +65,44 @@ const AlsasuaDirecciones::FDireccion* AlsasuaDirecciones::De(int32 IdEdificio)
 	Cargar();
 	return Direcciones.Find(IdEdificio);
 }
+
+AlsasuaDirecciones::FFachada AlsasuaDirecciones::LadoDeEntrada(int32 IdEdificio,
+	const FVector2D& Min2, const FVector2D& Max2, FRandomStream& Sorteo)
+{
+	const FVector2D Centro = (Min2 + Max2) * 0.5f;
+
+	// Los cuatro lados de la caja, con el yaw que mira afuera.
+	const FVector2D Lados[4] = {
+		FVector2D(Max2.X, Centro.Y), FVector2D(Min2.X, Centro.Y),
+		FVector2D(Centro.X, Max2.Y), FVector2D(Centro.X, Min2.Y) };
+	const float Yaws[4] = { 0.0f, 180.0f, 90.0f, 270.0f };
+	const FVector2D Fueras[4] = {
+		FVector2D(1.0f, 0.0f), FVector2D(-1.0f, 0.0f),
+		FVector2D(0.0f, 1.0f), FVector2D(0.0f, -1.0f) };
+
+	const FDireccion* Dir = De(IdEdificio);
+
+	FFachada F;
+	int32 Lado = 0;
+	if (Dir && Dir->bTienePuntoCalle)
+	{
+		float MejorDist2 = TNumericLimits<float>::Max();
+		for (int32 i = 0; i < 4; ++i)
+		{
+			const float D2 = FVector2D::DistSquared(Lados[i], Dir->PuntoCalle);
+			if (D2 < MejorDist2) { MejorDist2 = D2; Lado = i; }
+		}
+		F.bHaciaCalle = true;
+	}
+	else
+	{
+		// Sin calle conocida: el lado largo, con el sentido sorteado por id.
+		const bool bLadoEnX = (Max2.X - Min2.X) >= (Max2.Y - Min2.Y);
+		Lado = (bLadoEnX ? 0 : 2) + (Sorteo.GetFraction() < 0.5f ? 0 : 1);
+	}
+
+	F.Punto = Lados[Lado];
+	F.Yaw = Yaws[Lado];
+	F.Fuera = Fueras[Lado];
+	return F;
+}

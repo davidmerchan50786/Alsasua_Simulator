@@ -146,6 +146,12 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="Edificio") int32 Id = 0;
 	UPROPERTY(EditAnywhere, Category="Edificio") FString NombreEdificio;
+
+	/** Barrio de buildings_final.json. Lo lee UAlsasuaBarrioStyleSystem, que
+	 *  antes lo sacaba de Owner->GetName() —o sea "EdificioGenerado_42"— y por
+	 *  eso los 1030 caían al estilo por defecto. */
+	UPROPERTY(EditAnywhere, Category="Edificio") FString Barrio;
+
 	UPROPERTY(EditAnywhere, Category="Edificio") int32 Plantas = 1;
 	UPROPERTY(EditAnywhere, Category="Edificio") bool bDetalleActivo = false;
 

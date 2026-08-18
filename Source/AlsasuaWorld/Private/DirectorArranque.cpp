@@ -5,6 +5,7 @@
 #include "MuestreadorAltura.h"
 #include "CargadorArboles.h"
 #include "CargadorVias.h"
+#include "TunelAlsasua.h"
 #include "CargadorCalles.h"
 #include "CargadorPoligonos.h"
 #include "CargadorEdificios.h"
@@ -22,6 +23,10 @@
 #include "Serialization/JsonSerializer.h"
 #include "Engine/StaticMeshActor.h"
 #include "ProceduralMeshComponent.h"
+#include "CalleGenerada.h"
+#include "EdificioGenerado.h"
+#include "EngineUtils.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "GeoDataAlsasua.h"
 #include "AlsasuaVegetationSpawner.h"
 #include "World/AlsasuaAtmosphereController.h"
@@ -38,6 +43,7 @@
 #include "World/AlsasuaFarolaPlacer.h"
 #include "World/AlsasuaFoliagePainter.h"
 #include "World/AlsasuaTrafficSystem.h"
+#include "World/AlsasuaFerrocarrilSystem.h"
 #include "World/AlsasuaRoadSurfaceSystem.h"
 #include "World/AlsasuaNightLightingSystem.h"
 #include "World/AlsasuaWeatherSystem.h"
@@ -243,79 +249,59 @@ void ADirectorArranque::IniciarConstruccion()
         UE_LOG(LogTemp, Log, TEXT("DirectorArranque: VisualEffectsManager inicializado."));
     }
 
-    // --- 17. Estilos de barrio reales (materiales por barrio) ---
+    // --- 17-20. Componentes que se cuelgan de los edificios y de las farolas ---
+    //
+    // Las cuatro fases hacían lo mismo y las cuatro adjuntaban CERO componentes:
+    //
+    //   GetAllActorsOfClass(World, AStaticMeshActor::StaticClass(), Arr);
+    //   if (Actor->GetName().Contains(TEXT("Edificio"))) ...
+    //
+    // Los 1030 edificios son AEdificioGenerado, que deriva de AActor y NO de
+    // AStaticMeshActor, así que no salían en esa lista: el filtro por nombre no
+    // llegaba ni a evaluarse. Y aunque hubieran salido, GetName() devuelve el
+    // nombre de objeto ("StaticMeshActor_42"), no la etiqueta del editor que
+    // pone SetActorLabel —que además sólo existe con WITH_EDITOR—.
+    //
+    // O sea: sin estilos de barrio, sin ventanas encendidas de noche, sin luz
+    // interior y sin farolas que se enciendan. Toda la capa nocturna del pueblo,
+    // apagada, con cuatro líneas de log diciendo que estaba puesta.
+    //
+    // Los edificios van por TActorIterator<AEdificioGenerado>, que es lo que ya
+    // se hace en la fase 26 con ACalleGenerada. Las farolas, por etiqueta de
+    // actor: Tags sí sobrevive a un build de juego.
     {
-        TArray<AActor*> EdificiosArr;
-        UGameplayStatics::GetAllActorsOfClass(World, AStaticMeshActor::StaticClass(), EdificiosArr);
-        int32 StyleCount = 0;
-        for (AActor* Actor : EdificiosArr)
+        int32 StyleCount = 0, EmissiveCount = 0, InteriorCount = 0;
+        for (TActorIterator<AEdificioGenerado> It(World); It; ++It)
         {
-            if (!Actor) continue;
-            const FString Label = Actor->GetName();
-            if (Label.Contains(TEXT("Edificio")) || Label.Contains(TEXT("Building")))
-            {
-                UAlsasuaBarrioStyleSystem* Style = NewObject<UAlsasuaBarrioStyleSystem>(Actor);
-                if (Style) { Style->RegisterComponent(); StyleCount++; }
-            }
-        }
-        UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d edificios con estilos de barrio reales."), StyleCount);
-    }
+            AEdificioGenerado* Edificio = *It;
+            if (!Edificio) continue;
 
-    // --- 18. Farolas reales (street_furniture.json) ---
-    {
-        TArray<AActor*> FarolaActors;
-        UGameplayStatics::GetAllActorsOfClass(World, AStaticMeshActor::StaticClass(), FarolaActors);
-        int32 FarolaCount = 0;
-        for (AActor* Actor : FarolaActors)
-        {
-            if (!Actor) continue;
-            const FString Label = Actor->GetName().ToLower();
-            if (Label.Contains(TEXT("farola")))
+            if (UAlsasuaBarrioStyleSystem* Style = NewObject<UAlsasuaBarrioStyleSystem>(Edificio))
             {
-                UAlsasuaStreetLightController* Light = NewObject<UAlsasuaStreetLightController>(Actor);
-                if (Light) { Light->RegisterComponent(); FarolaCount++; }
+                // El barrio se le pasa desde aquí: MANIFA no puede ver a
+                // AEdificioGenerado, porque la dependencia va WORLD → MANIFA.
+                // El componente lo sacaba de Owner->GetName(), que es
+                // "EdificioGenerado_42", así que los 1030 caían al estilo por
+                // defecto y los ocho barrios salían iguales.
+                Style->Barrio = Edificio->Barrio;
+                Style->RegisterComponent(); StyleCount++;
+            }
+            if (UAlsasuaBuildingEmissiveComponent* Emissive =
+                    NewObject<UAlsasuaBuildingEmissiveComponent>(Edificio))
+            {
+                Emissive->RegisterComponent(); EmissiveCount++;
+            }
+            if (UAlsasuaInteriorLightComponent* Interior =
+                    NewObject<UAlsasuaInteriorLightComponent>(Edificio))
+            {
+                Interior->RegisterComponent(); InteriorCount++;
             }
         }
-        UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d farolas reales con control automático."), FarolaCount);
+        UE_LOG(LogTemp, Log,
+            TEXT("DirectorArranque: %d edificios con estilo de barrio, %d con ventanas emissivas, %d con luz interior."),
+            StyleCount, EmissiveCount, InteriorCount);
     }
-
-    // --- 19. Ventanas emissivas nocturnas (edificios reales) ---
-    {
-        TArray<AActor*> EdificiosArr;
-        UGameplayStatics::GetAllActorsOfClass(World, AStaticMeshActor::StaticClass(), EdificiosArr);
-        int32 EmissiveCount = 0;
-        for (AActor* Actor : EdificiosArr)
-        {
-            if (!Actor) continue;
-            const FString Label = Actor->GetName();
-            if (Label.Contains(TEXT("Edificio")) || Label.Contains(TEXT("Building")))
-            {
-                UAlsasuaBuildingEmissiveComponent* Emissive =
-                    NewObject<UAlsasuaBuildingEmissiveComponent>(Actor);
-                if (Emissive) { Emissive->RegisterComponent(); EmissiveCount++; }
-            }
-        }
-        UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d edificios con ventanas emissivas."), EmissiveCount);
-    }
-
-    // --- 20. Luces interiores (edificios reales) ---
-    {
-        TArray<AActor*> EdificiosArr;
-        UGameplayStatics::GetAllActorsOfClass(World, AStaticMeshActor::StaticClass(), EdificiosArr);
-        int32 InteriorCount = 0;
-        for (AActor* Actor : EdificiosArr)
-        {
-            if (!Actor) continue;
-            const FString Label = Actor->GetName();
-            if (Label.Contains(TEXT("Edificio")) || Label.Contains(TEXT("Building")))
-            {
-                UAlsasuaInteriorLightComponent* Interior =
-                    NewObject<UAlsasuaInteriorLightComponent>(Actor);
-                if (Interior) { Interior->RegisterComponent(); InteriorCount++; }
-            }
-        }
-        UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d edificios con luces interiores."), InteriorCount);
-    }
+    // El control de farolas va en la 24b: aquí todavía no las ha colocado nadie.
 
     // --- 21. Landmarks y paradas de transporte ---
     // Las ventanas de building_facades.json ya no se generan aparte: las labra
@@ -341,13 +327,20 @@ void ADirectorArranque::IniciarConstruccion()
         }
     }
 
-    // --- 23. Árboles reales con especies (trees_unity.json + 8 especies de Navarra) ---
+    // --- 23. Ficha botánica de las especies de Navarra ---
+    // Los 2783 árboles los planta UCargadorArboles en la fase 2, del mismo
+    // trees_unity.json, con la especie que trae el dato, escala por altura real
+    // y un HISM por especie. Esta fase leía el mismo fichero y plantaba otros
+    // 2783, uno por actor, encima de los primeros. Mientras su cargador estuvo
+    // roto no se notó; en cuanto se arregló, era un bosque duplicado y 2783 draw
+    // calls. Se queda cargando su tabla —nombres en euskera y castellano, radio
+    // de copa, color de follaje, que eso no lo tiene nadie más— y no replanta.
     {
         UAlsasuaTreePlacer* Trees = World->GetGameInstance()->GetSubsystem<UAlsasuaTreePlacer>();
-        if (Trees)
+        if (Trees && Trees->CargarArboles())
         {
-            const int32 NumArboles = Trees->ColocarArbolesReales();
-            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d árboles reales con especies."), NumArboles);
+            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d fichas de árbol (plantados en la fase 2)."),
+                Trees->GetArboles().Num());
         }
     }
 
@@ -361,6 +354,26 @@ void ADirectorArranque::IniciarConstruccion()
         }
     }
 
+    // --- 24b. Control automático de encendido de las farolas ---
+    // Tiene que ir detrás de la 24: el controlador se cuelga de la farola, y en
+    // las fases 17-20 —donde estaba— todavía no había ninguna colocada. Se
+    // buscan por Tag y no por GetName(), que devuelve el nombre de objeto y no
+    // la etiqueta del editor.
+    {
+        int32 FarolaCount = 0;
+        TArray<AActor*> FarolaActors;
+        UGameplayStatics::GetAllActorsWithTag(World, FName(TEXT("Farola")), FarolaActors);
+        for (AActor* Actor : FarolaActors)
+        {
+            if (!Actor) continue;
+            if (UAlsasuaStreetLightController* Light = NewObject<UAlsasuaStreetLightController>(Actor))
+            {
+                Light->RegisterComponent(); FarolaCount++;
+            }
+        }
+        UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d farolas con control automático."), FarolaCount);
+    }
+
     // --- 25. Foliage procedural (hierba, setos, rocas en zonas verdes) ---
     {
         UAlsasuaFoliagePainter* Foliage = World->GetGameInstance()->GetSubsystem<UAlsasuaFoliagePainter>();
@@ -371,26 +384,41 @@ void ADirectorArranque::IniciarConstruccion()
         }
     }
 
-    // --- 26. Superficies de calle (asfalto, adoquín, grava por tipo de vía) ---
+    // --- 26. Firme por tipo de vía (asfalto, adoquín, asfalto gastado, grava) ---
+    // Se tiñen las cintas que ya puso UCargadorCalles en la fase 4, no se
+    // construye calzada nueva: el sistema de MANIFA clasifica y aquí, que es
+    // WORLD y sí ve a ACalleGenerada, se aplica. Cero actores y cero draw calls
+    // añadidos. Antes cada tramo era un cubo aplastado sobre la cinta.
     {
         UAlsasuaRoadSurfaceSystem* Roads = World->GetGameInstance()->GetSubsystem<UAlsasuaRoadSurfaceSystem>();
         if (Roads)
         {
-            const int32 NumRoads = Roads->AplicarSuperficiesEnMundo();
-            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d tramos de superficie."), NumRoads);
+            int32 NumRoads = 0;
+            for (TActorIterator<ACalleGenerada> It(World); It; ++It)
+            {
+                ACalleGenerada* C = *It;
+                if (!C || !C->Malla) continue;
+
+                FString Firme;
+                FLinearColor Color = FLinearColor::Black;
+                if (!Roads->FirmeDe(C->Id, Firme, Color)) continue;
+
+                if (UMaterialInstanceDynamic* MID = C->Malla->CreateDynamicMaterialInstance(0))
+                {
+                    // El nombre del parámetro depende de qué material haya
+                    // cargado la calle (el de Fab o el propio). Si no lo tiene,
+                    // SetVectorParameterValue no hace nada y la calle se queda
+                    // con su color de tipo, que es el comportamiento de antes.
+                    MID->SetVectorParameterValue(FName(TEXT("Color")), Color);
+                    MID->SetVectorParameterValue(FName(TEXT("BaseColor")), Color);
+                }
+                ++NumRoads;
+            }
+            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: firme aplicado a %d calles."), NumRoads);
         }
     }
 
-    // --- 27. Tráfico procedural (coches aparcados, señales de tráfico) ---
-    {
-        UAlsasuaTrafficSystem* Traffic = World->GetGameInstance()->GetSubsystem<UAlsasuaTrafficSystem>();
-        if (Traffic)
-        {
-            const int32 NumCoches = Traffic->ColocarCocheAparcado();
-            const int32 NumTrafico = Traffic->ColocarSenalesTrafico();
-            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d coches, %d señales tráfico."), NumCoches, NumTrafico);
-        }
-    }
+    // --- 27. (movida a 41b: los coches aparcados necesitan sus plazas) ---
 
     // --- 28. Sistema de iluminación nocturna ---
     {
@@ -427,15 +455,18 @@ void ADirectorArranque::IniciarConstruccion()
         }
     }
 
-    // --- 31. Colisiones de edificios y calles ---
+    // --- 31. Repaso de colisión de props ---
+    // Edificios y calles NO pasan por aquí, y es correcto: AEdificioGenerado y
+    // ACalleGenerada ya hacen SetCollisionProfileName("BlockAll") y crean sus
+    // secciones con bCreateCollision. Antes esta fase decía generarlas y
+    // recorría GetAllActorsOfClass(AStaticMeshActor), donde no está ninguno de
+    // los dos: dos bucles que no daban una vuelta.
     {
         UAlsasuaCollisionSystem* Collisions = World->GetGameInstance()->GetSubsystem<UAlsasuaCollisionSystem>();
         if (Collisions)
         {
-            const int32 ColEdificios = Collisions->GenerarColisionesEdificios();
-            const int32 ColCalles = Collisions->GenerarColisionesCalles();
-            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d colisiones edificios, %d calles."),
-                ColEdificios, ColCalles);
+            const int32 Repasados = Collisions->RepasarColisionesDeProps();
+            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d props sin colisión repasados."), Repasados);
         }
     }
 
@@ -449,13 +480,17 @@ void ADirectorArranque::IniciarConstruccion()
         }
     }
 
-    // --- 34. Terreno multi-capa por barrio ---
+    // --- 34. Firme por barrio (clasifica, no construye) ---
+    // Va antes que las aceras (fase 37), que son quien lee la tabla. Antes esto
+    // soltaba nueve planos opacos de un kilómetro de lado —ocho de ellos
+    // apilados en el origen del mundo, a 1,9 km del pueblo y 531 m por debajo—
+    // y aun bien colocados habrían tapado la ortofoto PNOA del terreno.
     {
         UAlsasuaTerrainLayersSystem* Terrain = World->GetGameInstance()->GetSubsystem<UAlsasuaTerrainLayersSystem>();
         if (Terrain)
         {
-            Terrain->GenerarSueloCiudad();
-            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: Terreno multi-capa por barrio generado."));
+            const int32 NumBarrios = Terrain->PublicarFirmePorBarrio();
+            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: firme publicado para %d barrios."), NumBarrios);
         }
     }
 
@@ -527,6 +562,20 @@ void ADirectorArranque::IniciarConstruccion()
         }
     }
 
+    // --- 41b. Tráfico estático: coches aparcados y señales verticales ---
+    // Va aquí y no en la 27 a propósito: el coche se coloca en una plaza de
+    // AlsasuaParkingSystem, así que las plazas tienen que existir antes. Puesto
+    // en la 27, la lista venía vacía y no aparcaba ni un coche.
+    {
+        UAlsasuaTrafficSystem* Traffic = World->GetGameInstance()->GetSubsystem<UAlsasuaTrafficSystem>();
+        if (Traffic)
+        {
+            const int32 NumCoches = Traffic->ColocarCocheAparcado();
+            const int32 NumTrafico = Traffic->ColocarSenalesTrafico();
+            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d coches, %d señales tráfico."), NumCoches, NumTrafico);
+        }
+    }
+
     // --- 42. Marcas viales y cruces peatonales ---
     {
         UAlsasuaRoadMarkingsSystem* Marcas = World->GetGameInstance()->GetSubsystem<UAlsasuaRoadMarkingsSystem>();
@@ -568,8 +617,22 @@ void ADirectorArranque::IniciarConstruccion()
     }
 
     // --- 46. Semáforos en intersecciones ---
+    // Estaba saltada con un log de "skip para perfilado" desde que se midió el
+    // arranque, así que el sistema no se ejecutaba nunca. Vuelve a la cadena
+    // detrás de bSemaforos, que es lo que hay que bajar para volver a medir sin
+    // ellos en vez de comentar la fase.
+    if (bSemaforos)
     {
-        UE_LOG(LogTemp, Log, TEXT("DirectorArranque: skip semáforos para perfilado"));
+        UAlsasuaTrafficLightSystem* Lights = World->GetGameInstance()->GetSubsystem<UAlsasuaTrafficLightSystem>();
+        if (Lights)
+        {
+            const int32 NumSem = Lights->ColocarSemaforos();
+            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d semáforos con ciclo."), NumSem);
+        }
+    }
+    else
+    {
+        UE_LOG(LogTemp, Log, TEXT("DirectorArranque: semáforos desactivados (bSemaforos)."));
     }
 
     // --- 47. Toldos y persianas en edificios ---
@@ -622,11 +685,46 @@ void ADirectorArranque::IniciarConstruccion()
         }
     }
 
+    // --- 51b. Bocas de los cinco túneles (tunnels_unity.json) ---
+    // Al final por lo mismo que el material rodante: el marco de hormigón tiene
+    // colisión, y colocado antes cualquier sistema que se apoye por raycast y
+    // pase por la boca se subiría encima del dintel. Su propio trazo de suelo
+    // agradece llegar el último: los portales de la N-1 y la A-10 caen sobre la
+    // calzada que entra en el túnel, no sobre el monte pelado. No agujerea el
+    // terreno: son las bocas, no la galería (ver TunelAlsasua.h).
+    {
+        ATunelAlsasua* Tuneles = World->SpawnActor<ATunelAlsasua>(
+            ATunelAlsasua::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator);
+        if (Tuneles)
+        {
+#if WITH_EDITOR
+            Tuneles->SetActorLabel(TEXT("Alsasua_Tuneles"));
+#endif
+            const int32 NumBocas = Tuneles->Construir();
+            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d bocas de túnel."), NumBocas);
+        }
+    }
+
+    // --- 52. Material rodante en la playa de vías de la estación ---
+    // El último de la cadena por las dos puntas. Necesita las cintas de balasto
+    // de la fase 3 ya drapeadas, porque la Z de cada vehículo sale de un trazo
+    // vertical contra ellas. Y va detrás de todo lo demás porque un tren sí
+    // tiene colisión: colocado antes, cualquier sistema que se apoye por
+    // raycast y pase por la estación se subiría al techo de un vagón.
+    {
+        UAlsasuaFerrocarrilSystem* Ferro = World->GetSubsystem<UAlsasuaFerrocarrilSystem>();
+        if (Ferro)
+        {
+            const int32 NumVagones = Ferro->ColocarMaterialRodante();
+            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d vehículos ferroviarios."), NumVagones);
+        }
+    }
+
     ArranqueMundo::MarkPhaseComplete(TEXT("Sistema completo"), 1.f);
     ArranqueMundo::BaselineListo = true;
     ArranqueMundo::HayDirector = false;
     bConstruccionCompleta = true;
-    UE_LOG(LogTemp, Log, TEXT("DirectorArranque: BaselineListo = true (51 sistemas basados en datos reales)."));
+    UE_LOG(LogTemp, Log, TEXT("DirectorArranque: BaselineListo = true (52 sistemas basados en datos reales)."));
     UE_LOG(LogTemp, Log, TEXT("[Arranque] %s"), *ArranqueMundo::GetDebugSummary());
 }
 

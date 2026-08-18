@@ -33,15 +33,22 @@ void UCargadorArboles::OnWorldBeginPlay(UWorld& InWorld)
 	// Los coloca ADirectorArranque tras generar el terreno.
 }
 
-float UCargadorArboles::AlturaSuelo(const FVector2D& XY) const
+bool UCargadorArboles::AlturaSuelo(const FVector2D& XY, float& OutZ) const
 {
 	const UWorld* W = GetWorld();
-	if (!W) return 0.f;
+	if (!W) return false;
 	FHitResult Hit;
 	FCollisionQueryParams Q(SCENE_QUERY_STAT(AlturaArbol), true);
 	if (W->LineTraceSingleByChannel(Hit, FVector(XY.X, XY.Y, UAlsasuaGeoData::TraceUp), FVector(XY.X, XY.Y, UAlsasuaGeoData::TraceDown), ECC_Visibility, Q))
-		return Hit.Location.Z;
-	return 0.f;
+	{
+		OutZ = Hit.Location.Z;
+		return true;
+	}
+	// Sin terreno debajo. Devolvía 0, que es cota cero del mundo: 531 m por
+	// debajo del pueblo. 280 de los 2783 árboles del LiDAR caen fuera del
+	// terreno jugable —el vuelo cubrió más superficie que los 7200 m de lado—
+	// y se plantaban ahí abajo. Ahora el llamante los descarta.
+	return false;
 }
 
 /**
@@ -158,7 +165,8 @@ void UCargadorArboles::SembrarUno(const TSharedPtr<FJsonObject>& O)
 	const double AlturaM = O->HasField(TEXT("altura")) ? O->GetNumberField(TEXT("altura")) : AlturaReferenciaMalla;
 	const FString Especie = O->HasField(TEXT("especie")) ? O->GetStringField(TEXT("especie")) : TEXT("generico");
 
-	const float Suelo  = AlturaSuelo(XY);
+	float Suelo = 0.f;
+	if (!AlturaSuelo(XY, Suelo)) { ++Descartados; return; }
 	const float Escala = FMath::Max(0.2f, (float)AlturaM / FMath::Max(1.f, AlturaReferenciaMalla));
 	const float Yaw    = FMath::FRandRange(0.f, 360.f);
 
@@ -196,6 +204,7 @@ int32 UCargadorArboles::Cargar()
 	const int32 MaxIter = 10000;
 	while (!PasoPresupuesto(1000.0) && ++IterGuard < MaxIter) {}
 	if (IterGuard >= MaxIter) UE_LOG(LogTemp, Warning, TEXT("[Arboles] Iteration guard reached (%d)"), MaxIter);
-	UE_LOG(LogTemp, Log, TEXT("[Arboles] %d árboles en %d especies"), Sembrados, PorEspecie.Num());
+	UE_LOG(LogTemp, Log, TEXT("[Arboles] %d árboles en %d especies (%d fuera del terreno)"),
+		Sembrados, PorEspecie.Num(), Descartados);
 	return Sembrados;
 }

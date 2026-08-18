@@ -62,6 +62,15 @@ namespace
 		{ TEXT("autobus"),           TEXT("autobus_urbano|autobus|bus|city_bus") },
 		{ TEXT("furgoneta"),         TEXT("furgoneta_secundaria|furgoneta|van|truck") },
 
+		// ── Material rodante ───────────────────────────────────────────────
+		// Altsasu es nudo ferroviario (Madril-Hendaia con Castejón) y tenía la
+		// playa de vías vacía. La locomotora y el contenedor estaban bajados sin
+		// que ninguna clave los alcanzara. El nombre exacto va primero porque
+		// BuscarEnFab prueba coincidencia exacta antes que subcadena: "container"
+		// a secas también casaría con los contenedores de basura del barrio.
+		{ TEXT("locomotora"),        TEXT("locomotive00|locomotive|locomotora|train_engine|diesel_locomotive") },
+		{ TEXT("vagon_contenedor"),  TEXT("container|contenedor_carga|freight_container|shipping_container|boxcar|wagon") },
+
 		// Tipos que trae street_furniture.json y que la tabla no conocía (17
 		// piezas en total): sin entrada caían a primitiva aunque hubiera malla.
 		// papelera_reciclaje tiene la suya propia de Meshy; el resto tira del
@@ -93,16 +102,41 @@ namespace
 		// Wood_ (16), Prop_ (13), Canopy_ (10), Waterwheel_ (9), Cobblestone_,
 		// Wall_Prop_, Dirt_, Kit_Window_. Se apunta a la pieza recta o
 		// "Full" de cada familia, que es la que sirve de caso general.
-		{ TEXT("toldo"),             TEXT("canopy_full|canopy_side|canopy_top|awning") },
-		{ TEXT("marquesina"),        TEXT("canopy_full|canopy_beam|canopy_corner") },
+		{ TEXT("toldo"),             TEXT("canopy_full|canopy_side|canopy_top|canopy_ramp|awning") },
+		{ TEXT("marquesina"),        TEXT("canopy_full|canopy_beam|canopy_corner|canopy_ramp") },
 		{ TEXT("bordillo"),          TEXT("stone_curb|curb|kerb") },
-		{ TEXT("acera_pieza"),       TEXT("cobblestone_floor|stone_floor|pp_floor_tile") },
+		// Las piezas de transición del kit (Cobblestone_Dirt_Transition_1..4) son
+		// las que rematan donde el adoquín muere contra la tierra, y estaban
+		// bajadas sin que ninguna clave las alcanzara.
+		{ TEXT("acera_pieza"),       TEXT("cobblestone_floor|cobblestone_dirt_transition|stone_floor|pp_floor_tile") },
 		{ TEXT("puerta"),            TEXT("wall_prop_door_simple|wall_prop_door_ornate|stucco_doorway|stone_doorway|door") },
 		{ TEXT("escaparate"),        TEXT("stucco_doorway_wide|harategia|okindegia|shop_front|storefront") },
 		{ TEXT("ventana"),           TEXT("stucco_window_single|stucco_window_double|kit_window|ventana_basca|window") },
 		{ TEXT("muro_piedra"),       TEXT("stone_wall|piedra_muro|stone_arch") },
 		{ TEXT("tejado_pieza"),      TEXT("roof_straight_side|roof_concave_side|roof_convex_side") },
 		{ TEXT("chimenea"),          TEXT("roof_prop_chimney_stone|roof_prop_chimney|chimenea_piedra|chimney") },
+
+		// ── Remates de tejado y fachada ────────────────────────────────────
+		// Los pedía AlsasuaRooftopDetailSystem y no había entrada para ninguno,
+		// así que los cuatro caían a la forma básica del motor. Y Meshy había
+		// generado Antena_TV, Placa_Solar, Balcon_Hierro y Persiana_Española
+		// para este pueblo: bajados y sin que ninguna clave los alcanzara.
+		//
+		// No los cazaba AuditarAssets.py porque el tipo no llega a Resolver()
+		// como literal, sino por el parámetro de un lambda; el script mira
+		// ahora también los literales de CrearItem/CapaDe.
+		{ TEXT("antena"),            TEXT("antena_tv|antena|tv_antenna|antenna|aerial") },
+		// "deposito_agua" estaba sólo como palabra clave dentro de
+		// cuadro_electrico, que es otra cosa: como tipo no tenía entrada, así que
+		// el depósito de cubierta caía al cubo.
+		{ TEXT("deposito_agua"),     TEXT("deposito_agua|deposito|water_tank|tank|cistern") },
+		{ TEXT("satelital"),         TEXT("antena_parabolica|parabolica|satellite_dish|satellite|dish") },
+		{ TEXT("placa_solar"),       TEXT("placa_solar|panel_solar|solar_panel|solar") },
+		{ TEXT("tendedero"),         TEXT("tendedero|clothesline|drying_rack") },
+		{ TEXT("balcon"),            TEXT("balcon_hierro|balcon|balcony|railing_balcony") },
+		// La persiana tenía su modelo y se pedía con la clave "ventana", que
+		// devuelve el hueco de la ventana, no la persiana de delante.
+		{ TEXT("persiana"),          TEXT("persiana_espanola|persiana_española|persiana|shutter|window_shutter") },
 
 		// Piezas de remate que ensambla UAlsasuaTejadoModular. Sólo la familia
 		// Straight: en este kit Concave/Convex son variantes de planta curva, y
@@ -113,7 +147,7 @@ namespace
 		{ TEXT("tejado_cumbrera"),      TEXT("roof_accent_ridge") },
 		{ TEXT("tejado_cumbrera_fin"),  TEXT("roof_accent_ridge_end") },
 		{ TEXT("tejado_limatesa"),      TEXT("roof_accent_rake_straight|roof_accent_rake_eave") },
-		{ TEXT("pilar"),             TEXT("stone_pillar|stucco_prop_support_pillar|wood_post") },
+		{ TEXT("pilar"),             TEXT("stone_pillar|stucco_prop_support_pillar|stucco_prop_support_angled|wood_post") },
 		{ TEXT("escalera"),          TEXT("stone_steps|wood_steps|stairs|steps") },
 		{ TEXT("barril"),            TEXT("prop_barrel|barrel") },
 		{ TEXT("caja_madera"),       TEXT("prop_crate|crate") },
@@ -128,14 +162,14 @@ namespace
 		{ TEXT("puente_pieza"),      TEXT("pp_bridge_15_middle|pp_bridge|bridge") },
 
 		// ── ForestPack (34 piezas) para el suelo del monte ────────────────
-		{ TEXT("roca"),              TEXT("pp_rock_moss_grown|pp_rock_pile|roca_grande|rock_01|rock_03") },
+		{ TEXT("roca"),              TEXT("pp_rock_moss_grown|pp_rock_pile|roca_grande|rock_01|rock_02|rock_03|rock_04|rock_05") },
 		{ TEXT("musgo"),             TEXT("pp_forest_mountain_moss|moss") },
-		{ TEXT("seta"),              TEXT("pp_mushroom|mushroom") },
+		{ TEXT("seta"),              TEXT("pp_mushroom|mushroom|shrooms") },
 		{ TEXT("flor"),              TEXT("pp_daffodil|pp_hyacinth|pp_sunflower|fleur") },
 		{ TEXT("prado"),             TEXT("pp_meadow_07|pp_meadow_08|meadow") },
 		{ TEXT("senda"),             TEXT("pp_meadow_path|path") },
 		{ TEXT("hierba_pieza"),      TEXT("pp_grass|grass_07|hierba_larga|multi_stylized_grass") },
-		{ TEXT("seto"),              TEXT("hedgelong|hedgesmall|seto_verde|hedge") },
+		{ TEXT("seto"),              TEXT("hedgelong|hedgelonground|hedgesmall|hedgesmallround|seto_verde|hedge") },
 		{ TEXT("tronco_caido"),      TEXT("tronco_caido|pine_roots|dead_tree_trunk") },
 	};
 

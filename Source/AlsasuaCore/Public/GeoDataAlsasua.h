@@ -57,12 +57,34 @@ public:
     // --- New coordinate conversion API ---
 
     /** Absolute local meters → UE5 centimeters.
-     *  Input: (east, 0, north). Output: (east_cm, north_cm, 0). */
+     *  Input: (east, up, north). Output: (east_cm, north_cm, up_cm).
+     *  La vertical del vector de entrada va EN MEDIO y se propaga a la Z de
+     *  salida; con el segundo componente a cero, la Z sale cero. */
     static FVector AbsLocalToUE5(const FVector& AbsLocalPos);
 
     /** Relative local meters → UE5 centimeters (adds OX/OZ).
-     *  Input: (east, 0, north). Output: (east_cm, north_cm, 0). */
+     *  Input: (east, up, north). Output: (east_cm, north_cm, up_cm). */
     static FVector RelLocalToUE5(const FVector& RelLocalPos);
+
+    /**
+     * Mobiliario urbano → UE5, decidiendo el marco por la propia coordenada.
+     *
+     * street_furniture.json no está en un solo marco: lo escribieron dos
+     * generadores distintos y quedaron mezclados. 191 de sus 220 piezas están en
+     * local RELATIVO (papeleras, bancos, bolardos, bocas de incendio…) y 29 en
+     * ABSOLUTO (las 12 paradas de bus, las 5 fuentes, las señales, los cruces).
+     *
+     * Se distinguen por la coordenada norte y no hay ambigüedad posible: los dos
+     * grupos están separados por un hueco de 4115 m —el más alto de los
+     * relativos es z=4452,8 y el más bajo de los absolutos z=8568,0—, así que el
+     * corte a 6000 tiene kilómetro y medio de margen por abajo y dos y medio por
+     * arriba. En este por la X no se puede: los rangos se solapan.
+     *
+     * Aplicar el marco relativo a todo —que es lo que se hacía— manda esas 29
+     * piezas 1918 m al este y 8570 al norte de donde van, o sea a 8,6 km del
+     * pueblo, fuera del terreno jugable.
+     */
+    static FVector MobiliarioAUE5(const FVector& LocalPos);
 
     /**
      * Cota del terreno bajo un punto del mundo (cm), por trazo vertical.
@@ -112,6 +134,31 @@ public:
     // Límites para raycasts de suelo (trace vertical desde/to).
     static constexpr float TraceUp = 500000.0f;
     static constexpr float TraceDown = -500000.0f;
+
+    /**
+     * Caja del terreno jugable (cm): 7200×7200 m centrados aquí.
+     *
+     * Hace falta porque hay datos que caen fuera y colocarlos no falla: 31 de
+     * las 126 señales de signage_data.json llegan a 216 km, y 280 de los 2783
+     * árboles del LiDAR quedan fuera. El actor se crea igual, su trazo de suelo
+     * no encuentra nada y acaba a cota cero o a la de la plaza. Quien lea esos
+     * datos tiene que filtrarlos diciendo cuántos.
+     *
+     * Está aquí y no en cada sistema porque son los límites del mundo, no una
+     * decisión de quien coloca: los llevaban copiados a mano AlsasuaSignPlacer y
+     * Tools/VerificarDatasets.py, y tres copias de una constante son tres
+     * oportunidades de que una se quede atrás.
+     */
+    static constexpr double CentroTerrenoXCm = 191800.0;
+    static constexpr double CentroTerrenoYCm = 857000.0;
+    static constexpr double SemiTerrenoCm    = 360000.0;
+
+    /** ¿Cae este punto del mundo dentro del terreno jugable? */
+    static bool DentroDelTerreno(const FVector& UE5Pos)
+    {
+        return FMath::Abs(UE5Pos.X - CentroTerrenoXCm) <= SemiTerrenoCm
+            && FMath::Abs(UE5Pos.Y - CentroTerrenoYCm) <= SemiTerrenoCm;
+    }
 
     // --- UTM Zone 30N constants (WGS84) ---
     static constexpr double UTM_A = 6378137.0;           // WGS84 semi-major axis

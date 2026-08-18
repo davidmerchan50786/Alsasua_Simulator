@@ -1,3 +1,16 @@
+// AlsasuaDoorEntranceSystem.h (capa MANIFA)
+// Puerta de entrada de cada edificio de buildings_final.json, en la fachada que
+// da a su calle, con el número de portal de OSM cuando lo hay.
+//
+// Iba a AStaticMeshActor por puerta —1030— más otro por toldo de entrada, y con
+// el LoadObject del material dentro del bucle. Ahora son dos capas
+// HierarchicalInstancedStaticMesh: regla 0, nada de un actor por pieza cuando
+// las piezas se cuentan por miles.
+//
+// El número de portal es la excepción: un UTextRenderComponent no se instancia,
+// así que sigue siendo un componente por puerta rotulada, pero colgado del
+// actor anfitrión en vez de uno propio. Lleva CullDistance porque un portal no
+// se lee a 80 m.
 #pragma once
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
@@ -32,4 +45,7 @@ public:
 
 private:
     TArray<FDoorEntry> Puertas;
+
+    /** Actor que aloja las capas instanciadas y los rótulos de portal. */
+    UPROPERTY() TObjectPtr<AActor> Host = nullptr;
 };

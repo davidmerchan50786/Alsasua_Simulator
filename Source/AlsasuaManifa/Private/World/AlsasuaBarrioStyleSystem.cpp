@@ -4,6 +4,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/SceneComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "Components/MeshComponent.h"
 #include "UObject/Package.h"
 #include "UObject/SoftObjectPath.h"
 #include "Engine/Engine.h"
@@ -74,57 +75,67 @@ void UAlsasuaBarrioStyleSystem::ApplyBarrioStyles()
 	AActor* Owner = GetOwner();
 	if (!Owner) return;
 
-	const FString Label = Owner->GetName().ToLower();
-	EBarrioStyle Barrio = EBarrioStyle::Herriko;
+	// El barrio lo pone ADirectorArranque al colgar el componente: es él quien
+	// es capa WORLD y ve el AEdificioGenerado del que sale.
+	//
+	// Antes se sacaba de Owner->GetName().ToLower(), y el nombre de objeto de un
+	// AEdificioGenerado es "EdificioGenerado_42": no contiene "herriko" ni
+	// ninguno de los otros, así que los 1030 caían al estilo por defecto y los
+	// ocho barrios se veían iguales. Se cae a GetName() sólo por si esto acaba
+	// colgado de algo que no es un edificio.
+	FString Label = Barrio.ToLower();
+	if (Label.IsEmpty()) Label = Owner->GetName().ToLower();
+
+	EBarrioStyle BarrioStyle = EBarrioStyle::Herriko;
 
 	FLinearColor FachadaColor = FLinearColor(0.75f, 0.72f, 0.65f);
 	FLinearColor TejadoColor = FLinearColor(0.7f, 0.35f, 0.15f);
 
 	if (Label.Contains(TEXT("herriko")) || Label.Contains(TEXT("casco")))
 	{
-		Barrio = EBarrioStyle::Herriko;
+		BarrioStyle = EBarrioStyle::Herriko;
 		FachadaColor = HerrikoFachadaPiedra;
 		TejadoColor = HerrikoTejadoTerracota;
 	}
 	else if (Label.Contains(TEXT("zelai")))
 	{
-		Barrio = EBarrioStyle::Zelai;
+		BarrioStyle = EBarrioStyle::Zelai;
 		FachadaColor = ZelaiFachadaHormigon;
 		TejadoColor = ZelaiTejadoGris;
 	}
 	else if (Label.Contains(TEXT("intxostia")))
 	{
-		Barrio = EBarrioStyle::Intxostia;
+		BarrioStyle = EBarrioStyle::Intxostia;
 		FachadaColor = IntxostiaFachadaHormigon;
 		TejadoColor = IntxostiaTejadoPlano;
 	}
 	else if (Label.Contains(TEXT("errota")) || Label.Contains(TEXT("molina")))
 	{
-		Barrio = EBarrioStyle::Errota;
+		BarrioStyle = EBarrioStyle::Errota;
 		FachadaColor = ErrotaFachadaLadrillo;
 		TejadoColor = ErrotaTejadoTerracota;
 	}
 	else if (Label.Contains(TEXT("sanpedro")) || Label.Contains(TEXT("estacion")))
 	{
-		Barrio = EBarrioStyle::SanPedro;
+		BarrioStyle = EBarrioStyle::SanPedro;
 		FachadaColor = FMath::Lerp(SanPedroFachadaPiedra, SanPedroFachadaHormigon, 0.5f);
 		TejadoColor = FLinearColor(0.6f, 0.55f, 0.5f);
 	}
 	else if (Label.Contains(TEXT("harrobieta")) || Label.Contains(TEXT("mercado")))
 	{
-		Barrio = EBarrioStyle::Harrobieta;
+		BarrioStyle = EBarrioStyle::Harrobieta;
 		FachadaColor = HarrobietaFachadaPiedra;
 		TejadoColor = HarrobietaTejadoTerracota;
 	}
 	else if (Label.Contains(TEXT("ferroviario")) || Label.Contains(TEXT("vias")))
 	{
-		Barrio = EBarrioStyle::Ferroviario;
+		BarrioStyle = EBarrioStyle::Ferroviario;
 		FachadaColor = FerroviarioFachadaLadrillo;
 		TejadoColor = FerroviarioTejadoOxidado;
 	}
 	else if (Label.Contains(TEXT("monte")) || Label.Contains(TEXT("ladera")))
 	{
-		Barrio = EBarrioStyle::Monte;
+		BarrioStyle = EBarrioStyle::Monte;
 		FachadaColor = MonteFachadaPiedraRustica;
 		TejadoColor = MonteTejadoPizarra;
 	}
@@ -140,7 +151,7 @@ void UAlsasuaBarrioStyleSystem::ApplyBarrioStyles()
 		ApplyMaterialStyle(Prim, FachadaColor, TejadoColor);
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("BarrioStyleSystem: owner=%s barrio=%d colors=%s"), *Owner->GetName(), (int32)Barrio, *GetDebugStyleSummary());
+	UE_LOG(LogTemp, Log, TEXT("BarrioStyleSystem: owner=%s barrio=%d colors=%s"), *Owner->GetName(), (int32)BarrioStyle, *GetDebugStyleSummary());
 }
 
 void UAlsasuaBarrioStyleSystem::ApplyBarrioLUT(EBarrioStyle Barrio)

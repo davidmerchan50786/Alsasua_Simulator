@@ -34,6 +34,19 @@ public:
 
 	virtual void BeginPlay() override;
 
+	/**
+	 * Barrio del edificio, de buildings_final.json.
+	 *
+	 * Lo rellena ADirectorArranque al colgar el componente: MANIFA no puede ver
+	 * a AEdificioGenerado —AlsasuaWorld depende de AlsasuaManifa y no al revés—
+	 * así que el dato entra por aquí, igual que el firme de calle entra por el
+	 * director en la fase 26.
+	 *
+	 * Vacío = se cae al estilo por defecto.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Barrio")
+	FString Barrio;
+
 	// --- Datos reales por barrio (de nighborhoods.json) ---
 
 	// Herriko Aldea (Casco Viejo)

@@ -198,6 +198,7 @@ void UCargadorEdificios::ConstruirUno(const TSharedPtr<FJsonObject>& O)
 
 	E->Id            = (int32)O->GetIntegerField(TEXT("id"));
 	E->NombreEdificio = O->HasField(TEXT("name")) ? O->GetStringField(TEXT("name")) : FString();
+	O->TryGetStringField(TEXT("barrio"), E->Barrio);
 	E->Plantas       = PlantasJson;   // ya lleva la medida LiDAR si la había
 
 	// Eje real del caballete (Unity dx,dz) -> dirección en el plano XY de Unreal (X=Z, Y=X).
