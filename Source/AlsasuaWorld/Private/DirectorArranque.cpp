@@ -75,7 +75,8 @@ void ADirectorArranque::IniciarConstruccion()
 {
     ArranqueMundo::HayDirector = true;
     ArranqueMundo::BaselineListo = false;
-    ArranqueMundo::Progreso = 0.f;
+    ArranqueMundo::SetProgress(0.f);
+    UE_LOG(LogTemp, Log, TEXT("[Arranque] %s"), *ArranqueMundo::GetDebugSummary());
 
     UE_LOG(LogTemp, Log, TEXT("DirectorArranque: Iniciando construccion de Alsasua..."));
 
@@ -124,7 +125,7 @@ void ADirectorArranque::IniciarConstruccion()
         UE_LOG(LogTemp, Log, TEXT("DirectorArranque: relieve lejano con %d triangulos."), NumTris);
     }
 
-    ArranqueMundo::Progreso = 0.3f;
+    ArranqueMundo::MarkPhaseComplete(TEXT("Terreno + suelos + relieve lejano"), 0.3f);
 
     // --- 2. Árboles (2783 posiciones LIDAR reales) ---
     UCargadorArboles* Arboles = World->GetSubsystem<UCargadorArboles>();
@@ -134,7 +135,7 @@ void ADirectorArranque::IniciarConstruccion()
         UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d árboles cargados (LIDAR real)."), NumArboles);
     }
 
-    ArranqueMundo::Progreso = 0.5f;
+    ArranqueMundo::MarkPhaseComplete(TEXT("Árboles"), 0.5f);
 
     // --- 3. Vías férreas (railways_unity.json real) ---
     UCargadorVias* Vias = World->GetSubsystem<UCargadorVias>();
@@ -152,7 +153,7 @@ void ADirectorArranque::IniciarConstruccion()
         UE_LOG(LogTemp, Log, TEXT("DirectorArranque: Calles cargadas."));
     }
 
-    ArranqueMundo::Progreso = 0.6f;
+    ArranqueMundo::MarkPhaseComplete(TEXT("Vías + calles + edificios"), 0.6f);
 
     // --- 5. Edificios (2783 footprint LIDAR real) ---
     UCargadorEdificios* Edificios = World->GetSubsystem<UCargadorEdificios>();
@@ -197,10 +198,10 @@ void ADirectorArranque::IniciarConstruccion()
         UE_LOG(LogTemp, Log, TEXT("DirectorArranque: POIs cargados."));
     }
 
-    ArranqueMundo::Progreso = 0.7f;
+    ArranqueMundo::MarkPhaseComplete(TEXT("POIs + puentes + plaza"), 0.7f);
 
     // Los ríos los genera CargadorVias como cintas drapeadas sobre el terreno.
-    ArranqueMundo::Progreso = 0.8f;
+    ArranqueMundo::MarkPhaseComplete(TEXT("Vegetación + entorno urbano"), 0.8f);
 
     // --- 11. Mobiliario urbano (handled by specialized systems) ---
     // Removed: ContainerSystem (papelera), FarolaPlacer (farolas),
@@ -621,11 +622,12 @@ void ADirectorArranque::IniciarConstruccion()
         }
     }
 
-    ArranqueMundo::Progreso = 1.f;
+    ArranqueMundo::MarkPhaseComplete(TEXT("Sistema completo"), 1.f);
     ArranqueMundo::BaselineListo = true;
     ArranqueMundo::HayDirector = false;
     bConstruccionCompleta = true;
     UE_LOG(LogTemp, Log, TEXT("DirectorArranque: BaselineListo = true (51 sistemas basados en datos reales)."));
+    UE_LOG(LogTemp, Log, TEXT("[Arranque] %s"), *ArranqueMundo::GetDebugSummary());
 }
 
 void ADirectorArranque::Tick(float DeltaTime)

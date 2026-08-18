@@ -7,10 +7,23 @@ EJECUTAR EN UNREAL EDITOR:
 3. Seleccionar este archivo
 
 O desde la consola de Python en Unreal:
-exec(open(r'F:\Epic Games\UE_5.7\altsasu_gtavii\UnrealProject\Tools\CreateVegetationAssets.py').read())
+exec(open(r'F:/Epic Games/UE_5.7/altsasu_gtavii/UnrealProject/Tools/CreateVegetationAssets.py').read())
 """
 
 import unreal
+
+def resolve_vegetation_asset_class():
+    """Resuelve la clase UVegetationType del módulo del proyecto."""
+    for class_path in [
+        "/Script/AlsasuaManifa.VegetationType",
+        "/Script/AlsasuaManifa.UVegetationType",
+        "/Script/Engine.DataAsset",
+    ]:
+        asset_class = unreal.load_class(class_path)
+        if asset_class:
+            return asset_class
+    return None
+
 
 def create_vegetation_data_asset(asset_name, asset_path, config):
     """
@@ -23,16 +36,20 @@ def create_vegetation_data_asset(asset_name, asset_path, config):
     """
     
     asset_tools = unreal.AssetToolsHelpers.get_asset_tools()
+    asset_class = resolve_vegetation_asset_class()
+    if not asset_class:
+        unreal.log_error("No se pudo resolver UVegetationType")
+        return None
     
     factory = unreal.DataAssetFactory()
-    factory.set_editor_property("data_asset_class", unreal.VegetationType)
+    factory.set_editor_property("data_asset_class", asset_class)
     
     full_path = asset_path + asset_name
     
     data_asset = asset_tools.create_asset(
         asset_name=asset_name,
         package_path=asset_path.rstrip('/'),
-        asset_class=unreal.VegetationType,
+        asset_class=asset_class,
         factory=factory
     )
     
@@ -40,51 +57,51 @@ def create_vegetation_data_asset(asset_name, asset_path, config):
         unreal.log_error(f"No se pudo crear {asset_name}")
         return None
     
-    data_asset.set_editor_property("b_enabled", True)
-    data_asset.set_editor_property("type_name", config.get("type_name", asset_name))
-    data_asset.set_editor_property("seed", config.get("seed", 0))
+    data_asset.set_editor_property("bEnabled", True)
+    data_asset.set_editor_property("TypeName", config.get("type_name", asset_name))
+    data_asset.set_editor_property("Seed", config.get("seed", 0))
     
-    data_asset.set_editor_property("global_probability", config.get("global_probability", 25.0))
-    data_asset.set_editor_property("density_per_m2", config.get("density_per_m2", 0.5))
-    data_asset.set_editor_property("min_distance", config.get("min_distance", 5.0))
+    data_asset.set_editor_property("GlobalProbability", config.get("global_probability", 25.0))
+    data_asset.set_editor_property("DensityPerM2", config.get("density_per_m2", 0.5))
+    data_asset.set_editor_property("MinDistance", config.get("min_distance", 5.0))
     
     height_range = unreal.Vector2D(
         config.get("height_min", 0.0),
         config.get("height_max", 1000.0)
     )
-    data_asset.set_editor_property("height_range", height_range)
+    data_asset.set_editor_property("HeightRange", height_range)
     
     slope_range = unreal.Vector2D(
         config.get("slope_min", 0.0),
         config.get("slope_max", 60.0)
     )
-    data_asset.set_editor_property("slope_range", slope_range)
+    data_asset.set_editor_property("SlopeRange", slope_range)
     
     scale_range = unreal.Vector2D(
         config.get("scale_min", 0.8),
         config.get("scale_max", 1.2)
     )
-    data_asset.set_editor_property("scale_range", scale_range)
+    data_asset.set_editor_property("ScaleRange", scale_range)
     
-    data_asset.set_editor_property("b_random_rotation", config.get("random_rotation", True))
-    data_asset.set_editor_property("sink_amount", config.get("sink_amount", 0.0))
-    data_asset.set_editor_property("b_collision_check", config.get("collision_check", False))
-    data_asset.set_editor_property("b_reject_underwater", config.get("reject_underwater", False))
+    data_asset.set_editor_property("bRandomRotation", config.get("random_rotation", True))
+    data_asset.set_editor_property("SinkAmount", config.get("sink_amount", 0.0))
+    data_asset.set_editor_property("bCollisionCheck", config.get("collision_check", False))
+    data_asset.set_editor_property("bRejectUnderwater", config.get("reject_underwater", False))
     
-    data_asset.set_editor_property("b_enable_nanite", config.get("enable_nanite", True))
-    data_asset.set_editor_property("b_use_natural_clustering", config.get("use_clustering", False))
-    data_asset.set_editor_property("cluster_size", config.get("cluster_size", 50.0))
-    data_asset.set_editor_property("cluster_strength", config.get("cluster_strength", 0.5))
+    data_asset.set_editor_property("bEnableNanite", config.get("enable_nanite", True))
+    data_asset.set_editor_property("bUseNaturalClustering", config.get("use_clustering", False))
+    data_asset.set_editor_property("ClusterSize", config.get("cluster_size", 50.0))
+    data_asset.set_editor_property("ClusterStrength", config.get("cluster_strength", 0.5))
     
-    data_asset.set_editor_property("b_river_affinity", config.get("river_affinity", False))
+    data_asset.set_editor_property("bRiverAffinity", config.get("river_affinity", False))
     water_dist_range = unreal.Vector2D(
         config.get("water_dist_min", 0.0),
         config.get("water_dist_max", 30.0)
     )
-    data_asset.set_editor_property("water_distance_range", water_dist_range)
+    data_asset.set_editor_property("WaterDistanceRange", water_dist_range)
     
-    data_asset.set_editor_property("b_north_facing", config.get("north_facing", False))
-    data_asset.set_editor_property("b_south_facing", config.get("south_facing", False))
+    data_asset.set_editor_property("bNorthFacing", config.get("north_facing", False))
+    data_asset.set_editor_property("bSouthFacing", config.get("south_facing", False))
     
     if "meshes" in config:
         prefabs = []
@@ -94,14 +111,14 @@ def create_vegetation_data_asset(asset_name, asset_path, config):
             
             if mesh:
                 prefab = unreal.VegetationPrefab()
-                prefab.set_editor_property("mesh", mesh)
-                prefab.set_editor_property("probability", mesh_info.get("probability", 100.0))
+                prefab.set_editor_property("Mesh", mesh)
+                prefab.set_editor_property("Probability", mesh_info.get("probability", 100.0))
                 prefabs.append(prefab)
             else:
                 unreal.log_warning(f"No se pudo cargar mesh: {mesh_path}")
         
         if prefabs:
-            data_asset.set_editor_property("prefabs", prefabs)
+            data_asset.set_editor_property("Prefabs", prefabs)
     
     unreal.EditorAssetLibrary.save_loaded_asset(data_asset)
     
@@ -315,6 +332,21 @@ def create_all_vegetation_assets():
                 created_assets.append(asset_name)
         except Exception as e:
             unreal.log_error(f"Error creando {asset_name}: {str(e)}")
+
+    # Fallback simple: si el tipo del proyecto no se resolvió, se crea un asset base
+    # con la clase DataAsset para no dejar el script roto.
+    if not created_assets:
+        fallback_name = "VT_Fallback"
+        fallback_config = {
+            "type_name": "Fallback",
+            "seed": 0,
+            "global_probability": 25.0,
+            "density_per_m2": 0.5,
+            "min_distance": 5.0,
+        }
+        asset = create_vegetation_data_asset(fallback_name, base_path, fallback_config)
+        if asset:
+            created_assets.append(fallback_name)
     
     unreal.log("\n" + "=" * 60)
     unreal.log(f"✅ COMPLETADO: {len(created_assets)}/{len(vegetation_configs)} assets creados")

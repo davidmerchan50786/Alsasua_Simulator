@@ -9,6 +9,12 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "GeoDataAlsasua.h"
+#include "Engine/Engine.h"
+
+FString UCargadorPOI::GetDebugSummary() const
+{
+	return FString::Printf(TEXT("Loaded=%d | Total=%d"), TodosLosPOIs.Num(), TodosLosPOIs.Num());
+}
 
 void UCargadorPOI::OnWorldBeginPlay(UWorld& InWorld)
 {
@@ -76,6 +82,7 @@ int32 UCargadorPOI::Cargar()
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("[POI] %d POIs cargados y colocados"), Colocados);
+	UE_LOG(LogTemp, Log, TEXT("[POI] %s"), *GetDebugSummary());
 	return Colocados;
 }
 

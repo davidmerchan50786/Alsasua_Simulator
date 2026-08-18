@@ -125,6 +125,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ColorGrading")
 	float ColorMatchingIntensity = 1.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ColorGrading")
+	FString DefaultLUTPath = TEXT("/Game/LUTs/LUT_Neutral");
+
 	UFUNCTION(BlueprintCallable, Category = "ColorGrading")
 	void ApplyBarrioLUT(EBarrioStyle Barrio);
 
@@ -133,6 +136,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "ColorGrading")
 	void UpdateColorGradingForLocation(const FVector& PlayerLocation);
+
+	UFUNCTION(BlueprintCallable, Category = "ColorGrading")
+	FString GetDebugStyleSummary() const;
 
 private:
 	void ApplyBarrioStyles();

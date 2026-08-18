@@ -99,7 +99,7 @@ def generate_matched_lut(game_screenshot_path, ortophoto_path, output_path, barr
     lut_img = Image.fromarray(lut_2d, 'RGB')
     lut_img.save(output_path)
     
-    print(f"\n✅ LUT generada: {output_path}")
+    print(f"\n[OK] LUT generada: {output_path}")
     print(f"   Tamaño: {lut_width}x{lut_height} (32³ LUT)")
     
     metadata = {
@@ -139,7 +139,7 @@ def generate_neutral_lut(output_path):
     lut_img = Image.fromarray(lut_2d, 'RGB')
     lut_img.save(output_path)
     
-    print(f"✅ LUT neutral generada: {output_path}")
+    print(f"[OK] LUT neutral generada: {output_path}")
 
 if __name__ == "__main__":
     print("=" * 60)
@@ -167,33 +167,34 @@ if __name__ == "__main__":
     print("INSTRUCCIONES DE USO:")
     print("=" * 60)
     print("""
-1. Toma screenshots en el juego de cada barrio (vista aérea):
-   - Guarda en: Saved/Screenshots/ColorMatching/
-   - Nombre: CascoViejo_Game.png, Ensanche_Game.png, etc.
+    1. Toma screenshots en el juego de cada barrio (vista aerea):
+    - Guarda en: Saved/Screenshots/ColorMatching/
+    - Nombre: CascoViejo_Game.png, Ensanche_Game.png, etc.
 
-2. Extrae la misma zona de la ortofoto real:
-   - Guarda en: Saved/Screenshots/ColorMatching/
-   - Nombre: CascoViejo_Ortho.png, Ensanche_Ortho.png, etc.
+    2. Extrae la misma zona de la ortofoto real:
+    - Guarda en: Saved/Screenshots/ColorMatching/
+    - Nombre: CascoViejo_Ortho.png, Ensanche_Ortho.png, etc.
 
-3. Ejecuta este script de nuevo (detectará automáticamente los pares)
+    3. Ejecuta este script de nuevo (detectara automaticamente los pares)
 
-4. Las LUTs generadas se guardarán en Content/LUTs/
+    4. Las LUTs generadas se guardaran en Content/LUTs/
 
-5. En el editor de Unreal, importa las LUTs y asígnalas al
-   AlsasuaBarrioStyleSystem para cada barrio.
+    5. En el editor de Unreal, importa las LUTs y asignalas al
+    AlsasuaBarrioStyleSystem para cada barrio.
 
-Ejemplo de comando (cuando tengas los pares de imágenes):
-  python GenerateMatchedLUT.py
+    Ejemplo de comando (cuando tengas los pares de imagenes):
+    python GenerateMatchedLUT.py
 
-El script detectará automáticamente pares como:
-  - CascoViejo_Game.png + CascoViejo_Ortho.png → LUT_CascoViejo.png
-  - Ensanche_Game.png + Ensanche_Ortho.png → LUT_Ensanche.png
-""")
+    El script detectara automaticamente pares como:
+    - CascoViejo_Game.png + CascoViejo_Ortho.png -> LUT_CascoViejo.png
+    - Ensanche_Game.png + Ensanche_Ortho.png -> LUT_Ensanche.png
+    """)
+
     
     game_screenshots = [f for f in os.listdir(screenshots_dir) if f.endswith('_Game.png')]
     
     if not game_screenshots:
-        print("\n⚠️  No se encontraron screenshots del juego.")
+        print("\n[WARN] No se encontraron screenshots del juego.")
         print(f"   Coloca imágenes con formato '*_Game.png' en:")
         print(f"   {screenshots_dir}")
     else:
@@ -210,7 +211,7 @@ El script detectará automáticamente pares como:
                 generate_matched_lut(game_path, ortho_path, output_path, barrio)
                 print()
             else:
-                print(f"\n⚠️  Falta ortofoto para {barrio}:")
+                print(f"\n[WARN] Falta ortofoto para {barrio}:")
                 print(f"   Esperado: {ortho_path}")
     
     print("\n" + "=" * 60)

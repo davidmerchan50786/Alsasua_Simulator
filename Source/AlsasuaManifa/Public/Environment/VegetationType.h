@@ -51,13 +51,13 @@ public:
 	TArray<FVegetationPrefab> Prefabs;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Spawning", meta = (ClampMin = "0.0", ClampMax = "100.0"))
-	float GlobalProbability = 25.0f;
+	float GlobalProbability = 80.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Spawning")
 	float DensityPerM2 = 0.5f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Spawning")
-	float MinDistance = 5.0f;
+	float MinDistance = 8.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Spawning")
 	FVector2D HeightRange = FVector2D(0.0f, 1000.0f);
@@ -76,6 +76,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Spawning")
 	bool bCollisionCheck = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Spawning")
+	bool bAllowFallbackSpawn = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Spawning")
+	int32 MaxSpawnPasses = 3;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Spawning")
 	bool bRejectUnderwater = false;

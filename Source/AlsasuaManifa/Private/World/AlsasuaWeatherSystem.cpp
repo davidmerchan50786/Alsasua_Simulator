@@ -11,6 +11,7 @@
 #include "Misc/Paths.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
+#include "Engine/Engine.h"
 
 UAlsasuaWeatherSystem::UAlsasuaWeatherSystem()
 {
@@ -198,6 +199,22 @@ FLinearColor UAlsasuaWeatherSystem::GetSkyTintForWeather() const
     }
 }
 
+FString UAlsasuaWeatherSystem::GetDebugWeatherSummary() const
+{
+    return FString::Printf(TEXT("Weather=%d | Target=%d | Month=%d | Hour=%.1f | Temp=%.1fC | Rain=%.2f/%.2f | Fog=%.3f/%.3f | Clouds=%.2f/%.2f"),
+        (int32)CurrentWeather,
+        (int32)TargetWeather,
+        CurrentMonth,
+        GameTimeHour,
+        GetCurrentTemperatureC(),
+        RainIntensity,
+        TargetRainIntensity,
+        CurrentFogDensity,
+        TargetFogDensity,
+        CloudDensity,
+        TargetCloudDensity);
+}
+
 void UAlsasuaWeatherSystem::SetWeather(EWeatherState NewWeather)
 {
     TargetWeather = NewWeather;
@@ -255,8 +272,8 @@ void UAlsasuaWeatherSystem::SetWeather(EWeatherState NewWeather)
         break;
     }
 
-    UE_LOG(LogTemp, Log, TEXT("WeatherSystem: Cambiando a estado %d, mes=%d"),
-        (int32)NewWeather, CurrentMonth);
+    UE_LOG(LogTemp, Log, TEXT("WeatherSystem: weather -> %d, month=%d, summary=%s"),
+        (int32)NewWeather, CurrentMonth, *GetDebugWeatherSummary());
 }
 
 void UAlsasuaWeatherSystem::SetMonth(int32 Month)
@@ -349,4 +366,11 @@ void UAlsasuaWeatherSystem::TickComponent(float DeltaTime, ELevelTick TickType, 
 
     UpdateWeatherTransition(DeltaTime);
     ApplyWeatherEffects();
+
+    if (FMath::IsNearlyEqual(CurrentFogDensity, TargetFogDensity, 0.0001f) &&
+        FMath::IsNearlyEqual(RainIntensity, TargetRainIntensity, 0.0001f) &&
+        FMath::IsNearlyEqual(CloudDensity, TargetCloudDensity, 0.0001f))
+    {
+        CurrentWeather = TargetWeather;
+    }
 }

@@ -9,6 +9,7 @@
 class UHierarchicalInstancedStaticMeshComponent;
 class AActor;
 class ALandscape;
+class UWorld;
 
 USTRUCT(BlueprintType)
 struct ALSASUAMANIFA_API FCellCollisionData
@@ -29,9 +30,28 @@ class ALSASUAMANIFA_API UVegetationSpawnerSubsystem : public UWorldSubsystem
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
+	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
+
+	UFUNCTION(BlueprintCallable, Category = "Vegetation Spawner")
+	void PopulateVegetationTypesFromContent();
 
 	UFUNCTION(BlueprintCallable, Category = "Vegetation Spawner")
 	void SetTargetLandscape(ALandscape* InLandscape);
+
+	UFUNCTION(BlueprintCallable, Category = "Vegetation Spawner")
+	void AutoDiscoverLandscapeAndSpawn();
+
+	UFUNCTION(BlueprintCallable, Category = "Vegetation Spawner")
+	void DebugRebuildVegetation();
+
+	UFUNCTION(BlueprintCallable, Category = "Vegetation Spawner")
+	void ScheduleRetrySpawn(float DelaySeconds = 2.0f);
+
+	UFUNCTION(BlueprintCallable, Category = "Vegetation Spawner")
+	FString GetDebugStatus() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Vegetation Spawner")
+	void RunForcedTestSpawn();
 
 	UFUNCTION(BlueprintCallable, Category = "Vegetation Spawner")
 	void SpawnAllVegetation();
@@ -90,10 +110,13 @@ protected:
 	TWeakObjectPtr<ALandscape> TargetLandscape;
 
 	TMap<TWeakObjectPtr<ALandscape>, TArray<FCellCollisionData>> LandscapeCells;
+	TArray<TWeakObjectPtr<AActor>> SpawnedVegetationActors;
 
 	int32 GetPrefabIndex(UVegetationType* Vegetation, float RandomValue);
 
 private:
 	static constexpr int32 PoissonMaxAttempts = 10;
 	static constexpr int32 PoissonDimensions = 2;
+
+	FTimerHandle RetrySpawnHandle;
 };

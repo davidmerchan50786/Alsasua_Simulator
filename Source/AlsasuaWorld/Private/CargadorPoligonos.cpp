@@ -12,6 +12,7 @@
 #include "ProceduralMeshComponent.h"
 #include "Materials/MaterialInterface.h"
 #include "CargarMaterialComun.h"
+#include "Engine/Engine.h"
 
 static UMaterialInterface* CargarMaterialSueloPoligonos()
 {
@@ -19,6 +20,15 @@ static UMaterialInterface* CargarMaterialSueloPoligonos()
 		TEXT("/Game/Materiales/M_Edificio.M_Edificio"),
 		TEXT("/Game/Materiales/M_Edificio.M_Edificio"),
 		TEXT("/Game/Materiales/M_Edificio.M_Edificio"));
+}
+
+FString UCargadorPoligonos::GetDebugSummary() const
+{
+	return FString::Printf(TEXT("Prepared=%s | Built=%d | Queued=%d | Remaining=%d"),
+		bPreparado ? TEXT("yes") : TEXT("no"),
+		Construidos,
+		Trabajos.Num(),
+		FMath::Max(0, Trabajos.Num() - Idx));
 }
 
 void UCargadorPoligonos::OnWorldBeginPlay(UWorld& InWorld)
@@ -98,6 +108,7 @@ bool UCargadorPoligonos::PasoPresupuesto(double PresupuestoMs)
 		}
 		if ((FPlatformTime::Seconds() - t0) * 1000.0 >= PresupuestoMs) break;
 	}
+	if (Terminado()) UE_LOG(LogTemp, Log, TEXT("[Suelos] %s"), *GetDebugSummary());
 	return Terminado();
 }
 
@@ -111,5 +122,6 @@ int32 UCargadorPoligonos::Cargar()
 	while (!PasoPresupuesto(1000.0) && ++IterGuard < MaxIter) {}
 	if (IterGuard >= MaxIter) UE_LOG(LogTemp, Warning, TEXT("[Suelos] Iteration guard reached (%d)"), MaxIter);
 	UE_LOG(LogTemp, Log, TEXT("[Suelos] %d polígonos (plazas+zonas verdes)"), Construidos);
+	UE_LOG(LogTemp, Log, TEXT("[Suelos] %s"), *GetDebugSummary());
 	return Construidos;
 }

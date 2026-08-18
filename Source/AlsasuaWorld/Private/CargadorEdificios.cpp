@@ -18,6 +18,7 @@
 #include "AlturasLidarComun.h"
 #include "World/AlsasuaFacadeGenerator.h"
 #include "Engine/GameInstance.h"
+#include "Engine/Engine.h"
 
 
 // Paleta vasca por edificio (determinista por id): arenisca rojiza en muros,
@@ -107,6 +108,14 @@ void UCargadorEdificios::OnWorldBeginPlay(UWorld& InWorld)
 // PrepararCarga() o el resumen iría sumando el de la partida anterior.
 namespace { int32 GSustituidas = 0; }
 
+FString UCargadorEdificios::GetDebugSummary() const
+{
+	return FString::Printf(TEXT("Prepared=%s | Built=%d | Indexed=%d | Remaining=%d"),
+		bPreparado ? TEXT("yes") : TEXT("no"),
+		Construidos,
+		Items.Num(),
+		FMath::Max(0, Items.Num() - Idx));
+}
 
 float UCargadorEdificios::AlturaSuelo(const FVector2D& XY) const
 {
@@ -323,5 +332,6 @@ int32 UCargadorEdificios::Cargar()
 	if (IterGuard >= MaxIter) UE_LOG(LogTemp, Warning, TEXT("[Edificios] Iteration guard reached (%d)"), MaxIter);
 	UE_LOG(LogTemp, Log, TEXT("[Edificios] %d edificios construidos (%d con altura medida por LiDAR)"),
 		Construidos, GSustituidas);
+	UE_LOG(LogTemp, Log, TEXT("[Edificios] %s"), *GetDebugSummary());
 	return Construidos;
 }

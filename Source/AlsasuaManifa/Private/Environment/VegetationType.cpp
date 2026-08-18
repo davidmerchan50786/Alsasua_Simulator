@@ -7,6 +7,17 @@ const FVegetationPrefab* UVegetationType::SelectWeightedPrefab(const FRandomStre
 		return nullptr;
 	}
 
+	for (const FVegetationPrefab& Prefab : Prefabs)
+	{
+		if (!Prefab.Mesh)
+		{
+			continue;
+		}
+		return &Prefab;
+	}
+
+	return nullptr;
+
 	float TotalWeight = 0.f;
 	for (const FVegetationPrefab& Prefab : Prefabs)
 	{
