@@ -322,14 +322,19 @@ contra su fuente y sacan un informe. Sirven de red donde no hay compilador —
 rodante), `VerificarDatasets.py` (campos que el C++ pide y el JSON no tiene, marcos
 mezclados, elementos fuera del terreno), `AuditarSistemas.py` (sistemas de mundo
 que no llama nadie, y con cuál chocarían; también los `UActorComponent` que no
-adjunta nadie, que son 23 y antes se daban por buenos suponiendo que ya los
-adjuntaría su actor),
+adjunta nadie —que resultaron ser 3, no 23: el auditor miraba sólo `Source/` y
+los otros 20 los adjunta un `Tools/Setup*.py` de los que ejecuta `RunAll.py`,
+así que el informe daba por muertas veinte cosas vivas—; y separa los que
+**arrancan solos** —un subsistema que
+sobreescribe `Initialize` o `Tick` lo llama el motor, no el director— de los
+inertes de verdad),
 `VerificarFuentes.py` (el `;` que se lleva un comentario, delimitadores
 descuadrados, `UnityaUnreal` con los ejes cambiados, CVars `g.*` que nadie
 registra, `.generated.h` ausente en cabecera reflejada, rutas
-`/Engine/EngineMeshes/` que no existen, y conversor de coordenadas metido en
-línea donde se espera una posición de mundo — ahí ya no hay dónde apoyar la
-cota), `VerificarCallesNavarra.py` (trazado contra el eje catastral),
+`/Engine/EngineMeshes/` que no existen, conversor de coordenadas metido en
+línea donde se espera una posición de mundo —ahí ya no hay dónde apoyar la
+cota— e `#include` de una cabecera del proyecto que ya no
+existe), `VerificarCallesNavarra.py` (trazado contra el eje catastral),
 `AuditarAssets.py` (rutas sin respaldo y mallas bajadas que nadie pide),
 `VerificarGuardado.py` (campos del save que se guardan y no se cargan),
 `VerificarDialogos.py` (los árboles de Content/Dialogs entran enteros),
@@ -337,6 +342,15 @@ cota), `VerificarCallesNavarra.py` (trazado contra el eje catastral),
 
 Sin compilador en Linux, `VerificarFuentes.py` y `VerificarDatasets.py` son lo
 único que hay entre un error tonto y `main`. Pásalos antes de subir C++.
+
+Desde `.github/workflows/verificar.yml` los pasa CI en cada PR, cada uno en su
+propio paso para que se vea cuál falla; el checkout va con `lfs: true` porque
+leen `Content/Datos/` y `Content/Terreno/`. Hay un tercer job, `compilar`, que
+lanza `Build.bat` en un runner propio `[self-hosted, windows, ue5.8]` y está
+detrás de la variable de repositorio `RUNNER_UE58`: mientras no exista ese
+runner no se encola. **Es el único paso que convierte «verificado
+estáticamente» en «compila»**; hasta que esté, lo verde de CI no dice que el
+C++ compile.
 
 **Regla de rutas**: ningún script puede llevar rutas absolutas de una máquina
 concreta. Los standalone derivan la raíz de su propia ubicación
@@ -512,6 +526,24 @@ posiciones cambian entre runs.
   va **a lo largo** del muro (`AwningShutterSystem`), al revés. Las 1030 puertas
   iban con la escala del otro convenio: 10 cm de ancho y un metro de fondo,
   clavadas de canto en el muro.
+- **Un subsistema fuera de la cadena de arranque no es un subsistema dormido.**
+  El motor llama solo a `Initialize` de todo `UWorldSubsystem` —en el mundo del
+  editor, en cada sesión de PIE y durante la cocción— y tica solo a todo
+  `UTickableWorldSubsystem`. `AuditarSistemas.py` los daba por "existen, se
+  compilan y no se ejecutan", y de los seis que listaba eso sólo era cierto de
+  uno. Es peor que un falso positivo: invita a enchufar algo que ya corría, y
+  esconde a los que corrían mal. `UAlsasuaLODManager` ticaba a cada frame y
+  barría el mundo entero cada 5 s con `GetAllActorsOfClass(AStaticMeshActor)`
+  para llenar dos listas que **siempre** salían vacías —los árboles son
+  instancias de HISM y los edificios son `AEdificioGenerado` con
+  `UProceduralMeshComponent`, que ni sale en esa lista ni tiene LOD que
+  forzar—; está retirado. Y `UAlsasuaGraphicsSettingsSubsystem` aplicaba Ultra
+  en **todos** los mundos, o sea que abrir un nivel en el editor le cambiaba
+  media docena de `r.*` al editor y pisaba lo que dice `Config/`; ahora el
+  perfil sale de `PerfilArranque` en `DefaultGame.ini`, sólo se aplica en
+  `EWorldType::Game`, y `ShouldCreateSubsystem` deja fuera los mundos de
+  editor. El auditor los separa ahora en "ARRANCAN SOLOS" e "INERTES".
+
 - **Adjuntar un componente a la lista equivocada no falla: adjunta cero.** Las
   fases 17-20 colgaban de los edificios el estilo de barrio, las ventanas
   emissivas y la luz interior recorriendo

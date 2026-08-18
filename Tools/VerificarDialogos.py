@@ -107,10 +107,13 @@ def main():
             print(l)
         total += malos
 
-    print("\n  'tiradas' son opciones con bRequiresSkillCheck en el dato. El")
-    print("  cargador NO las aplica: FOpcionDialogo no tiene con qué, y gatear")
-    print("  una opción por una tirada es decisión de diseño, no de un cargador.")
-    print("  Se cuentan para que el hueco se vea en vez de desaparecer.")
+    print("\n  'tiradas' son opciones con bRequiresSkillCheck en el dato, y el")
+    print("  cargador ya las aplica: FOpcionDialogo lleva bTirada/Dificultad y")
+    print("  UDialogoSubsystem::Elegir resuelve d20 + (Apoyo-50)/10 contra")
+    print("  DifficultyClass. Fallar gasta la opción para el resto de la")
+    print("  conversación; sin FailNodeID en el dato se repite el nodo.")
+    print("  Antes se cargaban, se contaban y se tiraban: las cuatro opciones")
+    print("  de [PERSUASIÓN] e [INTIMIDACIÓN] del pueblo salían siempre bien.")
 
     if total:
         print("\n  %d problema(s)." % total)

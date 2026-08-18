@@ -1,26 +1,77 @@
 #include "World/AlsasuaGraphicsSettingsSubsystem.h"
 #include "HAL/IConsoleManager.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Engine/World.h"
+#include "Misc/ConfigCacheIni.h"
+
+namespace
+{
+    // Una sola vez por proceso, no una por mundo. RegisterConsoleCommand da de
+    // alta un nombre global: como esto es un UWorldSubsystem, su Initialize
+    // corre en CADA mundo —el del editor, cada sesión de PIE, cada carga de
+    // nivel— y volvía a registrar el mismo comando cada vez. El delegado es
+    // estático y recibe su propio UWorld, así que la instancia no pinta nada
+    // aquí: se registra al primer mundo y se queda.
+    IConsoleCommand* ComandoPerfil = nullptr;
+
+    // Perfil que se aplica al arrancar una partida, configurable en ini:
+    //
+    //   [/Script/AlsasuaManifa.AlsasuaGraphicsSettingsSubsystem]
+    //   PerfilArranque=3
+    //
+    // Estaba clavado a Ultra en el código, y eso pisaba lo que dice Config/ en
+    // todos los mundos. Config/ está versionado y afinado (RESUMEN_TECNICO.md);
+    // un subsistema que le sobreescribe media docena de r.* al abrir el nivel
+    // hace que dos arranques con el mismo ini midan cosas distintas.
+    int32 LeerPerfilDeArranque()
+    {
+        int32 Perfil = (int32)EAlsasuaGraphicsProfile::Ultra;
+        GConfig->GetInt(TEXT("/Script/AlsasuaManifa.AlsasuaGraphicsSettingsSubsystem"),
+                        TEXT("PerfilArranque"), Perfil, GGameIni);
+        return FMath::Clamp(Perfil, 0, 3);
+    }
+}
+
+bool UAlsasuaGraphicsSettingsSubsystem::ShouldCreateSubsystem(UObject* Outer) const
+{
+    // Ni mundos de editor, ni previsualizaciones, ni cocción: esto toca CVars
+    // de render globales al proceso, así que crearlo en el mundo del editor
+    // significaba cambiarle la calidad al editor por abrir un nivel.
+    if (const UWorld* W = Cast<UWorld>(Outer))
+    {
+        return W->WorldType == EWorldType::Game || W->WorldType == EWorldType::PIE;
+    }
+    return false;
+}
 
 void UAlsasuaGraphicsSettingsSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
     Super::Initialize(Collection);
 
-    // Registrar comando de consola
-    IConsoleManager::Get().RegisterConsoleCommand(
-        TEXT("alsasua.SetGraphicsProfile"),
-        TEXT("Cambia el perfil gráfico: 0=Low, 1=Med, 2=High, 3=Ultra"),
-        FConsoleCommandWithWorldAndArgsDelegate::CreateStatic(&UAlsasuaGraphicsSettingsSubsystem::ConsoleSetProfile),
-        ECVF_Cheat
-    );
+    if (!ComandoPerfil)
+    {
+        ComandoPerfil = IConsoleManager::Get().RegisterConsoleCommand(
+            TEXT("alsasua.SetGraphicsProfile"),
+            TEXT("Cambia el perfil gráfico: 0=Low, 1=Med, 2=High, 3=Ultra"),
+            FConsoleCommandWithWorldAndArgsDelegate::CreateStatic(&UAlsasuaGraphicsSettingsSubsystem::ConsoleSetProfile),
+            ECVF_Cheat
+        );
+    }
 
-    // Fidelidad gráfica 100% con realidad: Ultra por defecto.
-    ApplyGraphicsProfile(EAlsasuaGraphicsProfile::Ultra);
+    // Sólo en partida de verdad. En PIE se deja el editor como esté: quien
+    // quiera probar un perfil tiene el comando de consola y el widget de
+    // ajustes, que es quien de verdad llama a este subsistema.
+    if (const UWorld* W = GetWorld(); W && W->WorldType == EWorldType::Game)
+    {
+        ApplyGraphicsProfile((EAlsasuaGraphicsProfile)LeerPerfilDeArranque());
+    }
 }
 
 void UAlsasuaGraphicsSettingsSubsystem::ApplyGraphicsProfile(EAlsasuaGraphicsProfile Profile)
 {
-    int32 Level = (int32)Profile;
+    // Es BlueprintCallable y el enum es uint8: un Blueprint puede pasar un 7 y
+    // las tablas de abajo son de cuatro elementos. Se acota aquí, una vez.
+    const int32 Level = FMath::Clamp((int32)Profile, 0, 3);
     SetLumenQuality(Level);
     SetNaniteBudget(Level);
 

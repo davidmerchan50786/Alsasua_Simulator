@@ -74,8 +74,19 @@ UConversacionDialogo* UDialogoSubsystem::CargarConversacion(const FString& Nombr
 				Op.Destino = NombreNodo(OO->HasField(TEXT("TargetNodeID"))
 					? (int32)OO->GetNumberField(TEXT("TargetNodeID")) : -1);
 
-				bool bChequeo = false;
-				if (OO->TryGetBoolField(TEXT("bRequiresSkillCheck"), bChequeo) && bChequeo) ++ConChequeo;
+				OO->TryGetBoolField(TEXT("bRequiresSkillCheck"), Op.bTirada);
+				if (Op.bTirada)
+				{
+					Op.Dificultad = OO->HasField(TEXT("DifficultyClass"))
+						? (int32)OO->GetNumberField(TEXT("DifficultyClass")) : 10;
+					// El JSON sólo trae un destino por opción, así que el del
+					// fallo se deja sin poner: quien falla se queda en el nodo y
+					// gasta la opción. Si algún día el dato trae "FailNodeID",
+					// entra por aquí sin tocar nada más.
+					if (OO->HasField(TEXT("FailNodeID")))
+						Op.DestinoFallo = NombreNodo((int32)OO->GetNumberField(TEXT("FailNodeID")));
+					++ConChequeo;
+				}
 
 				N.Opciones.Add(Op);
 			}
@@ -104,15 +115,12 @@ UConversacionDialogo* UDialogoSubsystem::CargarConversacion(const FString& Nombr
 		for (FOpcionDialogo& Op : N.Opciones)
 		{
 			if (!Op.Destino.IsNone() && !Conv->BuscarNodo(Op.Destino)) { Op.Destino = NAME_None; ++Rotos; }
+			if (!Op.DestinoFallo.IsNone() && !Conv->BuscarNodo(Op.DestinoFallo)) { Op.DestinoFallo = NAME_None; ++Rotos; }
 		}
 	}
 
-	// bRequiresSkillCheck y DifficultyClass están en el dato y NO se aplican:
-	// FOpcionDialogo no tiene con qué, y gatear opciones por una tirada es una
-	// decisión de diseño, no de un cargador. Se dice cuántas para que el hueco
-	// se vea en el log en vez de desaparecer.
 	UE_LOG(LogTemp, Log,
-		TEXT("[Dialogo] %s: %d nodos (%d enlaces rotos cerrados, %d opciones con tirada sin aplicar)."),
+		TEXT("[Dialogo] %s: %d nodos (%d enlaces rotos cerrados, %d opciones con tirada)."),
 		*NombreNPC, Conv->Nodos.Num(), Rotos, ConChequeo);
 
 	Cache.Add(NombreNPC, Conv);
@@ -141,6 +149,47 @@ TArray<FString> UDialogoSubsystem::OpcionesActuales() const
 	return R;
 }
 
+int32 UDialogoSubsystem::ModificadorApoyo() const
+{
+	const UGameInstance* GI = GetGameInstance();
+	const UApoyoPopularSubsystem* Ap = GI ? GI->GetSubsystem<UApoyoPopularSubsystem>() : nullptr;
+	if (!Ap) return 0;
+	return FMath::Clamp(FMath::RoundToInt((Ap->Apoyo - 50.f) / 10.f), -5, 5);
+}
+
+FString UDialogoSubsystem::ClaveTirada(FName Nodo, int32 Indice)
+{
+	return FString::Printf(TEXT("%s:%d"), *Nodo.ToString(), Indice);
+}
+
+bool UDialogoSubsystem::TiradaDisponible(int32 Indice) const
+{
+	return Actual && !TiradasFalladas.Contains(ClaveTirada(Actual->Id, Indice));
+}
+
+TArray<FOpcionMostrable> UDialogoSubsystem::OpcionesDetalladas() const
+{
+	TArray<FOpcionMostrable> R;
+	if (!Actual) return R;
+
+	const int32 Mod = ModificadorApoyo();
+	for (int32 i = 0; i < Actual->Opciones.Num(); ++i)
+	{
+		const FOpcionDialogo& O = Actual->Opciones[i];
+		FOpcionMostrable M;
+		M.Texto = O.Texto;
+		M.bTirada = O.bTirada;
+		M.Dificultad = O.Dificultad;
+		M.bDisponible = !O.bTirada || TiradaDisponible(i);
+		// Caras del d20 que pasan: las que cumplen dado + Mod >= Dificultad.
+		M.Probabilidad = O.bTirada
+			? FMath::Clamp((21 - (O.Dificultad - Mod)) / 20.f, 0.f, 1.f)
+			: 1.f;
+		R.Add(MoveTemp(M));
+	}
+	return R;
+}
+
 void UDialogoSubsystem::IrA(FName Id)
 {
 	Actual = Conversacion ? Conversacion->BuscarNodo(Id) : nullptr;
@@ -156,6 +205,34 @@ void UDialogoSubsystem::Elegir(int32 Indice)
 	{
 		if (!Actual->Opciones.IsValidIndex(Indice)) return;
 		const FOpcionDialogo& Op = Actual->Opciones[Indice];
+
+		if (Op.bTirada)
+		{
+			// Ya se intentó y se falló: no se reintenta. Sin esto basta con
+			// volver a pulsar hasta que salga, y la dificultad no significa nada.
+			if (!TiradaDisponible(Indice)) return;
+
+			// Dado de gameplay, no colocación de geometría: aquí el azar por
+			// partida es lo que se quiere, así que va con FMath y no con un
+			// FRandomStream sembrado (ver CLAUDE.md §11).
+			const int32 Dado = FMath::RandRange(1, 20);
+			const int32 Mod  = ModificadorApoyo();
+			const bool bExito = (Dado + Mod) >= Op.Dificultad;
+
+			OnTiradaResuelta.Broadcast(bExito, Dado, Mod, Op.Dificultad);
+			UE_LOG(LogTemp, Log, TEXT("[Dialogo] tirada %d%+d vs %d -> %s"),
+				Dado, Mod, Op.Dificultad, bExito ? TEXT("pasa") : TEXT("falla"));
+
+			if (!bExito)
+			{
+				TiradasFalladas.Add(ClaveTirada(Actual->Id, Indice));
+				// Con destino de fallo se va allí; sin él —que es lo que traen
+				// los datos de hoy— se repite el nodo con la opción gastada.
+				if (!Op.DestinoFallo.IsNone()) IrA(Op.DestinoFallo);
+				else                           IrA(Actual->Id);
+				return;
+			}
+		}
 
 		// efecto sobre el apoyo popular
 		if (!FMath::IsNearlyZero(Op.DeltaApoyo))
@@ -183,6 +260,7 @@ void UDialogoSubsystem::Terminar()
 	{
 		Actual = nullptr;
 		Conversacion = nullptr;
+		TiradasFalladas.Reset();
 		OnDialogoFin.Broadcast();
 	}
 }

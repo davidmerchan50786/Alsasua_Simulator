@@ -92,7 +92,50 @@ public:
      * Si no encuentra suelo devuelve CotaPlazaCm: es mejor dejar la pieza a la
      * altura del pueblo que a la del nivel del mar.
      */
+    /**
+     * Cota del terreno bajo un punto del mundo (cm).
+     *
+     * Si hay muestreador registrado —lo hace ATerrenoGenerado con su propio
+     * heightmap— se lee de ahí. Si no, se cae al trazo vertical de siempre.
+     *
+     * El cambio no es sólo de velocidad, aunque de eso va: el arranque hacía del
+     * orden de 25 000 de estos, 12 000 sólo del foliage, y cada uno es una
+     * consulta de física contra la escena entera. Leer el heightmap es una
+     * interpolación bilineal sobre un array que ya está en memoria.
+     *
+     * Y además es MÁS correcto para quien pide "el suelo". El trazo devuelve lo
+     * más alto que haya debajo, sea lo que sea: por eso el tren y las bocas de
+     * túnel están en las fases 52 y 51b, para que nada se suba a un vagón o a un
+     * dintel. Muestreando el terreno ese peligro de orden desaparece.
+     *
+     * Quien de verdad quiera "lo que haya encima, sea lo que sea" —drapear sobre
+     * un puente, por ejemplo— tiene AlturaSuperficieUE5, que sigue trazando.
+     */
     static float AlturaSueloUE5(const class UWorld* World, double XCm, double YCm);
+
+    /**
+     * Cota de la superficie más alta bajo un punto, por trazo vertical.
+     *
+     * Lo que hacía AlturaSueloUE5 siempre. Se conserva aparte porque hay casos
+     * en que es lo que se quiere: apoyarse sobre un puente, sobre una plaza
+     * drapeada o sobre cualquier cosa ya colocada. Si usas esto, el orden de
+     * fases importa — ver el aviso de CLAUDE.md §5.
+     */
+    static float AlturaSuperficieUE5(const class UWorld* World, double XCm, double YCm);
+
+    /**
+     * Muestreador de cota del terreno. Devuelve false si el punto cae fuera de
+     * lo que sabe, y entonces se usa el trazo.
+     *
+     * Vive como puntero registrable porque AlsasuaCore no puede ver a
+     * ATerrenoGenerado: la dependencia va AlsasuaCore → AlsasuaWorld. El terreno
+     * se registra al construirse y se borra al destruirse.
+     */
+    using FMuestreadorCota = TFunction<bool(double XCm, double YCm, float& OutZCm)>;
+
+    static void RegistrarMuestreadorTerreno(FMuestreadorCota Fn);
+    static void OlvidarMuestreadorTerreno();
+    static bool HayMuestreadorTerreno();
 
     /**
      * Relative local meters → UE5 centimeters, con la Z apoyada en el terreno.
@@ -105,6 +148,19 @@ public:
      */
     static FVector RelLocalASueloUE5(const class UWorld* World, const FVector& RelLocalPos,
                                      float SobreSueloCm = 0.f);
+
+    /**
+     * Igual, pero apoyando la Z en la superficie trazada en vez de en el terreno.
+     *
+     * Para lo que va pintado SOBRE algo ya colocado, no sobre el suelo desnudo:
+     * las marcas viales y las plazas de aparcamiento van encima del firme, y el
+     * firme —ACalleGenerada— se levanta EpsilonCm = 12 sobre el terreno para no
+     * hacer z-fighting con él. Muestreando el terreno esas marcas se pintan 12 cm
+     * por debajo del asfalto, o sea invisibles; los +2 cm que se dan sobre el
+     * firme dan por supuesto que la cota de partida es la del firme.
+     */
+    static FVector RelLocalASuperficieUE5(const class UWorld* World, const FVector& RelLocalPos,
+                                          float SobreSuperficieCm = 0.f);
 
     /** Lat/Lon (WGS84) + altitude(m) → UE5 centimeters via UTM Zone 30N. */
     static FVector LatLonToUE5(double LatDeg, double LonDeg, double AltM = 0.0);

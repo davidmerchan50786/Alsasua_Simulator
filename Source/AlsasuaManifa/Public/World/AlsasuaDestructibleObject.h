@@ -27,13 +27,28 @@ public:
     UPROPERTY(BlueprintAssignable, Category = "AAA|Physics")
     FOnObjectDestroyed OnObjectDestroyed;
 
+    /** Integridad que se pierde por segundo mientras la multitud está hostil.
+     *  Antes era un 0.5 fijo por Tick, o sea que el aguante de la pieza dependía
+     *  de los FPS de la máquina. */
+    UPROPERTY(EditAnywhere, Category = "AAA|Physics")
+    float DesgastePorSegundo = 30.0f;
+
+    /** Se llamaba ApplySysteimcDamage. Nadie lo llamaba, así que renombrarlo no
+     *  rompe ningún Blueprint. */
     UFUNCTION(BlueprintCallable, Category = "AAA|Physics")
-    void ApplySysteimcDamage(float DamageAmount);
+    void AplicarDanoSistemico(float DamageAmount);
+
+    UFUNCTION(BlueprintPure, Category = "AAA|Physics")
+    bool EstaDestruido() const { return bDestruido; }
 
 protected:
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaTime) override;
 
 private:
-    void CheckCrowdPressure();
+    void CheckCrowdPressure(float DeltaTime);
+
+    /** Una vez roto, roto: sin esto el Tick seguía pasando por Integrity <= 0
+     *  y reemitía OnObjectDestroyed en cada frame. */
+    bool bDestruido = false;
 };

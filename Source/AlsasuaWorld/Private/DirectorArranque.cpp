@@ -48,7 +48,6 @@
 #include "World/AlsasuaNightLightingSystem.h"
 #include "World/AlsasuaWeatherSystem.h"
 #include "World/AlsasuaAmbientAudioSystem.h"
-#include "World/AlsasuaLODManager.h"
 #include "World/AlsasuaCollisionSystem.h"
 #include "World/AlsasuaVFXManager.h"
 #include "World/AlsasuaShopFrontSystem.h"
