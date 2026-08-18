@@ -59,3 +59,16 @@ __pycache__/
 # Texturas 8K y ramas SKM: 1,4 GB que rebasaban el presupuesto de LFS. Fuera de git; se bajan del pack original.
 Content/UnrealDrive_CitySample/Textures/
 Content/Megaplant_Library/Tree_Norway_Spruce/Instances/SKM_Branch_Norway_Spruce_02.uasset
+
+# Packs descargables (10 GB): fuera de git, se rebajan del Fab/Marketplace
+Content/UnrealDrive_CitySample/
+Content/Megaplant_Library/
+Content/VehicleVarietyPack/
+Content/GV_FreeShrubsPack/
+Content/DZ_Assets/
+Content/OWD_Flowers_Pack/
+Content/Man/
+Content/FreeAnimationLibrary/
+Content/Nanite_Plants_Sample_Collection/
+Content/Vefects/
+Content/HighPoly_Tree_Model/
