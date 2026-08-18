@@ -34,7 +34,8 @@ public class AlsasuaManifa : ModuleRules
 			"Landscape",
 			"Niagara",
 			"ProceduralMeshComponent",
-			"AlsasuaCore",
+			"AlsasuaCore", 
+			"AlsasuaKernel", 
 			"AlsasuaUI"
 		});
 
