@@ -7,7 +7,7 @@ param(
 $ErrorActionPreference = "Stop"
 New-Item -ItemType Directory -Force -Path $OutputDirectory | Out-Null
 $assets = @(
-    "DZ_Assets", "FreeAnimationLibrary", "GV_FreeShrubsPack", "HighPoly_Tree_Model",
+    "DZ_Assets", "FreeAnimationLibrary", "GV_FreeShrubsPack", "HighPoly_Tree_Model", "Materiales",
     "Man", "Megaplant_Library", "Nanite_Plants_Sample_Collection", "OWD_Flowers_Pack",
     "Vefects", "VehicleVarietyPack"
 )
