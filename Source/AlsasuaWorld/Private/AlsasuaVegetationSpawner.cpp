@@ -162,6 +162,25 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 		ArbustosHISM = nullptr;
 	}
 
+	const FString RutaFlor = TEXT("/Game/OWD_Flowers_Pack/Meshes/SM_Flower_01_1");
+	UHierarchicalInstancedStaticMeshComponent* FloresHISM = NewObject<UHierarchicalInstancedStaticMeshComponent>(HierbaActor);
+	UStaticMesh* FlorMesh = FPackageName::DoesPackageExist(RutaFlor)
+		? LoadObject<UStaticMesh>(nullptr, *(RutaFlor + TEXT(".SM_Flower_01_1"))) : nullptr;
+	if (FlorMesh)
+	{
+		FloresHISM->SetStaticMesh(FlorMesh);
+		FloresHISM->SetupAttachment(HierbaPMC);
+		FloresHISM->SetMobility(EComponentMobility::Static);
+		FloresHISM->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		FloresHISM->SetCanEverAffectNavigation(false);
+		FloresHISM->SetCullDistances(0, 60000);
+		FloresHISM->RegisterComponent();
+	}
+	else
+	{
+		FloresHISM = nullptr;
+	}
+
 	TArray<FVector> V;
 	TArray<int32> T;
 	TArray<FVector> N;
@@ -171,6 +190,8 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 
 	int32 HierbaCount = 0;
 	int32 ArbustoCount = 0;
+	int32 FlorCount = 0;
+	const float ProbFlor = FlorMesh ? 0.3f : 0.f;
 	const float StepSize = 150.f; // sample every 1.5m
 	FRandomStream Rng(42);
 	const auto CercaDeAgua = [&PuntosAgua](const FVector& P) -> float
@@ -221,6 +242,17 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 
 			if (Rand < ProbHierba && HierbaCount < MaxHierba)
 			{
+				const float Suelo = Alturas ? Alturas->AlturaMundo(TestPt) : 0.f;
+
+				if (FloresHISM && Rng.FRand() < ProbFlor)
+				{
+					const float Escala = Rng.FRandRange(0.6f, 1.2f);
+					FloresHISM->AddInstance(FTransform(FRotator(0.f, Rng.FRandRange(0.f, 360.f), 0.f),
+						FVector(TestPt.X, TestPt.Y, Suelo), FVector(Escala)));
+					++FlorCount;
+					continue;
+				}
+
 				// Hierba: 2 quads perpendiculares en X (billboard cruzado).
 				const float H    = Rng.FRandRange(30.f, 75.f);    // altura (cm)
 				const float W    = H * 0.55f;                     // semi-ancho
@@ -228,7 +260,6 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 				const float CR   = FMath::DegreesToRadians(Yaw);
 				const FVector XD(FMath::Cos(CR), FMath::Sin(CR), 0.f);
 				const FVector YD(-XD.Y, XD.X, 0.f);
-				const float Suelo = Alturas ? Alturas->AlturaMundo(TestPt) : 0.f;
 				const FVector Base(TestPt.X, TestPt.Y, Suelo + 2.f);
 				const FVector Top(0.f, 0.f, H);
 
@@ -288,7 +319,7 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 		if (MatHierba) HierbaPMC->SetMaterial(0, MatHierba);
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("[Vegetacion] %d hierbas + %d arbustos sembrados en %d zonas verdes"),
-		HierbaCount, ArbustoCount, Polygons.Num());
-	return HierbaCount + ArbustoCount;
+	UE_LOG(LogTemp, Log, TEXT("[Vegetacion] %d hierbas + %d flores + %d arbustos sembrados en %d zonas verdes"),
+		HierbaCount, FlorCount, ArbustoCount, Polygons.Num());
+	return HierbaCount + FlorCount + ArbustoCount;
 }
