@@ -72,6 +72,28 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 		return 0;
 	}
 
+	// Los cauces reales concentran arbusto ribereño; se usa una muestra ligera
+	// para no convertir la siembra en una búsqueda cara contra todos los vértices.
+	TArray<FVector2D> PuntosAgua;
+	FString TextoAgua;
+	if (FFileHelper::LoadFileToString(TextoAgua, *FPaths::Combine(FPaths::ProjectContentDir(), TEXT("Datos/waterways_unity.json"))))
+	{
+		TArray<TSharedPtr<FJsonValue>> Cauces;
+		if (FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(TextoAgua), Cauces))
+		{
+			for (const TSharedPtr<FJsonValue>& Cauce : Cauces)
+			{
+				const TArray<TSharedPtr<FJsonValue>>* Pts = nullptr;
+				if (!Cauce->AsObject()->TryGetArrayField(TEXT("pts"), Pts) || !Pts) continue;
+				for (int32 i = 0; i + 2 < Pts->Num(); i += 9)
+				{
+					const FVector M = UAlsasuaGeoData::UnityaUnreal(FVector((*Pts)[i]->AsNumber(), 0.0, (*Pts)[i + 2]->AsNumber()));
+					PuntosAgua.Add(FVector2D(M.X, M.Y));
+				}
+			}
+		}
+	}
+
 	// Compute bounds of all polygons
 	float MinX = FLT_MAX, MaxX = -FLT_MAX, MinY = FLT_MAX, MaxY = -FLT_MAX;
 	for (const auto& Poly : Polygons)
@@ -125,6 +147,12 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 	int32 ArbustoCount = 0;
 	const float StepSize = 150.f; // sample every 1.5m
 	FRandomStream Rng(42);
+	const auto CercaDeAgua = [&PuntosAgua](const FVector& P) -> float
+	{
+		float Dist2Min = 4000.f * 4000.f;
+		for (const FVector2D& Agua : PuntosAgua) Dist2Min = FMath::Min(Dist2Min, FVector2D::DistSquared(FVector2D(P.X, P.Y), Agua));
+		return 1.f - FMath::Clamp(FMath::Sqrt(Dist2Min) / 4000.f, 0.f, 1.f);
+	};
 
 	// Geometría helper: quad doble cara (visible desde ambos lados sin material two-sided).
 	// Añade 4 verts + 4 triángulos (2 caras × 2 triángulos).
@@ -160,9 +188,12 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 			}
 			if (!bInside) continue;
 
+			const float Cluster = FMath::Lerp(0.35f, 1.f, FMath::Clamp((FMath::PerlinNoise2D(FVector2D(TestPt.X, TestPt.Y) / 5000.f) + 0.4f) / 0.8f, 0.f, 1.f));
+			const float ProbHierba = DensidadHierba * 0.8f * Cluster;
+			const float ProbArbusto = DensidadArbusto * FMath::Lerp(0.35f, 2.f, CercaDeAgua(TestPt));
 			const float Rand = Rng.FRand();
 
-			if (Rand < DensidadHierba * 0.8f && HierbaCount < MaxHierba)
+			if (Rand < ProbHierba && HierbaCount < MaxHierba)
 			{
 				// Hierba: 2 quads perpendiculares en X (billboard cruzado).
 				const float H    = Rng.FRandRange(30.f, 75.f);    // altura (cm)
@@ -189,7 +220,7 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 				        XD, GrassColor);
 				++HierbaCount;
 			}
-			else if (Rand < DensidadHierba * 0.8f + DensidadArbusto && ArbustoCount < MaxArbustos)
+			else if (Rand < ProbHierba + ProbArbusto && ArbustoCount < MaxArbustos)
 			{
 				// Arbusto: 3 quads cruzados a 60° — aproxima una esfera de follaje.
 				const float H    = Rng.FRandRange(45.f, 110.f);  // altura (cm)
