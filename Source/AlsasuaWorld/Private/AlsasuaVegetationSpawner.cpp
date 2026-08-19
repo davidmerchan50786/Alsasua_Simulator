@@ -1,9 +1,11 @@
 #include "AlsasuaVegetationSpawner.h"
 #include "ProceduralMeshComponent.h"
+#include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "GeoDataAlsasua.h"
 #include "MuestreadorAltura.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+#include "Misc/PackageName.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "Engine/World.h"
@@ -42,8 +44,6 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 	// suelo. Si no está creado todavía, cae al de árbol como antes.
 	UMaterialInterface* MatHierba = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Terreno_Hierba.M_Terreno_Hierba"));
 	if (!MatHierba) MatHierba = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Arbol.M_Arbol"));
-
-	UMaterialInterface* MatArbusto = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Arbol.M_Arbol"));
 
 	// Collect all greenspace polygons
 	TArray<TArray<FVector>> Polygons;
@@ -141,6 +141,27 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 	HierbaPMC->SetCullDistance(80000.f);
 	HierbaActor->SetRootComponent(HierbaPMC);
 
+	// El paquete externo aporta un arbusto completo. HISM conserva una sola draw
+	// call; cuando no está instalado se mantiene el billboard procedural ligero.
+	const FString RutaArbusto = TEXT("/Game/GV_FreeShrubsPack/Meshes/Shrubs/Wind/Shrub_A/GV_Vol7_Shrub_A_full_type1");
+	UHierarchicalInstancedStaticMeshComponent* ArbustosHISM = NewObject<UHierarchicalInstancedStaticMeshComponent>(HierbaActor);
+	UStaticMesh* Arbusto = FPackageName::DoesPackageExist(RutaArbusto)
+		? LoadObject<UStaticMesh>(nullptr, *(RutaArbusto + TEXT(".GV_Vol7_Shrub_A_full_type1"))) : nullptr;
+	if (Arbusto)
+	{
+		ArbustosHISM->SetStaticMesh(Arbusto);
+		ArbustosHISM->SetupAttachment(HierbaPMC);
+		ArbustosHISM->SetMobility(EComponentMobility::Static);
+		ArbustosHISM->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		ArbustosHISM->SetCanEverAffectNavigation(false);
+		ArbustosHISM->SetCullDistances(0, 80000);
+		ArbustosHISM->RegisterComponent();
+	}
+	else
+	{
+		ArbustosHISM = nullptr;
+	}
+
 	TArray<FVector> V;
 	TArray<int32> T;
 	TArray<FVector> N;
@@ -227,11 +248,20 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 			}
 			else if (Rand < ProbHierba + ProbArbusto && ArbustoCount < MaxArbustos)
 			{
+				const float Suelo = Alturas ? Alturas->AlturaMundo(TestPt) : 0.f;
+				if (ArbustosHISM)
+				{
+					const float Escala = Rng.FRandRange(0.45f, 0.8f);
+					ArbustosHISM->AddInstance(FTransform(FRotator(0.f, Rng.FRandRange(0.f, 360.f), 0.f),
+						FVector(TestPt.X, TestPt.Y, Suelo), FVector(Escala)));
+					++ArbustoCount;
+					continue;
+				}
+
 				// Arbusto: 3 quads cruzados a 60° — aproxima una esfera de follaje.
 				const float H    = Rng.FRandRange(45.f, 110.f);  // altura (cm)
 				const float W    = H * 0.75f;                    // semi-ancho
 				const float Yaw  = Rng.FRandRange(0.f, 360.f);
-				const float Suelo = Alturas ? Alturas->AlturaMundo(TestPt) : 0.f;
 				const FVector Base(TestPt.X, TestPt.Y, Suelo + 2.f);
 				const FVector Top(0.f, 0.f, H);
 
