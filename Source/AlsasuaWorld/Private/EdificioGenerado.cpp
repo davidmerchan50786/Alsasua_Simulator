@@ -9,6 +9,7 @@ AEdificioGenerado::AEdificioGenerado()
 	RootComponent = Malla;
 	Malla->bUseAsyncCooking = true;
 	Malla->SetCollisionProfileName(TEXT("BlockAll"));
+	Malla->SetCullDistance(250000.f);
 	Tags.Add(TEXT("Edificio"));   // lo recoge el StreamerMundoEstatico
 }
 
