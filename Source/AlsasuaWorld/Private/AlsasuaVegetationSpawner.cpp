@@ -136,6 +136,8 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 	HierbaPMC->RegisterComponent();
 	HierbaPMC->SetupAttachment(HierbaActor->GetRootComponent());
 	HierbaPMC->SetMobility(EComponentMobility::Static);
+	HierbaPMC->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	HierbaPMC->SetCanEverAffectNavigation(false);
 	HierbaActor->SetRootComponent(HierbaPMC);
 
 	TArray<FVector> V;
@@ -251,7 +253,7 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 
 	if (V.Num() >= 3)
 	{
-		HierbaPMC->CreateMeshSection(0, V, T, N, UV, C, Tan, true);
+		HierbaPMC->CreateMeshSection(0, V, T, N, UV, C, Tan, false);
 		if (MatHierba) HierbaPMC->SetMaterial(0, MatHierba);
 	}
 
