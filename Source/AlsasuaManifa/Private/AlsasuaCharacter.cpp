@@ -3,6 +3,9 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Engine/SkeletalMesh.h"
+#include "Animation/AnimSequence.h"
 #include "GAS/AlsasuaAbilitySystemComponent.h"
 #include "AlsasuaAttributeSet.h"
 #include "CharacterTrajectoryComponent.h"
@@ -53,6 +56,16 @@ AAlsasuaCharacter::AAlsasuaCharacter()
 void AAlsasuaCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	if (USkeletalMeshComponent* CharacterMesh = GetMesh(); CharacterMesh && !CharacterMesh->GetSkeletalMeshAsset())
+	{
+		if (USkeletalMesh* Body = LoadObject<USkeletalMesh>(nullptr, TEXT("/Game/Man/Demo/Mesh/SK_Mannequin.SK_Mannequin")))
+		{
+			CharacterMesh->SetSkeletalMesh(Body);
+			CharacterMesh->SetRelativeLocationAndRotation(FVector(0.f, 0.f, -90.f), FRotator(0.f, -90.f, 0.f));
+			if (UAnimSequence* Idle = LoadObject<UAnimSequence>(nullptr, TEXT("/Game/Man/Demo/Animations/ThirdPersonIdle.ThirdPersonIdle")))
+				CharacterMesh->PlayAnimation(Idle, true);
+		}
+	}
 	InitializeGAS();
 	AsegurarInputRuntime();
 	if (const APlayerController* PC = Cast<APlayerController>(GetController()))
