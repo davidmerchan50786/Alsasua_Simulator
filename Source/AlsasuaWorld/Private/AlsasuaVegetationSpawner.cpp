@@ -138,6 +138,7 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 	HierbaPMC->SetMobility(EComponentMobility::Static);
 	HierbaPMC->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	HierbaPMC->SetCanEverAffectNavigation(false);
+	HierbaPMC->SetCullDistance(80000.f);
 	HierbaActor->SetRootComponent(HierbaPMC);
 
 	TArray<FVector> V;
