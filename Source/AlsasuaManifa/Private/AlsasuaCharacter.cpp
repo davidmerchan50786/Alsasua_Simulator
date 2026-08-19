@@ -5,7 +5,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/SkeletalMesh.h"
-#include "Animation/AnimSequence.h"
+
 #include "GAS/AlsasuaAbilitySystemComponent.h"
 #include "AlsasuaAttributeSet.h"
 #include "CharacterTrajectoryComponent.h"
@@ -62,8 +62,10 @@ void AAlsasuaCharacter::BeginPlay()
 		{
 			CharacterMesh->SetSkeletalMesh(Body);
 			CharacterMesh->SetRelativeLocationAndRotation(FVector(0.f, 0.f, -90.f), FRotator(0.f, -90.f, 0.f));
-			if (UAnimSequence* Idle = LoadObject<UAnimSequence>(nullptr, TEXT("/Game/Man/Demo/Animations/ThirdPersonIdle.ThirdPersonIdle")))
-				CharacterMesh->PlayAnimation(Idle, true);
+
+			// AnimBP real con idle/walk/run integrado (paquete externo Man + Shrubs).
+			if (UClass* AnimBP = LoadObject<UClass>(nullptr, TEXT("/Game/GV_FreeShrubsPack/Demo/Mannequin/Animations/ABP_Manny.ABP_Manny_C")))
+				CharacterMesh->SetAnimInstanceClass(AnimBP);
 		}
 	}
 	InitializeGAS();
