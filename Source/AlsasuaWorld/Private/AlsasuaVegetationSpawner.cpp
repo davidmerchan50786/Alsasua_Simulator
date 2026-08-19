@@ -123,7 +123,9 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 		return bInside;
 	};
 
-	AActor* HierbaActor = World->SpawnActor<AActor>(AActor::StaticClass(), FVector(MinX, MinY, 0), FRotator::ZeroRotator);
+	// Los vértices se generan ya en coordenadas mundo; el actor debe quedarse en
+	// origen para no sumar MinX/MinY una segunda vez y desplazar toda la vegetación.
+	AActor* HierbaActor = World->SpawnActor<AActor>(AActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator);
 	if (!HierbaActor) return 0;
 
 #if WITH_EDITOR
