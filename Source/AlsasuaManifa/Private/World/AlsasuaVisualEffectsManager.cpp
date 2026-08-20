@@ -14,6 +14,10 @@ void UAlsasuaVisualEffectsManager::Initialize(FSubsystemCollectionBase& Collecti
 
 	CachedMPC = LoadObject<UMaterialParameterCollection>(
 		nullptr, TEXT("/Game/Materiales/MPC_Clima.MPC_Clima"));
+
+	// MPC del paquete DZ_Assets para el viento de árboles (MF_SimpleTreeWind).
+	MPCWind = LoadObject<UMaterialParameterCollection>(
+		nullptr, TEXT("/Game/DZ_Assets/DZ_Common/MPC/MPC_Wind_Control.MPC_Wind_Control"));
 }
 
 void UAlsasuaVisualEffectsManager::Tick(float DeltaTime)
@@ -151,4 +155,14 @@ void UAlsasuaVisualEffectsManager::UpdateMPC(float DeltaTime)
 
 	Inst->SetVectorParameterValue(FName("WindVector"),
 		FLinearColor(FMath::Cos(WindDirection), FMath::Sin(WindDirection), 0, WindIntensity));
+
+	// Propagar viento al MPC de DZ_Assets (MF_SimpleTreeWind lee de aquí).
+	if (MPCWind)
+	{
+		if (UMaterialParameterCollectionInstance* WI = W->GetParameterCollectionInstance(MPCWind))
+		{
+			WI->SetScalarParameterValue(FName("WindIntensity"), WindIntensity);
+			WI->SetScalarParameterValue(FName("WindDirection"), WindDirection);
+		}
+	}
 }

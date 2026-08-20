@@ -98,5 +98,8 @@ private:
 	UPROPERTY()
 	TObjectPtr<UMaterialParameterCollection> CachedMPC;
 
+	UPROPERTY()
+	TObjectPtr<UMaterialParameterCollection> MPCWind;
+
 	float TimeAccumulator = 0.f;
 };
