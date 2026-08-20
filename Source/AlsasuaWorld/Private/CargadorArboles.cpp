@@ -24,6 +24,8 @@ static FLinearColor ColorEspecie(const FString& E)
 	if (E.StartsWith(TEXT("Betula")))  return FLinearColor(0.34f, 0.52f, 0.20f);  // abedul, claro
 	if (E.StartsWith(TEXT("Populus")) || E.StartsWith(TEXT("Salix"))) return FLinearColor(0.38f, 0.52f, 0.18f); // chopo/sauce
 	if (E.StartsWith(TEXT("Prunus")))  return FLinearColor(0.30f, 0.42f, 0.22f);
+	if (E.StartsWith(TEXT("Cocos")) || E.StartsWith(TEXT("Phoenix")))
+		return FLinearColor(0.22f, 0.48f, 0.16f);  // palmera
 	return FLinearColor(0.24f, 0.40f, 0.16f);  // genérico
 }
 
@@ -61,6 +63,9 @@ static FString ArquetipoDe(const FString& Especie)
 	if (Especie.StartsWith(TEXT("Prunus")))   return TEXT("Prunus");
 	if (Especie.StartsWith(TEXT("Platanus"))) return TEXT("Platanus");
 	if (Especie.StartsWith(TEXT("Acer")))     return TEXT("Acer");
+	// Palmeras DZ_Assets.
+	if (Especie.StartsWith(TEXT("Cocos")))    return TEXT("CocosNucifera");
+	if (Especie.StartsWith(TEXT("Phoenix")))  return TEXT("PhoenixCanariensis");
 	// El fresno no tiene malla propia; comparte porte con el tilo.
 	if (Especie.StartsWith(TEXT("Fraxinus"))) return TEXT("Tilia");
 	if (Especie.StartsWith(TEXT("Tilia")))    return TEXT("Tilia");
@@ -134,6 +139,8 @@ void UCargadorArboles::PrepararCarga()
 		{TEXT("Pinus"),    TEXT("/Game/DZ_Assets/DZ_Trees/Meshes/Pine/SM_Pine_1.Pine_1")},
 		{TEXT("QuercusRobur"), TEXT("/Game/DZ_Assets/DZ_Trees/Meshes/Cork_Oak/SM_Cork_Oak_1.Cork_Oak_1")},
 		{TEXT("Populus"),   TEXT("/Game/DZ_Assets/DZ_Trees/Meshes/Aspen/SM_Columnar_Aspen_1.Aspen_1")},
+		{TEXT("CocosNucifera"), TEXT("/Game/DZ_Assets/DZ_Trees/Meshes/Coconut_Tree/SM_Coconut_Tree_1.Coconut_Tree_1")},
+		{TEXT("PhoenixCanariensis"), TEXT("/Game/DZ_Assets/DZ_Trees/Meshes/Windmill_Palm/SM_Windmill_Palm_1.Windmill_Palm_1")},
 	};
 	for (const auto& Pair : DZFallbacks)
 	{

@@ -141,8 +141,30 @@ int32 UAlsasuaParkingSystem::GenerarPlazasAparcamiento()
 #endif
         }
 
-        // ponytail: no CitySample vehicle meshes copied yet; skip car spawning to avoid grey boxes
-        // if (Spot.bOcupado) { ... }
+        // Vehículo aparcado en plazas ocupadas (VehicleVarietyPack).
+        if (Spot.bOcupado)
+        {
+            static const TCHAR* RutasCoches[] = {
+                TEXT("/Game/VehicleVarietyPack/Meshes/SM_Hatchback.Hatchback"),
+                TEXT("/Game/VehicleVarietyPack/Meshes/SM_SUV.SUV"),
+                TEXT("/Game/VehicleVarietyPack/Meshes/SM_SportsCar.SportsCar"),
+            };
+            if (UStaticMesh* CarMesh = LoadObject<UStaticMesh>(nullptr,
+                RutasCoches[FMath::RandRange(0, 2)]))
+            {
+                AStaticMeshActor* CarActor = World->SpawnActor<AStaticMeshActor>(
+                    AStaticMeshActor::StaticClass(), Spot.Posicion,
+                    FRotator(0, Spot.Rotacion, 0));
+                if (CarActor)
+                {
+                    CarActor->SetMobility(EComponentMobility::Movable);
+                    CarActor->GetStaticMeshComponent()->SetStaticMesh(CarMesh);
+#if WITH_EDITOR
+                    CarActor->SetActorLabel(*FString::Printf(TEXT("ParkingCar_%s"), *Barrio.Left(8)));
+#endif
+                }
+            }
+        }
 
         Plazas.Add(Spot);
         Placed++;
