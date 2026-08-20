@@ -41,6 +41,7 @@ private:
 	UPROPERTY() AActor* Host = nullptr;
 	UPROPERTY() TMap<FString, UHierarchicalInstancedStaticMeshComponent*> PorEspecie;
 	UPROPERTY() TMap<FString, UStaticMesh*> MallasPorEspecie;
+	UPROPERTY() TSet<FString> EspeciesDZ;
 	UPROPERTY() UStaticMesh* MallaDefecto = nullptr;
 
 	void SembrarUno(const TSharedPtr<class FJsonObject>& O);
