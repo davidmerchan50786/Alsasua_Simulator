@@ -12,6 +12,15 @@
 #include "NiagaraSystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundBase.h"
+#include "HAL/PlatformTime.h"
+
+static const TCHAR* RutasCoches[] = {
+	TEXT("/Game/VehicleVarietyPack/Meshes/SM_Hatchback.Hatchback"),
+	TEXT("/Game/VehicleVarietyPack/Meshes/SM_SUV.SUV"),
+	TEXT("/Game/VehicleVarietyPack/Meshes/SM_Pickup.Pickup"),
+	TEXT("/Game/VehicleVarietyPack/Meshes/SM_SportsCar.SportsCar"),
+	TEXT("/Game/VehicleVarietyPack/Meshes/SM_Truck_Box.Truck_Box")
+};
 
 AVehiculoAmbiente::AVehiculoAmbiente()
 {
@@ -20,10 +29,10 @@ AVehiculoAmbiente::AVehiculoAmbiente()
 	RootComponent = Cuerpo;
 	Cuerpo->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	Cuerpo->SetCollisionResponseToAllChannels(ECR_Overlap);
-	Cuerpo->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);   // para que las balas lo alcancen
+	Cuerpo->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 	if (UStaticMesh* M = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube.Cube")))
 		Cuerpo->SetStaticMesh(M);
-	Cuerpo->SetRelativeScale3D(FVector(4.5f, 1.8f, 1.4f));   // ~coche (m); el cubo mide 1 m
+	Cuerpo->SetRelativeScale3D(FVector(4.5f, 1.8f, 1.4f));
 	Tags.Add(TEXT("Vehiculo"));
 }
 
@@ -34,11 +43,19 @@ void AVehiculoAmbiente::Iniciar(const TArray<FVector2D>& Eje, float AnchoCalzada
 	int32 Inicio = IndiceInicio;
 	if (Sentido < 0)
 	{
-		// invierte la polilínea para marchar siempre "hacia delante"
 		for (int32 i = N - 1; i >= 0; --i) Ruta.Add(Eje[i]);
 		Inicio = (N - 1) - IndiceInicio;
 	}
 	else Ruta = Eje;
+
+	// Selecciona un mesh real aleatorio si el paquete está instalado.
+	FRandomStream Rand(FPlatformTime::Cycles());
+	const int32 idx = Rand.RandRange(0, UE_ARRAY_COUNT(RutasCoches) - 1);
+	if (UStaticMesh* M = LoadObject<UStaticMesh>(nullptr, RutasCoches[idx]))
+	{
+		Cuerpo->SetStaticMesh(M);
+		Cuerpo->SetRelativeScale3D(FVector::OneVector);
+	}
 
 	Seg = FMath::Clamp(Inicio, 0, FMath::Max(0, Ruta.Num() - 2));
 	DistEnSeg = 0.f;
