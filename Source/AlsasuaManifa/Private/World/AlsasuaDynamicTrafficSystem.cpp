@@ -170,23 +170,40 @@ void UAlsasuaDynamicTrafficSystem::SpawnVehiculoEnCalle()
 
     UStaticMesh* CubeMesh = LoadObject<UStaticMesh>(nullptr,
         TEXT("/Engine/BasicShapes/Cube.Cube"));
+
+    // Intentar meshes reales del VehicleVarietyPack por tipo de vehículo.
+    static const TCHAR* RutasVehiculo[] = {
+        TEXT("/Game/VehicleVarietyPack/Meshes/SM_Hatchback.Hatchback"),
+        TEXT("/Game/VehicleVarietyPack/Meshes/SM_SUV.SUV"),
+        TEXT("/Game/VehicleVarietyPack/Meshes/SM_Truck_Box.Truck_Box"),
+    };
+    const int32 IdxVeh = (Veh.Tipo == ETipoVehiculo::Camion) ? 2
+                       : (Veh.Tipo == ETipoVehiculo::Furgoneta) ? 1 : 0;
+    if (UStaticMesh* Real = LoadObject<UStaticMesh>(nullptr, RutasVehiculo[IdxVeh]))
+        CubeMesh = Real;
+
     if (CubeMesh)
         VehActor->GetStaticMeshComponent()->SetStaticMesh(CubeMesh);
 
-    float ScaleX, ScaleY, ScaleZ;
-    if (Veh.Tipo == ETipoVehiculo::Camion)
+    // Solo escalar cube-placeholder; meshes reales ya están a escala correcta.
+    const bool bRealMesh = CubeMesh && !CubeMesh->GetPathName().Contains(TEXT("BasicShapes"));
+    if (!bRealMesh)
     {
-        ScaleX = 8.0f; ScaleY = 2.5f; ScaleZ = 2.8f;
+        float ScaleX, ScaleY, ScaleZ;
+        if (Veh.Tipo == ETipoVehiculo::Camion)
+        {
+            ScaleX = 8.0f; ScaleY = 2.5f; ScaleZ = 2.8f;
+        }
+        else if (Veh.Tipo == ETipoVehiculo::Furgoneta)
+        {
+            ScaleX = 5.5f; ScaleY = 2.0f; ScaleZ = 2.2f;
+        }
+        else
+        {
+            ScaleX = 4.5f; ScaleY = 1.8f; ScaleZ = 1.5f;
+        }
+        VehActor->SetActorScale3D(FVector(ScaleX, ScaleY, ScaleZ));
     }
-    else if (Veh.Tipo == ETipoVehiculo::Furgoneta)
-    {
-        ScaleX = 5.5f; ScaleY = 2.0f; ScaleZ = 2.2f;
-    }
-    else
-    {
-        ScaleX = 4.5f; ScaleY = 1.8f; ScaleZ = 1.5f;
-    }
-    VehActor->SetActorScale3D(FVector(ScaleX, ScaleY, ScaleZ));
 
     UMaterialInterface* BaseMat = LoadObject<UMaterialInterface>(nullptr,
         TEXT("/Game/Materiales/M_Vehiculo_Base"));
