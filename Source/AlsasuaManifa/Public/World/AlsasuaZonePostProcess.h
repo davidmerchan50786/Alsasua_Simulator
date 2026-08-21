@@ -69,6 +69,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|PostProcess|Exterior")
 	float ExteriorTemperature = 6500.f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|PostProcess|Night")
+	float NightSaturation = 0.7f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|PostProcess|Night")
+	float NightBloom = 0.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|PostProcess|Night")
+	float NightVignette = 0.3f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|PostProcess|Night")
+	float NightTemperature = 4000.f;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|PostProcess|Interior")
 	float InteriorSaturation = 0.95f;
 

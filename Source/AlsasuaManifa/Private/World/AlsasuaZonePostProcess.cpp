@@ -1,4 +1,6 @@
 #include "World/AlsasuaZonePostProcess.h"
+#include "World/AlsasuaAtmosphereController.h"
+#include "World/Time/TimeOfDayManager.h"
 #include "Components/PostProcessComponent.h"
 #include "Engine/PostProcessVolume.h"
 #include "Materials/MaterialParameterCollection.h"
@@ -168,11 +170,23 @@ void UAlsasuaZonePostProcess::ApplyZoneBlending(float DeltaTime)
 
 void UAlsasuaZonePostProcess::UpdatePostProcessVolume(float DeltaTime)
 {
-    float TargetS = ExteriorSaturation;
+    // Day/night factor from sun elevation (0 = night, 1 = day).
+    float DayFactor = 1.f;
+    if (UWorld* W = GetWorld())
+    {
+        UAlsasuaAtmosphereController* Atmos = W->GetSubsystem<UAlsasuaAtmosphereController>();
+        if (Atmos)
+        {
+            DayFactor = FMath::Clamp(Atmos->GetSunElevationDeg() / 10.f, 0.f, 1.f);
+        }
+    }
+
+    // Exterior base values modulated by day/night.
+    float TargetS = FMath::Lerp(NightSaturation, ExteriorSaturation, DayFactor);
     float TargetC = ExteriorContrast;
-    float TargetB = ExteriorBloom;
-    float TargetV = 0.f;
-    float TargetT = ExteriorTemperature;
+    float TargetB = FMath::Lerp(NightBloom, ExteriorBloom, DayFactor);
+    float TargetV = FMath::Lerp(NightVignette, 0.f, DayFactor);
+    float TargetT = FMath::Lerp(NightTemperature, ExteriorTemperature, DayFactor);
     float TargetG = 0.f;
 
     switch (CurrentZoneType)
