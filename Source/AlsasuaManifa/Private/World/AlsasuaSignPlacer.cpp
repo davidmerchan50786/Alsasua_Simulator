@@ -2,6 +2,10 @@
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "Engine/StaticMeshActor.h"
+#include "Components/StaticMeshComponent.h"
+#include "Components/TextRenderComponent.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "Engine/StaticMesh.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "Serialization/JsonReader.h"
@@ -76,6 +80,10 @@ int32 UAlsasuaSignPlacer::ColocarSenalesEnMundo()
     if (!World) return 0;
 
     int32 Placed = 0;
+
+    UStaticMesh* CubeMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube.Cube"));
+    UStaticMesh* PlaneMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Plane.Plane"));
+
     for (const FSignEntry& S : Senales)
     {
         FVector Loc = UAlsasuaGeoData::UnityaUnreal(FVector(S.X, S.Z, 0));
@@ -83,14 +91,42 @@ int32 UAlsasuaSignPlacer::ColocarSenalesEnMundo()
 
         AStaticMeshActor* SignActor = World->SpawnActor<AStaticMeshActor>(
             AStaticMeshActor::StaticClass(), Loc, FRotator::ZeroRotator);
-        if (SignActor)
+        if (!SignActor) continue;
+
+        SignActor->SetMobility(EComponentMobility::Movable);
+
+        if (UStaticMeshComponent* SMC = SignActor->GetStaticMeshComponent())
         {
-            SignActor->SetMobility(EComponentMobility::Movable);
-#if WITH_EDITOR
-            SignActor->SetActorLabel(*FString::Printf(TEXT("Sign_%s_%s"), *S.Tipo, *S.Texto));
-#endif
-            Placed++;
+            SMC->SetStaticMesh(PlaneMesh);
+            SMC->SetWorldScale3D(FVector(S.AnchoM * 100.f, 2.f, S.AltoM * 100.f));
+            SMC->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+            FLinearColor SignColor = FLinearColor(0.95f, 0.95f, 0.9f);
+            if (S.Tipo.Contains(TEXT("calle")))
+                SignColor = FLinearColor(0.1f, 0.1f, 0.6f);
+            else if (S.Tipo.Contains(TEXT("tienda")) || S.Tipo.Contains(TEXT("negocio")))
+                SignColor = FLinearColor(0.8f, 0.2f, 0.1f);
+            else if (S.Tipo.Contains(TEXT("senal_transito")))
+                SignColor = FLinearColor(0.1f, 0.5f, 0.1f);
+
+            UMaterialInstanceDynamic* Dyn = SMC->CreateDynamicMaterialInstance(0);
+            if (Dyn) Dyn->SetVectorParameterValue(FName("Color"), SignColor);
         }
+
+        UTextRenderComponent* TextComp = NewObject<UTextRenderComponent>(SignActor);
+        if (TextComp)
+        {
+            TextComp->SetupAttachment(SignActor->GetRootComponent());
+            TextComp->SetText(FText::FromString(S.Texto));
+            TextComp->SetWorldSize(S.AltoM * 70.f);
+            TextComp->SetHorizontalAlignment(EHTA_Center);
+            TextComp->SetRelativeLocation(FVector(0, 10.f, 0));
+            TextComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+            TextComp->RegisterComponent();
+        }
+
+        SignActor->SetActorLabel(*FString::Printf(TEXT("Sign_%s_%s"), *S.Tipo, *S.Texto.Left(12)));
+        Placed++;
     }
 
     UE_LOG(LogTemp, Log, TEXT("SignPlacer: %d senales colocadas en el mundo"), Placed);
