@@ -116,7 +116,7 @@ void UAlsasuaDetailDressingSystem::CargarMueblesReales(UWorld* World)
         // quitaba el PBR de M_Mobiliario y M_Metal.
         if (!bMallaReal)
         {
-            if (UMaterialInterface* Mat = CargarMaterialRapido(TEXT("/Engine/EngineMaterials/DefaultMaterial.DefaultMaterial")))
+            if (UMaterialInterface* Mat = CargarMaterialRapido(TEXT("/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial")))
             {
                 Actor->GetStaticMeshComponent()->SetMaterial(0, Mat);
             }

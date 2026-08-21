@@ -506,7 +506,7 @@ void UAlsasuaGeoWorldBuilderSubsystem::BuildWorld()
         // /Engine/EngineMeshes/SM_Cube no existe: era otro LoadObject a null,
         // y estos ISM se quedaban sin malla sin decir nada.
         OutComp->SetStaticMesh(LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube.Cube")));
-        OutComp->SetMaterial(0, LoadObject<UMaterialInterface>(nullptr, TEXT("/Engine/EngineMaterials/DefaultMaterial.DefaultMaterial")));
+        OutComp->SetMaterial(0, LoadObject<UMaterialInterface>(nullptr, TEXT("/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial")));
     };
 
     CreateISM(TEXT("GeoRoadISM"), RoadISM);

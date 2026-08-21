@@ -103,7 +103,7 @@ int32 UAlsasuaFountainSystem::ColocarFuentes()
         Cazoleta->SetActorScale3D(FVector(Scale, Scale, 0.3f));
 
         UStaticMesh* CylinderMesh = LoadObject<UStaticMesh>(nullptr,
-            TEXT("/Engine/EngineMeshes/Cylinder"));
+            TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
         if (CylinderMesh)
             Cazoleta->GetStaticMeshComponent()->SetStaticMesh(CylinderMesh);
 
