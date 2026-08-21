@@ -12,6 +12,30 @@ UAlsasuaBuildingEmissiveComponent::UAlsasuaBuildingEmissiveComponent()
 	PrimaryComponentTick.TickInterval = 0.2f;
 }
 
+// Conversión simplificada de temperatura de color a RGB (Planck locus).
+FLinearColor UAlsasuaBuildingEmissiveComponent::ColorTempToRGB(float Kelvin)
+{
+	const float T = FMath::Clamp(Kelvin / 100.0f, 0.0f, 40.0f);
+	float R, G, B;
+
+	// Rojo
+	if (T <= 66.0f) R = 1.0f;
+	else R = FMath::Clamp(1.292936186130574f * FMath::Pow(T - 60.0f, -0.1332047592f), 0.0f, 1.0f);
+
+	// Verde
+	if (T <= 66.0f)
+		G = FMath::Clamp(0.3900815787690196f * FMath::Loge(T) - 0.6318414437886275f, 0.0f, 1.0f);
+	else
+		G = FMath::Clamp(1.129890860895294f * FMath::Pow(T - 60.0f, -0.0755148492f), 0.0f, 1.0f);
+
+	// Azul
+	if (T >= 66.0f) B = 1.0f;
+	else if (T <= 19.0f) B = 0.0f;
+	else 		B = FMath::Clamp(0.5432067891125611f * FMath::Loge(T - 10.0f) - 2.532112374318462f, 0.0f, 1.0f);
+
+	return FLinearColor(R, G, B);
+}
+
 void UAlsasuaBuildingEmissiveComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -28,9 +52,12 @@ void UAlsasuaBuildingEmissiveComponent::SetupWindowMaterials()
 
 	const int32 TotalWindows = WindowRows * WindowCols;
 	WindowOnOff.SetNum(TotalWindows);
+	WindowColorTemp.SetNum(TotalWindows);
 	for (int32 i = 0; i < TotalWindows; ++i)
 	{
 		WindowOnOff[i] = (FMath::FRand() < NightOnProbability);
+		// 2700K (cálida) a 6500K (fría) — variación realista por vivienda.
+		WindowColorTemp[i] = FMath::RandRange(2700.0f, 6500.0f);
 	}
 
 	for (UStaticMeshComponent* SMC : MeshComps)
@@ -124,9 +151,13 @@ void UAlsasuaBuildingEmissiveComponent::UpdateEmissiveWindows(float DeltaTime)
 		}
 
 		const float Strength = bOn ? CurrentEmissiveStrength * Flicker : 0.f;
-		const FLinearColor FinalColor = bOn ? BaseColor : WindowOffColor;
+		// Color por temperatura de la ventana individual (Plan Fase 4.2).
+		const FLinearColor WindowColor = bOn
+			? FMath::Lerp(ColorTempToRGB(WindowColorTemp[WindowIdx]),
+				BaseColor, 0.3f)  // 30% hacia la base global para cohesión
+			: WindowOffColor;
 
-		MID->SetVectorParameterValue(FName("EmissiveColor"), FinalColor);
+		MID->SetVectorParameterValue(FName("EmissiveColor"), WindowColor);
 		MID->SetScalarParameterValue(FName("EmissiveIntensity"), Strength);
 	}
 }

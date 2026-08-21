@@ -181,6 +181,32 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 		FloresHISM = nullptr;
 	}
 
+	// Fase 1: Nanite Plants — césped real que reemplaza quads procedurales.
+	TArray<UStaticMesh*> NanitePlants;
+	{
+		const TCHAR* RutasNanite[] = {
+			TEXT("/Game/Nanite_Plants_Sample_Collection/Geometries/SM_Free_Lolium_perenne_3DGardenPlants.Free_Lolium_perenne_3DGardenPlants"),
+			TEXT("/Game/Nanite_Plants_Sample_Collection/Geometries/SM_Free_Ophiopogon_japonicus_3DGardenPlants.Free_Ophiopogon_japonicus_3DGardenPlants"),
+			TEXT("/Game/Nanite_Plants_Sample_Collection/Geometries/SM_Abelia_x_grandiflora_Nanite_Free_Sample.Abelia_x_grandiflora_Nanite_Free_Sample"),
+		};
+		for (const TCHAR* Ruta : RutasNanite)
+			if (UStaticMesh* M = LoadObject<UStaticMesh>(nullptr, Ruta))
+				NanitePlants.Add(M);
+	}
+
+	UHierarchicalInstancedStaticMeshComponent* NaniteHISM = nullptr;
+	if (NanitePlants.Num() > 0)
+	{
+		NaniteHISM = NewObject<UHierarchicalInstancedStaticMeshComponent>(HierbaActor);
+		NaniteHISM->SetStaticMesh(NanitePlants[0]);
+		NaniteHISM->SetupAttachment(HierbaPMC);
+		NaniteHISM->SetMobility(EComponentMobility::Static);
+		NaniteHISM->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		NaniteHISM->SetCanEverAffectNavigation(false);
+		NaniteHISM->SetCullDistances(0, 80000);
+		NaniteHISM->RegisterComponent();
+	}
+
 	TArray<FVector> V;
 	TArray<int32> T;
 	TArray<FVector> N;
@@ -191,7 +217,9 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 	int32 HierbaCount = 0;
 	int32 ArbustoCount = 0;
 	int32 FlorCount = 0;
+	int32 NaniteCount = 0;
 	const float ProbFlor = FlorMesh ? 0.3f : 0.f;
+	const float ProbNanite = NaniteHISM ? 0.4f : 0.f;  // 40% hierba → Nanite real
 	const float StepSize = 150.f; // sample every 1.5m
 	FRandomStream Rng(42);
 	const auto CercaDeAgua = [&PuntosAgua](const FVector& P) -> float
@@ -250,6 +278,18 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 					FloresHISM->AddInstance(FTransform(FRotator(0.f, Rng.FRandRange(0.f, 360.f), 0.f),
 						FVector(TestPt.X, TestPt.Y, Suelo), FVector(Escala)));
 					++FlorCount;
+					continue;
+				}
+
+				// Fase 1: Nanite real reemplaza quad procedural.
+				if (NaniteHISM && Rng.FRand() < ProbNanite)
+				{
+					const int32 IdxMesh = Rng.RandRange(0, NanitePlants.Num() - 1);
+					const float Escala = Rng.FRandRange(0.5f, 1.0f);
+					NaniteHISM->AddInstance(FTransform(
+						FRotator(0.f, Rng.FRandRange(0.f, 360.f), 0.f),
+						FVector(TestPt.X, TestPt.Y, Suelo), FVector(Escala)));
+					++NaniteCount;
 					continue;
 				}
 
@@ -319,7 +359,7 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 		if (MatHierba) HierbaPMC->SetMaterial(0, MatHierba);
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("[Vegetacion] %d hierbas + %d flores + %d arbustos sembrados en %d zonas verdes"),
-		HierbaCount, FlorCount, ArbustoCount, Polygons.Num());
-	return HierbaCount + FlorCount + ArbustoCount;
+	UE_LOG(LogTemp, Log, TEXT("[Vegetacion] %d hierbas + %d nanite + %d flores + %d arbustos sembrados en %d zonas verdes"),
+		HierbaCount, NaniteCount, FlorCount, ArbustoCount, Polygons.Num());
+	return HierbaCount + NaniteCount + FlorCount + ArbustoCount;
 }

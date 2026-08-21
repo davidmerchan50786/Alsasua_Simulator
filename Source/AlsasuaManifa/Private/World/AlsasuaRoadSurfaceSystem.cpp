@@ -132,9 +132,20 @@ int32 UAlsasuaRoadSurfaceSystem::AplicarSuperficiesEnMundo()
             FLinearColor* Color = MaterialColors.Find(Entry.Material);
             if (Color)
             {
+                // Fase 3: desgaste por zona — intersecciones y vías anchas más oscuras.
+                float WearFactor = 0.f;
+                if (Entry.Tipo == TEXT("primary") || Entry.Tipo == TEXT("trunk"))
+                    WearFactor = 0.25f;  // avenidas principales
+                else if (Entry.Tipo == TEXT("tertiary") || Entry.Tipo == TEXT("residential"))
+                    WearFactor = 0.10f;  // residencial
+                else if (Entry.Ancho > 10.0f)
+                    WearFactor = 0.15f;  // calles anchas
+
+                const FLinearColor WornColor = FMath::Lerp(*Color, FLinearColor(0.18f, 0.17f, 0.16f), WearFactor);
+
                 if (UMaterialInstanceDynamic* DynMat = RoadActor->GetStaticMeshComponent()->CreateDynamicMaterialInstance(0))
                 {
-                    DynMat->SetVectorParameterValue(FName(TEXT("Color")), *Color);
+                    DynMat->SetVectorParameterValue(FName(TEXT("Color")), WornColor);
                 }
             }
 

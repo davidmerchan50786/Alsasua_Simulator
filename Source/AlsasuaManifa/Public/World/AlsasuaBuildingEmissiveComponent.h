@@ -52,5 +52,8 @@ private:
 	float CurrentEmissiveStrength = 0.f;
 	float FlickerPhase = 0.f;
 	TArray<bool> WindowOnOff;
+	TArray<float> WindowColorTemp;  // Kelvin por ventana (2700-6500K)
 	bool bInitialized = false;
+
+	static FLinearColor ColorTempToRGB(float Kelvin);
 };

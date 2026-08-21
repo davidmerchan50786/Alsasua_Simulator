@@ -3,6 +3,7 @@
 #include "Engine/Engine.h"
 #include "Engine/StaticMeshActor.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/PointLightComponent.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "Serialization/JsonReader.h"
@@ -103,6 +104,20 @@ int32 UAlsasuaFarolaPlacer::ColocarFarolasEnMundo()
             UStaticMesh* MeshToUse = (Placed % 2 == 0) ? LampMesh1 : LampMesh2;
             if (MeshToUse)
                 FarolaActor->GetStaticMeshComponent()->SetStaticMesh(MeshToUse);
+
+            // Luz volumétrica cálida tipo sodio (Plan Fase 4).
+            UPointLightComponent* Light = NewObject<UPointLightComponent>(FarolaActor);
+            Light->SetRelativeLocation(FVector(0, 0, F.AlturaM * 50.0f - Loc.Z + 20.0f));
+            Light->SetIntensity(3000.0f);
+            Light->SetLightColor(FLinearColor(1.0f, 0.85f, 0.55f));  // sodio cálido ~2700K
+            Light->SetAttenuationRadius(1500.0f);
+            Light->SetSourceRadius(10.0f);
+            Light->SetCastShadows(false);
+            Light->SetVolumetricScatteringIntensity(2.0f);
+            Light->SetIntensityUnits(ELightUnits::Lumens);
+            Light->AttachToComponent(FarolaActor->GetRootComponent(),
+                FAttachmentTransformRules::KeepRelativeTransform);
+            Light->RegisterComponent();
 
 #if WITH_EDITOR
             FarolaActor->SetActorLabel(*FString::Printf(TEXT("Farola_%s_%d"),
