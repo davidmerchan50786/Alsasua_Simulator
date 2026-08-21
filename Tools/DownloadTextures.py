@@ -35,6 +35,13 @@ ASSETS = {
 # ambientCG ships both _NormalGL (OpenGL) and _NormalDX (DirectX). UE5 expects
 # the DirectX convention, so only that one is kept as T_<name>_Normal; the GL
 # variant is the same map with the green channel flipped and nothing can use it.
+#
+# No todos los assets traen los cuatro. Concrete034, Metal063 y Wood095 no
+# publican mapa de oclusión ambiental, así que T_Concrete_AO, T_MetalPlate_AO y
+# T_Wood_AO no existen y no van a existir: el hueco es de ambientCG, no del
+# script. AlsasuaPBR::Muestrear devuelve nullptr cuando falta el mapa y el
+# material se monta sin ese nodo, así que no rompe nada — pero conviene saberlo
+# antes de ponerse a buscar por qué faltan tres de cuarenta.
 MAP_NAMES = {
     "Color":     ["Color.jpg", "color.jpg"],
     "Normal":    ["NormalDX.jpg", "normaldx.jpg", "Normal.jpg", "normal.jpg"],
