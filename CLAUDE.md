@@ -337,7 +337,9 @@ cota—, `#include` de una cabecera del proyecto que ya no
 existe, método declarado en una cabecera que no define ningún `.cpp` de su
 módulo —error de **enlazado**, que no lo canta el editor y sólo salta cuando
 alguien llama a esa API— y puntero a `UObject` sin `UPROPERTY` en un tipo
-reflejado, §9), `VerificarCallesNavarra.py` (trazado contra el eje catastral),
+reflejado, §9), `VerificarModulos.py` (que el grafo de módulos que usa el código sea el que
+declaran los `.Build.cs`, y que no haya ciclos nuevos: los dos son error de UBT),
+`VerificarCallesNavarra.py` (trazado contra el eje catastral),
 `AuditarAssets.py` (rutas sin respaldo y mallas bajadas que nadie pide),
 `VerificarGuardado.py` (campos del save que se guardan y no se cargan),
 `VerificarDialogos.py` (los árboles de Content/Dialogs entran enteros),

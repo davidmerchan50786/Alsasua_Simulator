@@ -57,6 +57,9 @@ jobs:
       - name: AuditarAssets (rutas sin respaldo, packs sin degradación)
         run: python3 Tools/AuditarAssets.py
 
+      - name: VerificarModulos (grafo de módulos y ciclos nuevos)
+        run: python3 Tools/VerificarModulos.py
+
   rutas:
     name: Sin rutas de máquina
     runs-on: ubuntu-latest
