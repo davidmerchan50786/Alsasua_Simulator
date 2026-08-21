@@ -75,10 +75,13 @@ public:
 
 private:
     TArray<FParkingSpot> Plazas;
+    TArray<TPair<FVector, FVector>> SegmentosCalle;
 
     /** Actor que aloja las dos capas instanciadas. */
     UPROPERTY() TObjectPtr<AActor> Host = nullptr;
 
+    void CargarCalles();
+    FVector ObtenerPuntoEnCalle(FVector& OutDir);
     int32 PintarPlazasDeCalle(class UHierarchicalInstancedStaticMeshComponent* Capa);
     int32 ColocarPuertasGaraje(class UHierarchicalInstancedStaticMeshComponent* Capa);
 };

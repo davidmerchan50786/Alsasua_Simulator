@@ -56,6 +56,7 @@ bool UAlsasuaRoadSurfaceSystem::CargarSuperficies()
         if (!FirstPt) continue;
 
         FRoadSurfaceEntry Entry;
+        Entry.Id = Obj->HasField(TEXT("id")) ? (int32)Obj->GetNumberField(TEXT("id")) : Superficies.Num();
         Entry.Nombre = Obj->HasField(TEXT("name")) ? Obj->GetStringField(TEXT("name")) : TEXT("");
         Entry.Calle = Entry.Nombre;
         Entry.X = FirstPt->GetNumberField(TEXT("x")) + UAlsasuaGeoData::OX;
@@ -77,6 +78,7 @@ bool UAlsasuaRoadSurfaceSystem::CargarSuperficies()
             Entry.Material = TEXT("asphalt_worn");
 
         Superficies.Add(Entry);
+        PorId.Add(Entry.Id, Superficies.Num() - 1);
     }
 
     bCargado = true;
@@ -84,95 +86,21 @@ bool UAlsasuaRoadSurfaceSystem::CargarSuperficies()
     return true;
 }
 
-int32 UAlsasuaRoadSurfaceSystem::AplicarSuperficiesEnMundo()
+bool UAlsasuaRoadSurfaceSystem::FirmeDe(int32 Id, FString& OutMaterial, FLinearColor& OutColor) const
 {
-    if (!bCargado && !CargarSuperficies()) return 0;
-
-    UWorld* World = GetWorld();
-    if (!World) return 0;
-
-    static TMap<FString, UStaticMesh*> MaterialMeshes;
-    if (MaterialMeshes.Num() == 0)
-    {
-        MaterialMeshes.Add(TEXT("asphalt"), LoadObject<UStaticMesh>(nullptr,
-            TEXT("/Engine/BasicShapes/Cube.Cube")));
-        MaterialMeshes.Add(TEXT("cobblestone"), LoadObject<UStaticMesh>(nullptr,
-            TEXT("/Engine/BasicShapes/Cube.Cube")));
-        MaterialMeshes.Add(TEXT("asphalt_worn"), LoadObject<UStaticMesh>(nullptr,
-            TEXT("/Engine/BasicShapes/Cube.Cube")));
-        MaterialMeshes.Add(TEXT("gravel"), LoadObject<UStaticMesh>(nullptr,
-            TEXT("/Engine/BasicShapes/Cube.Cube")));
-    }
-
-    static TMap<FString, FLinearColor> MaterialColors;
-    if (MaterialColors.Num() == 0)
-    {
-        MaterialColors.Add(TEXT("asphalt"), FLinearColor(0.15f, 0.15f, 0.15f));
-        MaterialColors.Add(TEXT("cobblestone"), FLinearColor(0.45f, 0.40f, 0.35f));
-        MaterialColors.Add(TEXT("asphalt_worn"), FLinearColor(0.25f, 0.24f, 0.23f));
-        MaterialColors.Add(TEXT("gravel"), FLinearColor(0.55f, 0.50f, 0.45f));
-    }
-
-    int32 Placed = 0;
-
-    // Fase 5: leer wetness del MPC global para asfalto mojado.
-    float GlobalWetness = 0.f;
-    if (UMaterialParameterCollection* MPC = LoadObject<UMaterialParameterCollection>(nullptr,
-        TEXT("/Game/Materiales/MPC_Clima.MPC_Clima")))
-    {
-        if (UMaterialParameterCollectionInstance* Inst = World->GetParameterCollectionInstance(MPC))
-        {
-            Inst->GetScalarParameterValue(FName("GlobalWetness"), GlobalWetness);
-        }
-    }
-
-    for (const FRoadSurfaceEntry& Entry : Superficies)
-    {
-        FVector Loc = UAlsasuaGeoData::UnityaUnreal(FVector(Entry.X, Entry.Z, 0));
-
-        AStaticMeshActor* RoadActor = World->SpawnActor<AStaticMeshActor>(
-            AStaticMeshActor::StaticClass(), Loc, FRotator::ZeroRotator);
-        if (RoadActor)
-        {
-            RoadActor->SetMobility(EComponentMobility::Movable);
-
-            float ScaleX = Entry.Ancho * 100.0f;
-            RoadActor->SetActorScale3D(FVector(ScaleX / 100.0f, ScaleX / 100.0f, 0.1f));
-
-            UStaticMesh** Mesh = MaterialMeshes.Find(Entry.Material);
-            if (Mesh && *Mesh)
-                RoadActor->GetStaticMeshComponent()->SetStaticMesh(*Mesh);
-
-            FLinearColor* Color = MaterialColors.Find(Entry.Material);
-            if (Color)
-            {
-                // Fase 3: desgaste por zona — intersecciones y vías anchas más oscuras.
-                float WearFactor = 0.f;
-                if (Entry.Tipo == TEXT("primary") || Entry.Tipo == TEXT("trunk"))
-                    WearFactor = 0.25f;  // avenidas principales
-                else if (Entry.Tipo == TEXT("tertiary") || Entry.Tipo == TEXT("residential"))
-                    WearFactor = 0.10f;  // residencial
-                else if (Entry.Ancho > 10.0f)
-                    WearFactor = 0.15f;  // calles anchas
-
-                const FLinearColor WornColor = FMath::Lerp(*Color, FLinearColor(0.18f, 0.17f, 0.16f), WearFactor);
-
-                if (UMaterialInstanceDynamic* DynMat = RoadActor->GetStaticMeshComponent()->CreateDynamicMaterialInstance(0))
-                {
-                    DynMat->SetVectorParameterValue(FName(TEXT("Color")), WornColor);
-                    // Fase 5: asfalto mojado — Roughness baja cuando llueve.
-                    DynMat->SetScalarParameterValue(FName(TEXT("Wetness")), GlobalWetness);
-                }
-            }
-
-#if WITH_EDITOR
-            RoadActor->SetActorLabel(*FString::Printf(TEXT("Road_%s_%s"),
-                *Entry.Material, *Entry.Nombre.Left(20)));
-#endif
-            Placed++;
-        }
-    }
-
-    UE_LOG(LogTemp, Log, TEXT("RoadSurface: %d tramos de calle colocados"), Placed);
-    return Placed;
+    const int32* Idx = PorId.Find(Id);
+    if (!Idx || !Superficies.IsValidIndex(*Idx)) return false;
+    const FRoadSurfaceEntry& E = Superficies[*Idx];
+    OutMaterial = E.Material;
+    static const TMap<FString, FLinearColor> Colors = {
+        {TEXT("asphalt"), FLinearColor(0.15f, 0.15f, 0.15f)},
+        {TEXT("cobblestone"), FLinearColor(0.45f, 0.40f, 0.35f)},
+        {TEXT("asphalt_worn"), FLinearColor(0.25f, 0.24f, 0.23f)},
+        {TEXT("gravel"), FLinearColor(0.55f, 0.50f, 0.45f)},
+    };
+    if (const FLinearColor* C = Colors.Find(E.Material))
+        OutColor = *C;
+    else
+        OutColor = FLinearColor(0.15f, 0.15f, 0.15f);
+    return true;
 }

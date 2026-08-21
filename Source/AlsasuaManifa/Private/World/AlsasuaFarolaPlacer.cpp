@@ -86,13 +86,6 @@ int32 UAlsasuaFarolaPlacer::ColocarFarolasEnMundo()
     }
     const bool bDeFab = AlsasuaMallaFab::VieneDeFab(TEXT("farola_decorativa"));
 
-    // Fallback: cylinder como poste si no hay meshes de CitySample.
-    if (!LampMesh1)
-        LampMesh1 = LoadObject<UStaticMesh>(nullptr,
-            TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
-    if (!LampMesh2)
-        LampMesh2 = LampMesh1;
-
     for (const FFarolaEntry& F : Farolas)
     {
         // Sin esto, una farola de Fab entra con su tamaño de catálogo y el

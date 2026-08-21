@@ -16,6 +16,60 @@ void UAlsasuaTrafficLightSystem::Initialize(FSubsystemCollectionBase& Collection
     Super::Initialize(Collection);
 }
 
+void UAlsasuaTrafficLightSystem::Deinitialize()
+{
+    Semaforos.Empty();
+    Reloj = 0.f;
+    Super::Deinitialize();
+}
+
+void UAlsasuaTrafficLightSystem::Tick(float DeltaTime)
+{
+    Reloj += DeltaTime;
+    DesdeUltimoRefresco += DeltaTime;
+    if (DesdeUltimoRefresco < 0.25f) return;
+    DesdeUltimoRefresco = 0.f;
+    Aplicar();
+}
+
+EFaseSemaforo UAlsasuaTrafficLightSystem::FaseEn(float TiempoCiclo) const
+{
+    const float Periodo = SegVerde + SegAmbar + SegRojo;
+    const float T = FMath::Fmod(TiempoCiclo + 1000.f * Periodo, Periodo);
+    if (T < SegVerde) return EFaseSemaforo::Verde;
+    if (T < SegVerde + SegAmbar) return EFaseSemaforo::Ambar;
+    return EFaseSemaforo::Rojo;
+}
+
+void UAlsasuaTrafficLightSystem::Aplicar()
+{
+    const float Periodo = SegVerde + SegAmbar + SegRojo;
+    for (FTrafficLight& L : Semaforos)
+    {
+        if (!L.bActivo || !L.Luz) continue;
+        L.Fase = FaseEn(Reloj + L.Desfase);
+
+        UPointLightComponent* PL = Cast<UPointLightComponent>(L.Luz->GetLightComponent());
+        if (!PL) continue;
+
+        switch (L.Fase)
+        {
+        case EFaseSemaforo::Verde:
+            PL->SetLightColor(FLinearColor(0.0f, 0.7f, 0.0f));
+            PL->SetIntensity(2000.f);
+            break;
+        case EFaseSemaforo::Ambar:
+            PL->SetLightColor(FLinearColor(0.8f, 0.6f, 0.0f));
+            PL->SetIntensity(1500.f);
+            break;
+        case EFaseSemaforo::Rojo:
+            PL->SetLightColor(FLinearColor(0.8f, 0.0f, 0.0f));
+            PL->SetIntensity(2000.f);
+            break;
+        }
+    }
+}
+
 int32 UAlsasuaTrafficLightSystem::ColocarSemaforos()
 {
     UWorld* World = GetWorld();
