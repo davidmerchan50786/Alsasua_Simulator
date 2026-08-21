@@ -75,6 +75,7 @@ private:
 	TObjectPtr<UNiagaraComponent> ActiveRainSystem;
 
 	float ThunderTimer = 0.f;
+	float ThunderFlashTimer = 0.f;
 	float CurrentSpawnRate = 0.f;
 	bool bIsSnowing = false;
 };

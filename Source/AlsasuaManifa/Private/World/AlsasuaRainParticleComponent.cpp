@@ -147,10 +147,12 @@ void UAlsasuaRainParticleComponent::SpawnThunderFlash()
 
 	UGameplayStatics::PlaySound2D(this, ThunderSound, 1.0f, FMath::RandRange(0.8f, 1.2f));
 
+	ThunderFlashTimer = ThunderFlashDuration;
+
 	APlayerCameraManager* CamMgr = PC->PlayerCameraManager;
 	if (CamMgr)
 	{
-		// Camera shake removed - class no longer available
+		CamMgr->StartCameraFade(1.f, 0.f, ThunderFlashDuration, FLinearColor(1.f, 1.f, 0.95f), false, true);
 	}
 }
 
