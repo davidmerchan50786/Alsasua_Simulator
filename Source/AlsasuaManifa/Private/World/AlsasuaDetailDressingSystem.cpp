@@ -173,7 +173,7 @@ int32 UAlsasuaDetailDressingSystem::ColocarDetalle()
 
 AActor* UAlsasuaDetailDressingSystem::CrearActor(
     UWorld* World, const FVector& Pos, float Rot, float Scale,
-    const TCHAR* MeshPath, const TCHAR* MatPath, const FString& Label)
+    const FString& Tipo, const TCHAR* MeshPath, const TCHAR* MatPath, const FString& Label)
 {
     AActor* Actor = World->SpawnActor<AActor>(
         AActor::StaticClass(), Pos, FRotator(0, Rot, 0));
@@ -190,12 +190,19 @@ AActor* UAlsasuaDetailDressingSystem::CrearActor(
         Actor->SetRootComponent(MeshComp);
     }
 
-    UStaticMesh* Mesh = CargarMeshRapido(MeshPath);
+    UStaticMesh* Mesh = AlsasuaMallaFab::Resolver(Tipo, MeshPath);
+    const bool bMallaReal = Mesh && !Mesh->GetPathName().StartsWith(TEXT("/Engine/BasicShapes"));
     if (Mesh) MeshComp->SetStaticMesh(Mesh);
- 
-    UMaterialInterface* Mat = CargarMaterialRapido(MatPath);
 
-    if (Mat) MeshComp->SetMaterial(0, Mat);
+    if (bMallaReal)
+    {
+        Actor->SetActorScale3D(FVector::OneVector);
+    }
+    else
+    {
+        UMaterialInterface* Mat = CargarMaterialRapido(MatPath);
+        if (Mat) MeshComp->SetMaterial(0, Mat);
+    }
 
 #if WITH_EDITOR
     Actor->Rename(*Label);
@@ -233,7 +240,7 @@ void UAlsasuaDetailDressingSystem::ColocarMacetas(UWorld* World)
 
         FString Label = FString::Printf(TEXT("Maceta_%s_%d"), *Barrio.Left(8), i);
         AActor* Actor = CrearActor(World, Pos, Rot, Escala,
-            TEXT("/Engine/BasicShapes/Cylinder.Cylinder"),
+            TEXT("maceta"), TEXT("/Engine/BasicShapes/Cylinder.Cylinder"),
             TEXT("/Game/Materiales/M_Piedra"), Label);
 
         if (Actor)
@@ -271,7 +278,7 @@ void UAlsasuaDetailDressingSystem::ColocarBuzones(UWorld* World)
 
         FString Label = FString::Printf(TEXT("Buzon_%s_%d"), *Calle.Left(10), i);
         CrearActor(World, Pos, Item.Rotacion, 0.7f,
-            TEXT("/Engine/BasicShapes/Cube.Cube"),
+            TEXT("buzon_correos"), TEXT("/Engine/BasicShapes/Cube.Cube"),
             TEXT("/Game/Materiales/M_Metal_Azul"), Label);
 
         Detalles.Add(Item);
@@ -305,7 +312,7 @@ void UAlsasuaDetailDressingSystem::ColocarPapeleiras(UWorld* World)
 
         FString Label = FString::Printf(TEXT("Papelera_%s_%d"), *Barrio.Left(8), i);
         CrearActor(World, Pos, Item.Rotacion, 0.6f,
-            TEXT("/Engine/BasicShapes/Cube.Cube"),
+            TEXT("papelera"), TEXT("/Engine/BasicShapes/Cube.Cube"),
             TEXT("/Game/Materiales/M_Verde_Oscuro"), Label);
 
         Detalles.Add(Item);
@@ -330,7 +337,7 @@ void UAlsasuaDetailDressingSystem::ColocarBancos(UWorld* World)
 
         FString Label = FString::Printf(TEXT("Banco_%d"), i);
         AActor* Actor = CrearActor(World, Pos, Item.Rotacion, 1.0f,
-            TEXT("/Engine/BasicShapes/Cube.Cube"),
+            TEXT("banco"), TEXT("/Engine/BasicShapes/Cube.Cube"),
             TEXT("/Game/Materiales/M_Madera"), Label);
 
         if (Actor)
@@ -366,7 +373,7 @@ void UAlsasuaDetailDressingSystem::ColocarVallasVerdes(UWorld* World)
 
         FString Label = FString::Printf(TEXT("VallaVerde_%s_%d"), *Barrio.Left(8), i);
         AActor* Actor = CrearActor(World, Pos, Item.Rotacion, 1.2f,
-            TEXT("/Engine/BasicShapes/Cube.Cube"),
+            TEXT("valla"), TEXT("/Engine/BasicShapes/Cube.Cube"),
             TEXT("/Game/Materiales/M_Seto"), Label);
 
         if (Actor)

@@ -56,5 +56,5 @@ private:
     void ColocarBancos(UWorld* World);
     void ColocarVallasVerdes(UWorld* World);
     AActor* CrearActor(UWorld* World, const FVector& Pos, float Rot, float Scale,
-        const TCHAR* MeshPath, const TCHAR* MatPath, const FString& Label);
+        const FString& Tipo, const TCHAR* MeshPath, const TCHAR* MatPath, const FString& Label);
 };
