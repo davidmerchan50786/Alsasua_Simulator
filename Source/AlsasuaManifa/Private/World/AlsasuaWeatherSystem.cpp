@@ -321,6 +321,17 @@ void UAlsasuaWeatherSystem::ApplyWeatherEffects()
     UWorld* World = GetWorld();
     if (!World) return;
 
+    // Fase 5: Niebla matutina en ribera del Arakil (6-9 AM).
+    float RiverFogBoost = 0.f;
+    if (GameTimeHour >= 5.5f && GameTimeHour < 9.0f)
+    {
+        // Pico a las 7 AM, desvanece hacia las 9.
+        const float T = (GameTimeHour - 5.5f) / 3.5f;
+        RiverFogBoost = FMath::Sin(T * PI) * 0.012f;  // máx +0.012 densidad
+    }
+
+    const float FinalDensity = CurrentFogDensity + RiverFogBoost;
+
     TArray<AActor*> Fogs;
     UGameplayStatics::GetAllActorsOfClass(World, AExponentialHeightFog::StaticClass(), Fogs);
     for (AActor* FogActor : Fogs)
@@ -328,7 +339,7 @@ void UAlsasuaWeatherSystem::ApplyWeatherEffects()
         UExponentialHeightFogComponent* Fog = FogActor->FindComponentByClass<UExponentialHeightFogComponent>();
         if (Fog)
         {
-            Fog->SetFogDensity(CurrentFogDensity);
+            Fog->SetFogDensity(FinalDensity);
             Fog->SetFogInscatteringColor(IsRaining() ? FogColorRain : FogColorDay);
         }
     }

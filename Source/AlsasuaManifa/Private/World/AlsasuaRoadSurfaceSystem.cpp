@@ -3,6 +3,8 @@
 #include "Engine/Engine.h"
 #include "Engine/StaticMeshActor.h"
 #include "Components/StaticMeshComponent.h"
+#include "Materials/MaterialParameterCollection.h"
+#include "Materials/MaterialParameterCollectionInstance.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "Serialization/JsonReader.h"
@@ -112,6 +114,18 @@ int32 UAlsasuaRoadSurfaceSystem::AplicarSuperficiesEnMundo()
     }
 
     int32 Placed = 0;
+
+    // Fase 5: leer wetness del MPC global para asfalto mojado.
+    float GlobalWetness = 0.f;
+    if (UMaterialParameterCollection* MPC = LoadObject<UMaterialParameterCollection>(nullptr,
+        TEXT("/Game/Materiales/MPC_Clima.MPC_Clima")))
+    {
+        if (UMaterialParameterCollectionInstance* Inst = World->GetParameterCollectionInstance(MPC))
+        {
+            Inst->GetScalarParameterValue(FName("GlobalWetness"), GlobalWetness);
+        }
+    }
+
     for (const FRoadSurfaceEntry& Entry : Superficies)
     {
         FVector Loc = UAlsasuaGeoData::UnityaUnreal(FVector(Entry.X, Entry.Z, 0));
@@ -146,6 +160,8 @@ int32 UAlsasuaRoadSurfaceSystem::AplicarSuperficiesEnMundo()
                 if (UMaterialInstanceDynamic* DynMat = RoadActor->GetStaticMeshComponent()->CreateDynamicMaterialInstance(0))
                 {
                     DynMat->SetVectorParameterValue(FName(TEXT("Color")), WornColor);
+                    // Fase 5: asfalto mojado — Roughness baja cuando llueve.
+                    DynMat->SetScalarParameterValue(FName(TEXT("Wetness")), GlobalWetness);
                 }
             }
 
