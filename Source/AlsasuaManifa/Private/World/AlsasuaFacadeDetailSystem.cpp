@@ -1,9 +1,9 @@
 #include "World/AlsasuaFacadeDetailSystem.h"
 #include "Engine/StaticMeshActor.h"
 #include "Components/StaticMeshComponent.h"
-#include "Components/BoxComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Engine/World.h"
+#include "Engine/StaticMesh.h"
 
 UAlsasuaFacadeDetailSystem::UAlsasuaFacadeDetailSystem()
 {
@@ -21,14 +21,20 @@ void UAlsasuaFacadeDetailSystem::SpawnFacadeDetails()
 	AActor* Owner = GetOwner();
 	if (!Owner) return;
 
+	UWorld* World = GetWorld();
+	if (!World) return;
+
+	UStaticMesh* CubeMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube.Cube"));
+	UStaticMesh* CylinderMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
+	UStaticMesh* PlaneMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Plane.Plane"));
+	if (!CubeMesh || !CylinderMesh || !PlaneMesh) return;
+
 	const FVector Origin = Owner->GetActorLocation();
 	const FVector Forward = Owner->GetActorForwardVector();
 	const FVector Right = Owner->GetActorRightVector();
 	const FRotator Rotation = Owner->GetActorRotation();
 
-	// Approximate building facade dimensions
 	const float BuildingWidth = 800.f;
-	const float BuildingHeight = 1200.f;
 	const float FloorHeight = 300.f;
 	const int32 NumFloors = FMath::RandRange(2, 4);
 
@@ -36,106 +42,108 @@ void UAlsasuaFacadeDetailSystem::SpawnFacadeDetails()
 	{
 		const float FloorZ = Origin.Z + (Floor + 0.5f) * FloorHeight;
 
-		// --- Balconies ---
 		if (bEnableBalconies && FMath::FRand() < BalconyProbability)
 		{
-			const float BalconyX = Origin.X + FMath::RandRange(-BuildingWidth * 0.3f, BuildingWidth * 0.3f) * Right.X;
-			const float BalconyY = Origin.Y + FMath::FRandRange(-BuildingWidth * 0.3f, BuildingWidth * 0.3f) * Right.Y;
+			const float OffX = FMath::RandRange(-BuildingWidth * 0.3f, BuildingWidth * 0.3f);
+			const FVector Loc = FVector(Origin.X + OffX * Right.X, Origin.Y + OffX * Right.Y, FloorZ);
 
-			UBoxComponent* Balcony = NewObject<UBoxComponent>(Owner);
-			if (Balcony)
+			AStaticMeshActor* Act = World->SpawnActor<AStaticMeshActor>(Loc, Rotation);
+			if (Act && Act->GetStaticMeshComponent())
 			{
-				Balcony->SetupAttachment(Owner->GetRootComponent());
-				Balcony->SetRelativeLocation(FVector(
-					BalconyX - Origin.X, BalconyY - Origin.Y, FloorZ - Origin.Z));
-				Balcony->SetBoxExtent(FVector(BalconyDepth, BalconyWidth, BalconyHeight));
-				Balcony->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-				Balcony->SetMobility(EComponentMobility::Movable);
-				Balcony->RegisterComponent();
+				Act->GetStaticMeshComponent()->SetStaticMesh(CubeMesh);
+				Act->GetStaticMeshComponent()->SetWorldScale3D(FVector(BalconyWidth * 0.01f, BalconyDepth * 0.01f, BalconyHeight * 0.01f));
+				Act->GetStaticMeshComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+				Act->SetActorLabel(*FString::Printf(TEXT("Balcon_%d"), SpawnedDetailCount));
 				SpawnedDetailCount++;
 			}
 		}
 
-		// --- Shutters ---
 		if (bEnableShutters && FMath::FRand() < ShutterProbability)
 		{
-			const float ShutterX = Origin.X + FMath::RandRange(-BuildingWidth * 0.3f, BuildingWidth * 0.3f) * Right.X;
-			const float ShutterY = Origin.Y + FMath::RandRange(-BuildingWidth * 0.3f, BuildingWidth * 0.3f) * Right.Y;
+			const float OffX = FMath::RandRange(-BuildingWidth * 0.3f, BuildingWidth * 0.3f);
+			const FVector Loc = FVector(Origin.X + OffX * Right.X, Origin.Y + OffX * Right.Y, FloorZ);
 
 			const TArray<FLinearColor> Colors = { ShutterColorBrown, ShutterColorGreen, ShutterColorBlue };
 			const FLinearColor ChosenColor = Colors[FMath::RandRange(0, Colors.Num() - 1)];
 
-			UBoxComponent* Shutter = NewObject<UBoxComponent>(Owner);
-			if (Shutter)
+			AStaticMeshActor* Act = World->SpawnActor<AStaticMeshActor>(Loc, Rotation);
+			if (Act && Act->GetStaticMeshComponent())
 			{
-				Shutter->SetupAttachment(Owner->GetRootComponent());
-				Shutter->SetRelativeLocation(FVector(
-					ShutterX - Origin.X, ShutterY - Origin.Y, FloorZ - Origin.Z));
-				Shutter->SetBoxExtent(FVector(ShutterWidth, 5.f, ShutterHeight));
-				Shutter->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-				Shutter->RegisterComponent();
+				Act->GetStaticMeshComponent()->SetStaticMesh(CubeMesh);
+				Act->GetStaticMeshComponent()->SetWorldScale3D(FVector(ShutterWidth * 0.01f, 0.05f, ShutterHeight * 0.01f));
+				Act->GetStaticMeshComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+				UMaterialInstanceDynamic* Dyn = Act->GetStaticMeshComponent()->CreateDynamicMaterialInstance(0);
+				if (Dyn) Dyn->SetVectorParameterValue(FName("Color"), ChosenColor);
+
+				Act->SetActorLabel(*FString::Printf(TEXT("Shutter_%d"), SpawnedDetailCount));
 				SpawnedDetailCount++;
 			}
 		}
 
-		// --- Flower Pots ---
 		if (bEnableFlowerPots && FMath::FRand() < FlowerPotProbability)
 		{
-			const float PotX = Origin.X + FMath::RandRange(-BuildingWidth * 0.3f, BuildingWidth * 0.3f) * Right.X;
-			const float PotY = Origin.Y + FMath::RandRange(-BuildingWidth * 0.3f, BuildingWidth * 0.3f) * Right.Y;
+			const float OffX = FMath::RandRange(-BuildingWidth * 0.3f, BuildingWidth * 0.3f);
+			const FVector Loc = FVector(Origin.X + OffX * Right.X, Origin.Y + OffX * Right.Y, FloorZ + BalconyHeight * 0.01f);
 
 			const TArray<FLinearColor> FlowerColors = { FlowerColor1, FlowerColor2, FlowerColor3 };
 			const FLinearColor ChosenColor = FlowerColors[FMath::RandRange(0, FlowerColors.Num() - 1)];
 
-			UBoxComponent* Pot = NewObject<UBoxComponent>(Owner);
-			if (Pot)
+			AStaticMeshActor* Act = World->SpawnActor<AStaticMeshActor>(Loc, Rotation);
+			if (Act && Act->GetStaticMeshComponent())
 			{
-				Pot->SetupAttachment(Owner->GetRootComponent());
-				Pot->SetRelativeLocation(FVector(
-					PotX - Origin.X, PotY - Origin.Y, FloorZ - Origin.Z + BalconyHeight));
-				Pot->SetBoxExtent(FVector(FlowerPotSize, FlowerPotSize, FlowerPotSize));
-				Pot->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-				Pot->RegisterComponent();
+				Act->GetStaticMeshComponent()->SetStaticMesh(CylinderMesh);
+				Act->GetStaticMeshComponent()->SetWorldScale3D(FVector(FlowerPotSize * 0.005f, FlowerPotSize * 0.005f, FlowerPotSize * 0.01f));
+				Act->GetStaticMeshComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+				UMaterialInstanceDynamic* Dyn = Act->GetStaticMeshComponent()->CreateDynamicMaterialInstance(0);
+				if (Dyn) Dyn->SetVectorParameterValue(FName("Color"), ChosenColor);
+
+				Act->SetActorLabel(*FString::Printf(TEXT("FlowerPot_%d"), SpawnedDetailCount));
 				SpawnedDetailCount++;
 			}
 		}
 
-		// --- Awnings ---
 		if (bEnableAwnings && FMath::FRand() < AwningProbability)
 		{
-			const float AwningX = Origin.X + FMath::RandRange(-BuildingWidth * 0.2f, BuildingWidth * 0.2f) * Right.X;
-			const float AwningY = Origin.Y + FMath::RandRange(-BuildingWidth * 0.2f, BuildingWidth * 0.2f) * Right.Y;
+			const float OffX = FMath::RandRange(-BuildingWidth * 0.2f, BuildingWidth * 0.2f);
+			const FVector Loc = FVector(
+				Origin.X + OffX * Right.X + Forward.X * AwningProjection * 0.5f,
+				Origin.Y + OffX * Right.Y + Forward.Y * AwningProjection * 0.5f,
+				FloorZ + BalconyHeight * 0.01f + 0.2f);
 
-			UBoxComponent* Awning = NewObject<UBoxComponent>(Owner);
-			if (Awning)
+			AStaticMeshActor* Act = World->SpawnActor<AStaticMeshActor>(Loc, Rotation);
+			if (Act && Act->GetStaticMeshComponent())
 			{
-				Awning->SetupAttachment(Owner->GetRootComponent());
-				Awning->SetRelativeLocation(FVector(
-					AwningX - Origin.X + Forward.X * AwningProjection * 0.5f,
-					AwningY - Origin.Y + Forward.Y * AwningProjection * 0.5f,
-					FloorZ - Origin.Z + BalconyHeight + 20.f));
-				Awning->SetBoxExtent(FVector(AwningProjection * 0.5f, AwningWidth * 0.5f, 5.f));
-				Awning->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-				Awning->RegisterComponent();
+				Act->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
+				Act->GetStaticMeshComponent()->SetWorldScale3D(FVector(AwningProjection * 0.01f, AwningWidth * 0.01f, 1.f));
+				Act->GetStaticMeshComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+				const FLinearColor ChosenColor = (FMath::Rand() > 0.5f) ? AwningColorRed : AwningColorStripe;
+				UMaterialInstanceDynamic* Dyn = Act->GetStaticMeshComponent()->CreateDynamicMaterialInstance(0);
+				if (Dyn) Dyn->SetVectorParameterValue(FName("Color"), ChosenColor);
+
+				Act->SetActorLabel(*FString::Printf(TEXT("Awning_%d"), SpawnedDetailCount));
 				SpawnedDetailCount++;
 			}
 		}
 
-		// --- AC Units ---
 		if (bEnableACUnits && FMath::FRand() < ACProbability)
 		{
-			const float ACX = Origin.X + FMath::RandRange(-BuildingWidth * 0.3f, BuildingWidth * 0.3f) * Right.X;
-			const float ACY = Origin.Y + FMath::RandRange(-BuildingWidth * 0.3f, BuildingWidth * 0.3f) * Right.Y;
+			const float OffX = FMath::RandRange(-BuildingWidth * 0.3f, BuildingWidth * 0.3f);
+			const FVector Loc = FVector(Origin.X + OffX * Right.X, Origin.Y + OffX * Right.Y, FloorZ + BalconyHeight * 0.01f - 0.1f);
 
-			UBoxComponent* AC = NewObject<UBoxComponent>(Owner);
-			if (AC)
+			AStaticMeshActor* Act = World->SpawnActor<AStaticMeshActor>(Loc, Rotation);
+			if (Act && Act->GetStaticMeshComponent())
 			{
-				AC->SetupAttachment(Owner->GetRootComponent());
-				AC->SetRelativeLocation(FVector(
-					ACX - Origin.X, ACY - Origin.Y, FloorZ - Origin.Z + BalconyHeight - 10.f));
-				AC->SetBoxExtent(FVector(ACSize, ACSize * 0.5f, ACSize * 0.5f));
-				AC->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-				AC->RegisterComponent();
+				Act->GetStaticMeshComponent()->SetStaticMesh(CubeMesh);
+				Act->GetStaticMeshComponent()->SetWorldScale3D(FVector(ACSize * 0.01f, ACSize * 0.005f, ACSize * 0.005f));
+				Act->GetStaticMeshComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+				UMaterialInstanceDynamic* Dyn = Act->GetStaticMeshComponent()->CreateDynamicMaterialInstance(0);
+				if (Dyn) Dyn->SetVectorParameterValue(FName("Color"), FLinearColor(0.7f, 0.7f, 0.72f));
+
+				Act->SetActorLabel(*FString::Printf(TEXT("AC_%d"), SpawnedDetailCount));
 				SpawnedDetailCount++;
 			}
 		}
