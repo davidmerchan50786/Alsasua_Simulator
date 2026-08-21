@@ -102,5 +102,5 @@ private:
 	void SpawnFacadeElements();
 
 	UPROPERTY()
-	TArray<TObjectPtr<UPrimitiveComponent>> SpawnedElements;
+	TArray<TObjectPtr<AActor>> SpawnedElements;
 };

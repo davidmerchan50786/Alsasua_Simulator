@@ -1,6 +1,9 @@
 #include "World/AlsasuaBuildingFacadeSystem.h"
-#include "Components/BoxComponent.h"
+#include "Engine/StaticMeshActor.h"
+#include "Components/StaticMeshComponent.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "Engine/World.h"
+#include "Engine/StaticMesh.h"
 
 UAlsasuaBuildingFacadeSystem::UAlsasuaBuildingFacadeSystem()
 {
@@ -18,152 +21,125 @@ void UAlsasuaBuildingFacadeSystem::SpawnFacadeElements()
 	AActor* Owner = GetOwner();
 	if (!Owner) return;
 
+	UWorld* World = GetWorld();
+	if (!World) return;
+
+	UStaticMesh* CubeMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube.Cube"));
+	UStaticMesh* PlaneMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Plane.Plane"));
+	if (!CubeMesh || !PlaneMesh) return;
+
 	const FVector Origin = Owner->GetActorLocation();
 	const FVector Forward = Owner->GetActorForwardVector();
 	const FVector Right = Owner->GetActorRightVector();
+	const FRotator Rotation = Owner->GetActorRotation();
 
 	const float BuildingWidth = 800.f;
-	const float BuildingHeight = 1200.f;
 	const float FloorHeight = 300.f;
 	const int32 NumFloors = FMath::RandRange(2, 4);
+
+	UMaterialInterface* WhiteMat = LoadObject<UMaterialInterface>(nullptr, TEXT("/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"));
+
+	auto SpawnCube = [&](const FString& Label, const FVector& Loc, const FVector& Scale, const FLinearColor& Col) -> AStaticMeshActor*
+	{
+		AStaticMeshActor* Act = World->SpawnActor<AStaticMeshActor>(Loc, Rotation);
+		if (!Act || !Act->GetStaticMeshComponent()) return nullptr;
+		Act->GetStaticMeshComponent()->SetStaticMesh(CubeMesh);
+		Act->GetStaticMeshComponent()->SetWorldScale3D(Scale);
+		Act->GetStaticMeshComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		UMaterialInstanceDynamic* Dyn = Act->GetStaticMeshComponent()->CreateDynamicMaterialInstance(0);
+		if (Dyn) Dyn->SetVectorParameterValue(FName("Color"), Col);
+		Act->SetActorLabel(*Label);
+		SpawnedElements.Add(Act);
+		return Act;
+	};
+
+	auto SpawnPlane = [&](const FString& Label, const FVector& Loc, const FVector& Scale, const FLinearColor& Col) -> AStaticMeshActor*
+	{
+		AStaticMeshActor* Act = World->SpawnActor<AStaticMeshActor>(Loc, Rotation);
+		if (!Act || !Act->GetStaticMeshComponent()) return nullptr;
+		Act->GetStaticMeshComponent()->SetStaticMesh(PlaneMesh);
+		Act->GetStaticMeshComponent()->SetWorldScale3D(Scale);
+		Act->GetStaticMeshComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		UMaterialInstanceDynamic* Dyn = Act->GetStaticMeshComponent()->CreateDynamicMaterialInstance(0);
+		if (Dyn) Dyn->SetVectorParameterValue(FName("Color"), Col);
+		Act->SetActorLabel(*Label);
+		SpawnedElements.Add(Act);
+		return Act;
+	};
 
 	for (int32 Floor = 0; Floor < NumFloors; ++Floor)
 	{
 		const float FloorZ = Origin.Z + (Floor + 0.5f) * FloorHeight;
 
-		// --- Windows ---
 		if (Floor > 0 || bIsResidential)
 		{
 			const int32 NumWindows = FMath::RandRange(2, 5);
 			for (int32 w = 0; w < NumWindows; ++w)
 			{
-				const float WindowX = Origin.X + (w - (NumWindows - 1) * 0.5f) * WindowSpacingX * Right.X;
-				const float WindowY = Origin.Y + (w - (NumWindows - 1) * 0.5f) * WindowSpacingX * Right.Y;
+				const float OffX = (w - (NumWindows - 1) * 0.5f) * WindowSpacingX;
+				const FVector WinLoc = FVector(Origin.X + OffX * Right.X, Origin.Y + OffX * Right.Y, FloorZ);
 
-				// Window frame
-				UBoxComponent* Frame = NewObject<UBoxComponent>(Owner);
-				if (Frame)
-				{
-					Frame->SetupAttachment(Owner->GetRootComponent());
-					Frame->SetRelativeLocation(FVector(
-						WindowX - Origin.X, WindowY - Origin.Y, FloorZ - Origin.Z));
-					Frame->SetBoxExtent(FVector(WindowWidth * 0.5f + WindowFrameWidth,
-						WindowFrameWidth, WindowHeight * 0.5f + WindowFrameWidth));
-					Frame->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-					Frame->RegisterComponent();
-					SpawnedElements.Add(Frame);
-				}
+				// Window frame (dark gray)
+				SpawnCube(*FString::Printf(TEXT("Frame_%d_%d"), Floor, w),
+					WinLoc,
+					FVector(WindowWidth * 0.005f + WindowFrameWidth * 0.01f, 0.05f, WindowHeight * 0.005f + WindowFrameWidth * 0.01f),
+					FLinearColor(0.2f, 0.2f, 0.22f));
 
-				// Window sill
-				UBoxComponent* Sill = NewObject<UBoxComponent>(Owner);
-				if (Sill)
-				{
-					Sill->SetupAttachment(Owner->GetRootComponent());
-					Sill->SetRelativeLocation(FVector(
-						WindowX - Origin.X + Forward.X * WindowSillDepth * 0.5f,
-						WindowY - Origin.Y + Forward.Y * WindowSillDepth * 0.5f,
-						FloorZ - Origin.Z - WindowHeight * 0.5f));
-					Sill->SetBoxExtent(FVector(WindowSillDepth * 0.5f,
-						WindowWidth * 0.5f, 5.f));
-					Sill->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-					Sill->RegisterComponent();
-					SpawnedElements.Add(Sill);
-				}
+				// Window sill (light gray)
+				SpawnCube(*FString::Printf(TEXT("Sill_%d_%d"), Floor, w),
+					WinLoc + Forward * WindowSillDepth * 0.5f - FVector(0, 0, WindowHeight * 0.5f),
+					FVector(0.08f, WindowWidth * 0.005f, 0.05f),
+					FLinearColor(0.6f, 0.6f, 0.6f));
 			}
 		}
 
-		// --- Doors (ground floor) ---
 		if (Floor == 0)
 		{
 			const int32 NumDoors = bIsCommercial ? 2 : 1;
 			for (int32 d = 0; d < NumDoors; ++d)
 			{
-				const float DoorX = Origin.X + (d - (NumDoors - 1) * 0.5f) * DoorSpacing * Right.X;
-				const float DoorY = Origin.Y + (d - (NumDoors - 1) * 0.5f) * DoorSpacing * Right.Y;
+				const float OffX = (d - (NumDoors - 1) * 0.5f) * DoorSpacing;
+				const FVector DoorLoc = FVector(Origin.X + OffX * Right.X, Origin.Y + OffX * Right.Y,
+					FloorZ - (FloorHeight - DoorHeight) * 0.5f);
 
-				UBoxComponent* Door = NewObject<UBoxComponent>(Owner);
-				if (Door)
-				{
-					Door->SetupAttachment(Owner->GetRootComponent());
-					Door->SetRelativeLocation(FVector(
-						DoorX - Origin.X, DoorY - Origin.Y,
-						FloorZ - Origin.Z - (FloorHeight - DoorHeight) * 0.5f));
-					Door->SetBoxExtent(FVector(DoorWidth * 0.5f + DoorFrameWidth,
-						DoorFrameWidth, DoorHeight * 0.5f));
-					Door->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-					Door->RegisterComponent();
-					SpawnedElements.Add(Door);
-				}
+				SpawnCube(*FString::Printf(TEXT("Door_%d"), d),
+					DoorLoc,
+					FVector(DoorWidth * 0.005f, DoorFrameWidth * 0.01f, DoorHeight * 0.005f),
+					FLinearColor(0.35f, 0.22f, 0.12f));
 			}
 		}
 
-		// --- Shop Fronts (ground floor, commercial) ---
 		if (Floor == 0 && bIsCommercial)
 		{
-			UBoxComponent* ShopFront = NewObject<UBoxComponent>(Owner);
-			if (ShopFront)
-			{
-				ShopFront->SetupAttachment(Owner->GetRootComponent());
-				ShopFront->SetRelativeLocation(FVector(
-					0, 0, FloorZ - Origin.Z - (FloorHeight - ShopFrontHeight) * 0.5f));
-				ShopFront->SetBoxExtent(FVector(ShopFrontWidth * 0.5f,
-					10.f, ShopFrontHeight * 0.5f));
-				ShopFront->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-				ShopFront->RegisterComponent();
-				SpawnedElements.Add(ShopFront);
-			}
+			// Shop front (glass)
+			SpawnCube(*FString::Printf(TEXT("ShopFront_%d"), SpawnedElements.Num()),
+				FVector(Origin.X, Origin.Y, FloorZ - (FloorHeight - ShopFrontHeight) * 0.5f),
+				FVector(ShopFrontWidth * 0.005f, 0.1f, ShopFrontHeight * 0.005f),
+				FLinearColor(0.3f, 0.5f, 0.7f));
 
-			// Shop sign
-			UBoxComponent* Sign = NewObject<UBoxComponent>(Owner);
-			if (Sign)
-			{
-				Sign->SetupAttachment(Owner->GetRootComponent());
-				Sign->SetRelativeLocation(FVector(
-					0, 0, FloorZ - Origin.Z + ShopFrontHeight * 0.5f + ShopSignHeight * 0.5f));
-				Sign->SetBoxExtent(FVector(ShopFrontWidth * 0.5f,
-					5.f, ShopSignHeight * 0.5f));
-				Sign->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-				Sign->RegisterComponent();
-				SpawnedElements.Add(Sign);
-			}
+			// Shop sign (white)
+			SpawnPlane(*FString::Printf(TEXT("Sign_%d"), SpawnedElements.Num()),
+				FVector(Origin.X, Origin.Y, FloorZ + ShopFrontHeight * 0.5f + ShopSignHeight * 0.5f),
+				FVector(ShopFrontWidth * 0.005f, 0.1f, ShopSignHeight * 0.005f),
+				FLinearColor(0.95f, 0.95f, 0.9f));
 		}
 
-		// --- Balconies (residential upper floors) ---
 		if (Floor > 0 && bIsResidential && FMath::FRand() < 0.4f)
 		{
-			const float BalconyX = Origin.X + FMath::RandRange(-BuildingWidth * 0.3f, BuildingWidth * 0.3f) * Right.X;
-			const float BalconyY = Origin.Y + FMath::RandRange(-BuildingWidth * 0.3f, BuildingWidth * 0.3f) * Right.Y;
+			const float OffX = FMath::RandRange(-BuildingWidth * 0.3f, BuildingWidth * 0.3f);
+			const FVector BalconyCenter = FVector(Origin.X + OffX * Right.X, Origin.Y + OffX * Right.Y, FloorZ - FloorHeight * 0.5f);
 
-			// Balcony floor
-			UBoxComponent* BalconyFloor = NewObject<UBoxComponent>(Owner);
-			if (BalconyFloor)
-			{
-				BalconyFloor->SetupAttachment(Owner->GetRootComponent());
-				BalconyFloor->SetRelativeLocation(FVector(
-					BalconyX - Origin.X + Forward.X * BalconyDepth * 0.5f,
-					BalconyY - Origin.Y + Forward.Y * BalconyDepth * 0.5f,
-					FloorZ - Origin.Z - FloorHeight * 0.5f));
-				BalconyFloor->SetBoxExtent(FVector(BalconyDepth * 0.5f,
-					WindowWidth, 5.f));
-				BalconyFloor->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-				BalconyFloor->RegisterComponent();
-				SpawnedElements.Add(BalconyFloor);
-			}
+			// Balcony floor (dark)
+			SpawnCube(*FString::Printf(TEXT("BalconFloor_%d"), SpawnedElements.Num()),
+				BalconyCenter + Forward * BalconyDepth * 0.5f,
+				FVector(BalconyDepth * 0.005f, WindowWidth * 0.005f, 0.05f),
+				FLinearColor(0.3f, 0.3f, 0.32f));
 
-			// Balcony rail
-			UBoxComponent* Rail = NewObject<UBoxComponent>(Owner);
-			if (Rail)
-			{
-				Rail->SetupAttachment(Owner->GetRootComponent());
-				Rail->SetRelativeLocation(FVector(
-					BalconyX - Origin.X + Forward.X * BalconyDepth,
-					BalconyY - Origin.Y + Forward.Y * BalconyDepth,
-					FloorZ - Origin.Z - FloorHeight * 0.5f + BalconyRailHeight * 0.5f));
-				Rail->SetBoxExtent(FVector(5.f, WindowWidth, BalconyRailHeight * 0.5f));
-				Rail->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-				Rail->RegisterComponent();
-				SpawnedElements.Add(Rail);
-			}
+			// Balcony rail (metal)
+			SpawnCube(*FString::Printf(TEXT("BalconRail_%d"), SpawnedElements.Num()),
+				BalconyCenter + Forward * BalconyDepth + FVector(0, 0, BalconyRailHeight * 0.5f),
+				FVector(0.05f, WindowWidth * 0.005f, BalconyRailHeight * 0.005f),
+				FLinearColor(0.15f, 0.15f, 0.18f));
 		}
 	}
 }
