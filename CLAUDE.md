@@ -333,8 +333,10 @@ descuadrados, `UnityaUnreal` con los ejes cambiados, CVars `g.*` que nadie
 registra, `.generated.h` ausente en cabecera reflejada, rutas
 `/Engine/EngineMeshes/` que no existen, conversor de coordenadas metido en
 línea donde se espera una posición de mundo —ahí ya no hay dónde apoyar la
-cota— e `#include` de una cabecera del proyecto que ya no
-existe), `VerificarCallesNavarra.py` (trazado contra el eje catastral),
+cota—, `#include` de una cabecera del proyecto que ya no
+existe y método declarado en una cabecera que no define ningún `.cpp` de su
+módulo —error de **enlazado**, que no lo canta el editor y sólo salta cuando
+alguien llama a esa API), `VerificarCallesNavarra.py` (trazado contra el eje catastral),
 `AuditarAssets.py` (rutas sin respaldo y mallas bajadas que nadie pide),
 `VerificarGuardado.py` (campos del save que se guardan y no se cargan),
 `VerificarDialogos.py` (los árboles de Content/Dialogs entran enteros),

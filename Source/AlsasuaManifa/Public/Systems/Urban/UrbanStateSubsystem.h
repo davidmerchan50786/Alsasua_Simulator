@@ -47,5 +47,7 @@ private:
     UPROPERTY()
     TMap<FName, FSectorState> Sectors;
 
-    void UpdateSectorVisuals(FName SectorName);
+    // Había aquí un UpdateSectorVisuals(FName) que no definía nadie. Y era
+    // redundante además de muerto: la respuesta visual al cambio de tensión
+    // la da OnSectorStateChanged, que IncreaseTension ya emite.
 };

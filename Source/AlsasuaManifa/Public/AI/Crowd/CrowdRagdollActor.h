@@ -76,6 +76,9 @@ protected:
 private:
 	// ── Timers ──────────────────────────────────────────────────────────────
 	FTimerHandle PhysicsTimerHandle;
+	// FadeTimerHandle se queda: los dos ClearTimer() que lo usan son inocuos y
+	// quitarlo tocaría dos ficheros más por nada. Pero conviene saber que
+	// nadie le hace SetTimer: no arma ningún temporizador, el fade va por Tick.
 	FTimerHandle FadeTimerHandle;
 	FTimerHandle ReturnTimerHandle;
 
@@ -86,7 +89,9 @@ private:
 
 	// ── Callbacks ───────────────────────────────────────────────────────────
 	void OnPhysicsExpired();
-	void OnFadeTick();
+	// OnFadeTick() estaba declarada y no la definía nadie: el fade se hace en
+	// Tick, no por temporizador ("más barato que timer 30Hz", dice
+	// StartFadeOut). Los otros dos callbacks de temporizador sí existen.
 	void OnReturnToPool();
 
 	// ── Internals ───────────────────────────────────────────────────────────

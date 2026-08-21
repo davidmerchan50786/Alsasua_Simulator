@@ -43,6 +43,9 @@ private:
 	UPROPERTY() UStaticMeshComponent* WaterMesh;
 	UPROPERTY() UMaterialInstanceDynamic* WaterMatInst;
 
-	void CrearMeshAgua();
+	// CrearMeshAgua() estaba declarada aquí y no la definía nadie: la malla la
+	// crea y configura el constructor, incluido el SetStaticMesh del plano. Una
+	// declaración sin definición no es un aviso, es una trampa —el primero
+	// que la llame se lleva un error de ENLAZADO, que no lo canta el editor.
 	void CrearMaterialDinamico();
 };

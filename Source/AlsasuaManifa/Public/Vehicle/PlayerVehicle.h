@@ -95,7 +95,10 @@ protected:
 private:
     // ── Input handlers ─────────────────────────────────────────────────────
     void OnGas(float Value);
-    void OnBrake(float Value);
+    // Aquí había un OnBrake(float) que no definía nadie y que no enlaza
+    // ningún BindAxis: el freno lo hace OnGas con valor negativo, como dice
+    // el comentario de SetupPlayerInputComponent. Los otros siete On* sí
+    // están definidos; éste era el resto del eje separado que nunca se cableó.
     void OnSteer(float Value);
     void OnHandbrakePressed();
     void OnHandbrakeReleased();

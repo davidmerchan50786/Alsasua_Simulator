@@ -334,6 +334,18 @@ namespace
     }
 }
 
+// El header declara este static y sólo existía la función libre de arriba, que
+// vive en el namespace anónimo: enlazado interno, invisible fuera de esta
+// unidad de traducción. Sus tres hermanas —TryLoadGeoDataManifest,
+// ValidateGeoDataAgainstOfficialBounds y RegisterDataSource— sí están definidas
+// como miembro; ésta no, así que la primera llamada desde fuera habría sido un
+// error de enlazado, no de compilación, y por tanto no lo canta ni el editor.
+bool UAlsasuaGeoWorldBuilderSubsystem::TryLoadGeoSpatialDataFromFile(
+    const FString& FilePath, FGeoLayerData& OutData)
+{
+    return ::TryLoadGeoSpatialDataFromFile(FilePath, OutData);
+}
+
 bool UAlsasuaGeoWorldBuilderSubsystem::TryLoadGeoDataManifest(FGeoLayerData& OutData)
 {
     const FString ManifestPath = GetGeoManifestFilePath();

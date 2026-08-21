@@ -10,7 +10,7 @@ de un comentario en AlsasuaFoliagePainter.cpp
 
 y AlsasuaManifa —214 cpp, el módulo gordo— dejó de compilar entero.
 
-Esto no es un compilador ni lo pretende. Son nueve comprobaciones baratas que
+Esto no es un compilador ni lo pretende. Son diez comprobaciones baratas que
 cazan justo lo que se cuela cuando se edita a ciegas:
 
   1. Sentencia cuyo punto y coma se lo ha tragado un comentario de línea.
@@ -48,6 +48,14 @@ cazan justo lo que se cuela cuando se edita a ciegas:
      MPC_AlsasuaGlobal, una colección que no crea nadie. Se contrastan los dos
      creadores, AsegurarMPCClima() de C++ y ESCALARES_MPC de SetupMaterials.py,
      que además tienen que decir lo mismo.
+ 10. Método declarado en una cabecera y que no define nadie. Es un error de
+     ENLAZADO, no de compilación: el editor no lo canta, y el proyecto enlaza
+     igual mientras nadie lo llame — o sea que la trampa se arma sola y salta
+     meses después, cuando alguien usa esa API. Pasaba con
+     UAlsasuaGeoWorldBuilderSubsystem::TryLoadGeoSpatialDataFromFile, declarado
+     public static y definido sólo como función libre dentro del namespace
+     anónimo del .cpp, que es enlazado interno; sus tres hermanas sí estaban
+     definidas como miembro.
 
 Lo que esto NO caza, y conviene saberlo: la comprobación 3 sólo salta cuando el
 segundo argumento de UnityaUnreal NO es cero. El caso contrario —cero literal,
@@ -317,6 +325,121 @@ def parametros_mpc(raiz):
     return fallos
 
 
+# Declaración de método que termina en ';' — sin cuerpo. Se descartan por delante
+# las macros de UE y las palabras clave que se le parecen.
+RE_DECL_METODO = re.compile(
+    r'^[ \t]*(?!UFUNCTION|UPROPERTY|UCLASS|USTRUCT|UENUM|UINTERFACE|GENERATED|DECLARE_|'
+    r'friend|typedef|using|return|delete|template)'
+    r'(?:(?:static|virtual|inline|explicit|constexpr|FORCEINLINE)[ \t]+)*'
+    # El tipo, SIN saltos de línea: con \s el tipo se comía las líneas de arriba y
+    # el nombre capturado acababa siendo la macro de la línea siguiente
+    # (DECLARE_DYNAMIC_MULTICAST_DELEGATE_*, TEXT dentro de un argumento por
+    # defecto). Diecisiete de los veintiséis hallazgos eran eso.
+    r'[\w:<>,\*&][\w:<>,\*& \t]*?[ \t\*&]'
+    r'(?P<name>\w+)[ \t]*\([^;{)]*\)[ \t]*(?:const[ \t]*)?(?:override[ \t]*|final[ \t]*)*;',
+    re.M)
+
+# Un nombre TODO_EN_MAYÚSCULAS es una macro, no un método. Cinturón además del
+# lookahead de arriba.
+RE_ES_MACRO = re.compile(r'^[A-Z][A-Z0-9_]*$')
+
+# Lo que NO tiene por qué estar definido en C++:
+#  - BlueprintImplementableEvent: lo implementa un Blueprint, y definirlo en C++
+#    es justamente el error.
+#  - BlueprintNativeEvent: UHT genera la declaración; el cuerpo va en _Implementation.
+#  - = 0: virtual puro.
+#  - Los métodos de una UINTERFACE, que implementa quien la hereda.
+RE_SIN_CUERPO_OK = re.compile(r'BlueprintImplementableEvent|BlueprintNativeEvent')
+
+
+def declaradas_sin_definir(raiz):
+    """
+    Método declarado en una cabecera que no define ningún .cpp del mismo módulo.
+
+    Se mira el módulo entero y no sólo el .cpp del mismo nombre, porque hay
+    funciones libres declaradas en una cabecera y definidas en otro fichero
+    —CalcularMetricasTejado vive en EdificioGenerado.cpp y la usa
+    AlsasuaTejadoModular.cpp— y acusarlas sería mentir.
+    """
+    fallos = []
+    # Definiciones por módulo: Clase::Metodo y funciones libres.
+    cualificadas = {}   # Clase::Metodo
+    libres = {}         # funciones a secas
+    cabeceras = []
+    for base, _, ficheros in os.walk(raiz):
+        partes = os.path.relpath(base, raiz).split(os.sep)
+        modulo = partes[0] if partes and partes[0] != "." else ""
+        for nombre in sorted(ficheros):
+            ruta = os.path.join(base, nombre)
+            if nombre.endswith(".cpp"):
+                texto = sin_comentarios_ni_cadenas(
+                    open(ruta, encoding="utf-8", errors="ignore").read())
+                # Cualificadas y libres, POR SEPARADO. Un método de clase sólo
+                # lo define Clase::Metodo; una definición libre con el mismo
+                # nombre no vale, y creerlo es lo que dejaba pasar el caso que
+                # motivó esta comprobación: el miembro declarado en el header y
+                # una función libre homónima en el namespace anónimo del .cpp.
+                q = cualificadas.setdefault(modulo, set())
+                q |= set(re.findall(r'\b\w+::(~?\w+)\s*\(', texto))
+                l = libres.setdefault(modulo, set())
+                l |= set(re.findall(r'^[\w:<>,\s\*&]+?\b(\w+)\s*\([^;]*\)\s*\{',
+                                    texto, re.M))
+            elif nombre.endswith(".h"):
+                cabeceras.append((modulo, ruta))
+
+    for modulo, ruta in cabeceras:
+        crudo = open(ruta, encoding="utf-8", errors="ignore").read()
+        if "UINTERFACE" in crudo:
+            continue
+        texto = sin_comentarios_ni_cadenas(crudo)
+        lineas = crudo.splitlines()
+        # Profundidad de llave en cada posición: una declaración de método vive en
+        # el cuerpo de la clase (profundidad 1). Lo que está más adentro está
+        # dentro de una función, y ahí "Tipo Nombre(args);" no es una declaración
+        # sino la construcción de una variable — FStaticMeshAttributes
+        # Atributos(Desc); dentro de un constructor inline es indistinguible por
+        # sintaxis y salía acusado.
+        prof = []
+        d = 0
+        for ch in texto:
+            prof.append(d)
+            if ch == '{':
+                d += 1
+            elif ch == '}':
+                d -= 1
+
+        clases = set(re.findall(r'class\s+\w*_API\s+(\w+)', texto))
+        clases |= set(re.findall(r'\bclass\s+(\w+)\s*:', texto))
+        # Inline en la propia cabecera cuenta como definido.
+        inline = set(re.findall(r'\b(\w+)\s*\([^;{)]*\)\s*(?:const\s*)?\{', texto))
+        for m in RE_DECL_METODO.finditer(texto):
+            nom = m.group("name")
+            if RE_ES_MACRO.match(nom):
+                continue
+            if m.start() < len(prof) and prof[m.start()] != 1:
+                continue        # dentro de un cuerpo de función, o fuera de clase
+            if nom in clases or nom.lstrip("~") in clases:
+                continue        # constructor o destructor
+            if nom in inline:
+                continue
+            # Dentro de una clase (profundidad 1) hace falta una definición
+            # CUALIFICADA; a nivel de fichero vale una libre.
+            en_clase = m.start() < len(prof) and prof[m.start()] == 1
+            if en_clase and nom in cualificadas.get(modulo, set()):
+                continue
+            if not en_clase and nom in libres.get(modulo, set()):
+                continue
+            num = texto.count("\n", 0, m.start()) + 1
+            ventana = " ".join(lineas[max(0, num - 4):num + 1])
+            if RE_SIN_CUERPO_OK.search(ventana):
+                continue
+            fallos.append("%s:%d  %s() se declara aquí y no la define ningún .cpp de\n"
+                          "      %s. Es un error de ENLAZADO, no de compilación: no lo canta\n"
+                          "      el editor y el proyecto enlaza igual mientras nadie la llame"
+                          % (os.path.relpath(ruta, RAIZ), num, nom, modulo))
+    return fallos
+
+
 def main():
     fallos = []
     revisados = 0
@@ -410,6 +533,7 @@ def main():
                     fallos.append("%s  %s descuadrados: %+d" % (rel, que, d))
 
     fallos.extend(parametros_mpc(FUENTE))
+    fallos.extend(declaradas_sin_definir(FUENTE))
 
     for cvar, donde in cvars_sin_registrar(FUENTE):
         fallos.append("%s  escribe la CVar %s y no la registra nadie:\n"
@@ -419,7 +543,7 @@ def main():
     print("%d ficheros .cpp/.h revisados.\n" % revisados)
     if not fallos:
         print("Sin hallazgos. No garantiza que compile — sólo que no tiene")
-        print("estos nueve fallos, que son los que se cuelan al editar a ciegas.")
+        print("estos diez fallos, que son los que se cuelan al editar a ciegas.")
         return 0
 
     for f in fallos:
