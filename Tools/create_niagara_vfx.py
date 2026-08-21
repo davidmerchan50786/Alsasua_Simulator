@@ -15,27 +15,40 @@ def ensure_folder(path):
     if not compat.assets().does_asset_exist(path):
         compat.assets().make_directory(path)
 
-def create_rain_system(name="NS_Rain", folder="/Game/Effects"):
-    """Lluvia de verdad: chorros cayendo. Parametrizado porque hacen falta dos
-    copias — ver la llamada de NS_Lluvia al final del fichero."""
+
+def crear_limpio(name, folder):
+    """
+    Crea el sistema Niagara borrando antes el que hubiera.
+
+    Los ocho generadores hacían "crear; si falla, cargar el existente y salir",
+    y salir era salir ANTES de añadirle emisor y módulos: un asset que ya
+    estuviera ahí se quedaba como estuviera, para siempre. Eso dejó NS_Rain,
+    NS_Snow y NS_ThunderFlash en sistemas sin una sola partícula, porque
+    SetupRainParticles.py los creaba vacíos y RunAll.py lo ejecuta justo antes
+    que a este.
+
+    Reconfigurar encima tampoco vale: add_emitter() apila, así que cada pasada
+    de RunAll.py añadiría un emisor más y el efecto cambiaría en cada ejecución.
+    Borrar y rehacer es lo único idempotente.
+    """
     asset_path = f"{folder}/{name}"
     ensure_folder(folder)
-
-    # Si ya existe se BORRA y se rehace, en vez de reconfigurar encima. Las dos
-    # alternativas estaban mal: salirse sin configurar dejaba la lluvia en un
-    # Niagara vacío para siempre —que es lo que pasaba, porque
-    # SetupRainParticles.py reservaba el nombre y RunAll.py lo ejecuta justo
-    # antes que a este—, y reconfigurar encima llama otra vez a add_emitter(),
-    # así que cada pasada de RunAll.py apilaba un emisor más y el efecto
-    # cambiaba en cada ejecución. Borrar y rehacer es lo único idempotente.
     if compat.assets().does_asset_exist(asset_path):
         compat.assets().delete_asset(asset_path)
         unreal.log(f"[VFX] {name} ya existía: se rehace desde cero")
-
     system = compat.crear_asset(
         name, folder, unreal.NiagaraSystem, unreal.NiagaraSystemFactoryNew())
     if not system:
         unreal.log_warning(f"[VFX] Could not create {name}")
+    return system
+
+def create_rain_system(name="NS_Rain", folder="/Game/Effects"):
+    """Lluvia de verdad: chorros cayendo. Parametrizado porque hacen falta dos
+    copias — ver la llamada de NS_Lluvia al final del fichero."""
+    asset_path = f"{folder}/{name}"
+
+    system = crear_limpio(name, folder)
+    if not system:
         return None
 
     # Add emitter
@@ -72,14 +85,8 @@ def create_rain_system(name="NS_Rain", folder="/Game/Effects"):
 def create_snow_system():
     """NS_Snow: Gentle falling snowflakes"""
     asset_path = "/Game/Effects/NS_Snow"
-    ensure_folder("/Game/Effects")
-    
-    system = compat.crear_asset(
-        "NS_Snow", "/Game/Effects", unreal.NiagaraSystem, unreal.NiagaraSystemFactoryNew())
+    system = crear_limpio("NS_Snow", "/Game/Effects")
     if not system:
-        system = compat.assets().load_asset(asset_path)
-        if system: return system
-        unreal.log_warning("[VFX] Could not create NS_Snow")
         return None
     
     emitter = system.add_emitter()
@@ -105,14 +112,8 @@ def create_snow_system():
 def create_dust_system():
     """NS_Dust: Ambient dust particles"""
     asset_path = "/Game/Effects/NS_Dust"
-    ensure_folder("/Game/Effects")
-    
-    system = compat.crear_asset(
-        "NS_Dust", "/Game/Effects", unreal.NiagaraSystem, unreal.NiagaraSystemFactoryNew())
+    system = crear_limpio("NS_Dust", "/Game/Effects")
     if not system:
-        system = compat.assets().load_asset(asset_path)
-        if system: return system
-        unreal.log_warning("[VFX] Could not create NS_Dust")
         return None
     
     emitter = system.add_emitter()
@@ -138,14 +139,8 @@ def create_dust_system():
 def create_leaves_system():
     """NS_Leaves: Falling autumn leaves"""
     asset_path = "/Game/Effects/NS_Leaves"
-    ensure_folder("/Game/Effects")
-    
-    system = compat.crear_asset(
-        "NS_Leaves", "/Game/Effects", unreal.NiagaraSystem, unreal.NiagaraSystemFactoryNew())
+    system = crear_limpio("NS_Leaves", "/Game/Effects")
     if not system:
-        system = compat.assets().load_asset(asset_path)
-        if system: return system
-        unreal.log_warning("[VFX] Could not create NS_Leaves")
         return None
     
     emitter = system.add_emitter()
@@ -171,14 +166,8 @@ def create_leaves_system():
 def create_thunder_system():
     """NS_ThunderFlash: Lightning flash"""
     asset_path = "/Game/Effects/NS_ThunderFlash"
-    ensure_folder("/Game/Effects")
-    
-    system = compat.crear_asset(
-        "NS_ThunderFlash", "/Game/Effects", unreal.NiagaraSystem, unreal.NiagaraSystemFactoryNew())
+    system = crear_limpio("NS_ThunderFlash", "/Game/Effects")
     if not system:
-        system = compat.assets().load_asset(asset_path)
-        if system: return system
-        unreal.log_warning("[VFX] Could not create NS_ThunderFlash")
         return None
     
     emitter = system.add_emitter()
@@ -203,14 +192,8 @@ def create_thunder_system():
 def create_pollen_system():
     """NS_Pollen: Spring pollen particles"""
     asset_path = "/Game/Effects/NS_Pollen"
-    ensure_folder("/Game/Effects")
-    
-    system = compat.crear_asset(
-        "NS_Pollen", "/Game/Effects", unreal.NiagaraSystem, unreal.NiagaraSystemFactoryNew())
+    system = crear_limpio("NS_Pollen", "/Game/Effects")
     if not system:
-        system = compat.assets().load_asset(asset_path)
-        if system: return system
-        unreal.log_warning("[VFX] Could not create NS_Pollen")
         return None
     
     emitter = system.add_emitter()
@@ -236,14 +219,8 @@ def create_pollen_system():
 def create_firefly_system():
     """NS_Fireflies: Night-time fireflies"""
     asset_path = "/Game/Effects/NS_Fireflies"
-    ensure_folder("/Game/Effects")
-    
-    system = compat.crear_asset(
-        "NS_Fireflies", "/Game/Effects", unreal.NiagaraSystem, unreal.NiagaraSystemFactoryNew())
+    system = crear_limpio("NS_Fireflies", "/Game/Effects")
     if not system:
-        system = compat.assets().load_asset(asset_path)
-        if system: return system
-        unreal.log_warning("[VFX] Could not create NS_Fireflies")
         return None
     
     emitter = system.add_or_add_emitter()
@@ -269,14 +246,8 @@ def create_firefly_system():
 def create_mist_system():
     """NS_RainMist: Ground mist during rain"""
     asset_path = "/Game/Effects/NS_RainMist"
-    ensure_folder("/Game/Effects")
-    
-    system = compat.crear_asset(
-        "NS_RainMist", "/Game/Effects", unreal.NiagaraSystem, unreal.NiagaraSystemFactoryNew())
+    system = crear_limpio("NS_RainMist", "/Game/Effects")
     if not system:
-        system = compat.assets().load_asset(asset_path)
-        if system: return system
-        unreal.log_warning("[VFX] Could not create NS_RainMist")
         return None
     
     emitter = system.add_emitter()
@@ -307,14 +278,9 @@ def create_mist_system():
 def create_weapon_vfx(name, folder="/Game/VFX", color=unreal.LinearColor(1, 0.5, 0.2)):
     """Generic weapon VFX placeholder"""
     path = f"{folder}/{name}"
-    ensure_folder(folder)
-    
-    system = compat.crear_asset(
-        name, folder, unreal.NiagaraSystem, unreal.NiagaraSystemFactoryNew())
+
+    system = crear_limpio(name, folder)
     if not system:
-        system = compat.assets().load_asset(path)
-        if system: return system
-        unreal.log_warning(f"[VFX] Could not create {name}")
         return None
     
     emitter = system.add_emitter()
