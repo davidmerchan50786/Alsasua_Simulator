@@ -1,4 +1,5 @@
 #include "World/AlsasuaContainerSystem.h"
+#include "World/AlsasuaMallaFab.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "Engine/StaticMeshActor.h"
@@ -76,14 +77,10 @@ int32 UAlsasuaContainerSystem::ColocarContenedores()
             ContActor->SetMobility(EComponentMobility::Static);
             ContActor->SetActorScale3D(FVector(1.2f, 0.8f, 1.0f));
 
-            UStaticMesh* TrashcanMesh = LoadObject<UStaticMesh>(nullptr,
-                TEXT("/Game/CitySample/Prop/Kit_Trashcan_A/Mesh/SM_Trashcan_A_01"));
+            UStaticMesh* TrashcanMesh = AlsasuaMallaFab::Resolver(
+                TEXT("papelera"), nullptr);
             if (TrashcanMesh)
                 ContActor->GetStaticMeshComponent()->SetStaticMesh(TrashcanMesh);
-
-            UMaterialInterface* Mat = LoadObject<UMaterialInterface>(nullptr,
-                TEXT("/Engine/EngineMaterials/DefaultMaterial.DefaultMaterial"));
-            if (Mat) ContActor->GetStaticMeshComponent()->SetMaterial(0, Mat);
 
 #if WITH_EDITOR
             ContActor->SetActorLabel(*FString::Printf(TEXT("Contenedor_%s_%s_%d"),
@@ -143,8 +140,8 @@ int32 UAlsasuaContainerSystem::ColocarContenedoresFallback()
             ContActor->SetMobility(EComponentMobility::Static);
             ContActor->SetActorScale3D(FVector(1.2f, 0.8f, 1.0f));
             // Ruta constante: se resuelve una vez y no por contenedor.
-            static UStaticMesh* const TrashcanMesh = LoadObject<UStaticMesh>(nullptr,
-                TEXT("/Game/CitySample/Prop/Kit_Trashcan_A/Mesh/SM_Trashcan_A_01"));
+            static UStaticMesh* const TrashcanMesh = AlsasuaMallaFab::Resolver(
+                TEXT("papelera"), nullptr);
             if (TrashcanMesh) ContActor->GetStaticMeshComponent()->SetStaticMesh(TrashcanMesh);
 #if WITH_EDITOR
             ContActor->SetActorLabel(*FString::Printf(TEXT("Contenedor_%s_%s_%d"), *TipoInfo.Key, *Barrio.Left(6), i));
