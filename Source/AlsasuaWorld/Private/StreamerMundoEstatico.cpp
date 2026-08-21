@@ -7,6 +7,12 @@
 #include "Engine/StaticMesh.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Pawn.h"
+#include "Engine/Engine.h"
+
+FString UStreamerMundoEstatico::GetDebugSummary() const
+{
+	return FString::Printf(TEXT("Registered=%d | Tick=%s"), Registro.Num(), IsTickable() ? TEXT("on") : TEXT("off"));
+}
 
 void UStreamerMundoEstatico::OnWorldBeginPlay(UWorld& InWorld)
 {
@@ -15,6 +21,7 @@ void UStreamerMundoEstatico::OnWorldBeginPlay(UWorld& InWorld)
 	for (TActorIterator<AActor> It(&InWorld); It; ++It)
 		for (const FName& T : Tags)
 			if (It->ActorHasTag(T)) { Registrar(*It); break; }
+	UE_LOG(LogTemp, Log, TEXT("StreamerMundoEstatico: registered %d actors"), Registro.Num());
 }
 
 void UStreamerMundoEstatico::Registrar(AActor* A)
@@ -59,6 +66,7 @@ void UStreamerMundoEstatico::Reclasificar()
 
 		if (Nueva != R.Banda) AplicarBanda(R, Nueva);
 	}
+	UE_LOG(LogTemp, Verbose, TEXT("StreamerMundoEstatico: reclasified %d actors"), Registro.Num());
 }
 
 void UStreamerMundoEstatico::AplicarBanda(FRegistroMundo& R, EBandaMundo Nueva)

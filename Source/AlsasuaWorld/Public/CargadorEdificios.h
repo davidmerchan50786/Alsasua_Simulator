@@ -26,6 +26,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Mundo")
 	int32 Cargar();
 
+	UFUNCTION(BlueprintCallable, Category="Mundo")
+	FString GetDebugSummary() const;
+
 	// --- Carga incremental (la usa el director de arranque) ---
 	void PrepararCarga();                       // parsea el JSON
 	bool PasoPresupuesto(double PresupuestoMs); // construye hasta agotar ms; true si terminó

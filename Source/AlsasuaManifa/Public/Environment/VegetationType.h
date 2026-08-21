@@ -51,13 +51,13 @@ public:
 	TArray<FVegetationPrefab> Prefabs;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Spawning", meta = (ClampMin = "0.0", ClampMax = "100.0"))
-	float GlobalProbability = 25.0f;
+	float GlobalProbability = 80.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Spawning")
 	float DensityPerM2 = 0.5f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Spawning")
-	float MinDistance = 5.0f;
+	float MinDistance = 8.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Spawning")
 	FVector2D HeightRange = FVector2D(0.0f, 1000.0f);
@@ -78,10 +78,40 @@ public:
 	bool bCollisionCheck = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Spawning")
+	bool bAllowFallbackSpawn = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Spawning")
+	int32 MaxSpawnPasses = 3;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Spawning")
 	bool bRejectUnderwater = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Spawning")
 	float WaterHeight = 0.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Nanite")
+	bool bEnableNanite = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Clustering")
+	bool bUseNaturalClustering = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Clustering", meta = (ClampMin = "10.0", ClampMax = "1000.0"))
+	float ClusterSize = 50.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Clustering", meta = (ClampMin = "0.0", ClampMax = "1.0"))
+	float ClusterStrength = 0.5f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Ecology")
+	bool bRiverAffinity = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Ecology")
+	FVector2D WaterDistanceRange = FVector2D(0.0f, 30.0f);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Ecology")
+	bool bNorthFacing = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Ecology")
+	bool bSouthFacing = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation|Biome")
 	TArray<FString> BiomeAffinity;

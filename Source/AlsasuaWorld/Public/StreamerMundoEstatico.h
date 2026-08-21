@@ -41,6 +41,9 @@ public:
 	virtual bool IsTickable() const override { return !IsTemplate(); }
 	virtual bool DoesSupportWorldType(const EWorldType::Type Tipo) const override { return Tipo == EWorldType::Game || Tipo == EWorldType::PIE; }
 
+	UFUNCTION(BlueprintCallable, Category="Streaming")
+	FString GetDebugSummary() const;
+
 private:
 	UPROPERTY() TArray<FRegistroMundo> Registro;
 	float Acum = 0.f;

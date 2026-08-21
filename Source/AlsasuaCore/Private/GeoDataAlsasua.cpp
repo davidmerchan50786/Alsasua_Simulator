@@ -59,16 +59,46 @@ FVector UAlsasuaGeoData::RelLocalToUE5(const FVector& RelLocalPos)
     return FVector(Ax * 100.0, Az * 100.0, RelLocalPos.Y * 100.0);
 }
 
+FVector UAlsasuaGeoData::MobiliarioAUE5(const FVector& LocalPos)
+{
+    // El porqué del 6000 y de que se mire la Z y no la X está en el header.
+    constexpr double CorteNorte = 6000.0;
+    return (LocalPos.Z > CorteNorte) ? AbsLocalToUE5(LocalPos) : RelLocalToUE5(LocalPos);
+}
+
 // ============================================================
 //  Cota del terreno
 // ============================================================
 
-float UAlsasuaGeoData::AlturaSueloUE5(const UWorld* World, double XCm, double YCm)
+namespace
+{
+    // Uno solo por proceso: sólo hay un terreno. Se toca en el hilo de juego,
+    // al construirse y al destruirse ATerrenoGenerado.
+    UAlsasuaGeoData::FMuestreadorCota MuestreadorTerreno;
+}
+
+void UAlsasuaGeoData::RegistrarMuestreadorTerreno(FMuestreadorCota Fn)
+{
+    MuestreadorTerreno = MoveTemp(Fn);
+    UE_LOG(LogTemp, Log, TEXT("[Geo] muestreador de cota registrado: la altura de suelo sale del heightmap, no de un trazo"));
+}
+
+void UAlsasuaGeoData::OlvidarMuestreadorTerreno()
+{
+    MuestreadorTerreno = nullptr;
+}
+
+bool UAlsasuaGeoData::HayMuestreadorTerreno()
+{
+    return static_cast<bool>(MuestreadorTerreno);
+}
+
+float UAlsasuaGeoData::AlturaSuperficieUE5(const UWorld* World, double XCm, double YCm)
 {
     if (!World) return CotaPlazaCm;
 
     FHitResult Hit;
-    const FCollisionQueryParams Q(SCENE_QUERY_STAT(AlturaSueloUE5), true);
+    const FCollisionQueryParams Q(SCENE_QUERY_STAT(AlturaSuperficieUE5), true);
     if (World->LineTraceSingleByChannel(Hit,
             FVector(XCm, YCm, TraceUp), FVector(XCm, YCm, TraceDown), ECC_Visibility, Q))
     {
@@ -77,11 +107,33 @@ float UAlsasuaGeoData::AlturaSueloUE5(const UWorld* World, double XCm, double YC
     return CotaPlazaCm;
 }
 
+float UAlsasuaGeoData::AlturaSueloUE5(const UWorld* World, double XCm, double YCm)
+{
+    // El heightmap primero. Es lo que pide quien busca "el suelo", y se evita
+    // una consulta de física por llamada.
+    if (MuestreadorTerreno)
+    {
+        float Z = 0.f;
+        if (MuestreadorTerreno(XCm, YCm, Z)) return Z;
+        // Fuera del terreno el muestreador dice que no sabe: se cae al trazo,
+        // que es lo que había, y de ahí a la cota de la plaza.
+    }
+
+    return AlturaSuperficieUE5(World, XCm, YCm);
+}
+
 FVector UAlsasuaGeoData::RelLocalASueloUE5(const UWorld* World, const FVector& RelLocalPos,
                                           float SobreSueloCm)
 {
     const FVector P = RelLocalToUE5(RelLocalPos);
     return FVector(P.X, P.Y, AlturaSueloUE5(World, P.X, P.Y) + SobreSueloCm);
+}
+
+FVector UAlsasuaGeoData::RelLocalASuperficieUE5(const UWorld* World, const FVector& RelLocalPos,
+                                                float SobreSuperficieCm)
+{
+    const FVector P = RelLocalToUE5(RelLocalPos);
+    return FVector(P.X, P.Y, AlturaSuperficieUE5(World, P.X, P.Y) + SobreSuperficieCm);
 }
 
 // ============================================================

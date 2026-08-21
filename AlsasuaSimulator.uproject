@@ -10,6 +10,11 @@
 			"LoadingPhase": "Default"
 		},
 		{
+			"Name": "AlsasuaKernel",
+			"Type": "Runtime",
+			"LoadingPhase": "PreDefault"
+		},
+		{
 			"Name": "AlsasuaCore",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
@@ -89,6 +94,14 @@
 		{
 			"Name": "LiveCoding",
 			"Enabled": false
+		},
+		{
+			"Name": "ModularGameplay",
+			"Enabled": true
+		},
+		{
+			"Name": "GameFeatures",
+			"Enabled": true
 		}
 	]
 }

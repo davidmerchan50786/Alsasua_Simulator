@@ -17,6 +17,28 @@
 #include "Engine/LocalPlayer.h"
 #include "AbilitySystemGlobals.h"
 #include "GameplayEffectTypes.h"
+#include "HAL/IConsoleManager.h"
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Ajustes de ratón del menú de opciones.
+//
+//  UAlsasuaSettingsWidget::ApplySettings ya escribía estas tres variables con
+//  IConsoleManager::FindConsoleVariable, pero no las registraba nadie: la
+//  búsqueda devolvía null y las tres barras del menú —sensibilidad, invertir Y
+//  y vibración de cámara— no hacían absolutamente nada. Se registran aquí, que
+//  es el módulo del personaje y del controlador, y se leen abajo.
+//
+//  Van como CVar y no como propiedad del personaje porque el menú vive en
+//  AlsasuaUI y ya escribe así, y porque desde la consola se pueden tocar sin
+//  abrir el menú.
+// ─────────────────────────────────────────────────────────────────────────────
+static TAutoConsoleVariable<float> CVarSensibilidadRaton(
+	TEXT("g.MouseSensitivity"), 1.0f,
+	TEXT("Multiplicador de sensibilidad del ratón al mirar."), ECVF_Default);
+
+static TAutoConsoleVariable<int32> CVarInvertirY(
+	TEXT("g.InvertYAxis"), 0,
+	TEXT("1 invierte el eje vertical al mirar."), ECVF_Default);
 
 AAlsasuaCharacter::AAlsasuaCharacter()
 {
@@ -398,9 +420,16 @@ void AAlsasuaCharacter::EntradaMover(const FInputActionValue& V)
 
 void AAlsasuaCharacter::EntradaMirar(const FInputActionValue& V)
 {
+	// Esta es la ruta que se usa de verdad: Enhanced Input. No aplicaba ni la
+	// sensibilidad del personaje ni la del menú, así que mover la barra de
+	// sensibilidad no cambiaba nada. TurnAt/LookUpAt, la ruta de ejes heredada,
+	// sí usaba Sensitivity pero tampoco el ajuste ni la inversión.
 	const FVector2D E = V.Get<FVector2D>();
-	AddControllerYawInput(E.X);
-	AddControllerPitchInput(E.Y);
+	const float Sens = Sensitivity * FMath::Max(0.05f, CVarSensibilidadRaton.GetValueOnGameThread());
+	const float SignoY = CVarInvertirY.GetValueOnGameThread() != 0 ? -1.f : 1.f;
+
+	AddControllerYawInput(E.X * Sens);
+	AddControllerPitchInput(E.Y * Sens * SignoY);
 }
 
 void AAlsasuaCharacter::CorrerInicio()
@@ -440,5 +469,17 @@ void AAlsasuaCharacter::MoveRight(float Value)
 	}
 }
 
-void AAlsasuaCharacter::TurnAt(float Value)   { AddControllerYawInput(Value * Sensitivity); }
-void AAlsasuaCharacter::LookUpAt(float Value) { AddControllerPitchInput(Value * Sensitivity); }
+// Ruta de ejes heredada. Mismo trato que EntradaMirar para que las dos respondan
+// igual al menú: si no, el ajuste haría una cosa con mando y otra con ratón.
+void AAlsasuaCharacter::TurnAt(float Value)
+{
+	AddControllerYawInput(Value * Sensitivity
+		* FMath::Max(0.05f, CVarSensibilidadRaton.GetValueOnGameThread()));
+}
+
+void AAlsasuaCharacter::LookUpAt(float Value)
+{
+	const float SignoY = CVarInvertirY.GetValueOnGameThread() != 0 ? -1.f : 1.f;
+	AddControllerPitchInput(Value * Sensitivity * SignoY
+		* FMath::Max(0.05f, CVarSensibilidadRaton.GetValueOnGameThread()));
+}

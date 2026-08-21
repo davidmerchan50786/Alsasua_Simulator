@@ -19,6 +19,7 @@
 #include "CreadorMaterialTejas.h"
 #include "CreadorMaterialMuroPiedra.h"
 #include "CreadorMaterialMobiliario.h"
+#include "CreadorMaterialesSimples.h"
 #include "CreadorMaterialArbol.h"
 #include "CreadorMaterialAgua.h"
 #include "CreadorMaterialTerrenoOrto.h"
@@ -148,6 +149,11 @@ bool UAlsasuaAssetGenerator::CrearMaterialesPBR()
 		{ TEXT("M_Muro_Piedra"),    &UCreadorMaterialMuroPiedra::CrearMaterialMuroPiedra },
 		{ TEXT("M_Mobiliario"),     &UCreadorMaterialMobiliario::CrearMaterialMobiliario },
 		{ TEXT("M_Metal"),          &UCreadorMaterialMobiliario::CrearMaterialMetal },
+		// Los 29 sueltos que cargaba una docena de sistemas por ruta y no creaba
+		// nadie: madera, piedra, metales, toldo, escaparate, pintadas de pared y
+		// el firme por barrio. Van los últimos porque comparten los sets de
+		// Content/Textures con los de arriba y no aportan MPC ni dependencia.
+		{ TEXT("Materiales sueltos"), &UCreadorMaterialesSimples::CrearSueltos },
 	};
 	return EjecutarPasos(TEXT("Superficies PBR"), Pasos) == Pasos.Num();
 }

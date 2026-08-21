@@ -31,6 +31,8 @@ public:
 	bool PasoPresupuesto(double PresupuestoMs);
 	bool Terminado() const { return bPreparado && Idx >= Items.Num(); }
 	int32 Sembrados = 0;
+	/** Árboles del LiDAR que caen fuera del terreno jugable y no se plantan. */
+	int32 Descartados = 0;
 
 private:
 	bool bHecho = false;
@@ -46,5 +48,6 @@ private:
 
 	void SembrarUno(const TSharedPtr<class FJsonObject>& O);
 	UHierarchicalInstancedStaticMeshComponent* ComponenteDe(const FString& Especie);
-	float AlturaSuelo(const FVector2D& MundoXY) const;
+	/** Cota del terreno bajo el punto. false si no hay terreno debajo. */
+	bool AlturaSuelo(const FVector2D& MundoXY, float& OutZ) const;
 };

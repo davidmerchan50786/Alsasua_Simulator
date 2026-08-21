@@ -3,6 +3,7 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "Engine/World.h"
+#include "Components/HierarchicalInstancedStaticMeshComponent.h"
 
 UTreeSpawnerComponent::UTreeSpawnerComponent()
 {
@@ -12,6 +13,10 @@ UTreeSpawnerComponent::UTreeSpawnerComponent()
 void UTreeSpawnerComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	if (GetWorld() && GetWorld()->GetNetMode() != NM_DedicatedServer)
+	{
+		SpawnAllTrees();
+	}
 }
 
 void UTreeSpawnerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -32,6 +37,7 @@ void UTreeSpawnerComponent::LoadFromCSV(const FString& CSVFilePath)
 
 void UTreeSpawnerComponent::SpawnAllTrees()
 {
+	UE_LOG(LogTemp, Log, TEXT("TreeSpawnerComponent: spawning %d species"), TreeData.Num());
 	for (const auto& Pair : TreeData)
 	{
 		SpawnTreeSpecies(Pair.Key);
@@ -43,6 +49,7 @@ void UTreeSpawnerComponent::SpawnTreeSpecies(const FString& Species)
 	if (!TreeData.Contains(Species))
 		return;
 
+	UE_LOG(LogTemp, Log, TEXT("TreeSpawnerComponent: spawning species=%s count=%d"), *Species, TreeData[Species].Num());
 	CreateHISMForSpecies(Species);
 	PlaceTreeInstances(Species, TreeData[Species]);
 }
@@ -113,10 +120,16 @@ UHierarchicalInstancedStaticMeshComponent* UTreeSpawnerComponent::GetOrCreateHIS
 		{
 			HISM->SetStaticMesh(Mesh);
 			HISM->SetFlags(RF_Transactional);
+			HISM->SetMobility(EComponentMobility::Static);
+			HISM->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			HISM->SetCanEverAffectNavigation(false);
+			HISM->SetVisibility(true);
+			HISM->SetHiddenInGame(false);
 			HISM->SetupAttachment(Holder->GetRootComponent());
 			HISM->RegisterComponent();
 			HISMComponents.Add(Species, HISM);
 			HISMHolders.Add(Holder);
+			UE_LOG(LogTemp, Log, TEXT("TreeSpawnerComponent: created HISM for species=%s mesh=%s"), *Species, *Mesh->GetName());
 		}
 		return HISM;
 	}
@@ -136,7 +149,7 @@ void UTreeSpawnerComponent::PlaceTreeInstances(const FString& Species, const TAr
 		if (bApplyWorldOffset)
 			Location += OriginOffset.GetLocation();
 
-		Transform.SetLocation(Location);
+		Transform.SetLocation(Location + FVector(0.0f, 0.0f, HeightOffset));
 		Transform.SetRotation(FRotator(0.0f, bRandomizeRotation ? FMath::FRand() * 360.0f : Tree.RotationDegrees, 0.0f).Quaternion());
 
 		float Scale = 1.0f;
@@ -148,6 +161,7 @@ void UTreeSpawnerComponent::PlaceTreeInstances(const FString& Species, const TAr
 
 		HISM->AddInstance(Transform);
 	}
+	UE_LOG(LogTemp, Log, TEXT("TreeSpawnerComponent: species=%s placed=%d instances"), *Species, Trees.Num());
 }
 
 bool UTreeSpawnerComponent::ParseJsonFile(const FString& FilePath)

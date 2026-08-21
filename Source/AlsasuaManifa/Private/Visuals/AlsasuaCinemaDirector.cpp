@@ -1,6 +1,13 @@
 #include "Visuals/AlsasuaCinemaDirector.h"
 #include "AI/AlsasuaCrowdSentiment.h"
 #include "Kismet/GameplayStatics.h"
+#include "HAL/IConsoleManager.h"
+
+// La escribe UAlsasuaSettingsWidget::ApplySettings, que hasta ahora la buscaba
+// sin que existiera. Ver el bloque equivalente en AlsasuaCharacter.cpp.
+static TAutoConsoleVariable<float> CVarIntensidadVibracion(
+	TEXT("g.CameraShakeIntensity"), 1.0f,
+	TEXT("Multiplicador de la vibración de cámara por tensión."), ECVF_Default);
 #include "GameFramework/PlayerController.h"
 
 void UAlsasuaCinemaDirector::Initialize(FSubsystemCollectionBase& Collection)
@@ -60,9 +67,22 @@ void UAlsasuaCinemaDirector::UpdatePostProcessing(float DeltaTime)
 void UAlsasuaCinemaDirector::CalculateCameraFocus(float DeltaTime)
 {
     APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-    if (PC && ShakeIntensity > 0.1f)
-    {
-        // Aplicamos micro-vibraciones al control de la cámara para transmitir tensión
-        PC->ClientStartCameraShake(nullptr, ShakeIntensity); 
-    }
+    if (!PC || ShakeIntensity <= 0.1f) return;
+
+    // Aquí se llamaba a ClientStartCameraShake(nullptr, ShakeIntensity). Con la
+    // clase de shake a null esa función sale sin hacer nada, así que la tensión
+    // no se transmitía: la vibración de cámara del juego no existía, y la barra
+    // del menú de opciones que la gradúa tampoco tenía nada que graduar.
+    //
+    // Se aplica como micro-impulso de mirada, que es el mecanismo que ya usa
+    // ArmasComponent para el retroceso y no depende de crear un UCameraShakeBase
+    // ni de tener el asset. La amplitud es la que gradúa el ajuste.
+    const float Ajuste = FMath::Clamp(CVarIntensidadVibracion.GetValueOnGameThread(), 0.f, 2.f);
+    if (Ajuste <= 0.f) return;
+
+    // Escalado por DeltaTime para que la vibración no dependa de los FPS, y
+    // amplitud pequeña: esto es temblor de tensión, no un terremoto.
+    const float A = ShakeIntensity * Ajuste * DeltaTime * 6.f;
+    PC->AddPitchInput(FMath::FRandRange(-A, A));
+    PC->AddYawInput(FMath::FRandRange(-A, A));
 }

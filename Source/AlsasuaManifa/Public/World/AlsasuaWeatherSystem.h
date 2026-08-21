@@ -97,6 +97,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Weather")
     FLinearColor GetSkyTintForWeather() const;
 
+    UFUNCTION(BlueprintCallable, Category = "Weather")
+    FString GetDebugWeatherSummary() const;
+
 private:
     EWeatherState TargetWeather = EWeatherState::Clear;
     float TimeSinceWeatherChange = 0.0f;

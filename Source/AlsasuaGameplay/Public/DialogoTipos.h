@@ -18,6 +18,42 @@ struct FOpcionDialogo
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) FName Destino;
 	// Efectos opcionales sobre apoyo popular al elegir (puede ser negativo).
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) float DeltaApoyo = 0.f;
+
+	/**
+	 * Opción que hay que ganarse: una tirada contra Dificultad.
+	 *
+	 * Está en los JSON de Content/Dialogs desde el principio
+	 * (bRequiresSkillCheck / DifficultyClass) y el cargador la tiraba a la
+	 * basura porque aquí no había dónde meterla. Son las cuatro opciones de
+	 * [PERSUASIÓN] e [INTIMIDACIÓN] de los tres NPC, o sea justo las que se
+	 * suponía que costaban algo: se elegían y salían siempre bien.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite) bool bTirada = false;
+
+	/** Dificultad de la tirada (los datos usan 10-16, escala de d20). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite) int32 Dificultad = 10;
+
+	/**
+	 * Nodo al que se va si la tirada falla. NAME_None = no se va a ninguno: se
+	 * queda en el nodo y la opción se gasta, que es lo que se puede hacer con
+	 * lo que trae el dato, porque el JSON sólo da un destino por opción.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite) FName DestinoFallo;
+};
+
+/** Una opción tal y como hay que enseñarla: con si es tirada y qué falta. */
+USTRUCT(BlueprintType)
+struct FOpcionMostrable
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly) FString Texto;
+	UPROPERTY(BlueprintReadOnly) bool bTirada = false;
+	UPROPERTY(BlueprintReadOnly) int32 Dificultad = 0;
+	/** Probabilidad de pasarla ahora mismo, 0-1. Para pintarla en el botón. */
+	UPROPERTY(BlueprintReadOnly) float Probabilidad = 1.f;
+	/** false si ya se intentó y se falló: el botón va deshabilitado. */
+	UPROPERTY(BlueprintReadOnly) bool bDisponible = true;
 };
 
 USTRUCT(BlueprintType)

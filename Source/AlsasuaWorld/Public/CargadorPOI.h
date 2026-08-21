@@ -39,6 +39,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Mundo")
 	int32 Cargar();
 
+	UFUNCTION(BlueprintCallable, Category="Mundo")
+	FString GetDebugSummary() const;
+
 	// Consulta POIs por tipo.
 	UFUNCTION(BlueprintCallable, Category="Mundo")
 	TArray<FPOIData> GetPOIsByTipo(const FString& Tipo) const;

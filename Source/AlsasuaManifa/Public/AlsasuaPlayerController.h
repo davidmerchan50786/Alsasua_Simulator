@@ -11,8 +11,7 @@
 #include "AlsasuaPlayerController.generated.h"
 
 class UAlsasuaMinimapWidget;
-class UAlsasuaPauseMenuWidget;
-class UAlsasuaSettingsWidget;
+class UUserWidget;
 
 UCLASS()
 class ALSASUAMANIFA_API AAlsasuaPlayerController : public APlayerController
@@ -55,10 +54,10 @@ public:
     UAlsasuaMinimapWidget* GetMinimapWidget() const { return MinimapWidget; }
 
     UFUNCTION(BlueprintPure, Category = "Alsasua|UI")
-    UAlsasuaPauseMenuWidget* GetPauseMenuWidget() const { return PauseMenuWidget; }
+    UUserWidget* GetPauseMenuWidget() const { return PauseMenuWidget; }
 
     UFUNCTION(BlueprintPure, Category = "Alsasua|UI")
-    UAlsasuaSettingsWidget* GetSettingsWidget() const { return SettingsWidget; }
+    UUserWidget* GetSettingsWidget() const { return SettingsWidget; }
 
 protected:
     virtual void BeginPlay() override;
@@ -77,18 +76,21 @@ private:
     UPROPERTY()
     TObjectPtr<UAlsasuaMinimapWidget> MinimapWidget;
 
+    // Los dos menús viven en AlsasuaUI, que ya depende de este módulo. Guardarlos
+    // como UUserWidget y cargar la clase por ruta rompe el ciclo Manifa->UI: el
+    // controller deja de necesitar sus cabeceras.
     UPROPERTY()
-    TObjectPtr<UAlsasuaPauseMenuWidget> PauseMenuWidget;
+    TObjectPtr<UUserWidget> PauseMenuWidget;
 
     UPROPERTY()
-    TObjectPtr<UAlsasuaSettingsWidget> SettingsWidget;
+    TObjectPtr<UUserWidget> SettingsWidget;
 
     UPROPERTY(EditDefaultsOnly, Category = "Alsasua|UI|Widgets")
     TSubclassOf<UAlsasuaMinimapWidget> MinimapWidgetClass;
 
     UPROPERTY(EditDefaultsOnly, Category = "Alsasua|UI|Widgets")
-    TSubclassOf<UAlsasuaPauseMenuWidget> PauseMenuWidgetClass;
+    TSubclassOf<UUserWidget> PauseMenuWidgetClass;
 
     UPROPERTY(EditDefaultsOnly, Category = "Alsasua|UI|Widgets")
-    TSubclassOf<UAlsasuaSettingsWidget> SettingsWidgetClass;
+    TSubclassOf<UUserWidget> SettingsWidgetClass;
 };

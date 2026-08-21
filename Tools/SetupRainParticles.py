@@ -1,6 +1,9 @@
 """
-SetupRainParticles.py — Crea y configura sistema de lluvia/nieve con Niagara.
-Añade UAlsasuaRainParticleComponent al jugador principal.
+SetupRainParticles.py — Enchufa el componente de lluvia al jugador.
+
+Los sistemas Niagara los crea create_niagara_vfx.py, que es quien sabe
+configurarlos; aquí sólo se adjunta UAlsasuaRainParticleComponent al peón y al
+PlayerController.
 
 Ejecutar en editor:  Tools > Execute Python Script
 """
@@ -12,47 +15,16 @@ import sys as _sys, os as _os
 _sys.path.append(_os.path.join(unreal.Paths.project_dir(), "Tools"))
 import ue5_compat as compat
 
-def create_rain_niagara_system():
-    """Crea NS_Rain como sistema Niagara básico de partículas de lluvia."""
-    pkg = "/Game/Effects/NS_Rain"
-    if compat.assets().does_asset_exist(pkg):
-        return
-
-    asset_tools = unreal.AssetToolsHelpers.get_asset_tools()
-    niagara_factory = unreal.NiagaraSystemFactoryNew()
-    ns = asset_tools.create_asset("NS_Rain", "/Game/Effects",
-                                  unreal.NiagaraSystem, niagara_factory)
-    if ns:
-        unreal.log("[RainParticles] NS_Rain creado")
-
-
-def create_snow_niagara_system():
-    """Crea NS_Snow como sistema Niagara básico de partículas de nieve."""
-    pkg = "/Game/Effects/NS_Snow"
-    if compat.assets().does_asset_exist(pkg):
-        return
-
-    asset_tools = unreal.AssetToolsHelpers.get_asset_tools()
-    niagara_factory = unreal.NiagaraSystemFactoryNew()
-    ns = asset_tools.create_asset("NS_Snow", "/Game/Effects",
-                                  unreal.NiagaraSystem, niagara_factory)
-    if ns:
-        unreal.log("[RainParticles] NS_Snow creado")
-
-
-def create_thunder_flash_system():
-    """Crea NS_ThunderFlash como efecto de relámpago."""
-    pkg = "/Game/Effects/NS_ThunderFlash"
-    if compat.assets().does_asset_exist(pkg):
-        return
-
-    asset_tools = unreal.AssetToolsHelpers.get_asset_tools()
-    niagara_factory = unreal.NiagaraSystemFactoryNew()
-    ns = asset_tools.create_asset("NS_ThunderFlash", "/Game/Effects",
-                                  unreal.NiagaraSystem, niagara_factory)
-    if ns:
-        unreal.log("[RainParticles] NS_ThunderFlash creado")
-
+# Los tres creadores de asset que había aquí —NS_Rain, NS_Snow y
+# NS_ThunderFlash— se han quitado, y no por duplicados: creaban el asset VACÍO,
+# sin emisor ni módulos, y RunAll.py ejecuta este script JUSTO ANTES que
+# create_niagara_vfx.py, que es quien sí sabe configurarlos. Al llegar allí el
+# nombre ya estaba cogido, create_asset devolvía None, y la rama de respaldo
+# cargaba el asset vacío y se salía. Resultado: la lluvia, la nieve y el
+# relámpago eran sistemas Niagara sin una sola partícula, y no lo decía nadie.
+#
+# Crear los assets es trabajo de create_niagara_vfx.py. El de este script es
+# enchufarle el componente de lluvia al jugador, que es lo que queda debajo.
 
 def add_rain_to_player():
     """Añade UAlsasuaRainParticleComponent al jugador."""
@@ -91,9 +63,6 @@ def add_rain_to_player_controller():
 
 if __name__ == "__main__":
     unreal.log("=== Rain Particles Setup ===")
-    create_rain_niagara_system()
-    create_snow_niagara_system()
-    create_thunder_flash_system()
     add_rain_to_player()
     add_rain_to_player_controller()
     unreal.log("=== Rain Particles Complete ===")

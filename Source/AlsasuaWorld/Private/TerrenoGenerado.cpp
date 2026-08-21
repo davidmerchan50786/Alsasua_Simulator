@@ -1,4 +1,5 @@
 #include "TerrenoGenerado.h"
+#include "GeoDataAlsasua.h"
 #include "ProceduralMeshComponent.h"
 #include "KismetProceduralMeshLibrary.h"
 #include "Misc/FileHelper.h"
@@ -58,6 +59,50 @@ void ATerrenoGenerado::BeginPlay()
 			GenerarTodoAhora();
 		}
 	}
+
+	RegistrarComoMuestreadorDeCota();
+}
+
+void ATerrenoGenerado::RegistrarComoMuestreadorDeCota()
+{
+	if (AlturasRAW.Num() == 0)
+	{
+		// Sin heightmap no hay nada que muestrear: que todo el mundo siga
+		// trazando, que es el comportamiento de siempre.
+		UE_LOG(LogTemp, Warning,
+			TEXT("TerrenoGenerado: sin heightmap cargado; la cota de suelo seguirá saliendo de LineTrace."));
+		return;
+	}
+
+	// A partir de aquí UAlsasuaGeoData::AlturaSueloUE5 lee de aquí en vez de
+	// lanzar un trazo. El arranque hacía del orden de 25 000 —12 000 sólo del
+	// foliage, 6 368 de aceras, 2 783 de árboles, 1 800 de plazas—, cada uno una
+	// consulta de física contra la escena entera.
+	//
+	// TWeakObjectPtr y no `this` a pelo: el lambda vive en una variable estática
+	// de AlsasuaCore y sobrevive al actor si alguien recarga el nivel sin pasar
+	// por EndPlay.
+	TWeakObjectPtr<const ATerrenoGenerado> Yo(this);
+	UAlsasuaGeoData::RegistrarMuestreadorTerreno(
+		[Yo](double XCm, double YCm, float& OutZ) -> bool
+		{
+			const ATerrenoGenerado* T = Yo.Get();
+			if (!T || !T->TieneHeightmap()) return false;
+
+			// Fuera de la caja jugable el muestreador dice que no sabe, en vez
+			// de devolver el borde extrapolado: quien pregunte por un punto de
+			// fuera se merece el trazo y su respaldo a la cota de la plaza.
+			if (!UAlsasuaGeoData::DentroDelTerreno(FVector(XCm, YCm, 0.0))) return false;
+
+			OutZ = T->AlturaEnMundo(static_cast<float>(XCm), static_cast<float>(YCm));
+			return true;
+		});
+}
+
+void ATerrenoGenerado::EndPlay(const EEndPlayReason::Type Reason)
+{
+	UAlsasuaGeoData::OlvidarMuestreadorTerreno();
+	Super::EndPlay(Reason);
 }
 
 void ATerrenoGenerado::Tick(float DeltaTime)

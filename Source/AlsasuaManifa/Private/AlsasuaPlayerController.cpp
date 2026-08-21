@@ -2,9 +2,19 @@
 #include "AlsasuaPlayerController.h"
 #include "Kismet/GameplayStatics.h"
 #include "AlsasuaMinimapWidget.h"
-#include "AlsasuaPauseMenuWidget.h"
-#include "AlsasuaSettingsWidget.h"
+#include "Blueprint/UserWidget.h"
 #include "Components/InputComponent.h"
+
+namespace
+{
+    // AlsasuaUI depende de este módulo, así que aquí no se puede incluir su cabecera.
+    // La clase se busca en el registro de UObjects por su ruta de script: si el
+    // módulo no está cargado sale nullptr y el menú simplemente no aparece.
+    UClass* ClaseDeUI(const TCHAR* Ruta)
+    {
+        return FindObject<UClass>(nullptr, Ruta);
+    }
+}
 
 AAlsasuaPlayerController::AAlsasuaPlayerController()
 {
@@ -59,27 +69,16 @@ void AAlsasuaPlayerController::CreateUIWidgets()
         }
     }
 
-    if (PauseMenuWidgetClass)
+    UClass* ClasePausa = PauseMenuWidgetClass ? PauseMenuWidgetClass.Get() : ClaseDeUI(TEXT("/Script/AlsasuaUI.AlsasuaPauseMenuWidget"));
+    if (ClasePausa)
     {
-        PauseMenuWidget = CreateWidget<UAlsasuaPauseMenuWidget>(this, PauseMenuWidgetClass);
-    }
-    else
-    {
-        PauseMenuWidget = CreateWidget<UAlsasuaPauseMenuWidget>(this, UAlsasuaPauseMenuWidget::StaticClass());
+        PauseMenuWidget = CreateWidget<UUserWidget>(this, ClasePausa);
     }
 
-    if (SettingsWidgetClass)
+    UClass* ClaseAjustes = SettingsWidgetClass ? SettingsWidgetClass.Get() : ClaseDeUI(TEXT("/Script/AlsasuaUI.AlsasuaSettingsWidget"));
+    if (ClaseAjustes)
     {
-        SettingsWidget = CreateWidget<UAlsasuaSettingsWidget>(this, SettingsWidgetClass);
-        if (SettingsWidget)
-        {
-            SettingsWidget->AddToViewport(10);
-            SettingsWidget->SetVisibility(ESlateVisibility::Collapsed);
-        }
-    }
-    else
-    {
-        SettingsWidget = CreateWidget<UAlsasuaSettingsWidget>(this, UAlsasuaSettingsWidget::StaticClass());
+        SettingsWidget = CreateWidget<UUserWidget>(this, ClaseAjustes);
         if (SettingsWidget)
         {
             SettingsWidget->AddToViewport(10);
@@ -99,9 +98,14 @@ void AAlsasuaPlayerController::TogglePause()
     bJuegoEnPausa = !bJuegoEnPausa;
     UGameplayStatics::SetGamePaused(this, bJuegoEnPausa);
 
+    // TogglePause del menú es UFUNCTION, así que se llama por reflexión y no hace
+    // falta el tipo concreto de AlsasuaUI.
     if (PauseMenuWidget)
     {
-        PauseMenuWidget->TogglePause();
+        if (UFunction* Alternar = PauseMenuWidget->FindFunction(TEXT("TogglePause")))
+        {
+            PauseMenuWidget->ProcessEvent(Alternar, nullptr);
+        }
     }
 }
 

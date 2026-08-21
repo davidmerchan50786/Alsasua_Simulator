@@ -16,4 +16,8 @@ namespace ArranqueMundo
 
 	// 0..1 progreso de arranque (para la barra de carga).
 	ALSASUAWORLD_API extern float Progreso;
+
+	ALSASUAWORLD_API FString GetDebugSummary();
+	ALSASUAWORLD_API void SetProgress(float InProgress);
+	ALSASUAWORLD_API void MarkPhaseComplete(const FString& PhaseName, float InProgress);
 }

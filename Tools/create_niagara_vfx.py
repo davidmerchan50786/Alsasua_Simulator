@@ -15,21 +15,27 @@ def ensure_folder(path):
     if not compat.assets().does_asset_exist(path):
         compat.assets().make_directory(path)
 
-def create_rain_system():
-    """NS_Rain: Falling rain streaks"""
-    asset_path = "/Game/Effects/NS_Rain"
-    ensure_folder("/Game/Effects")
-    
+def create_rain_system(name="NS_Rain", folder="/Game/Effects"):
+    """Lluvia de verdad: chorros cayendo. Parametrizado porque hacen falta dos
+    copias — ver la llamada de NS_Lluvia al final del fichero."""
+    asset_path = f"{folder}/{name}"
+    ensure_folder(folder)
+
     system = compat.crear_asset(
-        "NS_Rain", "/Game/Effects", unreal.NiagaraSystem, unreal.NiagaraSystemFactoryNew())
+        name, folder, unreal.NiagaraSystem, unreal.NiagaraSystemFactoryNew())
     if not system:
-        # Fallback: try loading existing
+        # Ya existía. Antes se devolvía tal cual y se salía ANTES de añadirle
+        # emisor y módulos, así que si otro script había reservado el nombre con
+        # un asset vacío —SetupRainParticles.py lo hacía, y RunAll.py lo ejecuta
+        # justo antes que a este— la lluvia se quedaba en un Niagara sin una sola
+        # partícula, para siempre y sin un aviso. Ahora se configura igual: crear
+        # y configurar son cosas distintas.
         system = compat.assets().load_asset(asset_path)
-        if system:
-            return system
-        unreal.log_warning("[VFX] Could not create NS_Rain")
-        return None
-    
+        if not system:
+            unreal.log_warning(f"[VFX] Could not create {name}")
+            return None
+        unreal.log(f"[VFX] {name} ya existía: se reconfigura")
+
     # Add emitter
     emitter = system.add_emitter()
     emitter.set_editor_property("name", "RainStreaks")
@@ -58,7 +64,7 @@ def create_rain_system():
     renderer = emitter.find_or_add_renderer("Sprite Renderer")
     
     system = compat.assets().save_asset(asset_path)
-    unreal.log("[VFX] NS_Rain created")
+    unreal.log(f"[VFX] {name} created")
     return system
 
 def create_snow_system():
@@ -360,8 +366,14 @@ if __name__ == "__main__":
     for name, color in weapon_vfx:
         create_weapon_vfx(name, "/Game/VFX", color)
     
-    # Duplicate NS_Rain under /Game/VFX/ for ClimaSubsystem
-    create_weapon_vfx("NS_Lluvia", "/Game/VFX", unreal.LinearColor(0.5, 0.6, 0.8))
+    # La lluvia que el juego enseña de verdad. UClimaSubsystem carga
+    # /Game/VFX/NS_Lluvia, no /Game/Effects/NS_Rain, así que hace falta la copia
+    # ahí — pero con la fábrica de LLUVIA, no con create_weapon_vfx, que es la de
+    # los fogonazos: 50 partículas de golpe, ±100 de velocidad en cualquier
+    # dirección y 0,1-0,4 s de vida. Teñida de azul y llamada NS_Lluvia, pero un
+    # chispazo. La de arriba son 5000 partículas/s cayendo a 30-40 m/s en una
+    # caja alrededor de la cámara.
+    create_rain_system("NS_Lluvia", "/Game/VFX")
     
     unreal.log("[VFX] All Niagara systems created! (22 total)")
     unreal.log("[VFX] NOTE: These are basic placeholders. Open each in Niagara editor to tune.")

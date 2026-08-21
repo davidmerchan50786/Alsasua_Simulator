@@ -1,3 +1,16 @@
+// AlsasuaAwningShutterSystem.h (capa MANIFA)
+// Toldos y persianas sobre las fachadas, a partir de building_facades.json.
+//
+// Son 17537 ventanas con persiana y del orden de 700 toldos. Estaba escrito con
+// un AStaticMeshActor por pieza —dieciocho mil actores— y, peor, apilándolas en
+// el CENTROIDE del edificio, una cada 3 m de altura y sin tope: el edificio
+// 297389260 mide 7,7 m y tiene 132 ventanas con persiana, así que le salía una
+// columna de 398 m atravesando el tejado. Las que no sobresalían quedaban dentro
+// del edificio, invisibles y pagándose igual.
+//
+// Ahora van repartidas por el perímetro y por planta, a ras de fachada y mirando
+// afuera, y lo que no cabe en el edificio no se coloca (se dice cuánto). Todo a
+// HierarchicalInstancedStaticMesh, una capa para toldos y otra para persianas.
 #pragma once
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
@@ -48,6 +61,9 @@ public:
     const TArray<FShutterEntry>& GetPersianas() const { return Persianas; }
 
 private:
+    /** Actor que aloja las dos capas instanciadas. */
+    UPROPERTY() TObjectPtr<AActor> Host = nullptr;
+
     TArray<FAwningEntry> Toldos;
     TArray<FShutterEntry> Persianas;
 };

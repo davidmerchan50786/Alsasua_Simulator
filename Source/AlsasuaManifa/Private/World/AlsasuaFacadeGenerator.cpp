@@ -179,11 +179,31 @@ int32 UAlsasuaFacadeGenerator::ColocarLandmarksReales()
 
         const FString Nombre = LO->GetStringField(TEXT("nombre"));
         const FString Tipo = LO->GetStringField(TEXT("tipo"));
-        const float X = LO->GetNumberField(TEXT("x"));
-        const float Z = LO->GetNumberField(TEXT("z"));
+
+        // Por lat/lon, no por x/z.
+        //
+        // Los x/z de landmarks_real.json no cuadran con el pueblo: contra las
+        // lat/lon del mismo fichero, las distancias entre landmarks salen diez
+        // veces más pequeñas y la z va al revés (el factor es -10, no +10). Con
+        // x/z, los 19 quedan apiñados en 121×134 m y a 120 m de mediana del
+        // edificio más cercano —ninguno cae sobre uno—; por lat/lon la mediana
+        // baja a 29 m y seis caen justo encima de su footprint: la iglesia, el
+        // ayuntamiento, la biblioteca, el mercado. poi_data.json arrastra lo
+        // mismo. Tools/VerificarDatasets.py contrasta los dos marcos.
+        double Lat = 0.0, Lon = 0.0;
+        FVector Pos;
+        if (LO->TryGetNumberField(TEXT("lat"), Lat) && LO->TryGetNumberField(TEXT("lon"), Lon))
+        {
+            Pos = UAlsasuaGeoData::LatLonToUE5(Lat, Lon);
+        }
+        else
+        {
+            Pos = UAlsasuaGeoData::AbsLocalToUE5(
+                FVector(LO->GetNumberField(TEXT("x")), 0.0f, LO->GetNumberField(TEXT("z"))));
+        }
+
         // Apoyado en el terreno: con Z = 0 los 19 landmarks quedaban medio
         // kilómetro por debajo del pueblo.
-        FVector Pos = UAlsasuaGeoData::AbsLocalToUE5(FVector(X, 0.0f, Z));
         Pos.Z = UAlsasuaGeoData::AlturaSueloUE5(World, Pos.X, Pos.Y);
 
         AStaticMeshActor* Actor = World->SpawnActor<AStaticMeshActor>(
@@ -232,19 +252,53 @@ int32 UAlsasuaFacadeGenerator::ColocarParadasTransporte()
     TSharedRef<TJsonReader<>> Rd = TJsonReaderFactory<>::Create(Js);
     if (!FJsonSerializer::Deserialize(Rd, Root) || !Root.IsValid()) return 0;
 
-    int32 Placed = 0;
+    int32 Placed = 0, Lejos = 0, SinCoords = 0, Repetidas = 0;
+
+    // Marquesina de UCreadorMallaMobiliario (o lo que haya de Fab). Fuera del
+    // bucle: se resolvía una vez por parada.
+    UStaticMesh* MallaParada = AlsasuaMallaFab::Resolver(TEXT("parada_bus"),
+        TEXT("/Engine/BasicShapes/Cube.Cube"));
+    if (!MallaParada) return 0;
+
+    // La misma parada de Altsasu aparece en cuatro rutas de bus_routes, así que
+    // sin esto salen cuatro marquesinas una dentro de otra.
+    TSet<FIntPoint> YaPuestas;
 
     auto PlaceStop = [&](const TSharedPtr<FJsonObject>& Stop, const FString& Tipo)
     {
-        if (!Stop) return;
-        const float Lat = Stop->GetNumberField(TEXT("lat"));
-        const float Lon = Stop->GetNumberField(TEXT("lon"));
-        const FString Name = Stop->GetStringField(TEXT("name"));
+        if (!Stop.IsValid()) return;
+
+        // El taxi de transport_alsasua.json no trae lat/lon. GetNumberField
+        // sobre un campo que no está devuelve 0, así que la parada acababa en
+        // (0, 0): el golfo de Guinea. Sin una línea en el log.
+        double Lat = 0.0, Lon = 0.0;
+        if (!Stop->TryGetNumberField(TEXT("lat"), Lat) || !Stop->TryGetNumberField(TEXT("lon"), Lon))
+        {
+            ++SinCoords;
+            return;
+        }
+
+        FString Name;
+        Stop->TryGetStringField(TEXT("name"), Name);
+
         FVector Pos = UAlsasuaGeoData::LatLonToUE5(Lat, Lon);
-        const FVector CentroAlsasua = UAlsasuaGeoData::AbsLocalToUE5(UAlsasuaGeoData::BarrioCenter(TEXT("Herriko")));
-        // La distancia se mide en planta: si no, la diferencia de cota entre el
-        // punto (Z = 0) y el centro decidía qué paradas se descartan.
-        if (FVector2D::Distance(FVector2D(Pos.X, Pos.Y), FVector2D(CentroAlsasua.X, CentroAlsasua.Y)) > 5000.0f) return;
+
+        // El filtro era un radio de 5000 cm —cincuenta metros— alrededor de
+        // BarrioCenter("Herriko"), y ninguna de las 27 paradas del fichero cae
+        // dentro: esta fase no colocaba absolutamente nada. El radio tenía
+        // sentido en su intención, porque bus_routes lista las paradas de las
+        // rutas interurbanas enteras —Pamplona, Vitoria, Donostia, y Madrid a
+        // 303 km—, pero se llevaba por delante también las cuatro de Altsasu,
+        // que están a 135-397 m del centro. El filtro bueno es el del terreno,
+        // que ya es de todos.
+        if (!UAlsasuaGeoData::DentroDelTerreno(Pos)) { ++Lejos; return; }
+
+        // Rejilla de 5 m para el duplicado: las cuatro rutas dan la misma
+        // parada con coordenadas idénticas, pero redondear evita depender de eso.
+        const FIntPoint Celda(FMath::RoundToInt(Pos.X / 500.0), FMath::RoundToInt(Pos.Y / 500.0));
+        if (YaPuestas.Contains(Celda)) { ++Repetidas; return; }
+        YaPuestas.Add(Celda);
+
         Pos.Z = UAlsasuaGeoData::AlturaSueloUE5(World, Pos.X, Pos.Y);
 
         AStaticMeshActor* Actor = World->SpawnActor<AStaticMeshActor>(
@@ -252,12 +306,7 @@ int32 UAlsasuaFacadeGenerator::ColocarParadasTransporte()
         if (!Actor) return;
 
         Actor->SetMobility(EComponentMobility::Static);
-
-        // Marquesina de UCreadorMallaMobiliario (o lo que haya de Fab) en vez
-        // de un cubo del motor de 1,5 x 1,5 x 3 m.
-        UStaticMesh* Malla = AlsasuaMallaFab::Resolver(TEXT("parada_bus"),
-            TEXT("/Engine/BasicShapes/Cube.Cube"));
-        if (Malla) Actor->GetStaticMeshComponent()->SetStaticMesh(Malla);
+        Actor->GetStaticMeshComponent()->SetStaticMesh(MallaParada);
 
 #if WITH_EDITOR
         Actor->SetActorLabel(*FString::Printf(TEXT("STOP_%s_%s"), *Tipo, *Name.Left(20)));
@@ -281,6 +330,18 @@ int32 UAlsasuaFacadeGenerator::ColocarParadasTransporte()
         }
     }
 
+    // Las cuatro paradas de bus DEL PUEBLO están en "bus_stop_points", y no las
+    // leía nadie: la función sólo recorría bus_routes, que son las cabeceras de
+    // las líneas interurbanas. O sea que las únicas paradas que de verdad tocan
+    // a Altsasu —Surbound, Northbound, Foruen Plaza y la estación— se quedaban
+    // fuera aunque el radio hubiera sido el bueno.
+    const TArray<TSharedPtr<FJsonValue>>* PuntosParada;
+    if (Root->TryGetArrayField(TEXT("bus_stop_points"), PuntosParada))
+    {
+        for (const auto& PV : *PuntosParada)
+            PlaceStop(PV->AsObject(), TEXT("Bus"));
+    }
+
     const TSharedPtr<FJsonObject>* Transport;
     if (Root->TryGetObjectField(TEXT("transport"), Transport))
     {
@@ -288,11 +349,18 @@ int32 UAlsasuaFacadeGenerator::ColocarParadasTransporte()
         if ((*Transport)->TryGetObjectField(TEXT("train_station"), TrainSt))
             PlaceStop(*TrainSt, TEXT("Tren"));
 
+        // bus_station tampoco lo leía nadie.
+        const TSharedPtr<FJsonObject>* BusSt;
+        if ((*Transport)->TryGetObjectField(TEXT("bus_station"), BusSt))
+            PlaceStop(*BusSt, TEXT("Autobuses"));
+
         const TSharedPtr<FJsonObject>* TaxiSt;
         if ((*Transport)->TryGetObjectField(TEXT("taxi"), TaxiSt))
             PlaceStop(*TaxiSt, TEXT("Taxi"));
     }
 
-    UE_LOG(LogTemp, Log, TEXT("Transport: %d paradas de transporte colocadas"), Placed);
+    UE_LOG(LogTemp, Log,
+        TEXT("Transport: %d paradas colocadas; %d fuera del terreno (cabeceras interurbanas), %d repetidas, %d sin lat/lon"),
+        Placed, Lejos, Repetidas, SinCoords);
     return Placed;
 }

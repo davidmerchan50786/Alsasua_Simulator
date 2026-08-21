@@ -57,12 +57,34 @@ public:
     // --- New coordinate conversion API ---
 
     /** Absolute local meters → UE5 centimeters.
-     *  Input: (east, 0, north). Output: (east_cm, north_cm, 0). */
+     *  Input: (east, up, north). Output: (east_cm, north_cm, up_cm).
+     *  La vertical del vector de entrada va EN MEDIO y se propaga a la Z de
+     *  salida; con el segundo componente a cero, la Z sale cero. */
     static FVector AbsLocalToUE5(const FVector& AbsLocalPos);
 
     /** Relative local meters → UE5 centimeters (adds OX/OZ).
-     *  Input: (east, 0, north). Output: (east_cm, north_cm, 0). */
+     *  Input: (east, up, north). Output: (east_cm, north_cm, up_cm). */
     static FVector RelLocalToUE5(const FVector& RelLocalPos);
+
+    /**
+     * Mobiliario urbano → UE5, decidiendo el marco por la propia coordenada.
+     *
+     * street_furniture.json no está en un solo marco: lo escribieron dos
+     * generadores distintos y quedaron mezclados. 191 de sus 220 piezas están en
+     * local RELATIVO (papeleras, bancos, bolardos, bocas de incendio…) y 29 en
+     * ABSOLUTO (las 12 paradas de bus, las 5 fuentes, las señales, los cruces).
+     *
+     * Se distinguen por la coordenada norte y no hay ambigüedad posible: los dos
+     * grupos están separados por un hueco de 4115 m —el más alto de los
+     * relativos es z=4452,8 y el más bajo de los absolutos z=8568,0—, así que el
+     * corte a 6000 tiene kilómetro y medio de margen por abajo y dos y medio por
+     * arriba. En este por la X no se puede: los rangos se solapan.
+     *
+     * Aplicar el marco relativo a todo —que es lo que se hacía— manda esas 29
+     * piezas 1918 m al este y 8570 al norte de donde van, o sea a 8,6 km del
+     * pueblo, fuera del terreno jugable.
+     */
+    static FVector MobiliarioAUE5(const FVector& LocalPos);
 
     /**
      * Cota del terreno bajo un punto del mundo (cm), por trazo vertical.
@@ -70,7 +92,50 @@ public:
      * Si no encuentra suelo devuelve CotaPlazaCm: es mejor dejar la pieza a la
      * altura del pueblo que a la del nivel del mar.
      */
+    /**
+     * Cota del terreno bajo un punto del mundo (cm).
+     *
+     * Si hay muestreador registrado —lo hace ATerrenoGenerado con su propio
+     * heightmap— se lee de ahí. Si no, se cae al trazo vertical de siempre.
+     *
+     * El cambio no es sólo de velocidad, aunque de eso va: el arranque hacía del
+     * orden de 25 000 de estos, 12 000 sólo del foliage, y cada uno es una
+     * consulta de física contra la escena entera. Leer el heightmap es una
+     * interpolación bilineal sobre un array que ya está en memoria.
+     *
+     * Y además es MÁS correcto para quien pide "el suelo". El trazo devuelve lo
+     * más alto que haya debajo, sea lo que sea: por eso el tren y las bocas de
+     * túnel están en las fases 52 y 51b, para que nada se suba a un vagón o a un
+     * dintel. Muestreando el terreno ese peligro de orden desaparece.
+     *
+     * Quien de verdad quiera "lo que haya encima, sea lo que sea" —drapear sobre
+     * un puente, por ejemplo— tiene AlturaSuperficieUE5, que sigue trazando.
+     */
     static float AlturaSueloUE5(const class UWorld* World, double XCm, double YCm);
+
+    /**
+     * Cota de la superficie más alta bajo un punto, por trazo vertical.
+     *
+     * Lo que hacía AlturaSueloUE5 siempre. Se conserva aparte porque hay casos
+     * en que es lo que se quiere: apoyarse sobre un puente, sobre una plaza
+     * drapeada o sobre cualquier cosa ya colocada. Si usas esto, el orden de
+     * fases importa — ver el aviso de CLAUDE.md §5.
+     */
+    static float AlturaSuperficieUE5(const class UWorld* World, double XCm, double YCm);
+
+    /**
+     * Muestreador de cota del terreno. Devuelve false si el punto cae fuera de
+     * lo que sabe, y entonces se usa el trazo.
+     *
+     * Vive como puntero registrable porque AlsasuaCore no puede ver a
+     * ATerrenoGenerado: la dependencia va AlsasuaCore → AlsasuaWorld. El terreno
+     * se registra al construirse y se borra al destruirse.
+     */
+    using FMuestreadorCota = TFunction<bool(double XCm, double YCm, float& OutZCm)>;
+
+    static void RegistrarMuestreadorTerreno(FMuestreadorCota Fn);
+    static void OlvidarMuestreadorTerreno();
+    static bool HayMuestreadorTerreno();
 
     /**
      * Relative local meters → UE5 centimeters, con la Z apoyada en el terreno.
@@ -83,6 +148,19 @@ public:
      */
     static FVector RelLocalASueloUE5(const class UWorld* World, const FVector& RelLocalPos,
                                      float SobreSueloCm = 0.f);
+
+    /**
+     * Igual, pero apoyando la Z en la superficie trazada en vez de en el terreno.
+     *
+     * Para lo que va pintado SOBRE algo ya colocado, no sobre el suelo desnudo:
+     * las marcas viales y las plazas de aparcamiento van encima del firme, y el
+     * firme —ACalleGenerada— se levanta EpsilonCm = 12 sobre el terreno para no
+     * hacer z-fighting con él. Muestreando el terreno esas marcas se pintan 12 cm
+     * por debajo del asfalto, o sea invisibles; los +2 cm que se dan sobre el
+     * firme dan por supuesto que la cota de partida es la del firme.
+     */
+    static FVector RelLocalASuperficieUE5(const class UWorld* World, const FVector& RelLocalPos,
+                                          float SobreSuperficieCm = 0.f);
 
     /** Lat/Lon (WGS84) + altitude(m) → UE5 centimeters via UTM Zone 30N. */
     static FVector LatLonToUE5(double LatDeg, double LonDeg, double AltM = 0.0);
@@ -112,6 +190,31 @@ public:
     // Límites para raycasts de suelo (trace vertical desde/to).
     static constexpr float TraceUp = 500000.0f;
     static constexpr float TraceDown = -500000.0f;
+
+    /**
+     * Caja del terreno jugable (cm): 7200×7200 m centrados aquí.
+     *
+     * Hace falta porque hay datos que caen fuera y colocarlos no falla: 31 de
+     * las 126 señales de signage_data.json llegan a 216 km, y 280 de los 2783
+     * árboles del LiDAR quedan fuera. El actor se crea igual, su trazo de suelo
+     * no encuentra nada y acaba a cota cero o a la de la plaza. Quien lea esos
+     * datos tiene que filtrarlos diciendo cuántos.
+     *
+     * Está aquí y no en cada sistema porque son los límites del mundo, no una
+     * decisión de quien coloca: los llevaban copiados a mano AlsasuaSignPlacer y
+     * Tools/VerificarDatasets.py, y tres copias de una constante son tres
+     * oportunidades de que una se quede atrás.
+     */
+    static constexpr double CentroTerrenoXCm = 191800.0;
+    static constexpr double CentroTerrenoYCm = 857000.0;
+    static constexpr double SemiTerrenoCm    = 360000.0;
+
+    /** ¿Cae este punto del mundo dentro del terreno jugable? */
+    static bool DentroDelTerreno(const FVector& UE5Pos)
+    {
+        return FMath::Abs(UE5Pos.X - CentroTerrenoXCm) <= SemiTerrenoCm
+            && FMath::Abs(UE5Pos.Y - CentroTerrenoYCm) <= SemiTerrenoCm;
+    }
 
     // --- UTM Zone 30N constants (WGS84) ---
     static constexpr double UTM_A = 6378137.0;           // WGS84 semi-major axis
