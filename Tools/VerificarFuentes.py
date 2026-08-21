@@ -10,7 +10,7 @@ de un comentario en AlsasuaFoliagePainter.cpp
 
 y AlsasuaManifa —214 cpp, el módulo gordo— dejó de compilar entero.
 
-Esto no es un compilador ni lo pretende. Son ocho comprobaciones baratas que
+Esto no es un compilador ni lo pretende. Son nueve comprobaciones baratas que
 cazan justo lo que se cuela cuando se edita a ciegas:
 
   1. Sentencia cuyo punto y coma se lo ha tragado un comentario de línea.
@@ -37,7 +37,17 @@ cazan justo lo que se cuela cuando se edita a ciegas:
      de compilación de los que no se ven al leer el diff: al retirar
      AlsasuaLODManager quedó su include en DirectorArranque.cpp, en otro módulo
      y a 50 líneas de distancia de nada que lo mencionara. Se miran sólo los
-     includes que resuelven contra Source/, no los del motor.
+     includes que resuelven contra Source/, no los del motor, y sólo cabeceras
+     que empiecen por Alsasua: las carpetas del proyecto se llaman igual que las
+     del motor (Components/, World/, Core/), así que por carpeta no se pueden
+     distinguir.
+  9. Parámetro de MPC que alguien escribe y que el creador no declara. Poner un
+     escalar que no está en la colección sale por un warning y se queda ahí, así
+     que no se nota: dieciséis parámetros —charcos, ventanas de noche, viento,
+     grano de película, el pintado de humedad del RVT— se escribían contra
+     MPC_AlsasuaGlobal, una colección que no crea nadie. Se contrastan los dos
+     creadores, AsegurarMPCClima() de C++ y ESCALARES_MPC de SetupMaterials.py,
+     que además tienen que decir lo mismo.
 
 Lo que esto NO caza, y conviene saberlo: la comprobación 3 sólo salta cuando el
 segundo argumento de UnityaUnreal NO es cero. El caso contrario —cero literal,
@@ -205,11 +215,18 @@ def cabeceras_del_proyecto(raiz):
 
 
 def includes_rotos(rel, texto, validas, generadas):
-    """Includes con comillas que no resuelven ni a Source/ ni a nada del motor.
+    """Includes con comillas que no resuelven a ninguna cabecera de Source/.
 
-    Sólo se acusa lo que TIENE pinta de ser del proyecto: una cabecera cuyo
-    nombre empieza por Alsasua o que cuelga de una carpeta que existe en
-    Source/. Así el motor y los plugins no generan ruido.
+    Sólo se acusa una cabecera cuyo nombre empieza por **Alsasua**, y ése es
+    todo el criterio. El comentario decía además "o que cuelga de una carpeta
+    que existe en Source/", y eso no se puede implementar aquí: las carpetas del
+    proyecto se llaman Components/, World/, Core/, Materials/… igual que las del
+    motor, así que la regla marcaba 227 includes perfectamente válidos
+    —Components/StaticMeshComponent.h el primero—. Con el prefijo no hay
+    ambigüedad, porque ninguna cabecera del motor se llama Alsasua*.
+
+    Lo que esto NO caza, por tanto: un include roto a una cabecera del proyecto
+    que no siga la convención de nombres. En este repo son contadas.
     """
     salida = []
     for m in RE_INCLUDE.finditer(texto):
@@ -228,6 +245,76 @@ def includes_rotos(rel, texto, validas, generadas):
                       "      Si el fichero se ha retirado, el include se retira con él"
                       % (rel, num, inc))
     return salida
+
+
+# Sólo lo que se escribe en una INSTANCIA DE MPC. UMaterialInstanceDynamic tiene
+# SetScalarParameterValue con la misma firma, y ahí un nombre nuevo es un
+# parámetro del material, no de la colección: mirando la llamada a secas salían
+# 37 hallazgos y 33 eran BaseColor, EmissiveColor y compañía, o sea MIDs.
+RE_MPC_INST = re.compile(r'UMaterialParameterCollectionInstance\s*\*\s*(\w+)')
+RE_MPC_ESCRIBE_TPL = r'\b%s->Set(Scalar|Vector)ParameterValue\(\s*FName\("([^"]+)"\)'
+RE_MPC_CREA_CPP = re.compile(r'\b(Escalar|Vector)\(TEXT\("([^"]+)"\)')
+RE_MPC_CREA_PY_ESC = re.compile(r'\(\s*"([^"]+)"\s*,\s*[-\d.]+\s*\)')
+
+CREADOR_MPC = os.path.join(FUENTE, "AlsasuaEditor", "Private", "CreadorMaterialEdificio.cpp")
+CREADOR_MPC_PY = os.path.join(RAIZ, "Tools", "SetupMaterials.py")
+
+
+def parametros_mpc(raiz):
+    """
+    Parámetros que alguien ESCRIBE en un MPC y que ningún creador declara.
+
+    Poner un escalar que no existe en la colección no falla: sale un warning y
+    ahí se queda. Así estuvieron dieciséis escribiendo contra
+    MPC_AlsasuaGlobal, que no crea nadie.
+    """
+    fallos = []
+    try:
+        with open(CREADOR_MPC, encoding="utf-8", errors="ignore") as fh:
+            cpp = fh.read()
+    except OSError:
+        return fallos
+
+    declarados = {m.group(2) for m in RE_MPC_CREA_CPP.finditer(cpp)}
+    if not declarados:
+        return fallos   # el creador cambió de forma; mejor callar que mentir
+
+    # Los dos creadores tienen que decir lo mismo.
+    try:
+        with open(CREADOR_MPC_PY, encoding="utf-8", errors="ignore") as fh:
+            py = fh.read()
+        ini = py.find("ESCALARES_MPC = [")
+        if ini >= 0:
+            bloque = py[ini:py.index("]", ini)]
+            en_py = {m.group(1) for m in RE_MPC_CREA_PY_ESC.finditer(bloque)}
+            en_py |= set(re.findall(r'"([^"]+)"', py[py.find("VECTORES_MPC = ["):
+                                                     py.find("]", py.find("VECTORES_MPC = ["))]
+                                    if "VECTORES_MPC = [" in py else ""))
+            for falta in sorted(declarados - en_py):
+                fallos.append("Tools/SetupMaterials.py  no declara el parámetro de MPC '%s',\n"
+                              "      que sí declara AsegurarMPCClima() en C++. Los dos creadores\n"
+                              "      tienen que decir lo mismo" % falta)
+    except (OSError, ValueError):
+        pass
+
+    for base, _, ficheros in os.walk(raiz):
+        for nombre in sorted(ficheros):
+            if not nombre.endswith(".cpp"):
+                continue
+            ruta = os.path.join(base, nombre)
+            with open(ruta, encoding="utf-8", errors="ignore") as fh:
+                texto = fh.read()
+            for var in set(RE_MPC_INST.findall(texto)):
+                for m in re.finditer(RE_MPC_ESCRIBE_TPL % re.escape(var), texto):
+                    p = m.group(2)
+                    if p in declarados:
+                        continue
+                    num = texto.count("\n", 0, m.start()) + 1
+                    fallos.append("%s:%d  escribe el parámetro de MPC '%s' y ningún creador lo\n"
+                                  "      declara: SetScalar/VectorParameterValue de un nombre que no\n"
+                                  "      está sale por un warning y no hace nada"
+                                  % (os.path.relpath(ruta, RAIZ), num, p))
+    return fallos
 
 
 def main():
@@ -322,6 +409,8 @@ def main():
                 if d != 0:
                     fallos.append("%s  %s descuadrados: %+d" % (rel, que, d))
 
+    fallos.extend(parametros_mpc(FUENTE))
+
     for cvar, donde in cvars_sin_registrar(FUENTE):
         fallos.append("%s  escribe la CVar %s y no la registra nadie:\n"
                       "      FindConsoleVariable devuelve null y ese ajuste no hace nada"
@@ -330,7 +419,7 @@ def main():
     print("%d ficheros .cpp/.h revisados.\n" % revisados)
     if not fallos:
         print("Sin hallazgos. No garantiza que compile — sólo que no tiene")
-        print("estos ocho fallos, que son los que se cuelan al editar a ciegas.")
+        print("estos nueve fallos, que son los que se cuelan al editar a ciegas.")
         return 0
 
     for f in fallos:

@@ -138,6 +138,13 @@ bool UDialogoSubsystem::IniciarConNPC(const FString& NombreNPC)
 void UDialogoSubsystem::Iniciar(UConversacionDialogo* Conv)
 {
 	if (!Conv || Conv->Nodos.Num() == 0) return;
+
+	// Se limpia aquí y no sólo en Terminar(): los ids de nodo son enteros y se
+	// repiten entre conversaciones —el nodo 0 de cada NPC—, así que si un
+	// Blueprint arranca una conversación sin cerrar la anterior, una tirada
+	// fallada con el Alcalde salía gastada de entrada con el Guardia.
+	TiradasFalladas.Reset();
+
 	Conversacion = Conv;
 	IrA(Conv->Inicio.IsNone() ? Conv->Nodos[0].Id : Conv->Inicio);
 }

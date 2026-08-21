@@ -1,4 +1,5 @@
 #include "Visuals/AlsasuaCinemaDirector.h"
+#include "CargarMaterialComun.h"
 #include "AI/AlsasuaCrowdSentiment.h"
 #include "Kismet/GameplayStatics.h"
 #include "HAL/IConsoleManager.h"
@@ -13,8 +14,7 @@ static TAutoConsoleVariable<float> CVarIntensidadVibracion(
 void UAlsasuaCinemaDirector::Initialize(FSubsystemCollectionBase& Collection)
 {
     Super::Initialize(Collection);
-    CachedMPC = LoadObject<UMaterialParameterCollection>(
-        nullptr, TEXT("/Game/Materials/MPC_AlsasuaGlobal.MPC_AlsasuaGlobal"));
+    CachedMPC = CargarMPCClima();
 }
 
 void UAlsasuaCinemaDirector::Tick(float DeltaTime)

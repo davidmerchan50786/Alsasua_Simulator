@@ -17,7 +17,12 @@ import sys as _sys, os as _os
 _sys.path.append(_os.path.join(unreal.Paths.project_dir(), "Tools"))
 import ue5_compat as compat
 
-MPC_PATH = "/Game/Materials/MPC_AlsasuaGlobal"
+# La única colección que existe. Antes apuntaba a
+# /Game/Materials/MPC_AlsasuaGlobal —otra carpeta, en inglés—, que no la crea
+# ningún generador: load_asset devolvía None, el script avisaba "MPC no
+# encontrado" y seguía, y el material se quedaba sin su cableado al clima.
+# La crea Tools/SetupMaterials.py (y UCreadorMaterialEdificio desde C++).
+MPC_PATH = "/Game/Materiales/MPC_Clima"
 
 
 def get_mpc():

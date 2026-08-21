@@ -6,8 +6,16 @@ import subprocess
 import os
 import sys
 import json
+import tempfile
 
-BLENDER = r"C:\Program Files\Blender Foundation\Blender 5.2\blender.exe"
+# Blender vive fuera del repo, así que su ruta es la excepción legítima de
+# CLAUDE.md §7 — pero como parámetro con valor por defecto, no clavada:
+#   set BLENDER_EXE=D:\...\blender.exe   o   python3 convert_blend_to_fbx.py <ruta>
+BLENDER = os.environ.get(
+    "BLENDER_EXE",
+    r"C:\Program Files\Blender Foundation\Blender 5.2\blender.exe")  # ruta externa ok
+if len(sys.argv) > 1 and sys.argv[1].lower().endswith("blender.exe"):
+    BLENDER = sys.argv[1]
 # Raiz derivada de donde vive este fichero. Antes fija a la maquina original
 # ("F:/Epic Games/UE_5.7/altsasu_gtavii/UnrealProject"), asi que solo corria alli.
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -159,7 +167,7 @@ except Exception as e:
     print(f"ERROR: {{e}}")
     sys.exit(1)
 '''
-    script_path = os.path.join(os.environ.get('TEMP', r'C:\Temp'), f'_blend_convert_{hash(blend_path) & 0xFFFF:04x}.py')
+    script_path = os.path.join(tempfile.gettempdir(), f'_blend_convert_{hash(blend_path) & 0xFFFF:04x}.py')
     with open(script_path, 'w', encoding='utf-8') as sf:
         sf.write(script)
 

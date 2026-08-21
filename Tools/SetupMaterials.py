@@ -32,29 +32,64 @@ def ensure_folder():
         unreal.log("Creada carpeta /Game/Materiales")
 
 
-def create_mpc_clima():
-    """Material Parameter Collection: Wetness (scalar) + Night (scalar)."""
-    name = f"{MATERIALS_DIR}/MPC_Clima"
-    if compat.assets().does_asset_exist(name):
-        unreal.log(f"MPC_Clima ya existe, saltando.")
-        return compat.assets().load_asset(name)
+# La ÚNICA colección de parámetros del proyecto, con todo lo que alguien le
+# escribe. Antes tenía cuatro escalares y el resto se escribía contra
+# /Game/Materials/MPC_AlsasuaGlobal, que no lo crea nadie: cuatro sistemas de C++
+# y tres scripts de editor alimentaban un null, y poner un parámetro que no
+# existe sale por un warning y ya está. Charcos, ventanas de noche, auto-textura
+# del terreno, viento y grano de película escribían al vacío.
+#
+# Debe cuadrar con AsegurarMPCClima() de CreadorMaterialEdificio.cpp, que hace lo
+# mismo desde C++.
+ESCALARES_MPC = [
+    ("Wetness", 0.0), ("Night", 0.0), ("GlobalRain", 0.0), ("GlobalSnow", 0.0),
+    ("GlobalWetness", 0.0), ("PuddleOpacity", 0.0), ("RainIntensity", 0.0),
+    ("SnowAmount", 0.0), ("NormalizedTimeOfDay", 0.0), ("DayNightBlend", 0.0),
+    ("NightEmissiveIntensity", 0.0), ("WindIntensity", 0.0), ("WindDirection", 0.0),
+    ("FogDensityMult", 1.0), ("RoadWearAmount", 0.0),
+    ("ChromaticAberration", 0.0), ("FilmGrain", 0.0),
+    ("WPaintRadius", 0.0), ("WPaintIntensity", 0.0),
+]
+VECTORES_MPC = ["WindVector", "WPaintLocation"]
 
-    factory = unreal.MaterialParameterCollectionFactoryNew()
-    mpc = unreal.AssetToolsHelpers.get_asset_tools().create_asset(
-        "MPC_Clima", MATERIALS_DIR, unreal.MaterialParameterCollection, factory
-    )
+
+def create_mpc_clima():
+    """Material Parameter Collection del clima. Idempotente: si ya existe, le
+    completa los parámetros que le falten en vez de salirse."""
+    name = f"{MATERIALS_DIR}/MPC_Clima"
+
+    mpc = None
+    if compat.assets().does_asset_exist(name):
+        # Antes se salía aquí, así que un MPC creado en una versión anterior del
+        # script se quedaba para siempre con los parámetros de aquel día. Es el
+        # mismo fallo que dejó la lluvia en un Niagara vacío.
+        mpc = compat.assets().load_asset(name)
+        unreal.log("MPC_Clima ya existe: se le completan los parámetros que falten.")
+    else:
+        factory = unreal.MaterialParameterCollectionFactoryNew()
+        mpc = unreal.AssetToolsHelpers.get_asset_tools().create_asset(
+            "MPC_Clima", MATERIALS_DIR, unreal.MaterialParameterCollection, factory
+        )
+
     if not mpc:
         unreal.log_error("No se pudo crear MPC_Clima")
         return None
 
-    # Añadir escalares
-    mpc.add_scalar_parameter("Wetness", 0.0)
-    mpc.add_scalar_parameter("Night", 0.0)
-    mpc.add_scalar_parameter("GlobalRain", 0.0)
-    mpc.add_scalar_parameter("GlobalSnow", 0.0)
+    ya = {p.get_editor_property("parameter_name")
+          for p in (mpc.get_editor_property("scalar_parameters") or [])}
+    for nombre, valor in ESCALARES_MPC:
+        if str(nombre) not in {str(x) for x in ya}:
+            mpc.add_scalar_parameter(nombre, valor)
+
+    ya_v = {p.get_editor_property("parameter_name")
+            for p in (mpc.get_editor_property("vector_parameters") or [])}
+    for nombre in VECTORES_MPC:
+        if str(nombre) not in {str(x) for x in ya_v}:
+            mpc.add_vector_parameter(nombre, unreal.LinearColor(0.0, 0.0, 0.0, 0.0))
 
     compat.assets().save_asset(name)
-    unreal.log("Creado MPC_Clima")
+    unreal.log("MPC_Clima al día (%d escalares, %d vectores)"
+               % (len(ESCALARES_MPC), len(VECTORES_MPC)))
     return mpc
 
 

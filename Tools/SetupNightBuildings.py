@@ -18,7 +18,8 @@ def create_night_building_material():
     if compat.assets().does_asset_exist(pkg):
         return
 
-    mpc_path = "/Game/Materials/MPC_AlsasuaGlobal"
+    # Ver la nota de SetupEnhancedMaterials.py: MPC_AlsasuaGlobal no existe.
+    mpc_path = "/Game/Materiales/MPC_Clima"
     mpc = compat.assets().load_asset(mpc_path)
 
     asset_tools = unreal.AssetToolsHelpers.get_asset_tools()

@@ -544,6 +544,21 @@ posiciones cambian entre runs.
   `EWorldType::Game`, y `ShouldCreateSubsystem` deja fuera los mundos de
   editor. El auditor los separa ahora en "ARRANCAN SOLOS" e "INERTES".
 
+- **Sólo hay UNA colección de parámetros de material, y había dos nombres.**
+  `/Game/Materiales/MPC_Clima` la crean `UCreadorMaterialEdificio` y
+  `Tools/SetupMaterials.py`, y es la que conduce `UClimaSubsystem`.
+  `/Game/Materials/MPC_AlsasuaGlobal` —otra carpeta, en inglés— **no la crea
+  nadie**, y aun así la cargaban cuatro sistemas de C++ y tres scripts de
+  editor: el pintado de humedad del RVT, el director de cámara, el gestor de
+  efectos visuales y los materiales de charcos, ventanas de noche y auto-textura
+  del terreno. `LoadObject` devolvía null y toda esa capa no hacía nada. Y
+  escribir un escalar que no está en la colección tampoco falla: sale un warning
+  y ahí se queda, así que dieciséis parámetros —viento, grano de película,
+  `PuddleOpacity`, `NightEmissiveIntensity`…— llevaban escribiéndose al vacío.
+  La ruta vive ahora en `CargarMaterialComun.h` (`RutaMPCClima`/`CargarMPCClima`),
+  en un solo sitio, y `Tools/VerificarFuentes.py` compara lo que se escribe con
+  lo que declaran los dos creadores —que además tienen que decir lo mismo—.
+
 - **Adjuntar un componente a la lista equivocada no falla: adjunta cero.** Las
   fases 17-20 colgaban de los edificios el estilo de barrio, las ventanas
   emissivas y la luz interior recorriendo

@@ -70,17 +70,13 @@ jobs:
       #
       # Las menciones en comentarios de migración son legítimas, así que sólo se
       # mira lo que no es comentario.
+      # En Python 3, no en grep: la ERE que había aquí era '[A-Z]:\\\\', y en
+      # expresión regular extendida eso son DOS barras literales, así que sólo
+      # cazaba la forma escapada ("F:\\Epic Games\\..."). Un raw string —
+      # r"C:\Epic Games\UE_5.7" — lleva una sola barra y se colaba entero, que
+      # es justo la forma más cómoda de escribir una ruta de Windows.
       - name: Buscar rutas absolutas de Windows en Tools/
-        run: |
-          set -e
-          hallazgos=$(grep -rnE '[A-Z]:\\\\' Tools/ --include='*.py' \
-            | grep -vE ':\s*#' | grep -vE '"""' || true)
-          if [ -n "$hallazgos" ]; then
-            echo "Rutas absolutas de máquina en Tools/ (CLAUDE.md §7):"
-            echo "$hallazgos"
-            exit 1
-          fi
-          echo "Ninguna."
+        run: python3 .github/scripts/sin_rutas_de_maquina.py
 
   # ---------------------------------------------------------------------------
   # Compilar de verdad. Necesita un runner con UE 5.8 instalado, que GitHub no

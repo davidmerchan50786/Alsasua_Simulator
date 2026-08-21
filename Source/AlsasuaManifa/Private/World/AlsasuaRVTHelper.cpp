@@ -1,4 +1,5 @@
 #include "World/AlsasuaRVTHelper.h"
+#include "CargarMaterialComun.h"
 #include "Materials/MaterialParameterCollection.h"
 #include "Materials/MaterialParameterCollectionInstance.h"
 #include "Engine/World.h"
@@ -6,8 +7,7 @@
 void AAlsasuaRVTHelper::BeginPlay()
 {
     Super::BeginPlay();
-    CachedMPC = LoadObject<UMaterialParameterCollection>(
-        nullptr, TEXT("/Game/Materials/MPC_AlsasuaGlobal.MPC_AlsasuaGlobal"));
+    CachedMPC = CargarMPCClima();
 }
 
 void AAlsasuaRVTHelper::PaintWetnessAtLocation(FVector Location, float Intensity, float Radius)

@@ -2,7 +2,32 @@
 #include "UObject/UObjectGlobals.h"
 #include "Misc/PackageName.h"
 #include "Materials/MaterialInterface.h"
+#include "Materials/MaterialParameterCollection.h"
 #include "Engine/StaticMesh.h"
+
+/**
+ * La ÚNICA colección de parámetros de material del proyecto.
+ *
+ * Había dos nombres circulando y sólo uno existe. /Game/Materiales/MPC_Clima lo
+ * crean UCreadorMaterialEdificio y Tools/SetupMaterials.py, y es el que conduce
+ * UClimaSubsystem en runtime. /Game/Materials/MPC_AlsasuaGlobal —otra carpeta,
+ * en inglés— no lo crea nadie, y sin embargo lo cargaban cuatro sistemas de C++
+ * y tres scripts de editor: el pintado de humedad del RVT, el director de
+ * cámara, el gestor de efectos visuales y los materiales de charcos, ventanas
+ * de noche y auto-textura de terreno. LoadObject devolvía null y toda esa capa
+ * no hacía nada, sin más aviso que un warning por parámetro.
+ *
+ * Está aquí y no copiada en cada fichero porque cuatro copias de una ruta son
+ * cuatro oportunidades de que una se quede atrás — que es exactamente lo que
+ * pasó.
+ */
+inline const TCHAR* RutaMPCClima() { return TEXT("/Game/Materiales/MPC_Clima.MPC_Clima"); }
+
+/** Carga el MPC del clima. null si el proyecto no ha generado materiales aún. */
+inline UMaterialParameterCollection* CargarMPCClima()
+{
+	return LoadObject<UMaterialParameterCollection>(nullptr, RutaMPCClima());
+}
 
 // Los materiales AAA de la libreria Road compilan solo si TODAS sus dependencias
 // (atlases/surfaces de Megascans, MaterialFunctions, texturas SurfaceFeature y la

@@ -1,6 +1,6 @@
 """
 SetupTerrainAutoTexture.py — Crea material de terreno con auto-textura por pendiente.
-Usa el MPC global (MPC_AlsasuaGlobal) para blending dinámico:
+Usa el MPC del clima (MPC_Clima) para blending dinámico:
   - Pendiente < 15°: hierba
   - Pendiente 15-35°: tierra
   - Pendiente > 35°: roca
@@ -16,7 +16,12 @@ import sys as _sys, os as _os
 _sys.path.append(_os.path.join(unreal.Paths.project_dir(), "Tools"))
 import ue5_compat as compat
 
-MPC_PATH = "/Game/Materials/MPC_AlsasuaGlobal"
+# La única colección que existe. Antes apuntaba a
+# /Game/Materials/MPC_AlsasuaGlobal —otra carpeta, en inglés—, que no la crea
+# ningún generador: load_asset devolvía None, el script avisaba "MPC no
+# encontrado" y seguía, y el material se quedaba sin su cableado al clima.
+# La crea Tools/SetupMaterials.py (y UCreadorMaterialEdificio desde C++).
+MPC_PATH = "/Game/Materiales/MPC_Clima"
 # Nombres reales de Content/Textures (los pone Tools/DownloadTextures.py).
 # Antes apuntaban a T_Grass_01_D, T_Rock_05_D, T_StoneWall_02_D y T_Ground_01_D,
 # que no existen: el material salia sin ninguna textura.

@@ -8,7 +8,11 @@ public class AlsasuaSimulator : ModuleRules {
             "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", 
             "GameplayAbilities", "GameplayTags", "AIModule", "HTTP", "Json", 
             "JsonUtilities", "AudioMixer", "AudioExtensions", "ProceduralMeshComponent",
-            "NavigationSystem", "Niagara", "Landscape", "RHI", "RenderCore"
+            "NavigationSystem", "Niagara", "Landscape", "RHI", "RenderCore",
+            // AlsasuaCore es el módulo base y nadie depende de este, así que no
+            // hay ciclo. Hace falta para RutaMPCClima()/CargarMPCClima(): la
+            // ruta de la colección de parámetros vive en un solo sitio.
+            "AlsasuaCore"
         });
     }
 }

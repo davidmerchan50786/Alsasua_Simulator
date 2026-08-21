@@ -37,17 +37,60 @@ static UMaterialParameterCollection* AsegurarMPCClima(IAssetTools& AT)
 				if (P.ParameterName == Nombre) return true;
 			return false;
 		};
+		auto TieneVector = [&](FName Nombre)
+		{
+			for (const FCollectionVectorParameter& P : MPC->VectorParameters)
+				if (P.ParameterName == Nombre) return true;
+			return false;
+		};
+
 		bool bCambio = false;
-		if (!TieneEscalar(TEXT("Wetness")))
+		auto Escalar = [&](const TCHAR* Nombre, float PorDefecto)
 		{
-			FCollectionScalarParameter Wet; Wet.ParameterName = TEXT("Wetness"); Wet.DefaultValue = 0.f; Wet.Id = FGuid::NewGuid();
-			MPC->ScalarParameters.Add(Wet); bCambio = true;
-		}
-		if (!TieneEscalar(TEXT("Night")))
+			if (TieneEscalar(Nombre)) return;
+			FCollectionScalarParameter P;
+			P.ParameterName = Nombre; P.DefaultValue = PorDefecto; P.Id = FGuid::NewGuid();
+			MPC->ScalarParameters.Add(P); bCambio = true;
+		};
+		auto Vector = [&](const TCHAR* Nombre, const FLinearColor& PorDefecto)
 		{
-			FCollectionScalarParameter Night; Night.ParameterName = TEXT("Night"); Night.DefaultValue = 0.f; Night.Id = FGuid::NewGuid();
-			MPC->ScalarParameters.Add(Night); bCambio = true;
-		}
+			if (TieneVector(Nombre)) return;
+			FCollectionVectorParameter P;
+			P.ParameterName = Nombre; P.DefaultValue = PorDefecto; P.Id = FGuid::NewGuid();
+			MPC->VectorParameters.Add(P); bCambio = true;
+		};
+
+		// Los dos de siempre: los leen M_Edificio, las fachadas y los materiales
+		// que genera UCreadorMaterialesSimples.
+		Escalar(TEXT("Wetness"), 0.f);
+		Escalar(TEXT("Night"), 0.f);
+
+		// Y los que se escribían contra MPC_AlsasuaGlobal, una colección que no
+		// crea nadie. Cuatro sistemas y tres scripts de editor llevaban
+		// alimentando parámetros a un null; poner un escalar que no existe sale
+		// por un warning y no pasa nada más, así que la capa entera —charcos,
+		// ventanas de noche, auto-textura del terreno, viento, grano de
+		// película— estaba escribiendo al vacío. Ahora viven donde vive la
+		// colección de verdad, que además es la que conduce UClimaSubsystem.
+		Escalar(TEXT("GlobalWetness"), 0.f);          // AlsasuaVisualEffectsManager, AlsasuaWorldSubsystem
+		Escalar(TEXT("PuddleOpacity"), 0.f);          // SetupEnhancedMaterials.py
+		Escalar(TEXT("RainIntensity"), 0.f);
+		Escalar(TEXT("SnowAmount"), 0.f);
+		Escalar(TEXT("NormalizedTimeOfDay"), 0.f);
+		Escalar(TEXT("DayNightBlend"), 0.f);
+		Escalar(TEXT("NightEmissiveIntensity"), 0.f); // SetupNightBuildings.py
+		Escalar(TEXT("WindIntensity"), 0.f);
+		Escalar(TEXT("WindDirection"), 0.f);
+		Escalar(TEXT("FogDensityMult"), 1.f);
+		Escalar(TEXT("RoadWearAmount"), 0.f);
+		Escalar(TEXT("ChromaticAberration"), 0.f);    // AlsasuaCinemaDirector
+		Escalar(TEXT("FilmGrain"), 0.f);
+		Escalar(TEXT("WPaintRadius"), 0.f);           // AlsasuaRVTHelper
+		Escalar(TEXT("WPaintIntensity"), 0.f);
+
+		Vector(TEXT("WindVector"), FLinearColor(0.f, 0.f, 0.f, 0.f));
+		Vector(TEXT("WPaintLocation"), FLinearColor(0.f, 0.f, 0.f, 0.f));
+
 		if (bCambio)
 		{
 			MPC->PostEditChange();

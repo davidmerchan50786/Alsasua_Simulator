@@ -1,4 +1,5 @@
 #include "World/AlsasuaVisualEffectsManager.h"
+#include "CargarMaterialComun.h"
 #include "World/Time/TimeOfDayManager.h"
 #include "World/Weather/WeatherSubsystem.h"
 #include "Materials/MaterialParameterCollection.h"
@@ -12,8 +13,7 @@ void UAlsasuaVisualEffectsManager::Initialize(FSubsystemCollectionBase& Collecti
 	Collection.InitializeDependency<UTimeOfDayManager>();
 	Collection.InitializeDependency<UWeatherSubsystem>();
 
-	CachedMPC = LoadObject<UMaterialParameterCollection>(
-		nullptr, TEXT("/Game/Materials/MPC_AlsasuaGlobal.MPC_AlsasuaGlobal"));
+	CachedMPC = CargarMPCClima();
 }
 
 void UAlsasuaVisualEffectsManager::Tick(float DeltaTime)

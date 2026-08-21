@@ -1,4 +1,5 @@
 ﻿#include "World/AlsasuaWorldSubsystem.h"
+#include "CargarMaterialComun.h"
 #include "Materials/MaterialParameterCollection.h"
 #include "Materials/MaterialParameterCollectionInstance.h"
 #include "Materials/MaterialInterface.h"
@@ -87,13 +88,10 @@ void UAlsasuaWorldSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 }
 
 void UAlsasuaWorldSubsystem::SetGlobalWetness(float Wetness) {
-    UMaterialParameterCollection* MPC = LoadObject<UMaterialParameterCollection>(
-        nullptr, TEXT("/Game/Materials/MPC_AlsasuaGlobal.MPC_AlsasuaGlobal"));
-    if (!MPC)
-    {
-        MPC = LoadObject<UMaterialParameterCollection>(
-            nullptr, TEXT("/Game/Materiales/MPC_Clima.MPC_Clima"));
-    }
+    // Sólo hay una colección: MPC_Clima. La cadena de respaldo que había aquí
+    // intentaba primero MPC_AlsasuaGlobal, que no lo crea nadie, así que el
+    // primer LoadObject siempre fallaba y siempre acababa en la segunda.
+    UMaterialParameterCollection* MPC = CargarMPCClima();
     if (!MPC) return;
 
     UWorld* W = GetWorld();
@@ -112,9 +110,9 @@ void UAlsasuaWorldSubsystem::SetGlobalWetness(float Wetness) {
     // warning y se queda ahí.
     Inst->SetScalarParameterValue(FName("Wetness"), ClampedWetness);
 
-    // Los otros tres sí existen en MPC_AlsasuaGlobal, que es la colección que se
-    // intenta primero. Si la cargada es ésa, esto la alimenta; si es MPC_Clima,
-    // no encuentra los nombres y no pasa nada más allá del warning.
+    // Los otros tres los añade ahora AsegurarMPCClima a la misma colección, así
+    // que ya no se pierden: los leen los materiales de charcos que monta
+    // Tools/SetupEnhancedMaterials.py.
     Inst->SetScalarParameterValue(FName("GlobalWetness"), ClampedWetness);
     Inst->SetScalarParameterValue(FName("RainIntensity"), ClampedWetness * 0.8f);
     Inst->SetScalarParameterValue(FName("PuddleOpacity"), FMath::Clamp(ClampedWetness * 1.2f, 0.f, 1.f));

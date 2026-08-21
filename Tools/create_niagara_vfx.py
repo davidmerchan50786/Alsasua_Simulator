@@ -21,20 +21,22 @@ def create_rain_system(name="NS_Rain", folder="/Game/Effects"):
     asset_path = f"{folder}/{name}"
     ensure_folder(folder)
 
+    # Si ya existe se BORRA y se rehace, en vez de reconfigurar encima. Las dos
+    # alternativas estaban mal: salirse sin configurar dejaba la lluvia en un
+    # Niagara vacío para siempre —que es lo que pasaba, porque
+    # SetupRainParticles.py reservaba el nombre y RunAll.py lo ejecuta justo
+    # antes que a este—, y reconfigurar encima llama otra vez a add_emitter(),
+    # así que cada pasada de RunAll.py apilaba un emisor más y el efecto
+    # cambiaba en cada ejecución. Borrar y rehacer es lo único idempotente.
+    if compat.assets().does_asset_exist(asset_path):
+        compat.assets().delete_asset(asset_path)
+        unreal.log(f"[VFX] {name} ya existía: se rehace desde cero")
+
     system = compat.crear_asset(
         name, folder, unreal.NiagaraSystem, unreal.NiagaraSystemFactoryNew())
     if not system:
-        # Ya existía. Antes se devolvía tal cual y se salía ANTES de añadirle
-        # emisor y módulos, así que si otro script había reservado el nombre con
-        # un asset vacío —SetupRainParticles.py lo hacía, y RunAll.py lo ejecuta
-        # justo antes que a este— la lluvia se quedaba en un Niagara sin una sola
-        # partícula, para siempre y sin un aviso. Ahora se configura igual: crear
-        # y configurar son cosas distintas.
-        system = compat.assets().load_asset(asset_path)
-        if not system:
-            unreal.log_warning(f"[VFX] Could not create {name}")
-            return None
-        unreal.log(f"[VFX] {name} ya existía: se reconfigura")
+        unreal.log_warning(f"[VFX] Could not create {name}")
+        return None
 
     # Add emitter
     emitter = system.add_emitter()
