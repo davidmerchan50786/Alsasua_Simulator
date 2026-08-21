@@ -348,6 +348,13 @@ declaran los `.Build.cs`, y que no haya ciclos nuevos: los dos son error de UBT)
 Sin compilador en Linux, `VerificarFuentes.py` y `VerificarDatasets.py` son lo
 único que hay entre un error tonto y `main`. Pásalos antes de subir C++.
 
+Y `Tools/TestVerificadores.py` los prueba a ellos, con árboles de mentira que
+llevan el fallo dentro: comprueba que cada comprobación salta cuando debe y se
+calla cuando no. Una que ha dejado de saltar es peor que no tenerla, porque el
+informe sigue diciendo «sin hallazgos» — le pasó a la comprobación 10, que en su
+primera versión aceptaba una función libre homónima como si fuera la definición
+del miembro, o sea justo el caso que la motivaba.
+
 Desde `.github/workflows/verificar.yml` los pasa CI en cada PR, cada uno en su
 propio paso para que se vea cuál falla; el checkout va con `lfs: true` porque
 leen `Content/Datos/` y `Content/Terreno/`. Hay un tercer job, `compilar`, que

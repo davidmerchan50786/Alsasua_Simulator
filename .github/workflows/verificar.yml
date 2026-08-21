@@ -36,6 +36,12 @@ jobs:
 
       # Cada uno por separado y con `continue-on-error: false` implícito: si uno
       # falla queremos saber CUÁL, no que el paso entero diga "algo pasó".
+      # Primero las pruebas de los propios verificadores: si una comprobación ha
+      # dejado de saltar, todo lo que venga detrás dirá "sin hallazgos" y no
+      # querrá decir nada.
+      - name: TestVerificadores (que los verificadores verifiquen)
+        run: python3 Tools/TestVerificadores.py
+
       - name: VerificarFuentes (sintaxis que no caza nadie)
         run: python3 Tools/VerificarFuentes.py
 
