@@ -1,4 +1,6 @@
 #include "Vehicles/VehicleTarget.h"
+#include "NiagaraSystem.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Components/StaticMeshComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Kismet/GameplayStatics.h"
@@ -35,11 +37,11 @@ bool AVehicleTarget::ReceiveRadialImpulse(const FVector& Origin, float Force, fl
     return false;
 }
 
-void AVehicleTarget::IgniteAtLocation(const FVector& Loc, UParticleSystem* FireFX, float Duration)
+void AVehicleTarget::IgniteAtLocation(const FVector& Loc, UNiagaraSystem* FireFX, float Duration)
 {
     if (FireFX)
     {
-        UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), FireFX, Loc);
+        UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), FireFX, Loc);
     }
 
     if (VehicleMesh)

@@ -32,7 +32,7 @@ public:
     bool ReceiveRadialImpulse(const FVector& Origin, float Force, float Damage);
 
     UFUNCTION(BlueprintCallable, Category="Vehicle")
-    void IgniteAtLocation(const FVector& Loc, UParticleSystem* FireFX, float Duration);
+    void IgniteAtLocation(const FVector& Loc, class UNiagaraSystem* FireFX, float Duration);
 
     UFUNCTION()
     void OnDestroyedByExplosion();
