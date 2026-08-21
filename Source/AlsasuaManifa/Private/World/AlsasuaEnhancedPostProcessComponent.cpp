@@ -70,18 +70,12 @@ void UAlsasuaEnhancedPostProcessComponent::UpdatePostProcess(float DeltaTime)
 
 		FPostProcessSettings& S = PPV->Settings;
 
-		S.bOverride_ColorSaturation = true;
-		const float Sat = CurrentSaturation;
-		S.ColorSaturation = FVector4(Sat, Sat, Sat, 1.f);
-
-		S.bOverride_BloomIntensity = true;
-		S.BloomIntensity = CurrentBloom;
+		// ColorSaturation, BloomIntensity, VignetteIntensity are owned by
+		// UAlsasuaZonePostProcess (per-barrio grading). Only set our unique
+		// fields here to avoid fighting every tick.
 
 		S.bOverride_MotionBlurAmount = true;
 		S.MotionBlurAmount = NormalMotionBlur;
-
-		S.bOverride_VignetteIntensity = true;
-		S.VignetteIntensity = CurrentVignette;
 
 		S.bOverride_SceneColorTint = true;
 		S.SceneColorTint = CurrentTint;
