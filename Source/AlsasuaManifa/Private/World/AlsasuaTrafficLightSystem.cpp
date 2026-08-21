@@ -102,6 +102,9 @@ int32 UAlsasuaTrafficLightSystem::ColocarSemaforos()
 
             UStaticMesh* PoleMesh = LoadObject<UStaticMesh>(nullptr,
                 TEXT("/Game/CitySample/Prop/Kit_StreetLamp_A/Mesh/SM_StreetLamp_A_TrafficLight_Pole"));
+            if (!PoleMesh)
+                PoleMesh = LoadObject<UStaticMesh>(nullptr,
+                    TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
             if (PoleMesh)
                 PostActor->GetStaticMeshComponent()->SetStaticMesh(PoleMesh);
         }
@@ -118,6 +121,9 @@ int32 UAlsasuaTrafficLightSystem::ColocarSemaforos()
 
             UStaticMesh* StopLightMesh = LoadObject<UStaticMesh>(nullptr,
                 TEXT("/Game/CitySample/Prop/Kit_StreetLamp_A/Mesh/SM_StreetLamp_A_StopLight_A"));
+            if (!StopLightMesh)
+                StopLightMesh = LoadObject<UStaticMesh>(nullptr,
+                    TEXT("/Engine/BasicShapes/Cube.Cube"));
             if (StopLightMesh)
                 BoxActor->GetStaticMeshComponent()->SetStaticMesh(StopLightMesh);
         }

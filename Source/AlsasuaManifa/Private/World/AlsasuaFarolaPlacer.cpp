@@ -81,6 +81,13 @@ int32 UAlsasuaFarolaPlacer::ColocarFarolasEnMundo()
     UStaticMesh* LampMesh2 = LoadObject<UStaticMesh>(nullptr,
         TEXT("/Game/CitySample/Prop/Kit_StreetLamp_B/Mesh/SM_StreetLamp_B"));
 
+    // Fallback: cylinder como poste si no hay meshes de CitySample.
+    if (!LampMesh1)
+        LampMesh1 = LoadObject<UStaticMesh>(nullptr,
+            TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
+    if (!LampMesh2)
+        LampMesh2 = LampMesh1;
+
     for (const FFarolaEntry& F : Farolas)
     {
         // Media altura sobre el terreno, no sobre el nivel del mar.
