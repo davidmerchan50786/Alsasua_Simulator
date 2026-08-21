@@ -1,5 +1,6 @@
 #include "World/AlsasuaZonePostProcess.h"
 #include "Components/PostProcessComponent.h"
+#include "Engine/PostProcessVolume.h"
 #include "Materials/MaterialParameterCollection.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Kismet/GameplayStatics.h"
@@ -167,69 +168,100 @@ void UAlsasuaZonePostProcess::ApplyZoneBlending(float DeltaTime)
 
 void UAlsasuaZonePostProcess::UpdatePostProcessVolume(float DeltaTime)
 {
-	float TargetS = ExteriorSaturation;
-	float TargetC = ExteriorContrast;
-	float TargetB = ExteriorBloom;
-	float TargetV = 0.f;
-	float TargetT = ExteriorTemperature;
-	float TargetG = 0.f;
+    float TargetS = ExteriorSaturation;
+    float TargetC = ExteriorContrast;
+    float TargetB = ExteriorBloom;
+    float TargetV = 0.f;
+    float TargetT = ExteriorTemperature;
+    float TargetG = 0.f;
 
-	switch (CurrentZoneType)
-	{
-	case EZoneType::Exterior:
-		TargetS = ExteriorSaturation;
-		TargetC = ExteriorContrast;
-		TargetB = ExteriorBloom;
-		TargetV = 0.f;
-		TargetT = ExteriorTemperature;
-		TargetG = 0.f;
-		break;
-	case EZoneType::Interior:
-		TargetS = InteriorSaturation;
-		TargetC = InteriorContrast;
-		TargetB = InteriorBloom;
-		TargetV = InteriorVignette;
-		TargetT = InteriorTemperature;
-		TargetG = 0.f;
-		break;
-	case EZoneType::InteriorOscuro:
-		TargetS = DarkSaturation;
-		TargetC = DarkContrast;
-		TargetB = 0.f;
-		TargetV = DarkVignette;
-		TargetT = DarkTemperature;
-		TargetG = DarkGrain;
-		break;
-	case EZoneType::Sotano:
-		TargetS = SotanoSaturation;
-		TargetC = 1.5f;
-		TargetB = 0.f;
-		TargetV = SotanoVignette;
-		TargetT = SotanoTemperature;
-		TargetG = SotanoGrain;
-		break;
-	}
+    switch (CurrentZoneType)
+    {
+    case EZoneType::Exterior:
+        TargetS = ExteriorSaturation;
+        TargetC = ExteriorContrast;
+        TargetB = ExteriorBloom;
+        TargetV = 0.f;
+        TargetT = ExteriorTemperature;
+        TargetG = 0.f;
+        break;
+    case EZoneType::Interior:
+        TargetS = InteriorSaturation;
+        TargetC = InteriorContrast;
+        TargetB = InteriorBloom;
+        TargetV = InteriorVignette;
+        TargetT = InteriorTemperature;
+        TargetG = 0.f;
+        break;
+    case EZoneType::InteriorOscuro:
+        TargetS = DarkSaturation;
+        TargetC = DarkContrast;
+        TargetB = 0.f;
+        TargetV = DarkVignette;
+        TargetT = DarkTemperature;
+        TargetG = DarkGrain;
+        break;
+    case EZoneType::Sotano:
+        TargetS = SotanoSaturation;
+        TargetC = 1.5f;
+        TargetB = 0.f;
+        TargetV = SotanoVignette;
+        TargetT = SotanoTemperature;
+        TargetG = SotanoGrain;
+        break;
+    }
 
-	for (const FZoneColorGrading& Zone : RegisteredZones)
-	{
-		if (Zone.ZoneID == ActiveZoneID)
-		{
-			TargetS += Zone.SaturationBoost;
-			TargetC += Zone.ContrastBoost;
-			TargetB += Zone.Bloom;
-			TargetV += Zone.VignetteIntensity;
-			TargetG += Zone.Grain;
-			break;
-		}
-	}
+    for (const FZoneColorGrading& Zone : RegisteredZones)
+    {
+        if (Zone.ZoneID == ActiveZoneID)
+        {
+            TargetS += Zone.SaturationBoost;
+            TargetC += Zone.ContrastBoost;
+            TargetB += Zone.Bloom;
+            TargetV += Zone.VignetteIntensity;
+            TargetG += Zone.Grain;
+            break;
+        }
+    }
 
-	const float Speed = FMath::Max(BlendSpeed, 0.1f);
-	CurrentSaturation = FMath::FInterpTo(CurrentSaturation, TargetS, DeltaTime, Speed);
-	CurrentContrast = FMath::FInterpTo(CurrentContrast, TargetC, DeltaTime, Speed);
-	CurrentBloom = FMath::FInterpTo(CurrentBloom, TargetB, DeltaTime, Speed);
-	CurrentVignette = FMath::FInterpTo(CurrentVignette, TargetV, DeltaTime, Speed);
-	CurrentTemperature = FMath::FInterpTo(CurrentTemperature, TargetT, DeltaTime, Speed);
-	CurrentGrain = FMath::FInterpTo(CurrentGrain, TargetG, DeltaTime, Speed);
+    const float Speed = FMath::Max(BlendSpeed, 0.1f);
+    CurrentSaturation = FMath::FInterpTo(CurrentSaturation, TargetS, DeltaTime, Speed);
+    CurrentContrast = FMath::FInterpTo(CurrentContrast, TargetC, DeltaTime, Speed);
+    CurrentBloom = FMath::FInterpTo(CurrentBloom, TargetB, DeltaTime, Speed);
+    CurrentVignette = FMath::FInterpTo(CurrentVignette, TargetV, DeltaTime, Speed);
+    CurrentTemperature = FMath::FInterpTo(CurrentTemperature, TargetT, DeltaTime, Speed);
+    CurrentGrain = FMath::FInterpTo(CurrentGrain, TargetG, DeltaTime, Speed);
+
+    // Write computed values to the first PostProcessVolume.
+    UWorld* W = GetWorld();
+    if (!W) return;
+
+    TArray<AActor*> PPVols;
+    UGameplayStatics::GetAllActorsOfClass(W, APostProcessVolume::StaticClass(), PPVols);
+    APostProcessVolume* PPV = PPVols.Num() > 0 ? Cast<APostProcessVolume>(PPVols[0]) : nullptr;
+    if (!PPV) return;
+
+    FPostProcessSettings& S = PPV->Settings;
+
+    // Temperature tint as ColorSaturation override (warm=boost R/G, cold=boost B).
+    const float T = CurrentTemperature / 6500.f;
+    const FLinearColor TempTint(T > 1.f ? 1.f : T * 1.1f, T > 1.f ? T * 0.95f : 1.f, 1.f / (T * 0.3f + 0.7f));
+
+    S.bOverride_ColorSaturation = true;
+    S.ColorSaturation = FLinearColor(CurrentSaturation, CurrentSaturation, CurrentSaturation, 1.f) * TempTint;
+
+    S.bOverride_ColorContrast = true;
+    const float C = CurrentContrast;
+    S.ColorContrast = FLinearColor(C, C, C, 1.f);
+
+    S.bOverride_BloomIntensity = true;
+    S.BloomIntensity = CurrentBloom;
+
+    S.bOverride_VignetteIntensity = true;
+    S.VignetteIntensity = CurrentVignette;
+
+    S.bOverride_FilmGrainIntensity = true;
+    S.FilmGrainIntensity = CurrentGrain;
 }
 
 float UAlsasuaZonePostProcess::TemperatureToTint(float Kelvin) const
