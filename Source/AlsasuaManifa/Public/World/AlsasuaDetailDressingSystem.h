@@ -47,7 +47,10 @@ public:
 private:
     bool bUsandoDatosReales = false;
     TArray<FDetailItem> Detalles;
-    TArray<AActor*> MueblesReales;
+    // Actores que coloca este sistema y que sobreviven al arranque: sin
+    // UPROPERTY el GC no los ve a través de esta lista (CLAUDE.md §9).
+    UPROPERTY()
+    TArray<TObjectPtr<AActor>> MueblesReales;
 
     void CargarMueblesReales(UWorld* World);
     void ColocarMacetas(UWorld* World);

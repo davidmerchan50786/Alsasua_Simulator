@@ -9,7 +9,12 @@ struct FGridCell
 {
 	GENERATED_BODY()
 
-	TArray<AActor*> RegisteredActors;
+	// Bajo UPROPERTY: sin él el GC no ve estos punteros y la celda devuelve
+	// actores muertos en las consultas de proximidad. Que ActorToCell use
+	// TWeakObjectPtr enseña que el problema de vida ya se había pensado; a la
+	// lista de la celda no le llegó.
+	UPROPERTY()
+	TArray<TObjectPtr<AActor>> RegisteredActors;
 };
 
 /**
@@ -41,6 +46,9 @@ public:
 	void ClearGrid();
 
 private:
+	// La cadena de reflexión entera: con FGridCell marcado pero el mapa sin
+	// marcar, el GC sigue sin llegar a los actores de dentro.
+	UPROPERTY()
 	TMap<FIntPoint, FGridCell> Grid;
 
 	/** Mapa inverso: actor → celda en la que está registrado. */

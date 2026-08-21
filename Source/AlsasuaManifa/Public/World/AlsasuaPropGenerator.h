@@ -24,8 +24,11 @@ public:
     void AssignPropToActor(AActor* Actor);
 
 private:
-    TArray<UStaticMesh*> BannerMeshes;
-    TArray<UMaterialInterface*> BannerMaterials;
+    // Assets cargados con LoadSynchronous en Initialize y usados mucho después
+    // en AssignPropToActor. Sin UPROPERTY nada sujeta esa carga: el GC puede
+    // llevárselos entre una cosa y la otra.
+    UPROPERTY() TArray<TObjectPtr<UStaticMesh>> BannerMeshes;
+    UPROPERTY() TArray<TObjectPtr<UMaterialInterface>> BannerMaterials;
 
     void LoadAssets();
 };

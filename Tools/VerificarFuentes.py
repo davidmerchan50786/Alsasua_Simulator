@@ -10,7 +10,7 @@ de un comentario en AlsasuaFoliagePainter.cpp
 
 y AlsasuaManifa —214 cpp, el módulo gordo— dejó de compilar entero.
 
-Esto no es un compilador ni lo pretende. Son diez comprobaciones baratas que
+Esto no es un compilador ni lo pretende. Son once comprobaciones baratas que
 cazan justo lo que se cuela cuando se edita a ciegas:
 
   1. Sentencia cuyo punto y coma se lo ha tragado un comentario de línea.
@@ -56,6 +56,12 @@ cazan justo lo que se cuela cuando se edita a ciegas:
      public static y definido sólo como función libre dentro del namespace
      anónimo del .cpp, que es enlazado interno; sus tres hermanas sí estaban
      definidas como miembro.
+ 11. Puntero a UObject miembro de una clase o struct reflejados, sin UPROPERTY.
+     Es la regla de CLAUDE.md §9 y no es formalismo: sin UPROPERTY el GC no ve
+     el puntero, así que no lo pone a null cuando el objeto muere y queda
+     colgando. Lo tenían AVehicleAIController::PursuitTarget —que Tick
+     desreferencia— y FAlsasuaDeferredCommand::TargetActor, en una cola DIFERIDA,
+     que es justo donde el objeto tiene tiempo de morir entre encolar y ejecutar.
 
 Lo que esto NO caza, y conviene saberlo: la comprobación 3 sólo salta cuando el
 segundo argumento de UnityaUnreal NO es cero. El caso contrario —cero literal,
@@ -440,6 +446,53 @@ def declaradas_sin_definir(raiz):
     return fallos
 
 
+# Miembro que es puntero a un tipo de UE (U*/A*/TObjectPtr<>) o un contenedor de
+# ellos. Los TArray/TMap de punteros necesitan UPROPERTY por lo mismo.
+RE_MIEMBRO_UOBJ = re.compile(
+    r'^[ \t]*(?:mutable[ \t]+)?(?:class[ \t]+)?'
+    r'(?P<tipo>TObjectPtr<[ \t]*(?:class[ \t]+)?[UA]\w+[ \t]*>'
+    r'|TArray<[ \t]*(?:class[ \t]+)?[UA]\w+[ \t]*\*[ \t]*>'
+    r'|[UA]\w+[ \t]*\*)[ \t]*'
+    r'(?P<nom>\w+)[ \t]*(?:=[^;]*)?;', re.M)
+
+
+def punteros_sin_uproperty(raiz):
+    """UObject* miembro sin UPROPERTY (CLAUDE.md §9)."""
+    fallos = []
+    for base, _, ficheros in os.walk(raiz):
+        for nombre in sorted(ficheros):
+            if not nombre.endswith(".h"):
+                continue
+            ruta = os.path.join(base, nombre)
+            crudo = open(ruta, encoding="utf-8", errors="ignore").read()
+            if "GENERATED_BODY" not in crudo:
+                continue        # sólo tipos reflejados: el GC no mira los demás
+            texto = sin_comentarios_ni_cadenas(crudo)
+            lineas = texto.split("\n")
+            prof, d = [], 0
+            for ch in texto:
+                prof.append(d)
+                if ch == "{":
+                    d += 1
+                elif ch == "}":
+                    d -= 1
+            for m in RE_MIEMBRO_UOBJ.finditer(texto):
+                if m.start() >= len(prof) or prof[m.start()] != 1:
+                    continue    # dentro de una función: es una variable local
+                num = texto.count("\n", 0, m.start())
+                if "static" in lineas[num]:
+                    continue    # un static no lo posee la instancia
+                # UPROPERTY en la propia línea o justo encima.
+                if any("UPROPERTY" in l for l in lineas[max(0, num - 2):num + 1]):
+                    continue
+                fallos.append("%s:%d  '%s %s' sin UPROPERTY: el GC no ve este puntero, no\n"
+                              "      lo pone a null cuando el objeto muere y queda colgando "
+                              "(CLAUDE.md §9)"
+                              % (os.path.relpath(ruta, RAIZ), num + 1,
+                                 m.group("tipo").strip(), m.group("nom")))
+    return fallos
+
+
 def main():
     fallos = []
     revisados = 0
@@ -534,6 +587,7 @@ def main():
 
     fallos.extend(parametros_mpc(FUENTE))
     fallos.extend(declaradas_sin_definir(FUENTE))
+    fallos.extend(punteros_sin_uproperty(FUENTE))
 
     for cvar, donde in cvars_sin_registrar(FUENTE):
         fallos.append("%s  escribe la CVar %s y no la registra nadie:\n"
@@ -543,7 +597,7 @@ def main():
     print("%d ficheros .cpp/.h revisados.\n" % revisados)
     if not fallos:
         print("Sin hallazgos. No garantiza que compile — sólo que no tiene")
-        print("estos diez fallos, que son los que se cuelan al editar a ciegas.")
+        print("estos once fallos, que son los que se cuelan al editar a ciegas.")
         return 0
 
     for f in fallos:

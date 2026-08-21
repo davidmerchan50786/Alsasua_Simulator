@@ -53,7 +53,13 @@ protected:
     virtual void Tick(float DeltaTime) override;
 
 private:
-    APawn* PursuitTarget = nullptr;
+    /** Bajo UPROPERTY, y no por formalismo: sin él el GC no ve este puntero,
+     *  así que si el peón perseguido se destruye no se pone a null — se queda
+     *  colgando. El IsValid() que hace Tick sobre un puntero ya liberado es
+     *  comportamiento indefinido, y TickPursuit lo desreferencia después con
+     *  sólo comprobar que no es nulo. CLAUDE.md §9. */
+    UPROPERTY()
+    TObjectPtr<APawn> PursuitTarget = nullptr;
     float PursuitAggression = 1.0f;
 
     TArray<FVector> Waypoints;
