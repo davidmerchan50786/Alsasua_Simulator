@@ -3,7 +3,6 @@
 #include "Engine/Engine.h"
 #include "Engine/StaticMeshActor.h"
 #include "Components/StaticMeshComponent.h"
-#include "Components/BoxComponent.h"
 #include "GeoDataAlsasua.h"
 
 void UAlsasuaTerrainLayersSystem::Initialize(FSubsystemCollectionBase& Collection)
