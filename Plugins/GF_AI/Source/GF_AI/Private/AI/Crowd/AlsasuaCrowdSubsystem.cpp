@@ -5,10 +5,8 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 #include "AI/Crowd/AlsasuaCrowdSubsystem.h"
-#include "AlsasuaCore.h"
 #include "AI/Crowd/SpatialHashGrid.h"
 #include "AI/Crowd/CrowdRagdollActor.h"
-#include "Optimization/AlsasuaActorPoolSubsystem.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Engine/World.h"
 #include "Engine/StaticMesh.h"
@@ -50,19 +48,7 @@ void UAlsasuaCrowdSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	// Inicializar el spatial hash grid.
 	SpatialGrid.Init(GlobalFlockingParams.SeparationRadius * 2.4f, MaxAgents);
 
-	// Pre-warm del pool de ragdolls si se asignó la clase.
-	if (RagdollActorClass != nullptr)
-	{
-		UWorld* PoolWorld = GetWorld();
-		if (!PoolWorld) return;
-		UAlsasuaActorPoolSubsystem* Pool = PoolWorld->GetSubsystem<UAlsasuaActorPoolSubsystem>();
-		if (Pool != nullptr)
-		{
-			Pool->WarmUpPool(RagdollActorClass, RagdollPoolSize);
-		}
-	}
-
-	// Registrar timer de actualización (~30Hz).
+	// Register update timer (~30Hz).
 	UWorld* World = GetWorld();
 	if (World != nullptr)
 	{
@@ -660,22 +646,12 @@ void UAlsasuaCrowdSubsystem::KillAgent(int32 AgentIndex, FVector DeathImpulse)
 		UWorld* World = GetWorld();
 		if (World != nullptr)
 		{
-			UAlsasuaActorPoolSubsystem* Pool = World->GetSubsystem<UAlsasuaActorPoolSubsystem>();
 			AActor* Ragdoll = nullptr;
 
-			if (Pool != nullptr)
-			{
-				Ragdoll = Pool->AcquireActor(RagdollActorClass, Ag.Position,
-					DeathImpulse.ToOrientationRotator());
-			}
-
-			if (Ragdoll == nullptr)
-			{
-				FActorSpawnParameters Params;
-				Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-				Ragdoll = World->SpawnActor<AActor>(RagdollActorClass, Ag.Position,
-					DeathImpulse.ToOrientationRotator(), Params);
-			}
+			FActorSpawnParameters Params;
+			Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+			Ragdoll = World->SpawnActor<AActor>(RagdollActorClass, Ag.Position,
+				DeathImpulse.ToOrientationRotator(), Params);
 
 			if (ACrowdRagdollActor* RagdollChar = Cast<ACrowdRagdollActor>(Ragdoll))
 			{

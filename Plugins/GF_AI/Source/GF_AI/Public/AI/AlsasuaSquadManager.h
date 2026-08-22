@@ -3,8 +3,9 @@
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "Tickable.h"
-#include "AI/AlsasuaAIController.h"
 #include "AlsasuaSquadManager.generated.h"
+
+class AAlsasuaAIController;
 
 UENUM(BlueprintType)
 enum class ESquadTactic : uint8
@@ -16,7 +17,7 @@ enum class ESquadTactic : uint8
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaSquadManager : public UWorldSubsystem, public FTickableGameObject
+class GF_AI_API UAlsasuaSquadManager : public UWorldSubsystem, public FTickableGameObject
 {
     GENERATED_BODY()
 

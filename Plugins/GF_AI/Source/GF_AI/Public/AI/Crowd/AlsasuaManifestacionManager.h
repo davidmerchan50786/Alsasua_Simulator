@@ -98,7 +98,7 @@ struct FManifestacionFollowerData
 //  Configuración de la manifestación.
 // ─────────────────────────────────────────────────────────────────────────────
 USTRUCT(BlueprintType)
-struct ALSASUAMANIFA_API FManifestacionConfig
+struct GF_AI_API FManifestacionConfig
 {
 	GENERATED_BODY()
 
@@ -143,7 +143,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLeaderDied, int32, LeaderIndex);
  * son puros boids matemáticos sin pathfinding (lerp + offset rígido).
  */
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaManifestacionManager : public UWorldSubsystem
+class GF_AI_API UAlsasuaManifestacionManager : public UWorldSubsystem
 {
 	GENERATED_BODY()
 

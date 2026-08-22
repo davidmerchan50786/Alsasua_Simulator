@@ -1,11 +1,11 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "AIController.h"
 #include "AlsasuaAIController.generated.h"
 
 UCLASS()
-class ALSASUAMANIFA_API AAlsasuaAIController : public AAIController
+class GF_AI_API AAlsasuaAIController : public AAIController
 {
     GENERATED_BODY()
 

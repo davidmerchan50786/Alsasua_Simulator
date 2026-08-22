@@ -51,7 +51,7 @@ struct FAcrowdAgentData
 //  Configuración de flocking (editable desde Blueprint o datos).
 // ─────────────────────────────────────────────────────────────────────────────
 USTRUCT(BlueprintType)
-struct ALSASUAMANIFA_API FCrowdFlockingParams
+struct GF_AI_API FCrowdFlockingParams
 {
 	GENERATED_BODY()
 
@@ -104,7 +104,7 @@ struct ALSASUAMANIFA_API FCrowdFlockingParams
 //  Datos de inicialización para spawnear un grupo de agentes.
 // ─────────────────────────────────────────────────────────────────────────────
 USTRUCT(BlueprintType)
-struct ALSASUAMANIFA_API FCrowdSpawnRequest
+struct GF_AI_API FCrowdSpawnRequest
 {
 	GENERATED_BODY()
 
@@ -148,7 +148,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnCrowdAgentKilled, int32, AgentIn
  *   - El SpatialHashGrid reemplaza la NativeArray flat-grid.
  */
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaCrowdSubsystem : public UWorldSubsystem
+class GF_AI_API UAlsasuaCrowdSubsystem : public UWorldSubsystem
 {
 	GENERATED_BODY()
 

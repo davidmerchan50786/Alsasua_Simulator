@@ -27,7 +27,7 @@ enum class ERagdollQuality : uint8
  * Devuelto al pool automáticamente con fade-out.
  */
 UCLASS()
-class ALSASUAMANIFA_API ACrowdRagdollActor : public ACharacter
+class GF_AI_API ACrowdRagdollActor : public ACharacter
 {
 	GENERATED_BODY()
 

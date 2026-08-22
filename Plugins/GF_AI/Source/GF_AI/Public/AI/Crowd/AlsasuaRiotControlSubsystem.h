@@ -36,7 +36,7 @@ enum class ERiotEscalation : uint8
 //  Configuración del sistema de disturbios.
 // ─────────────────────────────────────────────────────────────────────────────
 USTRUCT(BlueprintType)
-struct ALSASUAMANIFA_API FRiotControlConfig
+struct GF_AI_API FRiotControlConfig
 {
 	GENERATED_BODY()
 
@@ -158,7 +158,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEscalationChanged, ERiotEscalatio
  * de Unity a UE 5.4 C++.
  */
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaRiotControlSubsystem : public UWorldSubsystem
+class GF_AI_API UAlsasuaRiotControlSubsystem : public UWorldSubsystem
 {
 	GENERATED_BODY()
 

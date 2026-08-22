@@ -41,7 +41,8 @@ public class AlsasuaManifa : ModuleRules
 			"GF_Vehiculos",
 			"GF_Politica",
 			"GF_Social",
-			"GF_Abilities"
+			"GF_Abilities",
+			"GF_AI"
 		});
 
         PrivateDependencyModuleNames.AddRange(new string[] {

@@ -12,7 +12,7 @@ enum class EAlsasuaTactic : uint8 { March, Blockade, Scatter, SitIn };
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTacticChanged, EAlsasuaTactic, NewTactic);
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaTacticManager : public UWorldSubsystem, public FTickableGameObject
+class GF_AI_API UAlsasuaTacticManager : public UWorldSubsystem, public FTickableGameObject
 {
     GENERATED_BODY()
 

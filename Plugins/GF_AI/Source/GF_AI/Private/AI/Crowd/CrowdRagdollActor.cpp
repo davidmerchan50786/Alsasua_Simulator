@@ -1,7 +1,6 @@
 #include "AI/Crowd/CrowdRagdollActor.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Optimization/AlsasuaActorPoolSubsystem.h"
 #include "TimerManager.h"
 
 ACrowdRagdollActor::ACrowdRagdollActor()
@@ -227,20 +226,5 @@ void ACrowdRagdollActor::Tick(float DeltaTime)
 void ACrowdRagdollActor::OnReturnToPool()
 {
 	bIsFading = false;
-
-	UWorld* W = GetWorld();
-	if (!W)
-	{
-		DeactivateForPool();
-		return;
-	}
-	UAlsasuaActorPoolSubsystem* Pool = W->GetSubsystem<UAlsasuaActorPoolSubsystem>();
-	if (Pool)
-	{
-		Pool->ReleaseActor(this);
-	}
-	else
-	{
-		DeactivateForPool();
-	}
+	Destroy();
 }

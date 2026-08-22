@@ -1,5 +1,4 @@
 #include "AI/AlsasuaAIController.h"
-#include "AlsasuaCharacter.h"
 
 AAlsasuaAIController::AAlsasuaAIController()
 {
@@ -10,7 +9,7 @@ void AAlsasuaAIController::OnPerceptionUpdated(const TArray<AActor*>& UpdatedAct
 {
     for (AActor* Actor : UpdatedActors)
     {
-        if (Cast<AAlsasuaCharacter>(Actor))
+        if (Actor && Actor->ActorHasTag("Player"))
         {
             CurrentAIState = 2;
         }

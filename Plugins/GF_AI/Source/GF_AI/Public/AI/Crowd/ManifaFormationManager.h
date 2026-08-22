@@ -27,7 +27,7 @@ struct FFormationData {
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UManifaFormationManager : public UWorldSubsystem {
+class GF_AI_API UManifaFormationManager : public UWorldSubsystem {
     GENERATED_BODY()
 
 public:

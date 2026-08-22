@@ -1,4 +1,5 @@
 #include "AI/AlsasuaSquadManager.h"
+#include "AI/AlsasuaAIController.h"
 #include "Core/AlsasuaProfiling.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Character.h"
