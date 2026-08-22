@@ -15,7 +15,7 @@ struct FFactionData {
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UFactionSubsystem : public UWorldSubsystem
+class GF_POLITICA_API UFactionSubsystem : public UWorldSubsystem
 {
     GENERATED_BODY()
 public:

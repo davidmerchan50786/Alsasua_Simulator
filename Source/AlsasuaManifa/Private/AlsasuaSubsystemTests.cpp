@@ -1,7 +1,7 @@
 #include "Misc/AutomationTest.h"
 #include "Tests/AutomationCommon.h"
 #include "Engine/World.h"
-#include "AlsasuaManifa/Public/Politics/FactionSubsystem.h"
+#include "Politics/FactionSubsystem.h"
 #include "Systems/Dialog/DialogInstance.h"
 #include "Systems/Dialog/DialogAsset.h"
 #include "Systems/Dialog/DialogTypes.h"

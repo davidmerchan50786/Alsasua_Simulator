@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Politics/Crisis/StateOfAlarmSubsystem.h"
+#include "Politics/StateOfAlarmSubsystem.h"
 #include "CheckpointActor.generated.h"
 
 UCLASS()

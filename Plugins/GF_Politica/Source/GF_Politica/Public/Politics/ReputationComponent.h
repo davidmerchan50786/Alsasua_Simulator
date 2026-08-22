@@ -7,7 +7,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnReputationChanged, FName, FactionId, float, NewValue);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class ALSASUAMANIFA_API UReputationComponent : public UActorComponent
+class GF_POLITICA_API UReputationComponent : public UActorComponent
 {
     GENERATED_BODY()
 

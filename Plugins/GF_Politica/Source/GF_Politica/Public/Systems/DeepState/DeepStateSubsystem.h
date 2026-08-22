@@ -29,7 +29,7 @@ struct FDeepStateProject {
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UDeepStateSubsystem : public UWorldSubsystem {
+class GF_POLITICA_API UDeepStateSubsystem : public UWorldSubsystem {
     GENERATED_BODY()
 public:
     // Inicia una operación encubierta contra el jugador

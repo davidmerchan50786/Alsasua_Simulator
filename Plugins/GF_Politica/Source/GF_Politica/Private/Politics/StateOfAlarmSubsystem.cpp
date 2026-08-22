@@ -1,4 +1,4 @@
-#include "Politics/Crisis/StateOfAlarmSubsystem.h"
+#include "Politics/StateOfAlarmSubsystem.h"
 
 void UStateOfAlarmSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {

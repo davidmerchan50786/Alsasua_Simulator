@@ -3,8 +3,10 @@
 #include "GameFramework/Actor.h"
 #include "PoliticalAgent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHeadlinePublished, const FText&, Headline, const FText&, Body);
+
 UCLASS()
-class ALSASUAMANIFA_API APoliticalAgent : public AActor {
+class GF_POLITICA_API APoliticalAgent : public AActor {
     GENERATED_BODY()
 public:
     APoliticalAgent();
@@ -17,6 +19,9 @@ public:
 
     UFUNCTION(BlueprintCallable, Category="AAA|DeepState")
     void PublishHeadline(const FText& Headline, const FText& Body);
+
+    UPROPERTY(BlueprintAssignable, Category="AAA|DeepState")
+    FOnHeadlinePublished OnHeadlinePublished;
 
 protected:
     virtual void BeginPlay() override;

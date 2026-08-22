@@ -4,7 +4,7 @@
 #include "DeepStateFactionComponent.generated.h"
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class ALSASUAMANIFA_API UDeepStateFactionComponent : public UActorComponent {
+class GF_POLITICA_API UDeepStateFactionComponent : public UActorComponent {
     GENERATED_BODY()
 public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AAA|Faction")

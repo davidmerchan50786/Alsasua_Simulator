@@ -1,0 +1,12 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0",
+  "FriendlyName": "GF Politica",
+  "Description": "Politics systems: factions, reputation, state of alarm, deep state",
+  "Category": "Game Features",
+  "CreatedBy": "Ponytail",
+  "CanContainContent": true,
+  "Installed": false,
+  "Modules": [{ "Name": "GF_Politica", "Type": "Runtime", "LoadingPhase": "PreDefault" }]
+}

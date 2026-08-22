@@ -15,7 +15,7 @@ enum class EStateOfAlarmLevel : uint8 {
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAlarmLevelChanged, EStateOfAlarmLevel, NewLevel);
 
 UCLASS()
-class ALSASUAMANIFA_API UStateOfAlarmSubsystem : public UWorldSubsystem
+class GF_POLITICA_API UStateOfAlarmSubsystem : public UWorldSubsystem
 {
     GENERATED_BODY()
 

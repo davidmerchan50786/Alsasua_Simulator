@@ -1,6 +1,6 @@
 #include "World/Infrastructure/CheckpointActor.h"
 #include "Components/BoxComponent.h"
-#include "Politics/Crisis/StateOfAlarmSubsystem.h"
+#include "Politics/StateOfAlarmSubsystem.h"
 
 ACheckpointActor::ACheckpointActor()
 {
