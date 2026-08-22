@@ -5,7 +5,7 @@
 #include "ManifaManager.generated.h"
 
 UCLASS()
-class ALSASUAMANIFA_API UManifaManager : public UWorldSubsystem, public FTickableGameObject {
+class GF_CORE_API UManifaManager : public UWorldSubsystem, public FTickableGameObject {
     GENERATED_BODY()
 public:
     UPROPERTY(BlueprintReadOnly, Category="AAA|Manifa")

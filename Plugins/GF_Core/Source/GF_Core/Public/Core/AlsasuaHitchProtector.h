@@ -6,7 +6,7 @@
 #include "AlsasuaHitchProtector.generated.h"
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaHitchProtector : public UWorldSubsystem, public FTickableGameObject
+class GF_CORE_API UAlsasuaHitchProtector : public UWorldSubsystem, public FTickableGameObject
 {
 	GENERATED_BODY()
 

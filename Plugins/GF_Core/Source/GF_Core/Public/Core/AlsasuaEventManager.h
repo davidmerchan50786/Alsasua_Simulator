@@ -24,7 +24,7 @@ struct FNarrativeMilestone
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaEventManager : public UWorldSubsystem, public FTickableGameObject
+class GF_CORE_API UAlsasuaEventManager : public UWorldSubsystem, public FTickableGameObject
 {
     GENERATED_BODY()
 

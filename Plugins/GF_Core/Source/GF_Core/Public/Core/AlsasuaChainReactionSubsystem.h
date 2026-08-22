@@ -24,7 +24,7 @@ struct FChainEvent
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaChainReactionSubsystem : public UWorldSubsystem, public FTickableGameObject
+class GF_CORE_API UAlsasuaChainReactionSubsystem : public UWorldSubsystem, public FTickableGameObject
 {
     GENERATED_BODY()
 

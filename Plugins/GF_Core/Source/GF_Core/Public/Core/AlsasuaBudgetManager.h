@@ -16,7 +16,7 @@ enum class EBudgetCategory : uint8
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaBudgetManager : public UWorldSubsystem, public FTickableGameObject
+class GF_CORE_API UAlsasuaBudgetManager : public UWorldSubsystem, public FTickableGameObject
 {
 	GENERATED_BODY()
 

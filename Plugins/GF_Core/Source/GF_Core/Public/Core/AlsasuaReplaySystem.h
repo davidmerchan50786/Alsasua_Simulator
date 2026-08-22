@@ -21,7 +21,7 @@ struct FReplaySnapshot
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaReplaySystem : public UWorldSubsystem, public FTickableGameObject
+class GF_CORE_API UAlsasuaReplaySystem : public UWorldSubsystem, public FTickableGameObject
 {
     GENERATED_BODY()
 

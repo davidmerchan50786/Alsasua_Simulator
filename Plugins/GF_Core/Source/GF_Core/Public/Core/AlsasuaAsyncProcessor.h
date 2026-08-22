@@ -27,7 +27,7 @@ private:
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnVisibilityUpdated, const TArray<int32>&, VisibleIndices);
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaAsyncProcessor : public UWorldSubsystem
+class GF_CORE_API UAlsasuaAsyncProcessor : public UWorldSubsystem
 {
     GENERATED_BODY()
 
