@@ -14,13 +14,33 @@
 // con su arco, apoyado en el terreno y orientado según el trazado. Eso es lo que
 // se ve desde fuera y es geometría real.
 //
-// Lo que NO hace es agujerear el terreno. ATerrenoGenerado es una malla
-// procedural de 4033² sacada del heightmap y recortarle un hueco por donde pasa
-// el trazado es una operación de terreno, no de esta clase — y el terreno está
-// afinado al detalle en RESUMEN_TECNICO.md. Así que el túnel no se puede
+// Lo que NO hace es agujerear el terreno, así que el túnel no se puede
 // atravesar: se ven sus bocas en la ladera y por dentro no hay nada. Cavar la
 // galería sin poder entrar en ella sería geometría enterrada que nadie ve
 // pagando draw calls.
+//
+// SI ALGUIEN SE PLANTEA CAVARLA, éstos son los números, medidos sobre el dato y
+// sobre los parámetros del terreno, para no volver a decidirlo a ojo:
+//
+//   · Galería total de los cinco túneles: 4187 m de trazado.
+//   · Malla de la galería: a 4 m por anillo y 8 vértices por anillo son ~8400
+//     vértices. Nada — las fachadas del pueblo son 60 000 en una sección.
+//   · Hueco en el terreno: las galerías pasan por debajo de unos 9145 quads de
+//     los 16 257 024 del terreno, o sea el 0,056%, repartidos en ~26 chunks de
+//     los 1024. El terreno ya se construye chunk a chunk emitiendo triángulos,
+//     así que saltarse los de dentro del corredor es un filtro local, no una
+//     reconstrucción.
+//
+// O sea que el coste de malla NO es la razón para no hacerlo; es mucho menor de
+// lo que sugiere "una malla de 4033²". Lo que de verdad cuesta es el ORDEN: el
+// terreno se construye en la fase 1 y los túneles en la 51b, así que para
+// recortar el hueco el terreno tendría que conocer los corredores antes de
+// existir. Eso es invertir una dependencia en el sistema más básico del
+// arranque, y hacerlo mal deja un agujero por el que se cae el jugador.
+//
+// Y sigue siendo decisión de producto: un túnel atravesable necesita galería,
+// colisión, iluminación y una razón para entrar. Los números de arriba dicen
+// que se puede; no dicen que merezca la pena.
 #pragma once
 
 #include "CoreMinimal.h"
