@@ -1,5 +1,5 @@
 #include "Abilities/Infiltration/AlsasuaAbility_Lockpick.h"
-#include "Systems/Criminal/HideoutActor.h"
+#include "Systemics/Criminal/HideoutActor.h"
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/OverlapResult.h"

@@ -8,5 +8,17 @@
   "CreatedBy": "Ponytail",
   "CanContainContent": true,
   "Installed": false,
-  "Modules": [{ "Name": "GF_UI", "Type": "Runtime", "LoadingPhase": "PreDefault" }]
+  "Modules": [
+    {
+      "Name": "GF_UI",
+      "Type": "Runtime",
+      "LoadingPhase": "PreDefault"
+    }
+  ],
+  "Plugins": [
+    {
+      "Enabled": true,
+      "Name": "GF_Dialogos"
+    }
+  ]
 }

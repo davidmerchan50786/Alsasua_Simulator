@@ -6,7 +6,7 @@ public class GF_NPCs : ModuleRules
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         CppStandard = CppStandardVersion.Cpp20;
         bEnableExceptions = true;
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "AlsasuaCore", "NavigationSystem" });
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "AlsasuaCore", "NavigationSystem", "AIModule", "GF_Social", "GF_Politica" });
         PrivateDependencyModuleNames.AddRange(new string[] { "Json", "JsonUtilities" });
     }
 }

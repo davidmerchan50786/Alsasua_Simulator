@@ -1,0 +1,12 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0",
+  "FriendlyName": "GF Optimization",
+  "Description": "Performance systems: actor pool, crowd HISM, mass parallel, mass proxies",
+  "Category": "Game Features",
+  "CreatedBy": "Ponytail",
+  "CanContainContent": true,
+  "Installed": false,
+  "Modules": [{ "Name": "GF_Optimization", "Type": "Runtime", "LoadingPhase": "PreDefault" }]
+}

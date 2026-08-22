@@ -1,5 +1,5 @@
 #include "Character/Stealth/SocialStealthComponent.h"
-#include "AI/AlsasuaCrowdAgentComponent.h"
+// forward-declared
 #include "Kismet/KismetSystemLibrary.h"
 
 USocialStealthComponent::USocialStealthComponent()
@@ -41,7 +41,7 @@ void USocialStealthComponent::UpdateStealthStatus()
     int32 ValidNPCsNearby = 0;
     for (AActor* Actor : OverlappingActors)
     {
-        if (Actor->FindComponentByClass<UAlsasuaCrowdAgentComponent>())
+        if (Actor->ActorHasTag("CrowdAgent"))
         {
             ValidNPCsNearby++;
         }

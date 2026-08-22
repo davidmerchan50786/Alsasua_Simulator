@@ -8,5 +8,9 @@
   "CreatedBy": "Ponytail",
   "CanContainContent": true,
   "Installed": false,
-  "Modules": [{ "Name": "GF_NPCs", "Type": "Runtime", "LoadingPhase": "PreDefault" }]
+  "Modules": [{ "Name": "GF_NPCs", "Type": "Runtime", "LoadingPhase": "PreDefault" }],
+  "Plugins": [
+    { "Name": "GF_Social", "Enabled": true },
+    { "Name": "GF_Politica", "Enabled": true }
+  ]
 }

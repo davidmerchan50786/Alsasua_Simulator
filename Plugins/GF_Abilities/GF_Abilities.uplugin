@@ -8,5 +8,25 @@
   "CreatedBy": "Ponytail",
   "CanContainContent": true,
   "Installed": false,
-  "Modules": [{ "Name": "GF_Abilities", "Type": "Runtime", "LoadingPhase": "PreDefault" }]
+  "Modules": [
+    {
+      "Name": "GF_Abilities",
+      "Type": "Runtime",
+      "LoadingPhase": "PreDefault"
+    }
+  ],
+  "Plugins": [
+    {
+      "Enabled": true,
+      "Name": "GameplayAbilities"
+    },
+    {
+      "Enabled": true,
+      "Name": "GF_NPCs"
+    },
+    {
+      "Enabled": true,
+      "Name": "GF_Social"
+    }
+  ]
 }

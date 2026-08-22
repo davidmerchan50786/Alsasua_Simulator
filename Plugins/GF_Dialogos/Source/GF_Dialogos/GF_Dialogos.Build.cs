@@ -6,7 +6,7 @@ public class GF_Dialogos : ModuleRules
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         CppStandard = CppStandardVersion.Cpp20;
         bEnableExceptions = true;
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "AlsasuaCore", "GameplayTags" });
+        PublicDependencyModuleNames.AddRange(new string[] { "GF_NPCs",  "Core", "CoreUObject", "Engine", "AlsasuaCore", "GameplayTags" });
         PrivateDependencyModuleNames.AddRange(new string[] { "Json", "JsonUtilities" });
     }
 }

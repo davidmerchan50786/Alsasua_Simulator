@@ -44,7 +44,10 @@ public class AlsasuaManifa : ModuleRules
 			"GF_Abilities",
 			"GF_AI",
 			"GF_World",
-			"GF_Core"
+			"GF_Core",
+			"GF_Systems",
+			"GF_Optimization",
+			"GF_Debug"
 		});
 
         PrivateDependencyModuleNames.AddRange(new string[] {

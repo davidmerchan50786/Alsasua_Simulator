@@ -8,7 +8,7 @@ public class AlsasuaUI : ModuleRules
         PublicDependencyModuleNames.AddRange(new string[] {
             "Core", "CoreUObject", "Engine", "UMG", "Slate", "SlateCore", "InputCore",
             "AlsasuaCore", "AlsasuaWorld", "AlsasuaEntities", "AlsasuaGameplay", "AlsasuaManifa",
-            "GF_Social", "GF_Politica", "GF_World",
+            "GF_Social", "GF_Politica", "GF_World", "GF_Systems",
             "GameplayAbilities", "Json", "JsonUtilities"
         });
     }
