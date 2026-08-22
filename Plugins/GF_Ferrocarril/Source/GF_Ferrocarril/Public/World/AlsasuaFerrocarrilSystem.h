@@ -23,7 +23,7 @@
 #include "AlsasuaFerrocarrilSystem.generated.h"
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaFerrocarrilSystem : public UWorldSubsystem
+class GF_FERROCARRIL_API UAlsasuaFerrocarrilSystem : public UWorldSubsystem
 {
 	GENERATED_BODY()
 

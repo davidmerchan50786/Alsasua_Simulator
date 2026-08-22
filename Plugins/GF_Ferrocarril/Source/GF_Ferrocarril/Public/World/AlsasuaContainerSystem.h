@@ -34,7 +34,7 @@ struct FContainer
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaContainerSystem : public UGameInstanceSubsystem
+class GF_FERROCARRIL_API UAlsasuaContainerSystem : public UGameInstanceSubsystem
 {
     GENERATED_BODY()
 public:

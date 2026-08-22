@@ -1,0 +1,12 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0",
+  "FriendlyName": "GF Ferrocarril",
+  "Description": "Rail systems: tracks, containers, train spawning",
+  "Category": "Game Features",
+  "CreatedBy": "Ponytail",
+  "CanContainContent": true,
+  "Installed": false,
+  "Modules": [{ "Name": "GF_Ferrocarril", "Type": "Runtime", "LoadingPhase": "PreDefault" }]
+}
