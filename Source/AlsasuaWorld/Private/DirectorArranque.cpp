@@ -57,7 +57,6 @@
 #include "World/AlsasuaSidewalkSystem.h"
 #include "World/AlsasuaFountainSystem.h"
 #include "World/AlsasuaDetailDressingSystem.h"
-#include "World/AlsasuaBuildingInteriorSystem.h"
 #include "World/AlsasuaParkingSystem.h"
 #include "World/AlsasuaRoadMarkingsSystem.h"
 #include "World/AlsasuaStreetArtSystem.h"
@@ -292,6 +291,19 @@ void ADirectorArranque::IniciarConstruccion()
             if (UAlsasuaInteriorLightComponent* Interior =
                     NewObject<UAlsasuaInteriorLightComponent>(Edificio))
             {
+                // Igual que el Barrio de arriba: MANIFA no ve a
+                // AEdificioGenerado. Sin estos datos el componente creaba cuatro
+                // plantas de tres luces en TODOS los edificios —12 360 luces
+                // puntuales para 1030 footprints—, con los pisos de más
+                // flotando sobre el tejado de los caseríos de una planta.
+                // Plantas viene del LiDAR (CargadorEdificios), y el ancho de la
+                // caja de la malla ya construida: AEdificioGenerado no guarda su
+                // footprint —eso vive en FTejadoConstruido— pero sus bounds sí
+                // están, y es lo mismo a estos efectos.
+                const FVector Extension = Edificio->GetComponentsBoundingBox(true).GetSize();
+                Interior->Configurar(Edificio->Plantas,
+                                     FMath::Min(Extension.X, Extension.Y),
+                                     Edificio->Id);
                 Interior->RegisterComponent(); InteriorCount++;
             }
         }

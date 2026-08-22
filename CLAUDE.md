@@ -556,6 +556,22 @@ posiciones cambian entre runs.
   `EWorldType::Game`, y `ShouldCreateSubsystem` deja fuera los mundos de
   editor. El auditor los separa ahora en "ARRANCAN SOLOS" e "INERTES".
 
+- **La capa nocturna se encendió con 12 360 luces puntuales dentro.** Las fases
+  17-20 llevaban años adjuntando cero componentes; al arreglarlas corrieron por
+  primera vez, y `UAlsasuaInteriorLightComponent` creaba `MaxFloors *
+  NumLightsPerFloor` = 12 luces **en todos los edificios**, midiera lo que
+  midiera el edificio: 1030 footprints × 12. Encima ticaba 5 veces por segundo
+  llamando a `SetIntensity` y `SetLightColor` en todas ellas, también de día con
+  la intensidad clavada en cero — del orden de 120 000 invalidaciones de estado
+  de render por segundo sin que cambiara un píxel, que es justo lo que prohíbe
+  §8.2. Ahora las plantas salen de `AEdificioGenerado::Plantas` (medida LiDAR) y
+  las luces por planta del ancho del footprint, el sorteo va **antes** de crear
+  —creaba las doce y luego decidía cuáles encender, o sea la mitad registradas
+  para no alumbrar nunca—, se escribe sólo cuando el valor cambia, y más allá de
+  `DistanciaMaximaCm` se apagan una vez y se deja de tocar nada. De 12 360 a unas
+  3 650, y de ésas sólo tican las cercanas. **Ojo con el resto de la capa
+  nocturna**: lleva encendida desde hace nada y no la ha visto nadie corriendo.
+
 - **Sólo hay UNA colección de parámetros de material, y había dos nombres.**
   `/Game/Materiales/MPC_Clima` la crean `UCreadorMaterialEdificio` y
   `Tools/SetupMaterials.py`, y es la que conduce `UClimaSubsystem`.
