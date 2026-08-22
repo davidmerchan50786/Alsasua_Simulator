@@ -1,0 +1,12 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0",
+  "FriendlyName": "GF World",
+  "Description": "World systems: water, terrain, decals, doors, lighting, post-process, VFX, particles, collectibles",
+  "Category": "Game Features",
+  "CreatedBy": "Ponytail",
+  "CanContainContent": true,
+  "Installed": false,
+  "Modules": [{ "Name": "GF_World", "Type": "Runtime", "LoadingPhase": "PreDefault" }]
+}
