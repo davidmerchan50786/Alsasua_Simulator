@@ -1,4 +1,4 @@
-#include "AlsasuaMinimapWidget.h"
+#include "UI/AlsasuaMinimapWidget.h"
 #include "Engine/Canvas.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/Pawn.h"

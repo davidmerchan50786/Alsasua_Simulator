@@ -5,7 +5,7 @@
 #include "DialogWidgetBase.generated.h"
 
 UCLASS(Abstract)
-class ALSASUAMANIFA_API UDialogWidgetBase : public UUserWidget {
+class GF_UI_API UDialogWidgetBase : public UUserWidget {
     GENERATED_BODY()
 public:
     // Evento para que el Blueprint dibuje el texto del NPC

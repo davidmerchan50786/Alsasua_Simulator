@@ -6,7 +6,7 @@
 
 /** Sistema que renderiza texto dinámico en las mallas de las pancartas */
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class ALSASUAMANIFA_API UAlsasuaBannerRenderer : public UActorComponent
+class GF_UI_API UAlsasuaBannerRenderer : public UActorComponent
 {
     GENERATED_BODY()
 

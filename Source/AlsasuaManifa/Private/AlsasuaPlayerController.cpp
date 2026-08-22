@@ -1,7 +1,7 @@
 // AlsasuaPlayerController.cpp
 #include "AlsasuaPlayerController.h"
 #include "Kismet/GameplayStatics.h"
-#include "AlsasuaMinimapWidget.h"
+#include "UI/AlsasuaMinimapWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/InputComponent.h"
 

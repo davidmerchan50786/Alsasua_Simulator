@@ -15,7 +15,7 @@ struct FNodoInvestigacion {
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UInvestigationBoardWidget : public UUserWidget
+class GF_UI_API UInvestigationBoardWidget : public UUserWidget
 {
     GENERATED_BODY()
 

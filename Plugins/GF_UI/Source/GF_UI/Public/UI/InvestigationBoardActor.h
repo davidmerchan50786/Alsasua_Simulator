@@ -5,8 +5,10 @@
 #include "UI/InvestigationBoardWidget.h"
 #include "InvestigationBoardActor.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSabotageRequested, FName, NodeId);
+
 UCLASS()
-class ALSASUAMANIFA_API AInvestigationBoardActor : public AActor
+class GF_UI_API AInvestigationBoardActor : public AActor
 {
     GENERATED_BODY()
 
@@ -24,6 +26,9 @@ public:
 
     UFUNCTION(BlueprintCallable, Category="AAA|Investigacion")
     void LanzarMisionDeSabotaje(FName NodeId);
+
+    UPROPERTY(BlueprintAssignable, Category="AAA|Investigacion")
+    FOnSabotageRequested OnSabotageRequested;
 
 protected:
     virtual void BeginPlay() override;

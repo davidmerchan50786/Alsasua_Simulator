@@ -16,7 +16,7 @@ struct FMinimapIcon
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaMinimapWidget : public UUserWidget
+class GF_UI_API UAlsasuaMinimapWidget : public UUserWidget
 {
 	GENERATED_BODY()
 

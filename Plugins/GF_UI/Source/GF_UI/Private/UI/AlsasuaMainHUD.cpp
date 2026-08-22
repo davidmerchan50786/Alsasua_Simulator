@@ -1,7 +1,5 @@
 #include "UI/AlsasuaMainHUD.h"
 #include "AI/AlsasuaCrowdSentiment.h"
-#include "AI/Crowd/AlsasuaCrowdSubsystem.h"
-#include "Systems/Disguise/DisguiseComponent.h"
 #include "Engine/Canvas.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/Pawn.h"
@@ -19,9 +17,7 @@ void AAlsasuaMainHUD::DrawHUD()
     DrawDisguiseBar();
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-//  DrawSocialBars: barras de Tensión Social y Apoyo Popular.
-// ═══════════════════════════════════════════════════════════════════════════
+// DrawSocialBars: barras de Tensión Social y Apoyo Popular.
 void AAlsasuaMainHUD::DrawSocialBars()
 {
 	if (!Canvas) return;
@@ -48,21 +44,13 @@ void AAlsasuaMainHUD::DrawSocialBars()
     DrawText(TEXT("APOYO POPULAR"), FColor::White, 50, 80);
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-//  DrawCrowdTelemetry: telemetría real de la multitud.
-// ═══════════════════════════════════════════════════════════════════════════
+// DrawCrowdTelemetry: telemetría real de la multitud.
 void AAlsasuaMainHUD::DrawCrowdTelemetry()
 {
 	if (!Canvas) return;
 
-	UWorld* W = GetWorld();
-	if (!W) return;
-
-	UAlsasuaCrowdSubsystem* Crowd = W->GetSubsystem<UAlsasuaCrowdSubsystem>();
-	if (!Crowd) return;
-
-	const int32 Total = Crowd->GetAgentCount();
-	const int32 Alive = Crowd->GetAliveAgentCount();
+	const int32 Alive = CrowdAliveCount;
+	const int32 Total = CrowdTotalCount;
 	const int32 Dead = Total - Alive;
 
 	FString Telemetry = FString::Printf(
@@ -87,20 +75,12 @@ void AAlsasuaMainHUD::DrawCrowdTelemetry()
 	}
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-//  DrawDisguiseBar: barra de durabilidad del disfraz del jugador.
-// ═══════════════════════════════════════════════════════════════════════════
+// DrawDisguiseBar: barra de durabilidad del disfraz del jugador.
 void AAlsasuaMainHUD::DrawDisguiseBar()
 {
-	APlayerController* PC = GetOwningPlayerController();
-	if (!PC || !PC->GetPawn()) return;
-
-	UDisguiseComponent* Disguise = PC->GetPawn()->FindComponentByClass<UDisguiseComponent>();
-	if (!Disguise || !Disguise->IsDisguised()) return;
-
+	if (DisguisePercent <= 0.f) return;
     if (!Canvas) return;
 
-    const float Percent = Disguise->GetDurabilityPercent();
     const float BarWidth = 200.f;
     const float BarHeight = 12.f;
     const float X = Canvas->SizeX - BarWidth - 50.f;
@@ -111,11 +91,11 @@ void AAlsasuaMainHUD::DrawDisguiseBar()
 
 	// Barra de color según durabilidad.
 	FColor BarColor;
-	if (Percent > 0.5f)
+	if (DisguisePercent > 0.5f)
 	{
 		BarColor = DurabilityGreen;
 	}
-	else if (Percent > 0.2f)
+	else if (DisguisePercent > 0.2f)
 	{
 		BarColor = DurabilityYellow;
 	}
@@ -124,14 +104,14 @@ void AAlsasuaMainHUD::DrawDisguiseBar()
 		BarColor = DurabilityRed;
 	}
 
-	DrawRect(BarColor, X + 1, Y + 1, (BarWidth - 2) * Percent, BarHeight - 2);
+	DrawRect(BarColor, X + 1, Y + 1, (BarWidth - 2) * DisguisePercent, BarHeight - 2);
 
 	// Texto del tipo de disfraz.
 	static const TCHAR* TypeNames[] = { TEXT("NINGUNO"), TEXT("MOMOTXORRO"), TEXT("CASUAL"), TEXT("PRENSA") };
-	const int32 TypeIdx = FMath::Clamp((int32)Disguise->GetCurrentDisguise(), 0, 3);
+	const int32 TypeIdx = FMath::Clamp(DisguiseType, 0, 3);
 
 	FString Label = FString::Printf(TEXT("DISFRAZ: %s  %d%%"),
-		TypeNames[TypeIdx], FMath::RoundToInt(Percent * 100.f));
+		TypeNames[TypeIdx], FMath::RoundToInt(DisguisePercent * 100.f));
 
 	DrawText(Label, FColor::White, X, Y - 18);
 }

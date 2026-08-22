@@ -1,5 +1,4 @@
 #include "UI/InvestigationBoardActor.h"
-#include "Mision/SabotageMissionActor.h"
 #include "Engine/World.h"
 
 AInvestigationBoardActor::AInvestigationBoardActor()
@@ -38,10 +37,6 @@ void AInvestigationBoardActor::MarcarNodoComoSaboteado(FName NodeId)
 
 void AInvestigationBoardActor::LanzarMisionDeSabotaje(FName NodeId)
 {
-    UWorld* World = GetWorld();
-    if (!World) return;
-
-    // Verificar que el nodo existe y está descubierto.
     bool bNodeValid = false;
     for (const auto& Nodo : TodosLosNodos) {
         if (Nodo.NodeId == NodeId && Nodo.bDescubierto && !Nodo.bSaboteado) {
@@ -56,20 +51,5 @@ void AInvestigationBoardActor::LanzarMisionDeSabotaje(FName NodeId)
         return;
     }
 
-    // Spawnear el ASabotageMissionActor cerca del tablero.
-    FActorSpawnParameters Params;
-    Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-
-    const FVector SpawnLoc = GetActorLocation() + GetActorForwardVector() * 200.f;
-
-    ASabotageMissionActor* Mission = World->SpawnActor<ASabotageMissionActor>(
-        ASabotageMissionActor::StaticClass(), SpawnLoc, FRotator::ZeroRotator, Params);
-
-    if (Mission)
-    {
-        Mission->TargetNodeId = NodeId;
-        Mission->StartMission();
-
-        UE_LOG(LogTemp, Warning, TEXT("Iniciando Operacion de Sabotaje contra: %s"), *NodeId.ToString());
-    }
+    OnSabotageRequested.Broadcast(NodeId);
 }
