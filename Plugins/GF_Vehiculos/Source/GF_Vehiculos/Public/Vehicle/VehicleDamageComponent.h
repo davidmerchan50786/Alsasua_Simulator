@@ -8,7 +8,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnVehicleDestroyed);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTirePopped, int32, TireIndex);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class ALSASUAMANIFA_API UVehicleDamageComponent : public UActorComponent
+class GF_VEHICULOS_API UVehicleDamageComponent : public UActorComponent
 {
     GENERATED_BODY()
 

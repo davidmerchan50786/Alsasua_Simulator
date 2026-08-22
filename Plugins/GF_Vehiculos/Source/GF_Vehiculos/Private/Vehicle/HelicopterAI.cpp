@@ -1,4 +1,4 @@
-#include "Vehicle/Systems/HelicopterAI.h"
+#include "Vehicle/HelicopterAI.h"
 #include "Components/SpotLightComponent.h"
 
 AHelicopterAI::AHelicopterAI() {

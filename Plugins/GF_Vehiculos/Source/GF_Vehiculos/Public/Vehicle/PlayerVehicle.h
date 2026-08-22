@@ -16,7 +16,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnVehicleExited, APlayerVehicle*, V
  *   - Enter / Exit
  */
 UCLASS()
-class ALSASUAMANIFA_API APlayerVehicle : public ABaseVehicle
+class GF_VEHICULOS_API APlayerVehicle : public ABaseVehicle
 {
     GENERATED_BODY()
 

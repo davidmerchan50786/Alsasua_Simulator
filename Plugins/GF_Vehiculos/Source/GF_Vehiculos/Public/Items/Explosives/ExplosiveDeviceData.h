@@ -11,7 +11,7 @@ enum class EExplosiveFuseType : uint8 {
 };
 
 UCLASS(BlueprintType)
-class ALSASUAMANIFA_API UExplosiveDeviceData : public UPrimaryDataAsset {
+class GF_VEHICULOS_API UExplosiveDeviceData : public UPrimaryDataAsset {
     GENERATED_BODY()
 
 public:

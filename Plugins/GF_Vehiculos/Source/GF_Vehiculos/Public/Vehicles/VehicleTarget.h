@@ -6,7 +6,7 @@
 #include "VehicleTarget.generated.h"
 
 UCLASS()
-class ALSASUAMANIFA_API AVehicleTarget : public APawn {
+class GF_VEHICULOS_API AVehicleTarget : public APawn {
     GENERATED_BODY()
 
 public:

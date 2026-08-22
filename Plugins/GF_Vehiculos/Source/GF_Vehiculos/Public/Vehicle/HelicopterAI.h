@@ -4,7 +4,7 @@
 #include "HelicopterAI.generated.h"
 
 UCLASS()
-class ALSASUAMANIFA_API AHelicopterAI : public APawn {
+class GF_VEHICULOS_API AHelicopterAI : public APawn {
     GENERATED_BODY()
 public:
     AHelicopterAI();

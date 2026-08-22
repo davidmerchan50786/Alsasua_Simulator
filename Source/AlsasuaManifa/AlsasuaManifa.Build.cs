@@ -37,7 +37,8 @@ public class AlsasuaManifa : ModuleRules
 			"GF_NPCs",
 			"GF_Dialogos",
 			"GF_UI",
-			"GF_Misiones"
+			"GF_Misiones",
+			"GF_Vehiculos"
 		});
 
         PrivateDependencyModuleNames.AddRange(new string[] {

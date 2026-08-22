@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "ExplosiveDeviceData.h"
+#include "Items/Explosives/ExplosiveDeviceData.h"
 #include "IncendiaryCharge.generated.h"
 
 UCLASS()

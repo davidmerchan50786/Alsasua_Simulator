@@ -9,7 +9,7 @@ class UNiagaraSystem;
 class USoundBase;
 
 UCLASS()
-class ALSASUAMANIFA_API ABaseVehicle : public APawn, public IDamageable
+class GF_VEHICULOS_API ABaseVehicle : public APawn, public IDamageable
 {
     GENERATED_BODY()
 

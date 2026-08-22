@@ -5,7 +5,7 @@
 #include "AlsasuaPoliceVan.generated.h"
 
 UCLASS()
-class ALSASUAMANIFA_API AAlsasuaPoliceVan : public APawn
+class GF_VEHICULOS_API AAlsasuaPoliceVan : public APawn
 {
     GENERATED_BODY()
 

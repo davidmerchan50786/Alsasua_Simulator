@@ -4,7 +4,7 @@
 #include "PoliceScannerComponent.generated.h"
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class ALSASUAMANIFA_API UPoliceScannerComponent : public UActorComponent {
+class GF_VEHICULOS_API UPoliceScannerComponent : public UActorComponent {
     GENERATED_BODY()
 public:
     UPoliceScannerComponent();

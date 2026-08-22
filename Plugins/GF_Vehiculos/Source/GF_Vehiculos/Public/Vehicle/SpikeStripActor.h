@@ -5,7 +5,7 @@
 #include "SpikeStripActor.generated.h"
 
 UCLASS()
-class ALSASUAMANIFA_API ASpikeStripActor : public AActor
+class GF_VEHICULOS_API ASpikeStripActor : public AActor
 {
     GENERATED_BODY()
 

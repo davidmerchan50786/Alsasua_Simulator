@@ -4,7 +4,7 @@
 #include "FuelStationActor.generated.h"
 
 UCLASS()
-class ALSASUAMANIFA_API AFuelStationActor : public AActor {
+class GF_VEHICULOS_API AFuelStationActor : public AActor {
     GENERATED_BODY()
 public:
     AFuelStationActor();

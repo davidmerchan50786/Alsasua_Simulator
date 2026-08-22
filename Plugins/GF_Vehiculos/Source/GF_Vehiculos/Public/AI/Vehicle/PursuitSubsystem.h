@@ -5,7 +5,7 @@
 #include "PursuitSubsystem.generated.h"
 
 UCLASS()
-class ALSASUAMANIFA_API UPursuitSubsystem : public UWorldSubsystem
+class GF_VEHICULOS_API UPursuitSubsystem : public UWorldSubsystem
 {
     GENERATED_BODY()
 

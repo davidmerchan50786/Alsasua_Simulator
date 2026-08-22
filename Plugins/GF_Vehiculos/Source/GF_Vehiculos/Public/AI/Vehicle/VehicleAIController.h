@@ -12,7 +12,7 @@
  *   · Frenado por obstáculos
  */
 UCLASS()
-class ALSASUAMANIFA_API AVehicleAIController : public AAIController
+class GF_VEHICULOS_API AVehicleAIController : public AAIController
 {
     GENERATED_BODY()
 

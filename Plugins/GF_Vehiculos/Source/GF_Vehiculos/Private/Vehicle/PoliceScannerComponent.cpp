@@ -1,4 +1,4 @@
-#include "Vehicle/Systems/PoliceScannerComponent.h"
+#include "Vehicle/PoliceScannerComponent.h"
 
 UPoliceScannerComponent::UPoliceScannerComponent()
 {
