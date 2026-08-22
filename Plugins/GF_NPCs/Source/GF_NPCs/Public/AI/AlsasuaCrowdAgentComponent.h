@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
@@ -8,7 +8,7 @@ UENUM(BlueprintType)
 enum class ECrowdAgentState : uint8 { Neutral, Panicking, Resisting, Following };
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class ALSASUAMANIFA_API UAlsasuaCrowdAgentComponent : public UActorComponent
+class GF_NPCS_API UAlsasuaCrowdAgentComponent : public UActorComponent
 {
     GENERATED_BODY()
 

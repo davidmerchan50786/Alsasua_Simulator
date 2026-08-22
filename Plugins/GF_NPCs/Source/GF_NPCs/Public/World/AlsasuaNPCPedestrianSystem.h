@@ -39,7 +39,7 @@ struct FNPCPedestrian
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaNPCPedestrianSystem : public UGameInstanceSubsystem
+class GF_NPCS_API UAlsasuaNPCPedestrianSystem : public UGameInstanceSubsystem
 {
     GENERATED_BODY()
 public:

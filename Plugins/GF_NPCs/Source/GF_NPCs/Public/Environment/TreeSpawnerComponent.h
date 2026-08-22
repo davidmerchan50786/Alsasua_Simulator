@@ -8,7 +8,7 @@
 #include "TreeSpawnerComponent.generated.h"
 
 USTRUCT(BlueprintType)
-struct ALSASUAMANIFA_API FTreePlacementData
+struct GF_NPCS_API FTreePlacementData
 {
 	GENERATED_BODY()
 
@@ -29,7 +29,7 @@ struct ALSASUAMANIFA_API FTreePlacementData
 };
 
 USTRUCT(BlueprintType)
-struct ALSASUAMANIFA_API FSpeciesMeshMap
+struct GF_NPCS_API FSpeciesMeshMap
 {
 	GENERATED_BODY()
 
@@ -44,7 +44,7 @@ struct ALSASUAMANIFA_API FSpeciesMeshMap
 };
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class ALSASUAMANIFA_API UTreeSpawnerComponent : public UActorComponent
+class GF_NPCS_API UTreeSpawnerComponent : public UActorComponent
 {
 	GENERATED_BODY()
 

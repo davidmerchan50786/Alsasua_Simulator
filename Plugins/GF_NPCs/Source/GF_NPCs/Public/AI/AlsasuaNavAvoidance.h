@@ -6,7 +6,7 @@
 
 /** Movimiento AAA: Evitación recíproca de obstáculos (Inspirado en RVO/Detour) */
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class ALSASUAMANIFA_API UAlsasuaNavAvoidance : public UActorComponent
+class GF_NPCS_API UAlsasuaNavAvoidance : public UActorComponent
 {
 	GENERATED_BODY()
 

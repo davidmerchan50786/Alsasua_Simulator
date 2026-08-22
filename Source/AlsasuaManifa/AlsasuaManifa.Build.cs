@@ -33,7 +33,8 @@ public class AlsasuaManifa : ModuleRules
 			"AlsasuaKernel",
 			"GF_Clima",
 			"GF_Trafico",
-			"GF_Audio"
+			"GF_Audio",
+			"GF_NPCs"
 		});
 
         PrivateDependencyModuleNames.AddRange(new string[] {
