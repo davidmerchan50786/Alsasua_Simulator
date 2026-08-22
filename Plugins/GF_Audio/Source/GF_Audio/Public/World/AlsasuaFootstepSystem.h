@@ -5,7 +5,7 @@
 #include "AlsasuaFootstepSystem.generated.h"
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaFootstepSystem : public UBlueprintFunctionLibrary
+class GF_AUDIO_API UAlsasuaFootstepSystem : public UBlueprintFunctionLibrary
 {
     GENERATED_BODY()
 

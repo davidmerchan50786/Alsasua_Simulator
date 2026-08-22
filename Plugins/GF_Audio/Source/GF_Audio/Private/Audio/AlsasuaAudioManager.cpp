@@ -1,6 +1,5 @@
 #include "Audio/AlsasuaAudioManager.h"
 #include "AI/AlsasuaCrowdSentiment.h"
-#include "Mass/AlsasuaMassParallelManager.h"
 
 void UAlsasuaAudioManager::Tick(float DeltaTime)
 {
@@ -8,9 +7,7 @@ void UAlsasuaAudioManager::Tick(float DeltaTime)
 	if (!W) return;
 
 	UAlsasuaCrowdSentiment* Sentiment = W->GetSubsystem<UAlsasuaCrowdSentiment>();
-	UAlsasuaMassParallelManager* Mass = W->GetSubsystem<UAlsasuaMassParallelManager>();
-
-	if (!Sentiment || !Mass) return;
+	if (!Sentiment) return;
 
 	// La intensidad depende de la Tensión y de la Cantidad de gente próxima
 	float TargetIntensity = Sentiment->GlobalTension;

@@ -1,0 +1,12 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0",
+  "FriendlyName": "GF Audio",
+  "Description": "Audio systems: manager, adaptive music, ambisonics, ambient, procedural, reverb, footsteps",
+  "Category": "Game Features",
+  "CreatedBy": "Ponytail",
+  "CanContainContent": true,
+  "Installed": false,
+  "Modules": [{ "Name": "GF_Audio", "Type": "Runtime", "LoadingPhase": "PreDefault" }]
+}

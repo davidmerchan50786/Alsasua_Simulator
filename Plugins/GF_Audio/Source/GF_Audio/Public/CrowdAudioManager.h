@@ -18,7 +18,7 @@ class USoundAttenuation;
  *   - Atenuación por distancia del jugador
  */
 UCLASS()
-class ALSASUAMANIFA_API UCrowdAudioManager : public UWorldSubsystem
+class GF_AUDIO_API UCrowdAudioManager : public UWorldSubsystem
 {
     GENERATED_BODY()
 

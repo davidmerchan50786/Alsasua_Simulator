@@ -7,7 +7,7 @@
 #include "AlsasuaAudioManager.generated.h"
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaAudioManager : public UWorldSubsystem, public FTickableGameObject
+class GF_AUDIO_API UAlsasuaAudioManager : public UWorldSubsystem, public FTickableGameObject
 {
 	GENERATED_BODY()
 

@@ -1,5 +1,4 @@
 #include "World/AlsasuaProceduralAudio.h"
-#include "World/AlsasuaVisualEffectsManager.h"
 #include "World/Time/TimeOfDayManager.h"
 #include "World/Weather/WeatherSubsystem.h"
 #include "Components/AudioComponent.h"
@@ -62,18 +61,21 @@ void UAlsasuaProceduralAudio::UpdateAudioLayers(float DeltaTime)
 	UWorld* W = GetWorld();
 	if (!W) return;
 
-	UAlsasuaVisualEffectsManager* VFXMgr = W->GetSubsystem<UAlsasuaVisualEffectsManager>();
 	UTimeOfDayManager* TimeMgr = W->GetSubsystem<UTimeOfDayManager>();
 	UWeatherSubsystem* Weather = W->GetSubsystem<UWeatherSubsystem>();
 
-	if (!VFXMgr || !TimeMgr) return;
+	if (!TimeMgr) return;
 
-	const float Wind = VFXMgr->WindIntensity;
 	const float Hour = TimeMgr->CurrentTime;
 	const bool bRaining = Weather && (Weather->CurrentWeather == EWeatherSubsystemState::Rainy ||
 		Weather->CurrentWeather == EWeatherSubsystemState::Thunderstorm);
 	const bool bIsNight = Hour >= CricketStartHour || Hour < CricketEndHour;
 	const bool bIsDay = Hour >= BirdStartHour && Hour < BirdEndHour;
+
+	// Wind approximation from weather state (no VEM dependency)
+	float Wind = 0.3f;
+	if (Weather && Weather->CurrentWeather == EWeatherSubsystemState::Thunderstorm) Wind = 0.9f;
+	else if (bRaining) Wind = 0.6f;
 
 	// --- Wind ---
 	const float TargetWindVol = FMath::Lerp(0.1f, WindVolumeMax, Wind);

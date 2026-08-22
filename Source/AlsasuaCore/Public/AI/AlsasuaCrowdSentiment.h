@@ -16,7 +16,7 @@ enum class ECrowdMood : uint8
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaCrowdSentiment : public UWorldSubsystem, public FTickableGameObject
+class ALSASUACORE_API UAlsasuaCrowdSentiment : public UWorldSubsystem, public FTickableGameObject
 {
 	GENERATED_BODY()
 

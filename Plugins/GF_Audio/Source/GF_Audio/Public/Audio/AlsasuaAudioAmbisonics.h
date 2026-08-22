@@ -7,7 +7,7 @@
 
 /** Gestiona el paisaje sonoro envolvente de la manifestación */
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class ALSASUAMANIFA_API UAlsasuaAudioAmbisonics : public UActorComponent
+class GF_AUDIO_API UAlsasuaAudioAmbisonics : public UActorComponent
 {
     GENERATED_BODY()
 

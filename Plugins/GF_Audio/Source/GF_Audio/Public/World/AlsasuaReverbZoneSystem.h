@@ -8,7 +8,7 @@
  * Añade reverb adaptativo: interior, exterior, callejón, iglesia, cueva.
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class ALSASUAMANIFA_API UAlsasuaReverbZoneSystem : public UActorComponent
+class GF_AUDIO_API UAlsasuaReverbZoneSystem : public UActorComponent
 {
 	GENERATED_BODY()
 

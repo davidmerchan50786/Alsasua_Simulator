@@ -19,7 +19,7 @@ enum class EAmbientLayer : uint8
 };
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class ALSASUAMANIFA_API UAlsasuaAmbientAudioSystem : public UActorComponent
+class GF_AUDIO_API UAlsasuaAmbientAudioSystem : public UActorComponent
 {
     GENERATED_BODY()
 public:

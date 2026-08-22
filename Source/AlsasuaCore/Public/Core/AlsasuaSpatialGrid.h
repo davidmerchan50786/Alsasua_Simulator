@@ -17,7 +17,7 @@ struct FGridCell
  * Cada actor se asocia a una celda; al moverse, se migra automáticamente.
  */
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaSpatialGrid : public UWorldSubsystem
+class ALSASUACORE_API UAlsasuaSpatialGrid : public UWorldSubsystem
 {
 	GENERATED_BODY()
 

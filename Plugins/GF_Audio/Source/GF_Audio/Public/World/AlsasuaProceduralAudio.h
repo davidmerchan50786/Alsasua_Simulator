@@ -11,7 +11,7 @@ class USoundAttenuation;
  * Cambia ambientes sonoros según ubicación y clima.
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class ALSASUAMANIFA_API UAlsasuaProceduralAudio : public UActorComponent
+class GF_AUDIO_API UAlsasuaProceduralAudio : public UActorComponent
 {
 	GENERATED_BODY()
 

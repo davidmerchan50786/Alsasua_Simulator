@@ -19,7 +19,7 @@ struct FMusicLayer {
 };
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class ALSASUAMANIFA_API UAlsasuaAdaptiveMusic : public UActorComponent
+class GF_AUDIO_API UAlsasuaAdaptiveMusic : public UActorComponent
 {
     GENERATED_BODY()
 public:
