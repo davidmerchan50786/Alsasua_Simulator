@@ -1,0 +1,24 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0",
+  "FriendlyName": "GF UI",
+  "Description": "UI systems: main HUD, event HUD, dialog widget, minimap, investigation board, banners",
+  "Category": "Game Features",
+  "CreatedBy": "Ponytail",
+  "CanContainContent": true,
+  "Installed": false,
+  "Modules": [
+    {
+      "Name": "GF_UI",
+      "Type": "Runtime",
+      "LoadingPhase": "PreDefault"
+    }
+  ],
+  "Plugins": [
+    {
+      "Enabled": true,
+      "Name": "GF_Dialogos"
+    }
+  ]
+}

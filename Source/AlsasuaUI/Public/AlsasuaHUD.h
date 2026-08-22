@@ -2,9 +2,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
+#include "WorldEventTypes.h"
 #include "AlsasuaHUD.generated.h"
-
-struct FWorldEventDataV2;
 
 UCLASS()
 class ALSASUAUI_API AAlsasuaHUD : public AHUD

@@ -1,6 +1,6 @@
 #pragma once
 #include "GameFramework/Actor.h"
-#include "InteractableInterface.h"
+#include "Interaction/InteractableInterface.h"
 #include "MegaphoneActor.generated.h"
 
 UCLASS()

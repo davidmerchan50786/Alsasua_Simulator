@@ -1,0 +1,44 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0",
+  "FriendlyName": "GF Debug",
+  "Description": "Debug tools: HUD, debug manager, debug steering, subsystem tests",
+  "Category": "Game Features",
+  "CreatedBy": "Ponytail",
+  "CanContainContent": true,
+  "Installed": false,
+  "Modules": [
+    {
+      "Name": "GF_Debug",
+      "Type": "Runtime",
+      "LoadingPhase": "PreDefault"
+    }
+  ],
+  "Plugins": [
+    {
+      "Enabled": true,
+      "Name": "GF_Dialogos"
+    },
+    {
+      "Enabled": true,
+      "Name": "GF_Misiones"
+    },
+    {
+      "Enabled": true,
+      "Name": "GF_NPCs"
+    },
+    {
+      "Enabled": true,
+      "Name": "GF_Politica"
+    },
+    {
+      "Enabled": true,
+      "Name": "GF_Social"
+    },
+    {
+      "Enabled": true,
+      "Name": "GF_Systems"
+    }
+  ]
+}

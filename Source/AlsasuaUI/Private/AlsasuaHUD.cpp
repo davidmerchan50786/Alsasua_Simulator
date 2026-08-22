@@ -22,9 +22,8 @@
 #include "EngineUtils.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
-#include "UI/AlsasuaEventHUD.h"
 #include "Systems/Social/SocialMediaSubsystem.h"
-#include "Systems/Events/EventManagerSubsystem.h"
+#include "Systemics/Events/EventManagerSubsystem.h"
 #include "AlsasuaAttributeSet.h"
 #include "Kismet/GameplayStatics.h"
 

@@ -6,5 +6,6 @@ public class AlsasuaCore : ModuleRules
     {
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "Json", "JsonUtilities" });
+        PrivateDependencyModuleNames.AddRange(new string[] { "AssetRegistry" });
     }
 }

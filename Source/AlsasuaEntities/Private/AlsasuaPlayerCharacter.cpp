@@ -4,8 +4,6 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
-#include "Engine/SkeletalMesh.h"
-#include "Animation/AnimInstance.h"
 #include "GameFramework/PlayerController.h"
 #include "Engine/LocalPlayer.h"
 #include "Engine/World.h"
@@ -15,7 +13,6 @@
 #include "InputMappingContext.h"
 #include "InputAction.h"
 #include "InputModifiers.h"
-#include "UObject/ConstructorHelpers.h"
 
 AAlsasuaPlayerCharacter::AAlsasuaPlayerCharacter()
 {
@@ -23,24 +20,11 @@ AAlsasuaPlayerCharacter::AAlsasuaPlayerCharacter()
 
 	GetCapsuleComponent()->InitCapsuleSize(40.f, 90.f);
 
-	// Cuerpo: usa mesh/anim BP del proyecto si existen; si no, deja el fallback del Character.
+	// Este pawn no es el predeterminado del juego. No carga assets de ejemplo ausentes
+	// durante la construcción del CDO; un Blueprint puede asignar malla y animación.
 	if (USkeletalMeshComponent* M = GetMesh())
 	{
 		M->SetRelativeLocationAndRotation(FVector(0.f, 0.f, -90.f), FRotator(0.f, -90.f, 0.f));
-
-		static ConstructorHelpers::FObjectFinder<USkeletalMesh> SkelMesh(
-			TEXT("/Game/Characters/Mannequins/Meshes/SK_Mannequin.SK_Mannequin"));
-		if (SkelMesh.Succeeded())
-		{
-			M->SetSkeletalMesh(SkelMesh.Object);
-		}
-
-		static ConstructorHelpers::FClassFinder<UAnimInstance> AnimBP(
-			TEXT("/Game/Characters/Mannequins/Anims/Unarmed/ABP_Unarmed"));
-		if (AnimBP.Succeeded())
-		{
-			M->SetAnimInstanceClass(AnimBP.Class);
-		}
 	}
 
 	// Movimiento AAA: el personaje orienta hacia el avance; cámara lleva el yaw; puede agacharse.

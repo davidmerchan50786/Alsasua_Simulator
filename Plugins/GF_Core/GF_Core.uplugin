@@ -1,0 +1,36 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0",
+  "FriendlyName": "GF Core",
+  "Description": "Core infrastructure: async processor, budget, chain reaction, event manager, hitch protector, replay, manifa manager",
+  "Category": "Game Features",
+  "CreatedBy": "Ponytail",
+  "CanContainContent": true,
+  "Installed": false,
+  "Modules": [
+    {
+      "Name": "GF_Core",
+      "Type": "Runtime",
+      "LoadingPhase": "PreDefault"
+    }
+  ],
+  "Plugins": [
+    {
+      "Enabled": true,
+      "Name": "GF_AI"
+    },
+    {
+      "Enabled": true,
+      "Name": "GF_Audio"
+    },
+    {
+      "Enabled": true,
+      "Name": "GF_NPCs"
+    },
+    {
+      "Enabled": true,
+      "Name": "GF_Optimization"
+    }
+  ]
+}

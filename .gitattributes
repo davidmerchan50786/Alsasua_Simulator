@@ -1,2 +1,13 @@
 Content/Terreno/alsasua_satelite_pnoa_8192.png filter=lfs diff=lfs merge=lfs -text
 Content/Textures/ortofoto_pnoa_plaza_8192.png filter=lfs diff=lfs merge=lfs -text
+Content/Megaplant_Library/Tree_Norway_Spruce/Instances/SKM_Branch_Norway_Spruce_02.uasset filter=lfs diff=lfs merge=lfs -text
+Content/UnrealDrive_CitySample/Textures/8K_Albedo.uasset filter=lfs diff=lfs merge=lfs -text
+Content/UnrealDrive_CitySample/Textures/Plaza/Floors_Stone/8K_Albedo.uasset filter=lfs diff=lfs merge=lfs -text
+Content/UnrealDrive_CitySample/Textures/Plaza/Stone_Floor_01/8K_Albedo.uasset filter=lfs diff=lfs merge=lfs -text
+Content/UnrealDrive_CitySample/Textures/Plaza/Stone_Floor_02/8K_Albedo_v02.uasset filter=lfs diff=lfs merge=lfs -text
+Content/UnrealDrive_CitySample/Textures/Plaza/Stone_Tile/8K_Albedo.uasset filter=lfs diff=lfs merge=lfs -text
+Content/UnrealDrive_CitySample/Textures/Plaza/Street_Sidewalk/8K_Albedo.uasset filter=lfs diff=lfs merge=lfs -text
+Content/UnrealDrive_CitySample/Textures/Plaza/Street_Sidewalk/8K_Normal.uasset filter=lfs diff=lfs merge=lfs -text
+Content/UnrealDrive_CitySample/Textures/Sidewalks/8K_Albedo.uasset filter=lfs diff=lfs merge=lfs -text
+Content/UnrealDrive_CitySample/Textures/Sidewalks/T_sidewalk_largeSquareTile_pebble_Color.uasset filter=lfs diff=lfs merge=lfs -text
+Content/UnrealDrive_CitySample/Textures/Tile_Sidewalk/8K_Albedo.uasset filter=lfs diff=lfs merge=lfs -text

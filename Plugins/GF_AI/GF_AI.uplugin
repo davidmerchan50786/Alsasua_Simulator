@@ -1,0 +1,32 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0",
+  "FriendlyName": "GF AI",
+  "Description": "AI systems: crowd, squad, tactics, formation, riot, ragdoll, spatial hash",
+  "Category": "Game Features",
+  "CreatedBy": "Ponytail",
+  "CanContainContent": true,
+  "Installed": false,
+  "Modules": [
+    {
+      "Name": "GF_AI",
+      "Type": "Runtime",
+      "LoadingPhase": "PreDefault"
+    }
+  ],
+  "Plugins": [
+    {
+      "Enabled": true,
+      "Name": "GF_NPCs"
+    },
+    {
+      "Enabled": true,
+      "Name": "Niagara"
+    },
+    {
+      "Enabled": true,
+      "Name": "GF_Social"
+    }
+  ]
+}

@@ -1,8 +1,11 @@
 #include "AlsasuaVegetationSpawner.h"
 #include "ProceduralMeshComponent.h"
+#include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "GeoDataAlsasua.h"
+#include "MuestreadorAltura.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+#include "Misc/PackageName.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "Engine/World.h"
@@ -17,6 +20,7 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 {
 	UWorld* World = GetWorld();
 	if (!World) return 0;
+	const UMuestreadorAltura* Alturas = World->GetSubsystem<UMuestreadorAltura>();
 
 	// Load greenspaces data
 	const FString RutaGS = FPaths::Combine(FPaths::ProjectContentDir(), TEXT("Datos/greenspaces_unity.json"));
@@ -40,8 +44,6 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 	// suelo. Si no está creado todavía, cae al de árbol como antes.
 	UMaterialInterface* MatHierba = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Terreno_Hierba.M_Terreno_Hierba"));
 	if (!MatHierba) MatHierba = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Arbol.M_Arbol"));
-
-	UMaterialInterface* MatArbusto = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Arbol.M_Arbol"));
 
 	// Collect all greenspace polygons
 	TArray<TArray<FVector>> Polygons;
@@ -68,6 +70,28 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[Vegetacion] No se encontraron polígonos de zonas verdes"));
 		return 0;
+	}
+
+	// Los cauces reales concentran arbusto ribereño; se usa una muestra ligera
+	// para no convertir la siembra en una búsqueda cara contra todos los vértices.
+	TArray<FVector2D> PuntosAgua;
+	FString TextoAgua;
+	if (FFileHelper::LoadFileToString(TextoAgua, *FPaths::Combine(FPaths::ProjectContentDir(), TEXT("Datos/waterways_unity.json"))))
+	{
+		TArray<TSharedPtr<FJsonValue>> Cauces;
+		if (FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(TextoAgua), Cauces))
+		{
+			for (const TSharedPtr<FJsonValue>& Cauce : Cauces)
+			{
+				const TArray<TSharedPtr<FJsonValue>>* Pts = nullptr;
+				if (!Cauce->AsObject()->TryGetArrayField(TEXT("pts"), Pts) || !Pts) continue;
+				for (int32 i = 0; i + 2 < Pts->Num(); i += 9)
+				{
+					const FVector M = UAlsasuaGeoData::UnityaUnreal(FVector((*Pts)[i]->AsNumber(), 0.0, (*Pts)[i + 2]->AsNumber()));
+					PuntosAgua.Add(FVector2D(M.X, M.Y));
+				}
+			}
+		}
 	}
 
 	// Compute bounds of all polygons
@@ -99,7 +123,9 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 		return bInside;
 	};
 
-	AActor* HierbaActor = World->SpawnActor<AActor>(AActor::StaticClass(), FVector(MinX, MinY, 0), FRotator::ZeroRotator);
+	// Los vértices se generan ya en coordenadas mundo; el actor debe quedarse en
+	// origen para no sumar MinX/MinY una segunda vez y desplazar toda la vegetación.
+	AActor* HierbaActor = World->SpawnActor<AActor>(AActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator);
 	if (!HierbaActor) return 0;
 
 #if WITH_EDITOR
@@ -110,7 +136,76 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 	HierbaPMC->RegisterComponent();
 	HierbaPMC->SetupAttachment(HierbaActor->GetRootComponent());
 	HierbaPMC->SetMobility(EComponentMobility::Static);
+	HierbaPMC->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	HierbaPMC->SetCanEverAffectNavigation(false);
+	HierbaPMC->SetCullDistance(80000.f);
 	HierbaActor->SetRootComponent(HierbaPMC);
+
+	// El paquete externo aporta un arbusto completo. HISM conserva una sola draw
+	// call; cuando no está instalado se mantiene el billboard procedural ligero.
+	const FString RutaArbusto = TEXT("/Game/GV_FreeShrubsPack/Meshes/Shrubs/Wind/Shrub_A/GV_Vol7_Shrub_A_full_type1");
+	UHierarchicalInstancedStaticMeshComponent* ArbustosHISM = NewObject<UHierarchicalInstancedStaticMeshComponent>(HierbaActor);
+	UStaticMesh* Arbusto = FPackageName::DoesPackageExist(RutaArbusto)
+		? LoadObject<UStaticMesh>(nullptr, *(RutaArbusto + TEXT(".GV_Vol7_Shrub_A_full_type1"))) : nullptr;
+	if (Arbusto)
+	{
+		ArbustosHISM->SetStaticMesh(Arbusto);
+		ArbustosHISM->SetupAttachment(HierbaPMC);
+		ArbustosHISM->SetMobility(EComponentMobility::Static);
+		ArbustosHISM->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		ArbustosHISM->SetCanEverAffectNavigation(false);
+		ArbustosHISM->SetCullDistances(0, 80000);
+		ArbustosHISM->RegisterComponent();
+	}
+	else
+	{
+		ArbustosHISM = nullptr;
+	}
+
+	const FString RutaFlor = TEXT("/Game/OWD_Flowers_Pack/Meshes/SM_Flower_01_1");
+	UHierarchicalInstancedStaticMeshComponent* FloresHISM = NewObject<UHierarchicalInstancedStaticMeshComponent>(HierbaActor);
+	UStaticMesh* FlorMesh = FPackageName::DoesPackageExist(RutaFlor)
+		? LoadObject<UStaticMesh>(nullptr, *(RutaFlor + TEXT(".SM_Flower_01_1"))) : nullptr;
+	if (FlorMesh)
+	{
+		FloresHISM->SetStaticMesh(FlorMesh);
+		FloresHISM->SetupAttachment(HierbaPMC);
+		FloresHISM->SetMobility(EComponentMobility::Static);
+		FloresHISM->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		FloresHISM->SetCanEverAffectNavigation(false);
+		FloresHISM->SetCullDistances(0, 60000);
+		FloresHISM->RegisterComponent();
+	}
+	else
+	{
+		FloresHISM = nullptr;
+	}
+
+	// Fase 1: Nanite Plants — césped real que reemplaza quads procedurales.
+	TArray<UStaticMesh*> NanitePlants;
+	{
+		const TCHAR* RutasNanite[] = {
+			TEXT("/Game/Nanite_Plants_Sample_Collection/Geometries/SM_Free_Lolium_perenne_3DGardenPlants.Free_Lolium_perenne_3DGardenPlants"),
+			TEXT("/Game/Nanite_Plants_Sample_Collection/Geometries/SM_Free_Ophiopogon_japonicus_3DGardenPlants.Free_Ophiopogon_japonicus_3DGardenPlants"),
+			TEXT("/Game/Nanite_Plants_Sample_Collection/Geometries/SM_Abelia_x_grandiflora_Nanite_Free_Sample.Abelia_x_grandiflora_Nanite_Free_Sample"),
+		};
+		for (const TCHAR* Ruta : RutasNanite)
+			if (UStaticMesh* M = LoadObject<UStaticMesh>(nullptr, Ruta))
+				NanitePlants.Add(M);
+	}
+
+	UHierarchicalInstancedStaticMeshComponent* NaniteHISM = nullptr;
+	if (NanitePlants.Num() > 0)
+	{
+		NaniteHISM = NewObject<UHierarchicalInstancedStaticMeshComponent>(HierbaActor);
+		NaniteHISM->SetStaticMesh(NanitePlants[0]);
+		NaniteHISM->SetupAttachment(HierbaPMC);
+		NaniteHISM->SetMobility(EComponentMobility::Static);
+		NaniteHISM->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		NaniteHISM->SetCanEverAffectNavigation(false);
+		NaniteHISM->SetCullDistances(0, 80000);
+		NaniteHISM->RegisterComponent();
+	}
 
 	TArray<FVector> V;
 	TArray<int32> T;
@@ -121,8 +216,18 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 
 	int32 HierbaCount = 0;
 	int32 ArbustoCount = 0;
+	int32 FlorCount = 0;
+	int32 NaniteCount = 0;
+	const float ProbFlor = FlorMesh ? 0.3f : 0.f;
+	const float ProbNanite = NaniteHISM ? 0.4f : 0.f;  // 40% hierba → Nanite real
 	const float StepSize = 150.f; // sample every 1.5m
 	FRandomStream Rng(42);
+	const auto CercaDeAgua = [&PuntosAgua](const FVector& P) -> float
+	{
+		float Dist2Min = 4000.f * 4000.f;
+		for (const FVector2D& Agua : PuntosAgua) Dist2Min = FMath::Min(Dist2Min, FVector2D::DistSquared(FVector2D(P.X, P.Y), Agua));
+		return 1.f - FMath::Clamp(FMath::Sqrt(Dist2Min) / 4000.f, 0.f, 1.f);
+	};
 
 	// Geometría helper: quad doble cara (visible desde ambos lados sin material two-sided).
 	// Añade 4 verts + 4 triángulos (2 caras × 2 triángulos).
@@ -158,10 +263,36 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 			}
 			if (!bInside) continue;
 
+			const float Cluster = FMath::Lerp(0.35f, 1.f, FMath::Clamp((FMath::PerlinNoise2D(FVector2D(TestPt.X, TestPt.Y) / 5000.f) + 0.4f) / 0.8f, 0.f, 1.f));
+			const float ProbHierba = DensidadHierba * 0.8f * Cluster;
+			const float ProbArbusto = DensidadArbusto * FMath::Lerp(0.35f, 2.f, CercaDeAgua(TestPt));
 			const float Rand = Rng.FRand();
 
-			if (Rand < DensidadHierba * 0.8f && HierbaCount < MaxHierba)
+			if (Rand < ProbHierba && HierbaCount < MaxHierba)
 			{
+				const float Suelo = Alturas ? Alturas->AlturaMundo(TestPt) : 0.f;
+
+				if (FloresHISM && Rng.FRand() < ProbFlor)
+				{
+					const float Escala = Rng.FRandRange(0.6f, 1.2f);
+					FloresHISM->AddInstance(FTransform(FRotator(0.f, Rng.FRandRange(0.f, 360.f), 0.f),
+						FVector(TestPt.X, TestPt.Y, Suelo), FVector(Escala)));
+					++FlorCount;
+					continue;
+				}
+
+				// Fase 1: Nanite real reemplaza quad procedural.
+				if (NaniteHISM && Rng.FRand() < ProbNanite)
+				{
+					const int32 IdxMesh = Rng.RandRange(0, NanitePlants.Num() - 1);
+					const float Escala = Rng.FRandRange(0.5f, 1.0f);
+					NaniteHISM->AddInstance(FTransform(
+						FRotator(0.f, Rng.FRandRange(0.f, 360.f), 0.f),
+						FVector(TestPt.X, TestPt.Y, Suelo), FVector(Escala)));
+					++NaniteCount;
+					continue;
+				}
+
 				// Hierba: 2 quads perpendiculares en X (billboard cruzado).
 				const float H    = Rng.FRandRange(30.f, 75.f);    // altura (cm)
 				const float W    = H * 0.55f;                     // semi-ancho
@@ -169,7 +300,7 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 				const float CR   = FMath::DegreesToRadians(Yaw);
 				const FVector XD(FMath::Cos(CR), FMath::Sin(CR), 0.f);
 				const FVector YD(-XD.Y, XD.X, 0.f);
-				const FVector Base(TestPt.X, TestPt.Y, 0.f);
+				const FVector Base(TestPt.X, TestPt.Y, Suelo + 2.f);
 				const FVector Top(0.f, 0.f, H);
 
 				// Color verde con variación natural
@@ -186,13 +317,23 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 				        XD, GrassColor);
 				++HierbaCount;
 			}
-			else if (Rand < DensidadHierba * 0.8f + DensidadArbusto && ArbustoCount < MaxArbustos)
+			else if (Rand < ProbHierba + ProbArbusto && ArbustoCount < MaxArbustos)
 			{
+				const float Suelo = Alturas ? Alturas->AlturaMundo(TestPt) : 0.f;
+				if (ArbustosHISM)
+				{
+					const float Escala = Rng.FRandRange(0.45f, 0.8f);
+					ArbustosHISM->AddInstance(FTransform(FRotator(0.f, Rng.FRandRange(0.f, 360.f), 0.f),
+						FVector(TestPt.X, TestPt.Y, Suelo), FVector(Escala)));
+					++ArbustoCount;
+					continue;
+				}
+
 				// Arbusto: 3 quads cruzados a 60° — aproxima una esfera de follaje.
 				const float H    = Rng.FRandRange(45.f, 110.f);  // altura (cm)
 				const float W    = H * 0.75f;                    // semi-ancho
 				const float Yaw  = Rng.FRandRange(0.f, 360.f);
-				const FVector Base(TestPt.X, TestPt.Y, 0.f);
+				const FVector Base(TestPt.X, TestPt.Y, Suelo + 2.f);
 				const FVector Top(0.f, 0.f, H);
 
 				const uint8 G = (uint8)Rng.RandRange(60, 115);
@@ -214,11 +355,11 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 
 	if (V.Num() >= 3)
 	{
-		HierbaPMC->CreateMeshSection(0, V, T, N, UV, C, Tan, true);
+		HierbaPMC->CreateMeshSection(0, V, T, N, UV, C, Tan, false);
 		if (MatHierba) HierbaPMC->SetMaterial(0, MatHierba);
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("[Vegetacion] %d hierbas + %d arbustos sembrados en %d zonas verdes"),
-		HierbaCount, ArbustoCount, Polygons.Num());
-	return HierbaCount + ArbustoCount;
+	UE_LOG(LogTemp, Log, TEXT("[Vegetacion] %d hierbas + %d nanite + %d flores + %d arbustos sembrados en %d zonas verdes"),
+		HierbaCount, NaniteCount, FlorCount, ArbustoCount, Polygons.Num());
+	return HierbaCount + NaniteCount + FlorCount + ArbustoCount;
 }

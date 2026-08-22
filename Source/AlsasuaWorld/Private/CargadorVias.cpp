@@ -12,6 +12,7 @@
 #include "ProceduralMeshComponent.h"
 #include "Materials/MaterialInterface.h"
 #include "CargarMaterialComun.h"
+#include "Engine/Engine.h"
 
 // Material de agua creado por la utilidad de editor UCreadorMaterialAgua.
 // Si no existe aún, los ríos quedan con su color de vértice (azulado).
@@ -32,6 +33,15 @@ static UMaterialInterface* CargarMaterialAcera()
 		TEXT("/Game/Road/Material/MI/M_Sidewalk_Master_Inst.M_Sidewalk_Master_Inst"),
 		TEXT("/Game/Materiales/M_Terreno_Acera.M_Terreno_Acera"),
 		TEXT("/Game/Materiales/M_Edificio.M_Edificio"));
+}
+
+FString UCargadorVias::GetDebugSummary() const
+{
+	return FString::Printf(TEXT("Prepared=%s | Built=%d | Queued=%d | Remaining=%d"),
+		bPreparado ? TEXT("yes") : TEXT("no"),
+		Construidas,
+		Trabajos.Num(),
+		FMath::Max(0, Trabajos.Num() - Idx));
 }
 
 void UCargadorVias::OnWorldBeginPlay(UWorld& InWorld)
@@ -187,6 +197,7 @@ bool UCargadorVias::PasoPresupuesto(double PresupuestoMs)
 		}
 		if ((FPlatformTime::Seconds() - t0) * 1000.0 >= PresupuestoMs) break;
 	}
+	if (Terminado()) UE_LOG(LogTemp, Log, TEXT("[Vias] %s"), *GetDebugSummary());
 	return Terminado();
 }
 
@@ -200,5 +211,6 @@ int32 UCargadorVias::Cargar()
 	while (!PasoPresupuesto(1000.0) && ++IterGuard < MaxIter) {}
 	if (IterGuard >= MaxIter) UE_LOG(LogTemp, Warning, TEXT("[Vias] Iteration guard reached (%d)"), MaxIter);
 	UE_LOG(LogTemp, Log, TEXT("[Vias] %d vías construidas (aceras+ferrocarril+ríos+caminos)"), Construidas);
+	UE_LOG(LogTemp, Log, TEXT("[Vias] %s"), *GetDebugSummary());
 	return Construidas;
 }

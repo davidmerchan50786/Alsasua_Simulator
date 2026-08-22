@@ -1,0 +1,17 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0",
+  "FriendlyName": "GF NPCs",
+  "Description": "NPC systems: pedestrians, crowd agents, nav avoidance, tree spawner",
+  "Category": "Game Features",
+  "CreatedBy": "Ponytail",
+  "CanContainContent": true,
+  "Installed": false,
+  "Modules": [{ "Name": "GF_NPCs", "Type": "Runtime", "LoadingPhase": "PreDefault" }],
+  "Plugins": [
+    { "Name": "GF_Social", "Enabled": true },
+    { "Name": "GF_Politica", "Enabled": true },
+    { "Name": "GF_Carreteras", "Enabled": true }
+  ]
+}

@@ -35,6 +35,7 @@ public:
 	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
 
 	UFUNCTION(BlueprintCallable, Category="Mundo") int32 Cargar();
+	UFUNCTION(BlueprintCallable, Category="Mundo") FString GetDebugSummary() const;
 	void PrepararCarga();
 	bool PasoPresupuesto(double PresupuestoMs);
 	bool Terminado() const { return bPreparado && Idx >= Trabajos.Num(); }

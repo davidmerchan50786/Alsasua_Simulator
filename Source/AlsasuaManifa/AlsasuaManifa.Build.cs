@@ -14,11 +14,6 @@ public class AlsasuaManifa : ModuleRules
         CppStandard = CppStandardVersion.Cpp20;
         bUseUnity = false;
 
-        // Ciclo heredado del port Unity: AlsasuaGameplay/AlsasuaUI dependen de este módulo
-        // y este de AlsasuaUI (widgets de pausa). UBT 5.8 lo marca como error; se confiesa
-        // la arista Manifa->UI (los 3 ciclos pasan por ella) como hacen los módulos del engine.
-        CircularlyReferencedDependentModules.Add("AlsasuaUI");
-
 	PublicDependencyModuleNames.AddRange(new string[] { 
 			"Core", 
 			"CoreUObject", 
@@ -34,8 +29,25 @@ public class AlsasuaManifa : ModuleRules
 			"Landscape",
 			"Niagara",
 			"ProceduralMeshComponent",
-			"AlsasuaCore",
-			"AlsasuaUI"
+			"AlsasuaCore", 
+			"AlsasuaKernel",
+			"GF_Clima",
+			"GF_Trafico",
+			"GF_Audio",
+			"GF_NPCs",
+			"GF_Dialogos",
+			"GF_UI",
+			"GF_Misiones",
+			"GF_Vehiculos",
+			"GF_Politica",
+			"GF_Social",
+			"GF_Abilities",
+			"GF_AI",
+			"GF_World",
+			"GF_Core",
+			"GF_Systems",
+			"GF_Optimization",
+			"GF_Debug"
 		});
 
         PrivateDependencyModuleNames.AddRange(new string[] {

@@ -25,6 +25,8 @@ static FLinearColor ColorEspecie(const FString& E)
 	if (E.StartsWith(TEXT("Betula")))  return FLinearColor(0.34f, 0.52f, 0.20f);  // abedul, claro
 	if (E.StartsWith(TEXT("Populus")) || E.StartsWith(TEXT("Salix"))) return FLinearColor(0.38f, 0.52f, 0.18f); // chopo/sauce
 	if (E.StartsWith(TEXT("Prunus")))  return FLinearColor(0.30f, 0.42f, 0.22f);
+	if (E.StartsWith(TEXT("Cocos")) || E.StartsWith(TEXT("Phoenix")))
+		return FLinearColor(0.22f, 0.48f, 0.16f);  // palmera
 	return FLinearColor(0.24f, 0.40f, 0.16f);  // genérico
 }
 
@@ -83,6 +85,9 @@ static FString ArquetipoDe(const FString& Especie)
 	if (Especie.StartsWith(TEXT("Prunus")))   return TEXT("Prunus");
 	if (Especie.StartsWith(TEXT("Platanus"))) return TEXT("Platanus");
 	if (Especie.StartsWith(TEXT("Acer")))     return TEXT("Acer");
+	// Palmeras DZ_Assets.
+	if (Especie.StartsWith(TEXT("Cocos")))    return TEXT("CocosNucifera");
+	if (Especie.StartsWith(TEXT("Phoenix")))  return TEXT("PhoenixCanariensis");
 	// El fresno no tiene malla propia; comparte porte con el tilo.
 	if (Especie.StartsWith(TEXT("Fraxinus"))) return TEXT("Tilia");
 	if (Especie.StartsWith(TEXT("Tilia")))    return TEXT("Tilia");
@@ -104,17 +109,23 @@ UHierarchicalInstancedStaticMeshComponent* UCargadorArboles::ComponenteDe(const 
 	{
 		C->SetStaticMesh(MallaDefecto);
 	}
-	C->SetCullDistances(0, 80000);  // árboles visibles hasta 800 m — coherente con RadioMax del GobernadorRender
+	C->SetCullDistances(0, 80000);
 	C->SetCastShadow(true);
 	C->RegisterComponent();
 	C->AttachToComponent(Host->GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
 
-	// Material con color de copa por especie (instancia dinámica del material base).
-	if (UMaterialInterface* Base = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Arbol.M_Arbol")))
+	// Material: los meshes DZ_Assets traen materiales propios con viento.
+	// Solo aplicar M_Arbol genérico a los meshes generados por AlsasuaAssetGenerator.
+	const bool bMeshGenerado = MallasPorEspecie.Contains(ArquetipoDe(Especie));
+	const bool bMeshDZ = EspeciesDZ.Contains(ArquetipoDe(Especie));
+	if (bMeshGenerado && !bMeshDZ)
 	{
-		UMaterialInstanceDynamic* MID = UMaterialInstanceDynamic::Create(Base, C);
-		MID->SetVectorParameterValue(TEXT("Color"), ColorEspecie(Especie));
-		C->SetMaterial(0, MID);
+		if (UMaterialInterface* Base = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_Arbol.M_Arbol")))
+		{
+			UMaterialInstanceDynamic* MID = UMaterialInstanceDynamic::Create(Base, C);
+			MID->SetVectorParameterValue(TEXT("Color"), ColorEspecie(Especie));
+			C->SetMaterial(0, MID);
+		}
 	}
 
 	PorEspecie.Add(Especie, C);
@@ -138,14 +149,29 @@ void UCargadorArboles::PrepararCarga()
 		TEXT("Salix"), TEXT("Prunus"), TEXT("Acer")};
 	for (const FString& Sp : Especies)
 	{
-		// El objeto repite el nombre del paquete: SM_Tilia.SM_Tilia. Con
-		// SM_Tilia.Tilia LoadObject devolvía null y todas las especies caían
-		// al cilindro del motor.
 		const FString Ruta = RutaMeshes + TEXT("SM_") + Sp + TEXT(".SM_") + Sp;
 		if (UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, *Ruta))
 		{
 			MallasPorEspecie.Add(Sp, Mesh);
 		}
+	}
+
+	// Fallback: meshes DZ_Assets de alta calidad (paquete externo).
+	const TPair<FString, FString> DZFallbacks[] = {
+		{TEXT("Pinus"),    TEXT("/Game/DZ_Assets/DZ_Trees/Meshes/Pine/SM_Pine_1.Pine_1")},
+		{TEXT("QuercusRobur"), TEXT("/Game/DZ_Assets/DZ_Trees/Meshes/Cork_Oak/SM_Cork_Oak_1.Cork_Oak_1")},
+		{TEXT("Populus"),   TEXT("/Game/DZ_Assets/DZ_Trees/Meshes/Aspen/SM_Columnar_Aspen_1.Aspen_1")},
+		{TEXT("CocosNucifera"), TEXT("/Game/DZ_Assets/DZ_Trees/Meshes/Coconut_Tree/SM_Coconut_Tree_1.Coconut_Tree_1")},
+		{TEXT("PhoenixCanariensis"), TEXT("/Game/DZ_Assets/DZ_Trees/Meshes/Windmill_Palm/SM_Windmill_Palm_1.Windmill_Palm_1")},
+	};
+	for (const auto& Pair : DZFallbacks)
+	{
+		if (!MallasPorEspecie.Contains(Pair.Key))
+			if (UStaticMesh* M = LoadObject<UStaticMesh>(nullptr, *Pair.Value))
+			{
+				MallasPorEspecie.Add(Pair.Key, M);
+				EspeciesDZ.Add(Pair.Key);
+			}
 	}
 
 	Host = W->SpawnActor<AActor>();

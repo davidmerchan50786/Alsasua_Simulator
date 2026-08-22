@@ -1,0 +1,20 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0",
+  "FriendlyName": "GF Carreteras",
+  "Description": "Road systems: surface, markings, sidewalks, signs, street lights, farolas, decals, cables",
+  "Category": "Game Features",
+  "CreatedBy": "Ponytail",
+  "CanContainContent": true,
+  "IsBetaVersion": false,
+  "IsExperimentalVersion": false,
+  "Installed": false,
+  "Modules": [
+    {
+      "Name": "GF_Carreteras",
+      "Type": "Runtime",
+      "LoadingPhase": "PreDefault"
+    }
+  ]
+}

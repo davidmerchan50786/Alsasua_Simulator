@@ -1,0 +1,24 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0",
+  "FriendlyName": "GF Vehiculos",
+  "Description": "Vehicle systems: base vehicle, player vehicle, police, helicopter AI, pursuit, damage",
+  "Category": "Game Features",
+  "CreatedBy": "Ponytail",
+  "CanContainContent": true,
+  "Installed": false,
+  "Modules": [
+    {
+      "Name": "GF_Vehiculos",
+      "Type": "Runtime",
+      "LoadingPhase": "PreDefault"
+    }
+  ],
+  "Plugins": [
+    {
+      "Enabled": true,
+      "Name": "Niagara"
+    }
+  ]
+}

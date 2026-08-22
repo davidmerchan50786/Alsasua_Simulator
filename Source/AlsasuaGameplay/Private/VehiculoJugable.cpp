@@ -30,8 +30,14 @@ AVehiculoJugable::AVehiculoJugable()
 	Cuerpo->SetCollisionProfileName(TEXT("Pawn"));
 	if (UStaticMesh* M = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube.Cube")))
 		Cuerpo->SetStaticMesh(M);
-	Cuerpo->SetRelativeScale3D(FVector(4.6f, 1.9f, 1.4f));   // ~coche
+	Cuerpo->SetRelativeScale3D(FVector(4.6f, 1.9f, 1.4f));
 	Tags.Add(TEXT("VehiculoJugable"));
+
+	if (UStaticMesh* Real = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/VehicleVarietyPack/Meshes/SM_Hatchback.Hatchback")))
+	{
+		Cuerpo->SetStaticMesh(Real);
+		Cuerpo->SetRelativeScale3D(FVector::OneVector);
+	}
 
 	Brazo = CreateDefaultSubobject<USpringArmComponent>(TEXT("Brazo"));
 	Brazo->SetupAttachment(RootComponent);

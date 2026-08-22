@@ -1,0 +1,24 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "GF Trafico",
+	"Description": "Traffic lights, dynamic traffic, guardrails for Alsasua",
+	"Category": "Gameplay",
+	"CreatedBy": "AlsasuaTeam",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "GF_Trafico",
+			"Type": "Runtime",
+			"LoadingPhase": "PreDefault"
+		}
+	],
+	"Plugins": [
+		{ "Name": "GF_Carreteras", "Enabled": true },
+		{ "Name": "GF_World", "Enabled": true }
+	]
+}

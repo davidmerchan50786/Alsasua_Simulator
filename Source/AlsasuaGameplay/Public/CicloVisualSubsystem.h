@@ -22,6 +22,8 @@ public:
 	UPROPERTY(EditAnywhere, Category="Cielo") float IntensidadDia   = 8.f;    // lux relativos del sol a mediodía
 	UPROPERTY(EditAnywhere, Category="Cielo") float IntensidadNoche = 0.3f;   // luz de luna
 
+	// UAlsasuaAtmosphereController es el único dueño activo de sol, cielo y niebla.
+	virtual bool ShouldCreateSubsystem(UObject* Outer) const override { return false; }
 	virtual void Tick(float DeltaTime) override;
 	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(UCicloVisualSubsystem, STATGROUP_Tickables); }
 	virtual bool IsTickable() const override { return !IsTemplate(); }

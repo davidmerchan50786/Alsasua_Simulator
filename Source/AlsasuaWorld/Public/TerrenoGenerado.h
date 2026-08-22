@@ -26,6 +26,9 @@ public:
 	bool TieneHeightmap() const { return AlturasRAW.Num() > 0; }
 	FVector NormalEnMundo(float X, float Y) const;
 
+	/** Rectángulo XY (cm) que cubre el terreno; fuera de él no hay malla. */
+	FBox2D BoundsXY() const;
+
 	UPROPERTY(EditAnywhere, Category="Terreno") int32 SizeChunkPx = 128;
 	UPROPERTY(EditAnywhere, Category="Terreno") int32 ResolucionRAW = 4033;
 	UPROPERTY(EditAnywhere, Category="Terreno") double EscalaXY = 178.5714;
