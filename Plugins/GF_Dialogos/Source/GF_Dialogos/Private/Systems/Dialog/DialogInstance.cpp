@@ -1,7 +1,5 @@
 #include "Systems/Dialog/DialogInstance.h"
 #include "Systems/Dialog/DialogAsset.h"
-#include "AlsasuaCharacter.h"
-#include "AlsasuaAttributeSet.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
 #include "Engine/TimerHandle.h"
@@ -82,17 +80,8 @@ void UDialogInstance::SelectOption(int32 OptionIndex)
 	// Skill check: roll d20 + modifier vs DC.
 	if (Selected.bRequiresSkillCheck)
 	{
-		float Modifier = 0.f;
-		if (AAlsasuaCharacter* Player = Cast<AAlsasuaCharacter>(Participant))
-		{
-			if (UAlsasuaAttributeSet* Attr = Player->GetAttributeSet())
-			{
-				Modifier = Attr->GetPopularSupport() * 0.1f;
-			}
-		}
-
 		int32 Roll = FMath::RandRange(1, 20);
-		int32 Total = Roll + FMath::RoundToInt(Modifier);
+		int32 Total = Roll + FMath::RoundToInt(SkillModifier);
 
 		if (Total < Selected.DifficultyClass)
 		{

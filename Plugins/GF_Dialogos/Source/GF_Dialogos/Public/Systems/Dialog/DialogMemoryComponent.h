@@ -19,7 +19,7 @@ struct FDialogMemoryEntry {
 };
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class ALSASUAMANIFA_API UDialogMemoryComponent : public UActorComponent {
+class GF_DIALOGOS_API UDialogMemoryComponent : public UActorComponent {
     GENERATED_BODY()
 public:
     UDialogMemoryComponent();

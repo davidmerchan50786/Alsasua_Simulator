@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
 #include "Systems/Dialog/DialogTypes.h"
@@ -9,7 +9,7 @@
  * Almacena una lista de nodos (FDialogNode) con IDs únicos.
  */
 UCLASS(BlueprintType)
-class ALSASUAMANIFA_API UDialogAsset : public UDataAsset
+class GF_DIALOGOS_API UDialogAsset : public UDataAsset
 {
     GENERATED_BODY()
 public:

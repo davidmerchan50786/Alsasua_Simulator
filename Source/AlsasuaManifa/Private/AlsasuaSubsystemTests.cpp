@@ -2,9 +2,9 @@
 #include "Tests/AutomationCommon.h"
 #include "Engine/World.h"
 #include "AlsasuaManifa/Public/Politics/FactionSubsystem.h"
-#include "AlsasuaManifa/Public/Systems/Dialog/DialogInstance.h"
-#include "AlsasuaManifa/Public/Systems/Dialog/DialogAsset.h"
-#include "AlsasuaManifa/Public/Systems/Dialog/DialogTypes.h"
+#include "Systems/Dialog/DialogInstance.h"
+#include "Systems/Dialog/DialogAsset.h"
+#include "Systems/Dialog/DialogTypes.h"
 #include "AlsasuaManifa/Public/Systems/MisionData.h"
 
 #if WITH_AUTOMATION_WORKER

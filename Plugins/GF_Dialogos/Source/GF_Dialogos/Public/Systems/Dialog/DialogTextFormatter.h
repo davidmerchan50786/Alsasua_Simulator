@@ -4,7 +4,7 @@
 #include "DialogTextFormatter.generated.h"
 
 UCLASS()
-class ALSASUAMANIFA_API UDialogTextFormatter : public UBlueprintFunctionLibrary {
+class GF_DIALOGOS_API UDialogTextFormatter : public UBlueprintFunctionLibrary {
     GENERATED_BODY()
 public:
     // Transforma "Hola {PlayerName}" en "Hola Mikel"

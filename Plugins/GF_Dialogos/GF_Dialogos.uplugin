@@ -1,0 +1,12 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0",
+  "FriendlyName": "GF Dialogos",
+  "Description": "Dialog subsystem: dialog trees, instances, memory, text formatting",
+  "Category": "Game Features",
+  "CreatedBy": "Ponytail",
+  "CanContainContent": true,
+  "Installed": false,
+  "Modules": [{ "Name": "GF_Dialogos", "Type": "Runtime", "LoadingPhase": "PreDefault" }]
+}

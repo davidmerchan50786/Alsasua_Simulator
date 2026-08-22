@@ -4,7 +4,7 @@
 #include "DialogComponent.generated.h"
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class ALSASUAMANIFA_API UDialogComponent : public UActorComponent {
+class GF_DIALOGOS_API UDialogComponent : public UActorComponent {
     GENERATED_BODY()
 public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AAA|Dialog")

@@ -5,7 +5,7 @@
 #include "DialogInstance.generated.h"
 
 UCLASS(BlueprintType)
-class ALSASUAMANIFA_API UDialogInstance : public UObject {
+class GF_DIALOGOS_API UDialogInstance : public UObject {
     GENERATED_BODY()
 public:
     void Init(class UDialogAsset* Asset, AActor* InParticipant);
@@ -16,6 +16,9 @@ public:
 
     UFUNCTION(BlueprintCallable, Category="AAA|Dialog")
     void SelectOption(int32 OptionIndex);
+
+    UPROPERTY(BlueprintReadWrite, Category="AAA|Dialog")
+    float SkillModifier = 0.f;
 
     DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDialogNodeReached, FDialogNode, Node);
     UPROPERTY(BlueprintAssignable)

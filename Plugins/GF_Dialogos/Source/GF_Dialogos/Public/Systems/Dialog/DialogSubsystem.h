@@ -4,7 +4,7 @@
 #include "DialogSubsystem.generated.h"
 
 UCLASS()
-class ALSASUAMANIFA_API UDialogSubsystem : public UWorldSubsystem {
+class GF_DIALOGOS_API UDialogSubsystem : public UWorldSubsystem {
     GENERATED_BODY()
 public:
     UFUNCTION(BlueprintCallable, Category="AAA|Dialog")
