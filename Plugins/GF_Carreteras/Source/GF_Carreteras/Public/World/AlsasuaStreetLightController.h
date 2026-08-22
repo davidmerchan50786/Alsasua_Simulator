@@ -12,7 +12,7 @@ class USpotLightComponent;
  * Soporta parpadeo, intensidad variable, y color por barrio.
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class ALSASUAMANIFA_API UAlsasuaStreetLightController : public UActorComponent
+class GF_CARRETERAS_API UAlsasuaStreetLightController : public UActorComponent
 {
 	GENERATED_BODY()
 

@@ -29,7 +29,7 @@ struct FPaintedSignEntry
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaPaintedStreetSignSystem : public UGameInstanceSubsystem
+class GF_CARRETERAS_API UAlsasuaPaintedStreetSignSystem : public UGameInstanceSubsystem
 {
     GENERATED_BODY()
 public:

@@ -34,7 +34,7 @@ struct FOverheadCable
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaOverheadCableSystem : public UGameInstanceSubsystem
+class GF_CARRETERAS_API UAlsasuaOverheadCableSystem : public UGameInstanceSubsystem
 {
     GENERATED_BODY()
 public:

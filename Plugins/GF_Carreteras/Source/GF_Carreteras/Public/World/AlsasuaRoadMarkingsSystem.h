@@ -29,7 +29,7 @@ struct FRoadMarking
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaRoadMarkingsSystem : public UGameInstanceSubsystem
+class GF_CARRETERAS_API UAlsasuaRoadMarkingsSystem : public UGameInstanceSubsystem
 {
     GENERATED_BODY()
 public:

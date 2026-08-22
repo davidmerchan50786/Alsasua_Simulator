@@ -9,7 +9,7 @@ class UDecalComponent;
  * Sistema de decals de carretera: marcas, cruces, flechas, topes.
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class ALSASUAMANIFA_API UAlsasuaRoadDecalSystem : public UActorComponent
+class GF_CARRETERAS_API UAlsasuaRoadDecalSystem : public UActorComponent
 {
 	GENERATED_BODY()
 

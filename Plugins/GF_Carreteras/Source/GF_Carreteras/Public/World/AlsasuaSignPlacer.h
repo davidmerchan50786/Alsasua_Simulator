@@ -23,7 +23,7 @@ struct FSignEntry
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaSignPlacer : public UGameInstanceSubsystem
+class GF_CARRETERAS_API UAlsasuaSignPlacer : public UGameInstanceSubsystem
 {
     GENERATED_BODY()
 public:

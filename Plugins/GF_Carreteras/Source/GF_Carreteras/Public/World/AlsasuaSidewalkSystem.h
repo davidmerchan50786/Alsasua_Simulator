@@ -33,7 +33,7 @@ struct FSidewalkSegment
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaSidewalkSystem : public UGameInstanceSubsystem
+class GF_CARRETERAS_API UAlsasuaSidewalkSystem : public UGameInstanceSubsystem
 {
     GENERATED_BODY()
 public:

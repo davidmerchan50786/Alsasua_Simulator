@@ -40,7 +40,7 @@ struct FBarrioTerrainLayer
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaTerrainLayersSystem : public UGameInstanceSubsystem
+class GF_CARRETERAS_API UAlsasuaTerrainLayersSystem : public UGameInstanceSubsystem
 {
     GENERATED_BODY()
 public:

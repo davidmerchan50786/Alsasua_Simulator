@@ -1,6 +1,5 @@
 #include "World/AlsasuaStreetLightController.h"
 #include "World/Time/TimeOfDayManager.h"
-#include "World/AlsasuaVisualEffectsManager.h"
 #include "Components/PointLightComponent.h"
 #include "Components/SpotLightComponent.h"
 #include "Components/BillboardComponent.h"

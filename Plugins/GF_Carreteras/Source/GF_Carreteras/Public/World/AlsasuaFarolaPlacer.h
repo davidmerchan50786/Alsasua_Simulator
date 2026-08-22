@@ -16,7 +16,7 @@ struct FFarolaEntry
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaFarolaPlacer : public UGameInstanceSubsystem
+class GF_CARRETERAS_API UAlsasuaFarolaPlacer : public UGameInstanceSubsystem
 {
     GENERATED_BODY()
 public:
