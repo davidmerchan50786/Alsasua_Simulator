@@ -24,7 +24,7 @@ struct FShopFront
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaShopFrontSystem : public UGameInstanceSubsystem
+class GF_EDIFICIOS_API UAlsasuaShopFrontSystem : public UGameInstanceSubsystem
 {
     GENERATED_BODY()
 public:

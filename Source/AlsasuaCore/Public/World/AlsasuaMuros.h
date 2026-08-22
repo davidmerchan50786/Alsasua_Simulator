@@ -41,11 +41,11 @@ namespace AlsasuaMuros
 	};
 
 	/** Todos los tramos, leídos de buildings_final.json la primera vez. */
-	ALSASUAMANIFA_API const TArray<FMuro>& Todos();
+	ALSASUACORE_API const TArray<FMuro>& Todos();
 
 	/** Índices de los tramos de al menos ese largo. Un mural de 5 m no cabe en
 	 *  una medianera de 3, y pedirlo aparte evita comprobarlo en cada sorteo. */
-	ALSASUAMANIFA_API void DeAlMenos(float LargoMinimoM, TArray<int32>& OutIndices);
+	ALSASUACORE_API void DeAlMenos(float LargoMinimoM, TArray<int32>& OutIndices);
 
 	/**
 	 * Tramo más cercano a un punto, o null si no hay ninguno dentro del radio.
@@ -58,9 +58,9 @@ namespace AlsasuaMuros
 	 *                    pintando la placa de una calle en la casa de otra.
 	 * @param LargoMinimoM Descarta tramos demasiado cortos para lo que va encima.
 	 */
-	ALSASUAMANIFA_API const FMuro* MasCercano(const FVector2D& PuntoRel, float RadioMaxM,
+	ALSASUACORE_API const FMuro* MasCercano(const FVector2D& PuntoRel, float RadioMaxM,
 		float LargoMinimoM = 0.0f);
 
 	/** Olvida la caché. Para reimportar el dataset sin reiniciar el editor. */
-	ALSASUAMANIFA_API void LimpiarCache();
+	ALSASUACORE_API void LimpiarCache();
 }

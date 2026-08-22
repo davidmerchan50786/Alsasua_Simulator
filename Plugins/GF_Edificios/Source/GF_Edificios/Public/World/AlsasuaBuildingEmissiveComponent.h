@@ -8,7 +8,7 @@
  * Se añade a cada edificio generado y actualiza los materiales dinámicamente.
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class ALSASUAMANIFA_API UAlsasuaBuildingEmissiveComponent : public UActorComponent
+class GF_EDIFICIOS_API UAlsasuaBuildingEmissiveComponent : public UActorComponent
 {
 	GENERATED_BODY()
 

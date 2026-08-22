@@ -17,7 +17,7 @@ struct FBuildingInterior
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaBuildingInteriorSystem : public UGameInstanceSubsystem
+class GF_EDIFICIOS_API UAlsasuaBuildingInteriorSystem : public UGameInstanceSubsystem
 {
     GENERATED_BODY()
 public:

@@ -116,13 +116,13 @@ int32 UAlsasuaShopFrontSystem::ColocarTiendasEnMundo()
     // es también un nombre de barrio). Así que la tienda va a una fachada de su
     // barrio, elegida por el nombre del comercio para que no se mueva entre
     // arranques, y se dice cuántas no se han podido situar.
-    const TArray<AlsasuaMuros::FMuro>& Muros = AlsasuaMuros::Todos();
+    const TArray<AlsasuaMuros::FMuro>& Tramos = AlsasuaMuros::Todos();
 
     TMap<FString, TArray<int32>> PorBarrio;
-    for (int32 i = 0; i < Muros.Num(); ++i)
+    for (int32 i = 0; i < Tramos.Num(); ++i)
     {
-        if (Muros[i].LargoM < 5.0f || Muros[i].Barrio.IsEmpty()) continue;
-        PorBarrio.FindOrAdd(Muros[i].Barrio).Add(i);
+        if (Tramos[i].LargoM < 5.0f || Tramos[i].Barrio.IsEmpty()) continue;
+        PorBarrio.FindOrAdd(Tramos[i].Barrio).Add(i);
     }
     if (PorBarrio.Num() == 0)
     {
@@ -149,7 +149,7 @@ int32 UAlsasuaShopFrontSystem::ColocarTiendasEnMundo()
         if (!Candidatos || Candidatos->Num() == 0) { ++SinBarrio; continue; }
 
         FRandomStream Sorteo(static_cast<int32>(SemillaDe(Tienda.Nombre)));
-        const AlsasuaMuros::FMuro& Muro = Muros[(*Candidatos)[Sorteo.RandHelper(Candidatos->Num())]];
+        const AlsasuaMuros::FMuro& Muro = Tramos[(*Candidatos)[Sorteo.RandHelper(Candidatos->Num())]];
 
         const float AnchoM = FMath::Min(Tienda.AnchoM, Muro.LargoM - 1.0f);
         const float MargenT = (AnchoM * 0.5f) / Muro.LargoM;

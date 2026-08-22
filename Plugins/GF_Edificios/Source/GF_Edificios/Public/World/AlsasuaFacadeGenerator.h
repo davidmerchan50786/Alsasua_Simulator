@@ -62,7 +62,7 @@ struct FBuildingFacadeEntry
 
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaFacadeGenerator : public UGameInstanceSubsystem
+class GF_EDIFICIOS_API UAlsasuaFacadeGenerator : public UGameInstanceSubsystem
 {
     GENERATED_BODY()
 public:

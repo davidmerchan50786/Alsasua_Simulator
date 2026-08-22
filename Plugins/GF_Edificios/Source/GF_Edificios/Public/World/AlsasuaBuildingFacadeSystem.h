@@ -8,7 +8,7 @@
  * Genera geometría de fachada basada en el tipo de edificio.
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class ALSASUAMANIFA_API UAlsasuaBuildingFacadeSystem : public UActorComponent
+class GF_EDIFICIOS_API UAlsasuaBuildingFacadeSystem : public UActorComponent
 {
 	GENERATED_BODY()
 

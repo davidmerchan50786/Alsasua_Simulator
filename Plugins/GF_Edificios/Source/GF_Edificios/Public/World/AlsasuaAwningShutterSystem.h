@@ -42,7 +42,7 @@ struct FShutterEntry
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaAwningShutterSystem : public UGameInstanceSubsystem
+class GF_EDIFICIOS_API UAlsasuaAwningShutterSystem : public UGameInstanceSubsystem
 {
     GENERATED_BODY()
 public:

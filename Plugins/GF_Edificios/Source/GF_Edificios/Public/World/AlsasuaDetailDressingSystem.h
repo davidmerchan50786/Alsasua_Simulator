@@ -17,7 +17,7 @@ struct FDetailItem
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaDetailDressingSystem : public UGameInstanceSubsystem
+class GF_EDIFICIOS_API UAlsasuaDetailDressingSystem : public UGameInstanceSubsystem
 {
     GENERATED_BODY()
 public:

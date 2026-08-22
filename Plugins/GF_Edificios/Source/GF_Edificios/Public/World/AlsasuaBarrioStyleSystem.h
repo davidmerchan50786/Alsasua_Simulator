@@ -25,7 +25,7 @@ enum class EBarrioStyle : uint8
  * alturas medias, y tipos de barrio documentados.
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class ALSASUAMANIFA_API UAlsasuaBarrioStyleSystem : public UActorComponent
+class GF_EDIFICIOS_API UAlsasuaBarrioStyleSystem : public UActorComponent
 {
 	GENERATED_BODY()
 

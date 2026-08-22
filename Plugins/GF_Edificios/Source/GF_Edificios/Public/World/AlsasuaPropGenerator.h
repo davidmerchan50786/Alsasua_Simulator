@@ -13,7 +13,7 @@
 #include "AlsasuaPropGenerator.generated.h"
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaPropGenerator : public UWorldSubsystem
+class GF_EDIFICIOS_API UAlsasuaPropGenerator : public UWorldSubsystem
 {
     GENERATED_BODY()
 

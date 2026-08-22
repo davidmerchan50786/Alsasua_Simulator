@@ -29,7 +29,7 @@
  * duplicar (CLAUDE.md §11).
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class ALSASUAMANIFA_API UAlsasuaFacadeDetailSystem : public UActorComponent
+class GF_EDIFICIOS_API UAlsasuaFacadeDetailSystem : public UActorComponent
 {
 	GENERATED_BODY()
 

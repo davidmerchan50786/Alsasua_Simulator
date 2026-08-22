@@ -27,7 +27,7 @@ struct FRooftopItem
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaRooftopDetailSystem : public UGameInstanceSubsystem
+class GF_EDIFICIOS_API UAlsasuaRooftopDetailSystem : public UGameInstanceSubsystem
 {
     GENERATED_BODY()
 public:
