@@ -1,7 +1,8 @@
 #include "World/AlsasuaAtmosphereFogComponent.h"
 #include "World/Time/TimeOfDayManager.h"
-#include "World/AlsasuaVisualEffectsManager.h"
 #include "World/Weather/WeatherSubsystem.h"
+#include "Materials/MaterialParameterCollection.h"
+#include "Materials/MaterialParameterCollectionInstance.h"
 #include "Components/ExponentialHeightFogComponent.h"
 #include "Engine/World.h"
 
@@ -28,13 +29,22 @@ void UAlsasuaAtmosphereFogComponent::UpdateFog(float DeltaTime)
 	if (!W) return;
 
 	UTimeOfDayManager* TimeMgr = W->GetSubsystem<UTimeOfDayManager>();
-	UAlsasuaVisualEffectsManager* VFXMgr = W->GetSubsystem<UAlsasuaVisualEffectsManager>();
 	UWeatherSubsystem* Weather = W->GetSubsystem<UWeatherSubsystem>();
 
-	if (!TimeMgr || !VFXMgr) return;
+	if (!TimeMgr) return;
 
 	const float Hour = TimeMgr->CurrentTime;
-	const float Wetness = VFXMgr->GlobalWetness;
+
+	float Wetness = 0.f;
+	if (Weather && (Weather->CurrentWeather == EWeatherSubsystemState::Rainy ||
+		Weather->CurrentWeather == EWeatherSubsystemState::Thunderstorm))
+	{
+		Wetness = 1.f;
+	}
+	else if (Weather && Weather->CurrentWeather == EWeatherSubsystemState::HeavyFog)
+	{
+		Wetness = 0.3f;
+	}
 
 	// Day/night fog density blend
 	float TargetDensity = FogDensityDay;
@@ -87,5 +97,14 @@ void UAlsasuaAtmosphereFogComponent::UpdateFog(float DeltaTime)
 		}
 	}
 
-	VFXMgr->FogDensityMult = CurrentFogDensity / FMath::Max(FogDensityDay, 0.0001f);
+	// Write FogDensityMult directly to MPC_Clima (no VEM needed)
+	if (UMaterialParameterCollection* MPC = LoadObject<UMaterialParameterCollection>(
+		nullptr, TEXT("/Game/Materiales/MPC_Clima.MPC_Clima")))
+	{
+		if (UMaterialParameterCollectionInstance* Inst = W->GetParameterCollectionInstance(MPC))
+		{
+			Inst->SetScalarParameterValue(FName("FogDensityMult"),
+				CurrentFogDensity / FMath::Max(FogDensityDay, 0.0001f));
+		}
+	}
 }

@@ -12,7 +12,7 @@ class UStaticMeshComponent;
  * Reacta al clima y hora del día.
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class ALSASUAMANIFA_API UAlsasuaAtmosphereFogComponent : public UActorComponent
+class GF_CLIMA_API UAlsasuaAtmosphereFogComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
