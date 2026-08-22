@@ -12,7 +12,8 @@ public class GF_Clima : ModuleRules
 		{
 			"Core",
 			"CoreUObject",
-			"Engine"
+			"Engine",
+			"AlsasuaCore"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]

@@ -31,7 +31,7 @@ enum class ETimePeriod : uint8
  * y notifica a otros sistemas de cambios de período.
  */
 UCLASS()
-class ALSASUAMANIFA_API UTimeOfDayManager : public UWorldSubsystem, public FTickableGameObject
+class ALSASUACORE_API UTimeOfDayManager : public UWorldSubsystem, public FTickableGameObject
 {
     GENERATED_BODY()
 

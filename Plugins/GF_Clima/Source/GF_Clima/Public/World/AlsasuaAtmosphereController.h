@@ -16,7 +16,7 @@ class AExponentialHeightFog;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTimeOfDayVisualChanged, float, SunAngle);
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaAtmosphereController : public UWorldSubsystem, public FTickableGameObject
+class GF_CLIMA_API UAlsasuaAtmosphereController : public UWorldSubsystem, public FTickableGameObject
 {
 	GENERATED_BODY()
 
