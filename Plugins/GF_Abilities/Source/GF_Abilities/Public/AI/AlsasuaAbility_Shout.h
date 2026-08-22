@@ -6,7 +6,7 @@
 
 /** Habilidad del jugador para emitir consignas de protesta */
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaAbility_Shout : public UGameplayAbility
+class GF_ABILITIES_API UAlsasuaAbility_Shout : public UGameplayAbility
 {
     GENERATED_BODY()
 

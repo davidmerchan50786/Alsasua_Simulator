@@ -4,7 +4,7 @@
 #include "ViralPushAbility.generated.h"
 
 UCLASS()
-class ALSASUAMANIFA_API UViralPushAbility : public UAlsasuaGameplayAbility {
+class GF_ABILITIES_API UViralPushAbility : public UAlsasuaGameplayAbility {
     GENERATED_BODY()
 public:
     UViralPushAbility();

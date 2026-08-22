@@ -4,7 +4,7 @@
 #include "AlsasuaGameplayAbility.generated.h"
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaGameplayAbility : public UGameplayAbility
+class GF_ABILITIES_API UAlsasuaGameplayAbility : public UGameplayAbility
 {
 	GENERATED_BODY()
 public:
