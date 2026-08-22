@@ -113,6 +113,7 @@ int32 UAlsasuaFarolaPlacer::ColocarFarolasEnMundo()
             FarolaActor->SetMobility(EComponentMobility::Static);
             FarolaActor->SetActorScale3D(Col.Escala);
             FarolaActor->GetStaticMeshComponent()->SetStaticMesh(Malla);
+            FarolaActor->GetStaticMeshComponent()->SetCullDistance(50000.f);
 
             // Por aquí las encuentra ADirectorArranque para colgarles el
             // controlador que las enciende de noche. Antes las buscaba por

@@ -3,6 +3,8 @@
 #include "Engine/Engine.h"
 #include "Engine/StaticMeshActor.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/DecalComponent.h"
+#include "Materials/MaterialInterface.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "Serialization/JsonReader.h"
@@ -123,6 +125,7 @@ int32 UAlsasuaParkingSystem::GenerarPlazasAparcamiento()
         {
             SpotActor->SetMobility(EComponentMobility::Static);
             SpotActor->SetActorScale3D(FVector(4.5f, 2.5f, 0.05f));
+            SpotActor->GetStaticMeshComponent()->SetCullDistance(15000.f);
 
             UStaticMesh* PlaneMesh = LoadObject<UStaticMesh>(nullptr,
                 TEXT("/Engine/BasicShapes/Plane.Plane"));
@@ -159,9 +162,35 @@ int32 UAlsasuaParkingSystem::GenerarPlazasAparcamiento()
                 {
                     CarActor->SetMobility(EComponentMobility::Movable);
                     CarActor->GetStaticMeshComponent()->SetStaticMesh(CarMesh);
+                    CarActor->GetStaticMeshComponent()->SetCullDistance(20000.f);
 #if WITH_EDITOR
                     CarActor->SetActorLabel(*FString::Printf(TEXT("ParkingCar_%s"), *Barrio.Left(8)));
 #endif
+                }
+            }
+
+            // Mancha de aceite bajo el coche aparcado (30% de plazas ocupadas).
+            if (FMath::FRand() < 0.3f && SpotActor)
+            {
+                UMaterialInterface* OilMat = LoadObject<UMaterialInterface>(nullptr,
+                    TEXT("/Game/Materiales/M_Decal_OilStain"));
+                if (!OilMat) OilMat = LoadObject<UMaterialInterface>(nullptr,
+                    TEXT("/Engine/EngineMaterials/DefaultMaterial.DefaultMaterial"));
+                if (OilMat)
+                {
+                    UDecalComponent* Decal = NewObject<UDecalComponent>(SpotActor);
+                    if (Decal)
+                    {
+                        Decal->SetupAttachment(SpotActor->GetRootComponent());
+                        Decal->SetRelativeLocation(FVector(0, 0, 2.f));
+                        Decal->SetRelativeRotation(FRotator(-90.f,
+                            FMath::RandRange(0.f, 360.f), 0));
+                        const float Size = FMath::RandRange(60.f, 120.f);
+                        Decal->DecalSize = FVector(Size, Size, 5.f);
+                        Decal->SetDecalMaterial(OilMat);
+                        Decal->SetFadeScreenSize(0.005f);
+                        Decal->RegisterComponent();
+                    }
                 }
             }
         }

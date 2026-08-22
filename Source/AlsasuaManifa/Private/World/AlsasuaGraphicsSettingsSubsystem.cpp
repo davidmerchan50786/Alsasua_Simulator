@@ -114,6 +114,11 @@ void UAlsasuaGraphicsSettingsSubsystem::ApplyGraphicsProfile(EAlsasuaGraphicsPro
     UKismetSystemLibrary::ExecuteConsoleCommand(W, FString::Printf(TEXT("r.VolumetricCloud %d"),              Level >= 2 ? 1 : 0));
     UKismetSystemLibrary::ExecuteConsoleCommand(W, FString::Printf(TEXT("r.VolumetricCloud.ShadowMap.Enable %d"), Level >= 3 ? 1 : 0));
 
+    // Niebla volumétrica — beams de farolas visibles con niebla.
+    UKismetSystemLibrary::ExecuteConsoleCommand(W, FString::Printf(TEXT("r.VolumetricFog.GridPixelSize %d"), Level <= 1 ? 16 : 8));
+    UKismetSystemLibrary::ExecuteConsoleCommand(W, FString::Printf(TEXT("r.VolumetricFog.GridSizeZ %d"),     Level <= 1 ? 32 : 64));
+    UKismetSystemLibrary::ExecuteConsoleCommand(W, FString::Printf(TEXT("r.VolumetricFog.HistoryWeight %d"), Level >= 2 ? 9 : 7));
+
     // Distance Fields
     UKismetSystemLibrary::ExecuteConsoleCommand(W, FString::Printf(TEXT("r.DistanceFieldShadowing %d"), Level >= 1 ? 1 : 0));
     UKismetSystemLibrary::ExecuteConsoleCommand(W, FString::Printf(TEXT("r.DistanceFieldAO %d"),        Level >= 2 ? 1 : 0));

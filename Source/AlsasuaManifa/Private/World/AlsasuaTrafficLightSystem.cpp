@@ -153,6 +153,7 @@ int32 UAlsasuaTrafficLightSystem::ColocarSemaforos()
         {
             PostActor->SetMobility(EComponentMobility::Static);
             PostActor->SetActorScale3D(FVector(0.08f, 0.08f, PostHeight / 100.0f));
+            PostActor->GetStaticMeshComponent()->SetCullDistance(50000.f);
 
             UStaticMesh* PoleMesh = LoadObject<UStaticMesh>(nullptr,
                 TEXT("/Game/CitySample/Prop/Kit_StreetLamp_A/Mesh/SM_StreetLamp_A_TrafficLight_Pole"));
