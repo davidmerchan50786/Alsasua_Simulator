@@ -212,12 +212,27 @@ void ADirectorArranque::IniciarConstruccion()
     // TrafficLightSystem (semaforos), GuardrailSystem (barandillas)
     // all read street_furniture.json or roads_unity.json directly.
 
-    // --- 12. Vegetación (greenspaces_unity.json real) ---
-    UAlsasuaVegetationSpawner* Vegetacion = World->GetSubsystem<UAlsasuaVegetationSpawner>();
-    if (Vegetacion)
+    // --- 12. Vegetación (greenspaces_unity.json) ---
+    // Primero el pintor HISM con mallas reales del pack Naturaleza. Si el pack
+    // no está importado (Content/AssetsImportados/Naturaleza sigue en FBX
+    // crudos) pinta cero, y entonces respalda el spawner de quads para que las
+    // zonas verdes no se queden peladas. Nunca los dos a la vez: eso era hierba
+    // duplicada, una capa bajo la otra.
     {
-        const int32 NumVegetacion = Vegetacion->SembrarVegetacion();
-        UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d piezas de vegetación sembradas."), NumVegetacion);
+        UAlsasuaFoliagePainter* Foliage = World->GetGameInstance()->GetSubsystem<UAlsasuaFoliagePainter>();
+        const int32 NumFoliage = Foliage ? Foliage->PintarFoliageEnZonasVerdes() : 0;
+        if (NumFoliage > 0)
+        {
+            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d piezas de foliage en zonas verdes."), NumFoliage);
+        }
+        else
+        {
+            UAlsasuaVegetationSpawner* Vegetacion = World->GetSubsystem<UAlsasuaVegetationSpawner>();
+            const int32 NumVegetacion = Vegetacion ? Vegetacion->SembrarVegetacion() : 0;
+            UE_LOG(LogTemp, Warning,
+                TEXT("DirectorArranque: pack Naturaleza sin mallas; %d quads de respaldo en zonas verdes."),
+                NumVegetacion);
+        }
     }
 
     // --- 13. Atmósfera (sol, cielo, niebla — ciclo día/noche) ---
@@ -384,15 +399,9 @@ void ADirectorArranque::IniciarConstruccion()
         UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d farolas con control automático."), FarolaCount);
     }
 
-    // --- 25. Foliage procedural (hierba, setos, rocas en zonas verdes) ---
-    {
-        UAlsasuaFoliagePainter* Foliage = World->GetGameInstance()->GetSubsystem<UAlsasuaFoliagePainter>();
-        if (Foliage)
-        {
-            const int32 NumFoliage = Foliage->PintarFoliageEnZonasVerdes();
-            UE_LOG(LogTemp, Log, TEXT("DirectorArranque: %d piezas de foliage procedural."), NumFoliage);
-        }
-    }
+    // --- 25. Foliage procedural ---
+    // Ya no: el pintor corre en la fase 12, con el spawner de quads como
+    // respaldo si el pack Naturaleza no está importado.
 
     // --- 26. Firme por tipo de vía (asfalto, adoquín, asfalto gastado, grava) ---
     // Se tiñen las cintas que ya puso UCargadorCalles en la fase 4, no se

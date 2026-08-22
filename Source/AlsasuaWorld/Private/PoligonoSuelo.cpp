@@ -5,6 +5,7 @@
 #include "GeoDataAlsasua.h"
 #include "Engine/World.h"
 #include "CollisionQueryParams.h"
+#include "MuestreadorAltura.h"
 
 APoligonoSuelo::APoligonoSuelo()
 {
@@ -21,6 +22,19 @@ bool APoligonoSuelo::AlturaSuelo(const FVector2D& XY, float& OutZ) const
 	OutZ = 0.f;
 	const UWorld* W = GetWorld();
 	if (!W) return false;
+
+	// El heightmap en memoria primero: al drapear (fase 1b) sólo existe el
+	// terreno, así que la cota bilineal es exactamente lo que encontraba el
+	// trazo, sin consulta de física por vértice.
+	if (const UMuestreadorAltura* Muestreador = W->GetSubsystem<UMuestreadorAltura>())
+	{
+		if (Muestreador->EstaDisponible() && UAlsasuaGeoData::DentroDelTerreno(FVector(XY.X, XY.Y, 0.f)))
+		{
+			OutZ = Muestreador->AlturaMundo(FVector(XY.X, XY.Y, 0.f));
+			return true;
+		}
+	}
+
 	FHitResult Hit;
 	FCollisionQueryParams Q(SCENE_QUERY_STAT(AlturaSueloPoli), true);
 	Q.AddIgnoredActor(this);

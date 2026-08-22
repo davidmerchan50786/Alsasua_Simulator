@@ -14,6 +14,7 @@
 #include "HAL/PlatformTime.h"
 #include "Materials/MaterialInterface.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "MuestreadorAltura.h"
 
 // Tono de copa por especie (follaje navarro).
 static FLinearColor ColorEspecie(const FString& E)
@@ -37,6 +38,20 @@ bool UCargadorArboles::AlturaSuelo(const FVector2D& XY, float& OutZ) const
 {
 	const UWorld* W = GetWorld();
 	if (!W) return false;
+
+	// Los árboles (fase 2) van tras los polígonos de suelo, que no tienen
+	// colisión: el trazo sólo podía encontrar terreno. El heightmap en memoria
+	// da la misma cota sin consulta de física. Fuera del terreno se mantiene la
+	// semántica de abajo: false, que el llamante descarta.
+	if (const UMuestreadorAltura* Muestreador = W->GetSubsystem<UMuestreadorAltura>())
+	{
+		if (Muestreador->EstaDisponible() && UAlsasuaGeoData::DentroDelTerreno(FVector(XY.X, XY.Y, 0.f)))
+		{
+			OutZ = Muestreador->AlturaMundo(FVector(XY.X, XY.Y, 0.f));
+			return true;
+		}
+	}
+
 	FHitResult Hit;
 	FCollisionQueryParams Q(SCENE_QUERY_STAT(AlturaArbol), true);
 	if (W->LineTraceSingleByChannel(Hit, FVector(XY.X, XY.Y, UAlsasuaGeoData::TraceUp), FVector(XY.X, XY.Y, UAlsasuaGeoData::TraceDown), ECC_Visibility, Q))

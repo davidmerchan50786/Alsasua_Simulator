@@ -2,9 +2,10 @@
 // Siembra las mallas reales del pack Naturaleza (hierba, setos, rocas, maleza,
 // hiedra) dentro de los 273 polígonos de zona verde de greenspaces_unity.json.
 //
-// No pisa a AlsasuaVegetationSpawner (fase 12), que cubre los mismos polígonos
-// con quads procedurales cosidos en una sola sección de ProceduralMesh: aquello
-// es la capa base de césped, esto son las piezas modeladas por encima.
+// Es el pintor primario de las zonas verdes. El antiguo AlsasuaVegetationSpawner
+// (quads procedurales cosidos en una sola sección de ProceduralMesh) queda sólo
+// como respaldo mientras este pack no esté importado: DirectorArranque le pasa
+// la mano a aquél sólo si aquí no hay ni una malla.
 //
 // Va todo a HierarchicalInstancedStaticMesh, un componente por tipo. Una
 // instancia no es un actor: doce mil matas cuestan del orden de ocho draw calls

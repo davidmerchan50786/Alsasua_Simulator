@@ -17,7 +17,7 @@ namespace
 	const FLinearColor Revoco    (0.80f, 0.78f, 0.73f);
 	const FLinearColor Hormigon  (0.66f, 0.66f, 0.64f);
 	const FLinearColor Zinc      (0.42f, 0.44f, 0.46f);
-	const FLinearColor Madera    (0.40f, 0.25f, 0.13f);
+	const FLinearColor MaderaOscura    (0.40f, 0.25f, 0.13f);
 	const FLinearColor Cancha    (0.55f, 0.42f, 0.30f);
 
 	/**
@@ -71,7 +71,7 @@ bool UCreadorMallaLandmark::GenerarIglesia()
 	C.Prisma(FVector(0.f, -1900.f, 2200.f), 460.f, 0.f, 500.f, 4, Zinc);
 
 	// Portada y pórtico.
-	C.Caja(FVector(0.f, -1710.f, 300.f), FVector(320.f, 40.f, 600.f), Madera);
+	C.Caja(FVector(0.f, -1710.f, 300.f), FVector(320.f, 40.f, 600.f), MaderaOscura);
 
 	return AlsasuaMalla::Guardar(C, CarpetaLandmarks, TEXT("SM_Iglesia"), MatPiedra);
 }
@@ -138,8 +138,8 @@ bool UCreadorMallaLandmark::GenerarAyuntamiento()
 	C.Caja(FVector(0.f, -640.f, 430.f), FVector(1800.f, 140.f, 60.f), Mamposteo);
 
 	// Balcón corrido de la planta noble.
-	C.Caja(FVector(0.f, -620.f, 800.f), FVector(1500.f, 60.f, 20.f), Madera);
-	C.Caja(FVector(0.f, -650.f, 850.f), FVector(1500.f, 10.f, 90.f), Madera);
+	C.Caja(FVector(0.f, -620.f, 800.f), FVector(1500.f, 60.f, 20.f), MaderaOscura);
+	C.Caja(FVector(0.f, -650.f, 850.f), FVector(1500.f, 10.f, 90.f), MaderaOscura);
 
 	// Escudo de la villa sobre el balcón.
 	C.Caja(FVector(0.f, -610.f, 1050.f), FVector(160.f, 20.f, 200.f), Mamposteo);
@@ -279,7 +279,7 @@ bool UCreadorMallaLandmark::GenerarBloqueCivico()
 	DosAguas(C, FVector(0.f, 0.f, 700.f), 2100.f, 1500.f, 320.f, Teja);
 
 	// Entrada con marquesina.
-	C.Caja(FVector(0.f, -730.f, 220.f), FVector(400.f, 60.f, 440.f), Madera);
+	C.Caja(FVector(0.f, -730.f, 220.f), FVector(400.f, 60.f, 440.f), MaderaOscura);
 	C.Caja(FVector(0.f, -820.f, 460.f), FVector(500.f, 240.f, 25.f), Hormigon);
 
 	return AlsasuaMalla::Guardar(C, CarpetaLandmarks, TEXT("SM_BloqueCivico"), MatEdif);
