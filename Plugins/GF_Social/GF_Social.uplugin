@@ -1,0 +1,12 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0",
+  "FriendlyName": "GF Social",
+  "Description": "Social systems: social media, radio, evidence, forensics, disguise, interrogation, photo",
+  "Category": "Game Features",
+  "CreatedBy": "Ponytail",
+  "CanContainContent": true,
+  "Installed": false,
+  "Modules": [{ "Name": "GF_Social", "Type": "Runtime", "LoadingPhase": "PreDefault" }]
+}
