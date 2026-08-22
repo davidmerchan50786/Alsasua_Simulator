@@ -1,4 +1,5 @@
 #include "World/AlsasuaNPCPedestrianSystem.h"
+#include "World/AlsasuaRedViaria.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "Animation/SkeletalMeshActor.h"
@@ -46,6 +47,7 @@ void UAlsasuaNPCPedestrianSystem::CargarAssetsPersonaje()
 void UAlsasuaNPCPedestrianSystem::CargarCallejero()
 {
     CallesCache.Empty();
+    int32 Descartadas = 0;
 
     TArray<FString> Lineas;
     const FString JsonPath = FPaths::ProjectContentDir() + TEXT("Datos/roads_unity.json");
@@ -67,6 +69,16 @@ void UAlsasuaNPCPedestrianSystem::CargarCallejero()
         const TSharedPtr<FJsonObject>& Road = RoadVal->AsObject();
         if (!Road) continue;
 
+        // Se anda por casi todo menos por la autovía. Antes no se filtraba nada
+        // y las 489 vías entraban en el caché, así que había peatones cruzando
+        // la A-10 y sus 50 enlaces. El criterio vive en UAlsasuaRedViaria, con
+        // el de los coches al lado, para que no vuelvan a divergir: éste no
+        // filtraba de menos y el del tráfico filtraba de más, cada uno por su
+        // cuenta.
+        FString Tipo;
+        Road->TryGetStringField(TEXT("type"), Tipo);
+        if (!UAlsasuaRedViaria::EsTransitableAPie(Tipo)) { ++Descartadas; continue; }
+
         const TArray<TSharedPtr<FJsonValue>>* PointsArr;
         if (!Road->TryGetArrayField(TEXT("points"), PointsArr)) continue;
         if (PointsArr->Num() < 2) continue;
@@ -84,7 +96,9 @@ void UAlsasuaNPCPedestrianSystem::CargarCallejero()
             CallesCache.Add(PuntosCalle);
     }
 
-    UE_LOG(LogTemp, Log, TEXT("NPCPedestrians: %d calles cacheadas"), CallesCache.Num());
+    UE_LOG(LogTemp, Log,
+        TEXT("NPCPedestrians: %d calles transitables a pie cacheadas (%d descartadas por ser autovía)"),
+        CallesCache.Num(), Descartadas);
 }
 
 void UAlsasuaNPCPedestrianSystem::GenerarNPCs()

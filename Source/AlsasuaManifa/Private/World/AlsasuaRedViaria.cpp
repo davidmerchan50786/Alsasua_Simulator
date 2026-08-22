@@ -30,6 +30,18 @@ bool UAlsasuaRedViaria::EsConducible(const FString& Tipo)
 	return Conducibles.Contains(Tipo);
 }
 
+bool UAlsasuaRedViaria::EsTransitableAPie(const FString& Tipo)
+{
+	// Por exclusión, que es como funciona a pie: se puede andar por casi todo
+	// menos por la autovía y sus enlaces. Con lista blanca habría que acordarse
+	// de meter cada tipo nuevo del dataset, y olvidarse deja el pueblo sin
+	// peatones en esa calle sin decir nada.
+	static const TSet<FString> Prohibidas = {
+		TEXT("motorway"), TEXT("motorway_link"), TEXT("trunk"), TEXT("trunk_link")
+	};
+	return !Prohibidas.Contains(Tipo);
+}
+
 int32 UAlsasuaRedViaria::Construir()
 {
 	if (Tramos.Num() > 0) return Tramos.Num();

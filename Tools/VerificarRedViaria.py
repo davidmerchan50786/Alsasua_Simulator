@@ -24,8 +24,13 @@ DATOS = os.path.join(RAIZ, "Content", "Datos", "roads_unity.json")
 CONDUCIBLE = {"motorway", "motorway_link", "trunk", "trunk_link",
               "primary", "secondary", "tertiary", "residential",
               "service", "unclassified", "living_street"}
-# Y esto con EsPeatonal().
+# Vías con calzada pero no de calzada rodada: aceras, sendas, escaleras.
 PEATONAL = {"pedestrian", "path", "footway", "steps", "track", "cycleway"}
+
+# Y esto con EsTransitableAPie(), que va por EXCLUSIÓN: se anda por casi todo
+# menos por la autovía y sus enlaces. UAlsasuaNPCPedestrianSystem no filtraba
+# nada y metía las 489 vías en su caché, o sea peatones cruzando la A-10.
+NO_A_PIE = {"motorway", "motorway_link", "trunk", "trunk_link"}
 
 # Redondeo con el que se identifican los nodos. Igual que el de C++: los datos
 # vienen de OSM y los cruces comparten coordenada exacta, así que con milímetros
@@ -106,6 +111,9 @@ def main():
     if sin_clasificar:
         tipos = Counter(v.get("type") for v in sin_clasificar)
         print("  SIN CLASIFICAR          %4d   %s" % (len(sin_clasificar), dict(tipos)))
+    print()
+    a_pie = [v for v in vias if v.get("type") not in NO_A_PIE]
+    print("  transitables a pie      %4d   (todo menos autovía y enlaces)" % len(a_pie))
     print()
     print("  nodos                   %4d" % len(nodos))
     print("  tramos dirigidos        %4d" % tramos)

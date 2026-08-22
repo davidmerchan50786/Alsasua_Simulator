@@ -572,7 +572,13 @@ posiciones cambian entre runs.
   un paso elevado con la calle de debajo. `Tools/VerificarRedViaria.py` replica
   el cálculo y saca los números que tiene que dar el log: si no coinciden, el
   C++ filtra distinto. El sistema de peatones sigue con su propio parseo, porque
-  quiere las vías peatonales que este grafo excluye a propósito.
+  quiere las vías peatonales que este grafo excluye a propósito — pero el
+  criterio de qué tipo de vía admite cada uno ya no lo decide cada sistema:
+  `EsConducible` y `EsTransitableAPie` viven juntos en `UAlsasuaRedViaria`. Se
+  equivocaban al revés y por separado, que es lo que pasa cuando la misma regla
+  está escrita dos veces: el tráfico leía el `type` y no lo usaba (coches por
+  las 87 vías peatonales) y el de peatones no filtraba nada (gente andando por
+  las 39 de autovía y sus 50 enlaces).
 
 - **La capa nocturna se encendió con 12 360 luces puntuales dentro.** Las fases
   17-20 llevaban años adjuntando cero componentes; al arreglarlas corrieron por

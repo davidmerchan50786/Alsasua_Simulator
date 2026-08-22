@@ -60,6 +60,20 @@ public:
 
 	const FTramoViario& Tramo(int32 Indice) const { return Tramos[Indice]; }
 
+	/**
+	 * Los dos criterios de tipo de vía, en un sitio y no en cada sistema.
+	 *
+	 * Cada uno se lo montaba por su cuenta y los dos se equivocaban al revés: el
+	 * tráfico leía el 'type' y no lo usaba, así que los coches circulaban por
+	 * las 87 vías peatonales; y el de peatones no filtraba nada, así que había
+	 * gente andando por las 39 vías de autovía y sus 50 enlaces.
+	 */
+	UFUNCTION(BlueprintPure, Category = "Alsasua|Red")
+	static bool EsConducible(const FString& Tipo);
+
+	UFUNCTION(BlueprintPure, Category = "Alsasua|Red")
+	static bool EsTransitableAPie(const FString& Tipo);
+
 	/** Un tramo cualquiera, para colocar algo que circula. -1 si no hay red. */
 	UFUNCTION(BlueprintCallable, Category = "Alsasua|Red")
 	int32 TramoAleatorio(int32 Semilla) const;
@@ -81,5 +95,4 @@ private:
 	/** Por nodo, los índices de tramo que SALEN de él. */
 	TArray<TArray<int32>> Salidas;
 
-	static bool EsConducible(const FString& Tipo);
 };
