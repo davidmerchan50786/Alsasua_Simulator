@@ -17,8 +17,18 @@ USTRUCT(BlueprintType)
 struct FVehiclePath
 {
     GENERATED_BODY()
-    TArray<FVector> Puntos;
-    int32 IndiceActual = 0;
+    /** Tramo del grafo por el que va, y cuánto lleva recorrido de él (cm).
+     *  Antes eran ocho puntos copiados de UNA calle: al acabarlos el coche
+     *  volvía de un salto al primero, porque no había forma de saber qué calle
+     *  seguía. Con el grafo hay cruces y se puede girar. */
+    int32 TramoActual = -1;
+    float Avance = 0.f;
+    /** Desplazamiento al carril, perpendicular a la marcha. */
+    float CarrilCm = 0.f;
+    /** Avanza en cada cruce, para que la elección de giro no sea la misma
+     *  siempre y aun así sea reproducible entre arranques. */
+    int32 Semilla = 0;
+
     float Velocidad = 500.0f;
     ETipoVehiculo Tipo = ETipoVehiculo::Coche;
     FString Calle;
@@ -51,7 +61,10 @@ public:
 
 private:
     TArray<FVehiclePath> Vehiculos;
-    TArray<TArray<FVector>> CallesDisponibles;
+    /** El grafo. Lo construye UAlsasuaRedViaria y lo comparte con quien lo pida:
+     *  este sistema y el de peatones leían roads_unity.json cada uno por su
+     *  cuenta y se quedaban polilíneas sueltas. */
+    UPROPERTY() TObjectPtr<class UAlsasuaRedViaria> Red = nullptr;
     float TiempoDesdeUltimoSpawn = 0.0f;
     bool bInicializado = false;
 

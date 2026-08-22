@@ -1,4 +1,5 @@
 #include "World/AlsasuaDynamicTrafficSystem.h"
+#include "World/AlsasuaRedViaria.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "Engine/StaticMeshActor.h"
@@ -21,60 +22,23 @@ void UAlsasuaDynamicTrafficSystem::Initialize(FSubsystemCollectionBase& Collecti
 
 void UAlsasuaDynamicTrafficSystem::CargarCallejero()
 {
-    CallesDisponibles.Empty();
+    UWorld* W = GetWorld();
+    if (!W) return;
 
-    TArray<FString> Lineas;
-    const FString JsonPath = FPaths::ProjectContentDir() + TEXT("Datos/roads_unity.json");
-    if (!FFileHelper::LoadFileToStringArray(Lineas, *JsonPath))
-    {
-        UE_LOG(LogTemp, Warning, TEXT("DynamicTraffic: No se pudo cargar roads_unity.json"));
-        return;
-    }
-
-    FString JsonStr;
-    for (const FString& L : Lineas) JsonStr += L;
-
-    TArray<TSharedPtr<FJsonValue>> RoadsArr;
-    TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(JsonStr);
-    if (!FJsonSerializer::Deserialize(Reader, RoadsArr))
-    {
-        UE_LOG(LogTemp, Warning, TEXT("DynamicTraffic: Error parseando roads_unity.json"));
-        return;
-    }
-
-    for (const auto& RoadVal : RoadsArr)
-    {
-        const TSharedPtr<FJsonObject>& Road = RoadVal->AsObject();
-        if (!Road) continue;
-
-        FString RoadType;
-        Road->TryGetStringField(TEXT("type"), RoadType);
-
-        const TArray<TSharedPtr<FJsonValue>>* PointsArr;
-        if (!Road->TryGetArrayField(TEXT("points"), PointsArr)) continue;
-        if (PointsArr->Num() < 4) continue;
-
-        TArray<FVector> PuntosCalle;
-        for (int32 i = 0; i < PointsArr->Num(); i++)
-        {
-            const TSharedPtr<FJsonObject>& Pt = (*PointsArr)[i]->AsObject();
-            if (!Pt) continue;
-            PuntosCalle.Add(UAlsasuaGeoData::RelLocalASueloUE5(GetWorld(),
-                FVector(Pt->GetNumberField(TEXT("x")), 0.0f, Pt->GetNumberField(TEXT("z")))));
-        }
-
-        if (PuntosCalle.Num() >= 2)
-        {
-            CallesDisponibles.Add(PuntosCalle);
-        }
-    }
-
-    UE_LOG(LogTemp, Log, TEXT("DynamicTraffic: %d calles cargadas para rutas vehiculares"), CallesDisponibles.Num());
+    // El callejero ya no se parsea aquí. Lo hacía este sistema por su cuenta, y
+    // el de peatones otra vez, y salían dos listas de polilíneas sueltas: sin
+    // cruces no hay por dónde girar. Además el 'type' se leía a una variable y
+    // no se usaba —los coches circulaban por las 87 vías peatonales— y un
+    // "Num() < 4" descartaba 192 de las 489 vías, el 39%, porque la mediana del
+    // dataset es justo 4 puntos.
+    Red = W->GetSubsystem<UAlsasuaRedViaria>();
+    if (!Red) { UE_LOG(LogTemp, Warning, TEXT("DynamicTraffic: sin UAlsasuaRedViaria.")); return; }
+    Red->Construir();
 }
 
 void UAlsasuaDynamicTrafficSystem::IniciarTrafico()
 {
-    if (CallesDisponibles.Num() == 0) CargarCallejero();
+    if (!Red || !Red->EstaLista()) CargarCallejero();
 
     if (!bInicializado) return;
 
@@ -98,34 +62,46 @@ void UAlsasuaDynamicTrafficSystem::ActualizarTrafico(float DeltaTime)
         TiempoDesdeUltimoSpawn = 0.0f;
     }
 
+    if (!Red || !Red->EstaLista()) return;
+
     for (FVehiclePath& Veh : Vehiculos)
     {
-        if (!Veh.bEnMarcha || Veh.Puntos.Num() < 2) continue;
+        if (!Veh.bEnMarcha || Veh.TramoActual < 0) continue;
 
-        FVector PosActual = (Veh.ActorAsociado.IsValid()) ?
-            Veh.ActorAsociado->GetActorLocation() : Veh.Puntos[Veh.IndiceActual];
+        const FTramoViario& T = Red->Tramo(Veh.TramoActual);
+        Veh.Avance += Veh.Velocidad * DeltaTime;
 
-        FVector PosSiguiente = Veh.Puntos[FMath::Min(Veh.IndiceActual + 1, Veh.Puntos.Num() - 1)];
-        FVector Direccion = (PosSiguiente - PosActual).GetSafeNormal();
-
-        FVector NuevaPos = PosActual + Direccion * Veh.Velocidad * DeltaTime;
-
-        float DistToNext = FVector::Distance(NuevaPos, PosSiguiente);
-        if (DistToNext < 300.0f)
+        // Al llegar al nodo se elige continuación en el cruce, en vez de saltar
+        // al principio de la calle. SiguienteTramo evita la media vuelta salvo
+        // en fondo de saco, que es lo que hace que parezca que circula.
+        // Un tramo por frame: si el coche se pasara de largo varios tramos en un
+        // solo frame, el sobrante se consume en el siguiente. A 700 cm/s y con
+        // tramos de decenas de metros no llega a pasar.
+        if (T.LargoCm > 0.f && Veh.Avance >= T.LargoCm)
         {
-            Veh.IndiceActual++;
-            if (Veh.IndiceActual >= Veh.Puntos.Num() - 1)
-            {
-                Veh.IndiceActual = 0;
-                NuevaPos = Veh.Puntos[0];
-            }
+            const int32 Siguiente = Red->SiguienteTramo(Veh.TramoActual, Veh.Semilla++);
+            if (Siguiente < 0) { Veh.bEnMarcha = false; continue; }
+            Veh.Avance -= T.LargoCm;
+            Veh.TramoActual = Siguiente;
         }
+
+        const FTramoViario& Actual = Red->Tramo(Veh.TramoActual);
+        const FVector P0 = Red->PosicionNodo(Actual.NodoA);
+        const FVector P1 = Red->PosicionNodo(Actual.NodoB);
+        const FVector Dir = (P1 - P0).GetSafeNormal();
+        const float Fraccion = (Actual.LargoCm > 0.f)
+            ? FMath::Clamp(Veh.Avance / Actual.LargoCm, 0.f, 1.f) : 0.f;
+
+        // Carril: desplazado a la derecha de la marcha un cuarto del ancho de
+        // calzada (lo fija el spawn). Antes era un ±60 cm sorteado, igual en una
+        // pista de servicio que en la autovía.
+        const FVector Perp(-Dir.Y, Dir.X, 0.f);
+        const FVector NuevaPos = FMath::Lerp(P0, P1, Fraccion) + Perp * Veh.CarrilCm;
 
         if (Veh.ActorAsociado.IsValid())
         {
             Veh.ActorAsociado->SetActorLocation(NuevaPos);
-            FRotator LookAt = Direccion.Rotation();
-            Veh.ActorAsociado->SetActorRotation(LookAt);
+            Veh.ActorAsociado->SetActorRotation(Dir.Rotation());
         }
     }
 }
@@ -134,33 +110,33 @@ void UAlsasuaDynamicTrafficSystem::SpawnVehiculoEnCalle()
 {
     UWorld* World = GetWorld();
     if (!World) return;
-
-    if (CallesDisponibles.Num() == 0) return;
-
-    const int32 CalleIdx = FMath::RandRange(0, CallesDisponibles.Num() - 1);
-    const TArray<FVector>& Calle = CallesDisponibles[CalleIdx];
-
-    const int32 PuntoIdx = FMath::RandRange(0, FMath::Max(0, Calle.Num() - 2));
-    FVector PuntoInicio = Calle[PuntoIdx];
-    FVector PuntoFinal = Calle[FMath::Min(PuntoIdx + 1, Calle.Num() - 1)];
+    if (!Red || !Red->EstaLista()) return;
 
     FVehiclePath Veh;
-    Veh.Tipo = static_cast<ETipoVehiculo>(FMath::RandRange(0, 2));
+    Veh.Semilla = Vehiculos.Num() * 7919 + 13;
+
+    Veh.TramoActual = Red->TramoAleatorio(Veh.Semilla++);
+    if (Veh.TramoActual < 0) return;
+
+    const FTramoViario& T = Red->Tramo(Veh.TramoActual);
+    const FVector PuntoInicio = Red->PosicionNodo(T.NodoA);
+    const FVector PuntoFinal = Red->PosicionNodo(T.NodoB);
+
+    FRandomStream Sorteo(Veh.Semilla++);
+    Veh.Tipo = static_cast<ETipoVehiculo>(Sorteo.RandRange(0, 2));
     Veh.Velocidad = (Veh.Tipo == ETipoVehiculo::Camion) ?
-        FMath::RandRange(200.0f, 400.0f) : FMath::RandRange(300.0f, 700.0f);
+        Sorteo.FRandRange(200.0f, 400.0f) : Sorteo.FRandRange(300.0f, 700.0f);
     Veh.ColorCarroceria = ObtenerColorAleatorio();
     Veh.bEnMarcha = true;
+    Veh.Avance = 0.f;
 
-    FVector Dir = (PuntoFinal - PuntoInicio).GetSafeNormal();
-    FVector PerpDir = FVector(-Dir.Y, Dir.X, 0);
-    FVector OffsetLateral = PerpDir * FMath::RandRange(-60.0f, 60.0f);
+    // Carril derecho: a un cuarto del ancho de la calzada del eje. Antes era un
+    // ±60 cm sorteado, igual en una pista de servicio que en la autovía.
+    Veh.CarrilCm = T.AnchoCm * 0.25f;
 
-    int32 NumPuntos = FMath::Min(8, Calle.Num() - PuntoIdx);
-    for (int32 i = 0; i < NumPuntos; i++)
-    {
-        int32 PtIdx = FMath::Min(PuntoIdx + i, Calle.Num() - 1);
-        Veh.Puntos.Add(Calle[PtIdx] + OffsetLateral);
-    }
+    const FVector Dir = (PuntoFinal - PuntoInicio).GetSafeNormal();
+    const FVector PerpDir(-Dir.Y, Dir.X, 0.f);
+    const FVector OffsetLateral = PerpDir * Veh.CarrilCm;
 
     AStaticMeshActor* VehActor = World->SpawnActor<AStaticMeshActor>(
         AStaticMeshActor::StaticClass(), PuntoInicio + OffsetLateral, Dir.Rotation());
@@ -241,12 +217,10 @@ FLinearColor UAlsasuaDynamicTrafficSystem::ObtenerColorAleatorio() const
 
 FVector UAlsasuaDynamicTrafficSystem::ObtenerPuntoInicio() const
 {
-    if (CallesDisponibles.Num() > 0)
+    if (Red && Red->EstaLista())
     {
-        const int32 Idx = FMath::RandRange(0, CallesDisponibles.Num() - 1);
-        const TArray<FVector>& Calle = CallesDisponibles[Idx];
-        if (Calle.Num() > 0)
-            return Calle[0];
+        const int32 Idx = Red->TramoAleatorio(Vehiculos.Num() * 31 + 7);
+        if (Idx >= 0) return Red->PosicionNodo(Red->Tramo(Idx).NodoA);
     }
 
     FVector P = UAlsasuaGeoData::AbsLocalToUE5(UAlsasuaGeoData::BarrioCenter(TEXT("Herriko")));

@@ -337,7 +337,9 @@ cota—, `#include` de una cabecera del proyecto que ya no
 existe, método declarado en una cabecera que no define ningún `.cpp` de su
 módulo —error de **enlazado**, que no lo canta el editor y sólo salta cuando
 alguien llama a esa API— y puntero a `UObject` sin `UPROPERTY` en un tipo
-reflejado, §9), `VerificarModulos.py` (que el grafo de módulos que usa el código sea el que
+reflejado, §9), `VerificarRedViaria.py` (el grafo de calzada replicado en Python: si el C++ dice
+402 vías y aquí salen 247, alguien filtra de más),
+`VerificarModulos.py` (que el grafo de módulos que usa el código sea el que
 declaran los `.Build.cs`, y que no haya ciclos nuevos: los dos son error de UBT),
 `VerificarCallesNavarra.py` (trazado contra el eje catastral),
 `AuditarAssets.py` (rutas sin respaldo y mallas bajadas que nadie pide),
@@ -555,6 +557,22 @@ posiciones cambian entre runs.
   perfil sale de `PerfilArranque` en `DefaultGame.ini`, sólo se aplica en
   `EWorldType::Game`, y `ShouldCreateSubsystem` deja fuera los mundos de
   editor. El auditor los separa ahora en "ARRANCAN SOLOS" e "INERTES".
+
+- **Había coches pero no red por la que circular.** `UAlsasuaDynamicTrafficSystem`
+  y `UAlsasuaNPCPedestrianSystem` leían `roads_unity.json` cada uno por su cuenta
+  y se quedaban una lista de **polilíneas sueltas**: un coche recorría UNA calle
+  y al llegar al final volvía de un salto al punto 0, porque sin cruces no hay
+  por dónde girar. Encima el `type` se leía a una variable y no se usaba —los
+  coches circulaban por las 87 vías peatonales— y un `Num() < 4` descartaba 192
+  de las 489 vías, el 39%, porque la mediana del dataset es justo 4 puntos.
+  Ahora hay `UAlsasuaRedViaria`: 2297 nodos, 2429 tramos dirigidos, 316 cruces,
+  87 km, con `oneway` respetado y el ancho de calzada por tramo. Los cruces
+  salen por coincidencia **exacta** de coordenada —los datos son de OSM y sólo 3
+  de las 402 vías conducibles quedan sueltas así—, no por proximidad, que uniría
+  un paso elevado con la calle de debajo. `Tools/VerificarRedViaria.py` replica
+  el cálculo y saca los números que tiene que dar el log: si no coinciden, el
+  C++ filtra distinto. El sistema de peatones sigue con su propio parseo, porque
+  quiere las vías peatonales que este grafo excluye a propósito.
 
 - **La capa nocturna se encendió con 12 360 luces puntuales dentro.** Las fases
   17-20 llevaban años adjuntando cero componentes; al arreglarlas corrieron por

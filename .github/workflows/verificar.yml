@@ -66,6 +66,9 @@ jobs:
       - name: VerificarModulos (grafo de módulos y ciclos nuevos)
         run: python3 Tools/VerificarModulos.py
 
+      - name: VerificarRedViaria (el grafo de calzada, contra el dato)
+        run: python3 Tools/VerificarRedViaria.py
+
   rutas:
     name: Sin rutas de máquina
     runs-on: ubuntu-latest
