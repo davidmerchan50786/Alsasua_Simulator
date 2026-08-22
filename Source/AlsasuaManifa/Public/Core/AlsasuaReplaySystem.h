@@ -27,7 +27,7 @@ class ALSASUAMANIFA_API UAlsasuaReplaySystem : public UWorldSubsystem, public FT
 
 public:
     virtual void Tick(float DeltaTime) override;
-    virtual bool IsTickable() const override { return true; }
+    virtual bool IsTickable() const override { return !IsTemplate(); }
     virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(UAlsasuaReplaySystem, STATGROUP_Game); }
 
     UFUNCTION(BlueprintCallable, Category = "AAA|Replay")

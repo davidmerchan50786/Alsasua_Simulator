@@ -17,6 +17,7 @@ public:
     virtual void Tick(float DeltaTime) override;
     virtual bool IsAllowedToTick() const override { return true; }
     virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(AlsasuaCinemaDirector, STATGROUP_Game); }
+    virtual bool IsTickable() const override { return !IsTemplate(); }   // no ticar el CDO (CLAUDE.md §9)
 
     // Registra un evento de interés visual para que la cámara lo "sienta"
     UFUNCTION(BlueprintCallable, Category = "AAA|Camera")

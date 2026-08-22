@@ -18,7 +18,7 @@ class ALSASUAMANIFA_API UAlsasuaTacticManager : public UWorldSubsystem, public F
 
 public:
     virtual void Tick(float DeltaTime) override;
-    virtual bool IsTickable() const override { return true; }
+    virtual bool IsTickable() const override { return !IsTemplate(); }
     virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(UAlsasuaTacticManager, STATGROUP_Game); }
 
     // Delegado para que los Agentes se suscriban una sola vez (AAA Performance)

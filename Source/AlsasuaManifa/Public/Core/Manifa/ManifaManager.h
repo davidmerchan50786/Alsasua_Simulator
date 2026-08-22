@@ -28,4 +28,5 @@ public:
     virtual bool IsAllowedToTick() const override { return true; }
     virtual void Tick(float DeltaTime) override;
     virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(ManifaManager, STATGROUP_Game); }
+    virtual bool IsTickable() const override { return !IsTemplate(); }   // no ticar el CDO (CLAUDE.md §9)
 };

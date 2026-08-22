@@ -26,6 +26,7 @@ public:
 	// FTickableGameObject
 	virtual bool IsAllowedToTick() const override { return true; }
 	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(AlsasuaBudgetManager, STATGROUP_Game); }
+	virtual bool IsTickable() const override { return !IsTemplate(); }   // no ticar el CDO (CLAUDE.md §9)
 
 	/** Consulta si queda presupuesto de tiempo para ejecutar una tarea en este frame */
 	UFUNCTION(BlueprintCallable, Category = "AAA|Budget")

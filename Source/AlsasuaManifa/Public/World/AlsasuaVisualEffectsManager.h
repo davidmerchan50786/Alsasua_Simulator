@@ -22,6 +22,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual bool IsAllowedToTick() const override { return true; }
 	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(AlsasuaVisualEffectsManager, STATGROUP_Game); }
+	virtual bool IsTickable() const override { return !IsTemplate(); }   // no ticar el CDO (CLAUDE.md §9)
 
 	// --- Wetness (lluvia) ---
 	UPROPERTY(BlueprintReadOnly, Category = "VFX|Wetness")

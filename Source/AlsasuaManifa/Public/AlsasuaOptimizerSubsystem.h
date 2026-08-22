@@ -11,7 +11,7 @@ class ALSASUAMANIFA_API UAlsasuaOptimizerSubsystem : public UWorldSubsystem, pub
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Tick(float DeltaTime) override;
-	virtual bool IsTickable() const override { return true; }
+	virtual bool IsTickable() const override { return !IsTemplate(); }
 	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(UAlsasuaOptimizerSubsystem, STATGROUP_Game); }
 
 	// Distancia a partir de la cual desactivamos el Tick de la IA

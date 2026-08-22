@@ -12,7 +12,7 @@ class ALSASUAMANIFA_API UAlsasuaHitchProtector : public UWorldSubsystem, public 
 
 public:
 	virtual void Tick(float DeltaTime) override;
-	virtual bool IsTickable() const override { return true; }
+	virtual bool IsTickable() const override { return !IsTemplate(); }
 	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(UAlsasuaHitchProtector, STATGROUP_Game); }
 
 	// Devuelve el factor de escala de densidad actual (1.0 = normal, 0.2 = pánico)

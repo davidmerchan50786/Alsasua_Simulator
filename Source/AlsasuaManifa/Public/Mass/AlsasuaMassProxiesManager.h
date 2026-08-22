@@ -17,7 +17,7 @@ public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
     virtual void Deinitialize() override;
     virtual void Tick(float DeltaTime) override;
-    virtual bool IsTickable() const override { return true; }
+    virtual bool IsTickable() const override { return !IsTemplate(); }
     virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(UAlsasuaMassProxies, STATGROUP_Game); }
 
     virtual bool DoesSupportWorldType(const EWorldType::Type WorldType) const override
