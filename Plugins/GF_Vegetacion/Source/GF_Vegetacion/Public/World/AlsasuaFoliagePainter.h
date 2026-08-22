@@ -30,7 +30,7 @@ struct FFoliageTypeData
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaFoliagePainter : public UGameInstanceSubsystem
+class GF_VEGETACION_API UAlsasuaFoliagePainter : public UGameInstanceSubsystem
 {
     GENERATED_BODY()
 public:

@@ -12,7 +12,7 @@ class ALandscape;
 class UWorld;
 
 USTRUCT(BlueprintType)
-struct ALSASUAMANIFA_API FCellCollisionData
+struct GF_VEGETACION_API FCellCollisionData
 {
 	GENERATED_BODY()
 
@@ -23,7 +23,7 @@ struct ALSASUAMANIFA_API FCellCollisionData
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UVegetationSpawnerSubsystem : public UWorldSubsystem
+class GF_VEGETACION_API UVegetationSpawnerSubsystem : public UWorldSubsystem
 {
 	GENERATED_BODY()
 

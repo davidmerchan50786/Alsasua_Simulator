@@ -6,7 +6,7 @@
 #include "VegetationType.generated.h"
 
 USTRUCT(BlueprintType)
-struct ALSASUAMANIFA_API FVegetationPrefab
+struct GF_VEGETACION_API FVegetationPrefab
 {
 	GENERATED_BODY()
 
@@ -18,7 +18,7 @@ struct ALSASUAMANIFA_API FVegetationPrefab
 };
 
 USTRUCT(BlueprintType)
-struct ALSASUAMANIFA_API FVegetationLayerMask
+struct GF_VEGETACION_API FVegetationLayerMask
 {
 	GENERATED_BODY()
 
@@ -33,7 +33,7 @@ struct ALSASUAMANIFA_API FVegetationLayerMask
 };
 
 UCLASS(BlueprintType, DefaultToInstanced, EditInlineNew)
-class ALSASUAMANIFA_API UVegetationType : public UDataAsset
+class GF_VEGETACION_API UVegetationType : public UDataAsset
 {
 	GENERATED_BODY()
 
