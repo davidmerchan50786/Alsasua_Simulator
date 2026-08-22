@@ -1,4 +1,6 @@
 #include "World/AlsasuaDynamicTrafficSystem.h"
+#include "World/AlsasuaStreetGraph.h"
+#include "World/AlsasuaAIDriverComponent.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "Engine/StaticMeshActor.h"
@@ -98,36 +100,8 @@ void UAlsasuaDynamicTrafficSystem::ActualizarTrafico(float DeltaTime)
         TiempoDesdeUltimoSpawn = 0.0f;
     }
 
-    for (FVehiclePath& Veh : Vehiculos)
-    {
-        if (!Veh.bEnMarcha || Veh.Puntos.Num() < 2) continue;
-
-        FVector PosActual = (Veh.ActorAsociado.IsValid()) ?
-            Veh.ActorAsociado->GetActorLocation() : Veh.Puntos[Veh.IndiceActual];
-
-        FVector PosSiguiente = Veh.Puntos[FMath::Min(Veh.IndiceActual + 1, Veh.Puntos.Num() - 1)];
-        FVector Direccion = (PosSiguiente - PosActual).GetSafeNormal();
-
-        FVector NuevaPos = PosActual + Direccion * Veh.Velocidad * DeltaTime;
-
-        float DistToNext = FVector::Distance(NuevaPos, PosSiguiente);
-        if (DistToNext < 300.0f)
-        {
-            Veh.IndiceActual++;
-            if (Veh.IndiceActual >= Veh.Puntos.Num() - 1)
-            {
-                Veh.IndiceActual = 0;
-                NuevaPos = Veh.Puntos[0];
-            }
-        }
-
-        if (Veh.ActorAsociado.IsValid())
-        {
-            Veh.ActorAsociado->SetActorLocation(NuevaPos);
-            FRotator LookAt = Direccion.Rotation();
-            Veh.ActorAsociado->SetActorRotation(LookAt);
-        }
-    }
+    // El movimiento lo hace el UAlsasuaAIDriverComponent de cada actor;
+    // aquí solo toca gestionar el spawn.
 }
 
 void UAlsasuaDynamicTrafficSystem::SpawnVehiculoEnCalle()
@@ -239,6 +213,45 @@ void UAlsasuaDynamicTrafficSystem::SpawnVehiculoEnCalle()
 
     Veh.ActorAsociado = VehActor;
     Vehiculos.Add(Veh);
+
+    // Ruta A* por el grafo + conductor IA. La ruta se inyecta antes de
+    // registrar el componente para que BeginPlay no pida otra aleatoria.
+    UAlsasuaStreetGraph* Grafo = ObtenerGrafo();
+    if (Grafo && Grafo->Nodes.Num() >= 2)
+    {
+        const int32 NodoInicio = Grafo->GetNearestNode(PuntoInicio);
+        for (int32 Intento = 0; Intento < 8; ++Intento)
+        {
+            const int32 NodoFin = FMath::RandRange(0, Grafo->Nodes.Num() - 1);
+            if (NodoFin == NodoInicio) continue;
+
+            const TArray<int32> Camino = Grafo->FindPath(NodoInicio, NodoFin);
+            if (Camino.Num() < 2 || Camino.Num() - 1 > MaxRouteDistance) continue;
+
+            UAlsasuaAIDriverComponent* IA = NewObject<UAlsasuaAIDriverComponent>(VehActor);
+            VehActor->AddInstanceComponent(IA);
+            IA->MaxSpeed = Veh.Velocidad;
+            IA->SetRouteFromGraph(Grafo, NodoInicio, NodoFin);
+            IA->RegisterComponent();
+            break;
+        }
+    }
+}
+
+UAlsasuaStreetGraph* UAlsasuaDynamicTrafficSystem::ObtenerGrafo()
+{
+    if (StreetGraph) return StreetGraph;
+
+    UWorld* World = GetWorld();
+    if (!World) return nullptr;
+
+    StreetGraph = NewObject<UAlsasuaStreetGraph>(this);
+    StreetGraph->BuildFromRoadsJson(FPaths::ProjectContentDir() + TEXT("Datos/roads_unity.json"), World);
+    if (StreetGraph->Nodes.Num() == 0)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("DynamicTraffic: grafo vacío, rutas A* no disponibles"));
+    }
+    return StreetGraph;
 }
 
 FLinearColor UAlsasuaDynamicTrafficSystem::ObtenerColorAleatorio() const
@@ -269,4 +282,12 @@ FVector UAlsasuaDynamicTrafficSystem::ObtenerPuntoInicio() const
     FVector P = UAlsasuaGeoData::AbsLocalToUE5(UAlsasuaGeoData::BarrioCenter(TEXT("Herriko")));
     P.Z = UAlsasuaGeoData::AlturaSueloUE5(GetWorld(), P.X, P.Y);
     return P;
+}
+
+void UAlsasuaDynamicTrafficSystem::Tick(float DeltaTime)
+{
+    if (!bInicializado) return;
+    if (CallesDisponibles.Num() == 0) CargarCallejero();
+    if (Vehiculos.Num() == 0 && CallesDisponibles.Num() > 0) IniciarTrafico();
+    ActualizarTrafico(DeltaTime);
 }

@@ -144,8 +144,10 @@ int32 UAlsasuaParkingSystem::GenerarPlazasAparcamiento()
 #endif
         }
 
-        // Vehículo aparcado en plazas ocupadas (VehicleVarietyPack).
-        if (Spot.bOcupado)
+        // Vehículo aparcado desactivado: TrafficSystem ya coloca coches ISM
+        // en estas plazas; spawnear actores aquí producía coches dobles.
+        static constexpr bool bSpawnCochesAparcados = false;
+        if (bSpawnCochesAparcados && Spot.bOcupado)
         {
             static const TCHAR* RutasCoches[] = {
                 TEXT("/Game/VehicleVarietyPack/Meshes/SM_Hatchback.Hatchback"),
