@@ -1,5 +1,5 @@
 #include "World/AlsasuaDoorEntranceSystem.h"
-#include "World/AlsasuaMallaFab.h"
+#include "AlsasuaMallaFab.h"
 #include "World/AlsasuaDirecciones.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"

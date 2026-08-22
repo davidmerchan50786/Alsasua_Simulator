@@ -1,7 +1,7 @@
 // AlsasuaTejadoModular.cpp
 #include "AlsasuaTejadoModular.h"
 #include "EdificioGenerado.h"
-#include "World/AlsasuaMallaFab.h"
+#include "AlsasuaMallaFab.h"
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "Components/SceneComponent.h"
 #include "Engine/StaticMesh.h"

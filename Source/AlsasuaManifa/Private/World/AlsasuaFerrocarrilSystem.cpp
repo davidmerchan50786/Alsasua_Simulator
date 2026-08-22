@@ -1,5 +1,5 @@
 #include "World/AlsasuaFerrocarrilSystem.h"
-#include "World/AlsasuaMallaFab.h"
+#include "AlsasuaMallaFab.h"
 #include "GeoDataAlsasua.h"
 #include "AjusteMallaComun.h"
 #include "Engine/World.h"

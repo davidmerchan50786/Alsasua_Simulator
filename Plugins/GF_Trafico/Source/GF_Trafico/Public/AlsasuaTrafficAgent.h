@@ -6,7 +6,7 @@
 #include "AlsasuaTrafficAgent.generated.h"
 
 UCLASS()
-class ALSASUAMANIFA_API AAlsasuaTrafficAgent : public AActor
+class GF_TRAFICO_API AAlsasuaTrafficAgent : public AActor
 {
 	GENERATED_BODY()
 

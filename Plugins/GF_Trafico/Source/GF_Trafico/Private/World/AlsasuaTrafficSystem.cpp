@@ -13,7 +13,7 @@
 #include "Components/SceneComponent.h"
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
-#include "World/AlsasuaMallaFab.h"
+#include "AlsasuaMallaFab.h"
 #include "World/AlsasuaParkingSystem.h"
 #include "Engine/GameInstance.h"
 #include "Math/RandomStream.h"

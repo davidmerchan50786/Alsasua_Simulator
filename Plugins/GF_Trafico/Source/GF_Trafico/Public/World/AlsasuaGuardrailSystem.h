@@ -26,7 +26,7 @@ struct FGuardrail
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaGuardrailSystem : public UGameInstanceSubsystem
+class GF_TRAFICO_API UAlsasuaGuardrailSystem : public UGameInstanceSubsystem
 {
     GENERATED_BODY()
 public:

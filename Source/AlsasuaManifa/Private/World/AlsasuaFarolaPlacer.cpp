@@ -11,7 +11,7 @@
 #include "GeoDataAlsasua.h"
 #include "CargarJsonComun.h"
 #include "AjusteMallaComun.h"
-#include "World/AlsasuaMallaFab.h"
+#include "AlsasuaMallaFab.h"
 #include "Engine/StaticMesh.h"
 
 void UAlsasuaFarolaPlacer::Initialize(FSubsystemCollectionBase& Collection)

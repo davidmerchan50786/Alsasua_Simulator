@@ -47,7 +47,7 @@ struct FTrafficLight
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaTrafficLightSystem : public UGameInstanceSubsystem, public FTickableGameObject
+class GF_TRAFICO_API UAlsasuaTrafficLightSystem : public UGameInstanceSubsystem, public FTickableGameObject
 {
 	GENERATED_BODY()
 public:

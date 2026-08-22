@@ -20,11 +20,11 @@ namespace AlsasuaMallaFab
 	 * "bollard"...). FormaBasica es la ruta del motor a la que caer.
 	 * Devuelve null sólo si tampoco existe la forma básica.
 	 */
-	ALSASUAMANIFA_API UStaticMesh* Resolver(const FString& Tipo, const TCHAR* FormaBasica);
+	ALSASUACORE_API UStaticMesh* Resolver(const FString& Tipo, const TCHAR* FormaBasica);
 
 	/** ¿La malla devuelta para ese tipo viene de Fab? Para decidir si escalar. */
-	ALSASUAMANIFA_API bool VieneDeFab(const FString& Tipo);
+	ALSASUACORE_API bool VieneDeFab(const FString& Tipo);
 
 	/** Olvida la caché: tras importar de Fab sin reiniciar el editor. */
-	ALSASUAMANIFA_API void LimpiarCache();
+	ALSASUACORE_API void LimpiarCache();
 }

@@ -29,7 +29,7 @@ struct FVehiclePath
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaDynamicTrafficSystem : public UGameInstanceSubsystem
+class GF_TRAFICO_API UAlsasuaDynamicTrafficSystem : public UGameInstanceSubsystem
 {
     GENERATED_BODY()
 public:

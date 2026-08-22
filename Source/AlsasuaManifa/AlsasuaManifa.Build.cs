@@ -31,7 +31,8 @@ public class AlsasuaManifa : ModuleRules
 			"ProceduralMeshComponent",
 			"AlsasuaCore", 
 			"AlsasuaKernel",
-			"GF_Clima"
+			"GF_Clima",
+			"GF_Trafico"
 		});
 
         PrivateDependencyModuleNames.AddRange(new string[] {

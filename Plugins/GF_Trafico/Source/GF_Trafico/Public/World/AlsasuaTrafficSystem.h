@@ -40,7 +40,7 @@ struct FTrafficSign
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaTrafficSystem : public UGameInstanceSubsystem
+class GF_TRAFICO_API UAlsasuaTrafficSystem : public UGameInstanceSubsystem
 {
     GENERATED_BODY()
 public:

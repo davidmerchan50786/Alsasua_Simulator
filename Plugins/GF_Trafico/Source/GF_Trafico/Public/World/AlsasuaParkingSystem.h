@@ -37,7 +37,7 @@ struct FParkingSpot
 };
 
 UCLASS()
-class ALSASUAMANIFA_API UAlsasuaParkingSystem : public UGameInstanceSubsystem
+class GF_TRAFICO_API UAlsasuaParkingSystem : public UGameInstanceSubsystem
 {
     GENERATED_BODY()
 public:

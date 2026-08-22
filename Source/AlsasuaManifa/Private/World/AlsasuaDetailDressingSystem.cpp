@@ -2,7 +2,7 @@
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "Engine/StaticMeshActor.h"
-#include "World/AlsasuaMallaFab.h"
+#include "AlsasuaMallaFab.h"
 #include "Components/StaticMeshComponent.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"

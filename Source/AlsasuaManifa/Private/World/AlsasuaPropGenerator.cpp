@@ -2,7 +2,7 @@
 #include "Engine/StreamableManager.h"
 #include "Engine/AssetManager.h"
 #include "Components/StaticMeshComponent.h"
-#include "World/AlsasuaMallaFab.h"
+#include "AlsasuaMallaFab.h"
 #include "Engine/StaticMesh.h"
 
 void UAlsasuaPropGenerator::Initialize(FSubsystemCollectionBase& Collection)

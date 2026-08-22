@@ -5,7 +5,7 @@ public class AlsasuaWorld : ModuleRules
     public AlsasuaWorld(ReadOnlyTargetRules Target) : base(Target)
     {
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "AlsasuaCore", "AlsasuaManifa", "GF_Vegetacion", "GF_Clima", "ProceduralMeshComponent", "NavigationSystem", "Json", "JsonUtilities" });
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "AlsasuaCore", "AlsasuaManifa", "GF_Vegetacion", "GF_Clima", "GF_Trafico", "ProceduralMeshComponent", "NavigationSystem", "Json", "JsonUtilities" });
 
         if (Target.bBuildEditor)
         {
