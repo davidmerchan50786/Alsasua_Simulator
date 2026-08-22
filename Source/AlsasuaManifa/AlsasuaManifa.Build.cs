@@ -30,7 +30,8 @@ public class AlsasuaManifa : ModuleRules
 			"Niagara",
 			"ProceduralMeshComponent",
 			"AlsasuaCore", 
-			"AlsasuaKernel"
+			"AlsasuaKernel",
+			"GF_Clima"
 		});
 
         PrivateDependencyModuleNames.AddRange(new string[] {

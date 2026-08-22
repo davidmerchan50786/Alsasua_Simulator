@@ -15,7 +15,7 @@ enum class EWeatherSubsystemState : uint8 {
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeatherChanged, EWeatherSubsystemState, NewState);
 
 UCLASS()
-class ALSASUAMANIFA_API UWeatherSubsystem : public UWorldSubsystem
+class GF_CLIMA_API UWeatherSubsystem : public UWorldSubsystem
 {
     GENERATED_BODY()
 

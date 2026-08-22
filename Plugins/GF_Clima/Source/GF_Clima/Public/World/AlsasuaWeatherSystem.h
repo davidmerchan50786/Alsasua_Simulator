@@ -32,7 +32,7 @@ struct FMonthlyWeather
 };
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class ALSASUAMANIFA_API UAlsasuaWeatherSystem : public UActorComponent
+class GF_CLIMA_API UAlsasuaWeatherSystem : public UActorComponent
 {
     GENERATED_BODY()
 public:
