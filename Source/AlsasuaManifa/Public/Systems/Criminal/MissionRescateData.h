@@ -1,6 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
-#include "Systems/MisionData.h"
+#include "Mision/MisionData.h"
 #include "MissionRescateData.generated.h"
 
 USTRUCT(BlueprintType)

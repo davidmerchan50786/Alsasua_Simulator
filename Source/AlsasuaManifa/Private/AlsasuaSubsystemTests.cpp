@@ -5,7 +5,7 @@
 #include "Systems/Dialog/DialogInstance.h"
 #include "Systems/Dialog/DialogAsset.h"
 #include "Systems/Dialog/DialogTypes.h"
-#include "AlsasuaManifa/Public/Systems/MisionData.h"
+#include "Mision/MisionData.h"
 
 #if WITH_AUTOMATION_WORKER
 

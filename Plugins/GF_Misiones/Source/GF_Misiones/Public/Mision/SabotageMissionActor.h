@@ -4,8 +4,10 @@
 #include "GameFramework/Actor.h"
 #include "SabotageMissionActor.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMissionCompleted, float, PopularSupportReward);
+
 UCLASS()
-class ALSASUAMANIFA_API ASabotageMissionActor : public AActor
+class GF_MISIONES_API ASabotageMissionActor : public AActor
 {
     GENERATED_BODY()
 
@@ -32,6 +34,9 @@ public:
 
     UFUNCTION(BlueprintImplementableEvent, Category="AAA|Mision")
     void OnMissionSuccess();
+
+    UPROPERTY(BlueprintAssignable, Category="AAA|Mision")
+    FOnMissionCompleted OnMissionCompleted;
 
 protected:
     virtual void BeginPlay() override;

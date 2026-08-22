@@ -1,7 +1,7 @@
-﻿#pragma once
+#pragma once
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
-#include "Systems/MisionData.h"
+#include "Mision/MisionData.h"
 #include "MisionManager.generated.h"
 
 USTRUCT(BlueprintType)
@@ -17,7 +17,7 @@ struct FMisionActiva
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMissionStateChanged, const FMisionActiva&, Mission);
 
 UCLASS()
-class ALSASUAMANIFA_API UMisionManager : public UObject {
+class GF_MISIONES_API UMisionManager : public UObject {
     GENERATED_BODY()
 
 public:

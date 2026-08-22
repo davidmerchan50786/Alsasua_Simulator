@@ -36,7 +36,8 @@ public class AlsasuaManifa : ModuleRules
 			"GF_Audio",
 			"GF_NPCs",
 			"GF_Dialogos",
-			"GF_UI"
+			"GF_UI",
+			"GF_Misiones"
 		});
 
         PrivateDependencyModuleNames.AddRange(new string[] {

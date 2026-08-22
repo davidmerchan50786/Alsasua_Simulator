@@ -1,7 +1,4 @@
 #include "Mision/SabotageMissionActor.h"
-#include "Gameplay/Narco/NarcoSyndicateComponent.h"
-#include "Politics/FactionSubsystem.h"
-#include "Kismet/GameplayStatics.h"
 
 ASabotageMissionActor::ASabotageMissionActor()
 {
@@ -37,12 +34,7 @@ void ASabotageMissionActor::OnTargetSabotaged(FName NodeId)
 {
     if (NodeId == TargetNodeId)
     {
-        // Recompensa política
-        if (UFactionSubsystem* FS = GetWorld() ? GetWorld()->GetSubsystem<UFactionSubsystem>() : nullptr)
-        {
-            FS->RecordPoliticalEvent(FName("LaAsamblea"), FName("ElCentro"), PopularSupportReward);
-        }
-
+        OnMissionCompleted.Broadcast(PopularSupportReward);
         OnMissionSuccess();
         UE_LOG(LogTemp, Warning, TEXT("OBJETIVO SABOTEADO. Mision completada."));
     }

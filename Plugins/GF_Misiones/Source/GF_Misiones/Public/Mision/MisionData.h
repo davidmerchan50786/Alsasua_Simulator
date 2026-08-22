@@ -1,9 +1,9 @@
-﻿#pragma once
+#pragma once
 #include "CoreMinimal.h"
 #include "MisionData.generated.h"
 
 USTRUCT(BlueprintType)
-struct ALSASUAMANIFA_API FMisionObjective {
+struct GF_MISIONES_API FMisionObjective {
     GENERATED_BODY()
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere) FName ObjectiveID;
@@ -12,7 +12,7 @@ struct ALSASUAMANIFA_API FMisionObjective {
 };
 
 USTRUCT(BlueprintType)
-struct ALSASUAMANIFA_API FMissionReward {
+struct GF_MISIONES_API FMissionReward {
     GENERATED_BODY()
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere) float Money = 0.f;
@@ -22,7 +22,7 @@ struct ALSASUAMANIFA_API FMissionReward {
 };
 
 USTRUCT(BlueprintType)
-struct ALSASUAMANIFA_API FMissionData {
+struct GF_MISIONES_API FMissionData {
     GENERATED_BODY()
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere) FName MissionID;

@@ -1,6 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
-#include "Systems/MisionData.h"
+#include "Mision/MisionData.h"
 #include "UObject/NoExportTypes.h"
 #include "DeepStateMissionData.generated.h"
 
