@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "Tickable.h"
+#include "Services/ITimeOfDayService.h"
 #include "AlsasuaAtmosphereController.generated.h"
 
 class UExponentialHeightFogComponent;
@@ -16,7 +17,7 @@ class AExponentialHeightFog;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTimeOfDayVisualChanged, float, SunAngle);
 
 UCLASS()
-class GF_CLIMA_API UAlsasuaAtmosphereController : public UWorldSubsystem, public FTickableGameObject
+class GF_CLIMA_API UAlsasuaAtmosphereController : public UWorldSubsystem, public FTickableGameObject, public ITimeOfDayService
 {
 	GENERATED_BODY()
 
@@ -25,7 +26,15 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual bool IsAllowedToTick() const override { return true; }
 	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(AlsasuaAtmosphereController, STATGROUP_Game); }
-	virtual bool IsTickable() const override { return !IsTemplate(); }   // no ticar el CDO (CLAUDE.md §9)
+	virtual bool IsTickable() const override { return !IsTemplate(); }
+
+	// ITimeOfDayService
+	virtual float GetHour() const override;
+	virtual float GetSunPitch() const override;
+	virtual FRotator GetSunDirection() const override;
+	virtual bool IsNight() const override;
+	virtual FLinearColor GetSunColor() const override;
+	virtual float GetSunIntensity() const override;
 
 	UFUNCTION(BlueprintCallable, Category = "Alsasua|Atmosphere")
 	void SetSunAngle(float AngleDeg);

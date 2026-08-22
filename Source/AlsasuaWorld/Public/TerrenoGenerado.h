@@ -131,9 +131,9 @@ private:
 		int32 AnchoPx;
 		int32 AltoPx;
 		FVector CentroWorld;
-		UPROPERTY() UProceduralMeshComponent* MeshLOD0 = nullptr;
-		UPROPERTY() UProceduralMeshComponent* MeshLOD1 = nullptr;
-		UPROPERTY() UProceduralMeshComponent* MeshLOD2 = nullptr;
+		UProceduralMeshComponent* MeshLOD0 = nullptr;
+		UProceduralMeshComponent* MeshLOD1 = nullptr;
+		UProceduralMeshComponent* MeshLOD2 = nullptr;
 	};
 	TArray<FInfoChunk> ChunksInfo;
 

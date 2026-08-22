@@ -13,7 +13,9 @@ public class GF_Clima : ModuleRules
 			"Core",
 			"CoreUObject",
 			"Engine",
-			"AlsasuaCore"
+			"AlsasuaCore",
+			"AlsasuaContracts",
+			"AlsasuaKernel"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]

@@ -11,6 +11,8 @@
 #include "World/Time/TimeOfDayManager.h"
 #include "World/Weather/WeatherSubsystem.h"
 #include "Engine/World.h"
+#include "AlsasuaServiceRegistry.h"
+#include "Engine/GameInstance.h"
 
 namespace
 {
@@ -32,6 +34,15 @@ void UAlsasuaAtmosphereController::Initialize(FSubsystemCollectionBase& Collecti
 
 	FindOrCreateAtmosphereActors();
 	ApplyLightSetup();
+
+	// Register as ITimeOfDayService
+	if (UGameInstance* GI = GetWorld() ? GetWorld()->GetGameInstance() : nullptr)
+	{
+		if (UAlsasuaServiceRegistry* Reg = GI->GetSubsystem<UAlsasuaServiceRegistry>())
+		{
+			Reg->Publicar(FName("TimeOfDay"), this);
+		}
+	}
 }
 
 void UAlsasuaAtmosphereController::FindOrCreateAtmosphereActors()
@@ -183,6 +194,39 @@ void UAlsasuaAtmosphereController::SetTimeOfDay(float Hour)
 	// Salto explícito de hora (misión, cinemática): sin interpolación, el
 	// resultado debe verse ya en el frame siguiente.
 	UpdateAtmosphere(Hour, 1000.f);
+}
+
+// ── ITimeOfDayService ──────────────────────────────────────────────────────
+float UAlsasuaAtmosphereController::GetHour() const
+{
+	const UWorld* W = GetWorld();
+	const UTimeOfDayManager* TimeMgr = W ? W->GetSubsystem<UTimeOfDayManager>() : nullptr;
+	return TimeMgr ? TimeMgr->CurrentTime : 12.f;
+}
+
+float UAlsasuaAtmosphereController::GetSunPitch() const
+{
+	return CurrentSunElevation;
+}
+
+FRotator UAlsasuaAtmosphereController::GetSunDirection() const
+{
+	return FRotator(-CurrentSunElevation, CurrentSunAzimuth - 180.f, 0.f);
+}
+
+bool UAlsasuaAtmosphereController::IsNight() const
+{
+	return CurrentSunElevation < -6.f;
+}
+
+FLinearColor UAlsasuaAtmosphereController::GetSunColor() const
+{
+	return CurrentSunColor;
+}
+
+float UAlsasuaAtmosphereController::GetSunIntensity() const
+{
+	return CurrentSunIntensity;
 }
 
 void UAlsasuaAtmosphereController::SetSunAngle(float AngleDeg)
