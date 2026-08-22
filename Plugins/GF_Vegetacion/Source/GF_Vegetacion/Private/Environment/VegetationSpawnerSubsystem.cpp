@@ -700,8 +700,20 @@ void UVegetationSpawnerSubsystem::SpawnInstances(UVegetationType* Vegetation, co
 
 	AActor* SpawnActor = nullptr;
 
-	for (const auto& Prefab : Vegetation->Prefabs)
+	int32 PrefabCount = Vegetation->Prefabs.Num();
+	TArray<TArray<FTransform>> PerPrefabTransforms;
+	PerPrefabTransforms.SetNum(PrefabCount);
+	for (const FTransform& Src : Transforms)
 	{
+		int32 Idx = (PrefabCount > 1) ? GetPrefabIndex(Vegetation, FMath::FRand()) : 0;
+		FTransform T = Src;
+		T.SetLocation(T.GetLocation() - FVector(0.0f, 0.0f, Vegetation->SinkAmount));
+		PerPrefabTransforms[Idx].Add(T);
+	}
+
+	for (int32 PrefabIdx = 0; PrefabIdx < PrefabCount; PrefabIdx++)
+	{
+		const FVegetationPrefab& Prefab = Vegetation->Prefabs[PrefabIdx];
 		if (!Prefab.Mesh)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("VegetationSpawnerSubsystem: prefab without mesh in %s"), *Vegetation->TypeName);
@@ -746,29 +758,12 @@ void UVegetationSpawnerSubsystem::SpawnInstances(UVegetationType* Vegetation, co
 		SpawnActor->SetActorLabel(FString::Printf(TEXT("VegetationSpawner_%s"), *Vegetation->TypeName));
 #endif
 
-		TArray<FTransform> InstanceTransforms;
-		int32 PrefabCount = Vegetation->Prefabs.Num();
-		UE_LOG(LogTemp, Log, TEXT("VegetationSpawnerSubsystem: %s -> %d transforms / %d prefabs"), *Vegetation->TypeName, Transforms.Num(), PrefabCount);
-		int32 TotalCount = Transforms.Num();
-		int32 AddedInstances = 0;
-
-		for (int32 i = 0; i < TotalCount; i++)
-		{
-			int32 PrefabIdx = (PrefabCount > 1) ? GetPrefabIndex(Vegetation, FMath::FRand()) : 0;
-			if (PrefabIdx != GetPrefabIndex(Vegetation, 0.0f))
-			{
-				continue;
-			}
-
-			FTransform T = Transforms[i];
-			T.SetLocation(T.GetLocation() - FVector(0.0f, 0.0f, Vegetation->SinkAmount));
-			InstanceTransforms.Add(T);
-		}
+		TArray<FTransform>& InstanceTransforms = PerPrefabTransforms[PrefabIdx];
+		UE_LOG(LogTemp, Log, TEXT("VegetationSpawnerSubsystem: %s prefab %d/%d -> %d instances"), *Vegetation->TypeName, PrefabIdx + 1, PrefabCount, InstanceTransforms.Num());
 
 		if (InstanceTransforms.Num() > 0)
 		{
 			HISM->AddInstances(InstanceTransforms, false);
-			HISM->UpdateInstanceTransform(0, FTransform::Identity, false, true);
 			HISM->MarkRenderStateDirty();
 			UE_LOG(LogTemp, Log, TEXT("VegetationSpawnerSubsystem: added %d instances to %s"), InstanceTransforms.Num(), *HISM->GetName());
 		}
@@ -904,40 +899,90 @@ bool UVegetationSpawnerSubsystem::IsInsideOccupiedCell(const FVector& WorldPos)
 
 bool UVegetationSpawnerSubsystem::TestSplatmap(const FVector2D& NormalizedPos, UVegetationType* Vegetation, float& OutSpawnChance)
 {
-    OutSpawnChance = 0.0f;
+	OutSpawnChance = 0.0f;
 
-    if (!Vegetation || !TargetLandscape.IsValid() || Vegetation->LayerMasks.Num() == 0)
-    {
-        return false;
-    }
+	if (!Vegetation || !TargetLandscape.IsValid() || Vegetation->LayerMasks.Num() == 0)
+	{
+		return false;
+	}
 
-    ALandscapeProxy* Proxy = TargetLandscape.Get();
-    if (!Proxy) return false;
+	ALandscapeProxy* Proxy = TargetLandscape.Get();
+	if (!Proxy) return false;
 
-    float TotalWeight = 0.0f;
-    int32 ValidMasks = 0;
+	const FVector Scale = Proxy->GetActorScale();
+	const FVector WorldPos = Proxy->GetActorLocation() + FVector(
+		NormalizedPos.X * Scale.X,
+		NormalizedPos.Y * Scale.Y,
+		0.0f);
 
-    for (const FVegetationLayerMask& Mask : Vegetation->LayerMasks)
-    {
-        float ProceduralWeight = FMath::PerlinNoise2D(FVector2D(
-            NormalizedPos.X * (Mask.LayerIndex + 1) * 3.7f,
-            NormalizedPos.Y * (Mask.LayerIndex + 1) * 3.7f
-        )) * 0.5f + 0.5f;
+	TArray<float> Weights;
+	Weights.SetNumZeroed(Vegetation->LayerMasks.Num());
 
-        if (ProceduralWeight >= Mask.Threshold)
-        {
-            TotalWeight += ProceduralWeight;
-            ValidMasks++;
-        }
-    }
+	bool bHasRealData = false;
+	for (int32 i = 0; i < Vegetation->LayerMasks.Num(); i++)
+	{
+		const FVegetationLayerMask& Mask = Vegetation->LayerMasks[i];
+		if (!Mask.LayerName.IsNone())
+		{
+			float W = 0.5f; // height-band proxy until runtime layer weights available
+			if (W >= 0.0f)
+			{
+				Weights[i] = W;
+				bHasRealData = true;
+			}
+		}
+	}
 
-    if (ValidMasks == 0)
-    {
-        return false;
-    }
+	if (!bHasRealData)
+	{
+		// ponytail: height-band proxy (low=sand, mid=grass, high=rock); remove when runtime layer weights are guaranteed
+		FBox Bounds = Proxy->GetComponentsBoundingBox();
+		float H = Proxy->GetHeightAtLocation(WorldPos).Get(WorldPos.Z);
+		float NormH = (Bounds.IsValid && Bounds.Max.Z > Bounds.Min.Z)
+			? (H - Bounds.Min.Z) / (Bounds.Max.Z - Bounds.Min.Z)
+			: 0.5f;
 
-    OutSpawnChance = (TotalWeight / static_cast<float>(ValidMasks)) * 100.0f;
-    return true;
+		for (int32 i = 0; i < Vegetation->LayerMasks.Num(); i++)
+		{
+			const FVegetationLayerMask& Mask = Vegetation->LayerMasks[i];
+			FString Name = Mask.LayerName.ToString().ToLower();
+			if (Name.Contains(TEXT("rock")))
+			{
+				Weights[i] = NormH;
+			}
+			else if (Name.Contains(TEXT("grass")))
+			{
+				Weights[i] = 1.0f - FMath::Abs(NormH - 0.5f) * 2.0f;
+			}
+			else if (Name.Contains(TEXT("sand")))
+			{
+				Weights[i] = 1.0f - NormH;
+			}
+			else
+			{
+				Weights[i] = 0.0f;
+			}
+		}
+	}
+
+	float TotalWeight = 0.0f;
+	int32 ValidMasks = 0;
+	for (int32 i = 0; i < Vegetation->LayerMasks.Num(); i++)
+	{
+		if (Weights[i] >= Vegetation->LayerMasks[i].Threshold)
+		{
+			TotalWeight += Weights[i];
+			ValidMasks++;
+		}
+	}
+
+	if (ValidMasks == 0)
+	{
+		return false;
+	}
+
+	OutSpawnChance = (TotalWeight / static_cast<float>(ValidMasks)) * 100.0f;
+	return true;
 }
 
 int32 UVegetationSpawnerSubsystem::GetSplatmapID(int32 LayerID)

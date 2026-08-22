@@ -77,6 +77,8 @@ int32 UAlsasuaTrafficLightSystem::ColocarSemaforos()
 
     Semaforos.Empty();
 
+    const float Periodo = SegVerde + SegAmbar + SegRojo;
+
     TArray<FVector> JunctionPoints;
     const FString JsonPath = FPaths::ProjectContentDir() + TEXT("Datos/roads_unity.json");
     TArray<FString> Lines;
@@ -190,6 +192,7 @@ int32 UAlsasuaTrafficLightSystem::ColocarSemaforos()
 
             APointLight* Led = World->SpawnActor<APointLight>(
                 APointLight::StaticClass(), LedPos, FRotator::ZeroRotator);
+            if (L == 2) Light.Luz = Led;
             if (Led)
             {
                 FLinearColor LedColor;
@@ -208,6 +211,7 @@ int32 UAlsasuaTrafficLightSystem::ColocarSemaforos()
             }
         }
 
+        Light.Desfase = FMath::FRandRange(0.f, Periodo);
         Semaforos.Add(Light);
         Placed++;
     }

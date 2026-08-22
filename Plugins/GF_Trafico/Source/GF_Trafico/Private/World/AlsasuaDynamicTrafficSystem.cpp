@@ -1,5 +1,6 @@
 #include "World/AlsasuaDynamicTrafficSystem.h"
 #include "World/AlsasuaRedViaria.h"
+#include "World/AlsasuaAIDriverComponent.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "Engine/StaticMeshActor.h"
@@ -15,9 +16,11 @@ void UAlsasuaDynamicTrafficSystem::Initialize(FSubsystemCollectionBase& Collecti
 {
     Super::Initialize(Collection);
     bInicializado = true;
-    // El callejero se carga al usarlo, no aquí: en Initialize de un
-    // subsistema de GameInstance todavía no hay terreno, y los puntos de
-    // ruta se quedarían todos a la cota de la plaza en vez de sobre su calle.
+}
+
+void UAlsasuaDynamicTrafficSystem::Tick(float DeltaTime)
+{
+    ActualizarTrafico(DeltaTime);
 }
 
 void UAlsasuaDynamicTrafficSystem::CargarCallejero()
@@ -62,48 +65,13 @@ void UAlsasuaDynamicTrafficSystem::ActualizarTrafico(float DeltaTime)
         TiempoDesdeUltimoSpawn = 0.0f;
     }
 
-    if (!Red || !Red->EstaLista()) return;
-
-    for (FVehiclePath& Veh : Vehiculos)
-    {
-        if (!Veh.bEnMarcha || Veh.TramoActual < 0) continue;
-
-        const FTramoViario& T = Red->Tramo(Veh.TramoActual);
-        Veh.Avance += Veh.Velocidad * DeltaTime;
-
-        // Al llegar al nodo se elige continuación en el cruce, en vez de saltar
-        // al principio de la calle. SiguienteTramo evita la media vuelta salvo
-        // en fondo de saco, que es lo que hace que parezca que circula.
-        // Un tramo por frame: si el coche se pasara de largo varios tramos en un
-        // solo frame, el sobrante se consume en el siguiente. A 700 cm/s y con
-        // tramos de decenas de metros no llega a pasar.
-        if (T.LargoCm > 0.f && Veh.Avance >= T.LargoCm)
-        {
-            const int32 Siguiente = Red->SiguienteTramo(Veh.TramoActual, Veh.Semilla++);
-            if (Siguiente < 0) { Veh.bEnMarcha = false; continue; }
-            Veh.Avance -= T.LargoCm;
-            Veh.TramoActual = Siguiente;
-        }
-
-        const FTramoViario& Actual = Red->Tramo(Veh.TramoActual);
-        const FVector P0 = Red->PosicionNodo(Actual.NodoA);
-        const FVector P1 = Red->PosicionNodo(Actual.NodoB);
-        const FVector Dir = (P1 - P0).GetSafeNormal();
-        const float Fraccion = (Actual.LargoCm > 0.f)
-            ? FMath::Clamp(Veh.Avance / Actual.LargoCm, 0.f, 1.f) : 0.f;
-
-        // Carril: desplazado a la derecha de la marcha un cuarto del ancho de
-        // calzada (lo fija el spawn). Antes era un ±60 cm sorteado, igual en una
-        // pista de servicio que en la autovía.
-        const FVector Perp(-Dir.Y, Dir.X, 0.f);
-        const FVector NuevaPos = FMath::Lerp(P0, P1, Fraccion) + Perp * Veh.CarrilCm;
-
-        if (Veh.ActorAsociado.IsValid())
-        {
-            Veh.ActorAsociado->SetActorLocation(NuevaPos);
-            Veh.ActorAsociado->SetActorRotation(Dir.Rotation());
-        }
-    }
+    // El movimiento lo hace el UAlsasuaAIDriverComponent de cada vehículo, que
+    // además frena en los semáforos y guarda distancia con el de delante. Aquí
+    // sólo se gestiona el alta de vehículos.
+    //
+    // Antes había aquí un bucle que avanzaba cada coche por su tramo a
+    // velocidad constante: hacía lo mismo que el conductor pero sin frenar ni
+    // mirar, y los dos moviendo el mismo actor se pisaban.
 }
 
 void UAlsasuaDynamicTrafficSystem::SpawnVehiculoEnCalle()
@@ -128,7 +96,6 @@ void UAlsasuaDynamicTrafficSystem::SpawnVehiculoEnCalle()
         Sorteo.FRandRange(200.0f, 400.0f) : Sorteo.FRandRange(300.0f, 700.0f);
     Veh.ColorCarroceria = ObtenerColorAleatorio();
     Veh.bEnMarcha = true;
-    Veh.Avance = 0.f;
 
     // Carril derecho: a un cuarto del ancho de la calzada del eje. Antes era un
     // ±60 cm sorteado, igual en una pista de servicio que en la autovía.
@@ -213,8 +180,35 @@ void UAlsasuaDynamicTrafficSystem::SpawnVehiculoEnCalle()
     VehActor->SetActorLabel(*FString::Printf(TEXT("Vehiculo_%s_%d"), *TipoStr, Vehiculos.Num()));
 #endif
 
+    // Conductor: ruta A* por la red y el resto del comportamiento (acelerar,
+    // frenar en rojo, guardar distancia). La ruta se inyecta ANTES de registrar
+    // el componente para que su BeginPlay no pida otra aleatoria y la pise.
+    UAlsasuaAIDriverComponent* IA = NewObject<UAlsasuaAIDriverComponent>(VehActor);
+    VehActor->AddInstanceComponent(IA);
+    IA->MaxSpeed = Veh.Velocidad;
+
+    const int32 NodoInicio = T.NodoA;
+    for (int32 Intento = 0; Intento < 8; ++Intento)
+    {
+        const int32 TramoDestino = Red->TramoAleatorio(Veh.Semilla++);
+        if (TramoDestino < 0) break;
+
+        const int32 NodoFin = Red->Tramo(TramoDestino).NodoB;
+        if (NodoFin == NodoInicio) continue;
+
+        IA->FijarRuta(Red, NodoInicio, NodoFin);
+        break;
+    }
+    IA->RegisterComponent();
+
     Veh.ActorAsociado = VehActor;
     Vehiculos.Add(Veh);
+}
+
+UAlsasuaRedViaria* UAlsasuaDynamicTrafficSystem::ObtenerRed()
+{
+    if (!Red || !Red->EstaLista()) CargarCallejero();
+    return Red;
 }
 
 FLinearColor UAlsasuaDynamicTrafficSystem::ObtenerColorAleatorio() const

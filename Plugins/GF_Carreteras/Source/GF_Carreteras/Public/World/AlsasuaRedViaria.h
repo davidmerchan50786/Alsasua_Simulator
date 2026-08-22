@@ -88,6 +88,33 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Alsasua|Red")
 	int32 SiguienteTramo(int32 TramoActual, int32 Semilla) const;
 
+	/** Nodo más cercano a Pos. -1 si no hay red. */
+	UFUNCTION(BlueprintCallable, Category = "Alsasua|Red")
+	int32 NodoMasCercano(const FVector& Pos) const;
+
+	/**
+	 * Ruta más corta entre dos nodos. Devuelve índices de TRAMO, no de nodo,
+	 * porque el tramo es el que lleva el ancho de calzada y el tipo: quien
+	 * recorre la ruta necesita saber por qué carril va, y con una lista de
+	 * nodos habría que volver a buscar el tramo que los une.
+	 *
+	 * A* con heurística euclídea sobre Salidas, coste LargoCm. El sentido único
+	 * ya está en la topología —Construir() sólo añade el tramo inverso si la vía
+	 * no es unica—, así que aquí no hay que comprobarlo.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Alsasua|Red")
+	TArray<int32> Ruta(int32 NodoInicio, int32 NodoFin) const;
+
+	/**
+	 * Polilínea de una ruta, ya desplazada al carril derecho de la marcha.
+	 *
+	 * El desplazamiento va aquí y no en quien conduce porque depende de
+	 * AnchoCm, que es del tramo. Antes lo calculaba el sistema de tráfico con
+	 * un ±60 cm sorteado, igual en una pista de servicio que en la autovía.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Alsasua|Red")
+	TArray<FVector> PuntosDeRuta(const TArray<int32>& RutaTramos) const;
+
 private:
 	/** Posiciones de nodo en coordenadas de mundo (cm). */
 	TArray<FVector> Nodos;

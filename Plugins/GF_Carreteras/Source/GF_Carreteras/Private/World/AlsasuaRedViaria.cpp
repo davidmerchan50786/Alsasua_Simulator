@@ -3,6 +3,7 @@
 #include "CargarJsonComun.h"
 #include "GeoDataAlsasua.h"
 #include "Engine/World.h"
+#include "Algo/Reverse.h"
 
 namespace
 {
@@ -181,4 +182,96 @@ int32 UAlsasuaRedViaria::SiguienteTramo(int32 TramoActual, int32 Semilla) const
 	FRandomStream Sorteo(Semilla * 2654435761u + TramoActual);
 	if (Validas.Num() > 0) return Validas[Sorteo.RandRange(0, Validas.Num() - 1)];
 	return Opciones[Sorteo.RandRange(0, Opciones.Num() - 1)];
+}
+
+int32 UAlsasuaRedViaria::NodoMasCercano(const FVector& Pos) const
+{
+	int32 Mejor = -1;
+	float MejorDist = TNumericLimits<float>::Max();
+	for (int32 i = 0; i < Nodos.Num(); ++i)
+	{
+		const float D = FVector::DistSquared2D(Nodos[i], Pos);
+		if (D < MejorDist) { MejorDist = D; Mejor = i; }
+	}
+	return Mejor;
+}
+
+TArray<int32> UAlsasuaRedViaria::Ruta(int32 NodoInicio, int32 NodoFin) const
+{
+	TArray<int32> Salida;
+	if (!Nodos.IsValidIndex(NodoInicio) || !Nodos.IsValidIndex(NodoFin)) return Salida;
+	if (NodoInicio == NodoFin) return Salida;
+
+	// A* sobre los tramos que SALEN de cada nodo. La cola es un array ordenado
+	// por f: la red son ~2300 nodos, y un heap propio no compensa la línea extra.
+	TArray<float> G;   G.Init(TNumericLimits<float>::Max(), Nodos.Num());
+	TArray<int32> DeDonde; DeDonde.Init(-1, Nodos.Num());   // tramo por el que se llegó
+	TArray<bool>  Cerrado; Cerrado.Init(false, Nodos.Num());
+
+	const FVector Destino = Nodos[NodoFin];
+	auto Heuristica = [&](int32 N) { return FVector::Dist2D(Nodos[N], Destino); };
+
+	TArray<TPair<float, int32>> Abierta;   // (f, nodo)
+	G[NodoInicio] = 0.f;
+	Abierta.Add(TPair<float, int32>(Heuristica(NodoInicio), NodoInicio));
+
+	while (Abierta.Num() > 0)
+	{
+		int32 IdxMejor = 0;
+		for (int32 i = 1; i < Abierta.Num(); ++i)
+		{
+			if (Abierta[i].Key < Abierta[IdxMejor].Key) IdxMejor = i;
+		}
+		const int32 Actual = Abierta[IdxMejor].Value;
+		Abierta.RemoveAtSwap(IdxMejor, EAllowShrinking::No);
+
+		if (Actual == NodoFin) break;
+		if (Cerrado[Actual]) continue;
+		Cerrado[Actual] = true;
+
+		if (!Salidas.IsValidIndex(Actual)) continue;
+		for (int32 IdxTramo : Salidas[Actual])
+		{
+			const FTramoViario& T = Tramos[IdxTramo];
+			if (Cerrado[T.NodoB]) continue;
+
+			const float Candidato = G[Actual] + T.LargoCm;
+			if (Candidato >= G[T.NodoB]) continue;
+
+			G[T.NodoB] = Candidato;
+			DeDonde[T.NodoB] = IdxTramo;
+			Abierta.Add(TPair<float, int32>(Candidato + Heuristica(T.NodoB), T.NodoB));
+		}
+	}
+
+	if (DeDonde[NodoFin] < 0) return Salida;   // sin camino
+
+	for (int32 N = NodoFin; N != NodoInicio && DeDonde[N] >= 0; N = Tramos[DeDonde[N]].NodoA)
+	{
+		Salida.Add(DeDonde[N]);
+	}
+	Algo::Reverse(Salida);
+	return Salida;
+}
+
+TArray<FVector> UAlsasuaRedViaria::PuntosDeRuta(const TArray<int32>& RutaTramos) const
+{
+	TArray<FVector> Puntos;
+	if (RutaTramos.Num() == 0) return Puntos;
+
+	for (int32 i = 0; i < RutaTramos.Num(); ++i)
+	{
+		if (!Tramos.IsValidIndex(RutaTramos[i])) continue;
+		const FTramoViario& T = Tramos[RutaTramos[i]];
+		const FVector A = Nodos[T.NodoA];
+		const FVector B = Nodos[T.NodoB];
+
+		const FVector Dir = (B - A).GetSafeNormal();
+		const FVector Perp(-Dir.Y, Dir.X, 0.f);
+		const FVector Carril = Perp * (T.AnchoCm * 0.25f);
+
+		if (i == 0) Puntos.Add(A + Carril);
+		Puntos.Add(B + Carril);
+	}
+	return Puntos;
 }

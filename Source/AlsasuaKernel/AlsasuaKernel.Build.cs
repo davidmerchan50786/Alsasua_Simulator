@@ -11,7 +11,8 @@ public class AlsasuaKernel : ModuleRules
 		PublicDependencyModuleNames.AddRange(new string[] {
 			"Core",
 			"CoreUObject",
-			"Engine"
+			"Engine",
+			"AlsasuaContracts"
 		});
 	}
 }
