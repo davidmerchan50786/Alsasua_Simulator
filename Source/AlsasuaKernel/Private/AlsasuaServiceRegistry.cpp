@@ -2,6 +2,8 @@
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
 
+#define BISECT_SIN_CONSOLE_COMMAND 1
+
 void UAlsasuaServiceRegistry::Publicar(FName Servicio, UObject* Implementacion)
 {
 	if (Servicio.IsNone() || !Implementacion)
@@ -53,6 +55,7 @@ void UAlsasuaServiceRegistry::Deinitialize()
 	Super::Deinitialize();
 }
 
+#if !BISECT_SIN_CONSOLE_COMMAND
 static FAutoConsoleCommandWithWorld ListarPilaresCommand(
 	TEXT("Alsasua.Pilar.Listar"),
 	TEXT("Lista los servicios publicados en el registro del kernel"),
@@ -73,3 +76,4 @@ static FAutoConsoleCommandWithWorld ListarPilaresCommand(
 			UE_LOG(LogTemp, Log, TEXT("[Kernel]   %s"), *Nombre.ToString());
 		}
 	}));
+#endif

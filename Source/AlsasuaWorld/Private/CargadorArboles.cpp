@@ -109,7 +109,7 @@ UHierarchicalInstancedStaticMeshComponent* UCargadorArboles::ComponenteDe(const 
 	{
 		C->SetStaticMesh(MallaDefecto);
 	}
-	C->SetCullDistances(0, 80000);
+	C->SetCullDistances(0, 60000);
 	C->SetCastShadow(true);
 	C->RegisterComponent();
 	C->AttachToComponent(Host->GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
@@ -247,5 +247,6 @@ int32 UCargadorArboles::Cargar()
 	if (IterGuard >= MaxIter) UE_LOG(LogTemp, Warning, TEXT("[Arboles] Iteration guard reached (%d)"), MaxIter);
 	UE_LOG(LogTemp, Log, TEXT("[Arboles] %d árboles en %d especies (%d fuera del terreno)"),
 		Sembrados, PorEspecie.Num(), Descartados);
+
 	return Sembrados;
 }

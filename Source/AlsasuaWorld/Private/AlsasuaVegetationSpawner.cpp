@@ -138,7 +138,7 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 	HierbaPMC->SetMobility(EComponentMobility::Static);
 	HierbaPMC->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	HierbaPMC->SetCanEverAffectNavigation(false);
-	HierbaPMC->SetCullDistance(80000.f);
+	HierbaPMC->SetCullDistance(60000.f);
 	HierbaActor->SetRootComponent(HierbaPMC);
 
 	// El paquete externo aporta un arbusto completo. HISM conserva una sola draw
@@ -154,7 +154,7 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 		ArbustosHISM->SetMobility(EComponentMobility::Static);
 		ArbustosHISM->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		ArbustosHISM->SetCanEverAffectNavigation(false);
-		ArbustosHISM->SetCullDistances(0, 80000);
+		ArbustosHISM->SetCullDistances(0, 60000);
 		ArbustosHISM->RegisterComponent();
 	}
 	else
@@ -203,7 +203,7 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 		NaniteHISM->SetMobility(EComponentMobility::Static);
 		NaniteHISM->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		NaniteHISM->SetCanEverAffectNavigation(false);
-		NaniteHISM->SetCullDistances(0, 80000);
+		NaniteHISM->SetCullDistances(0, 60000);
 		NaniteHISM->RegisterComponent();
 	}
 
