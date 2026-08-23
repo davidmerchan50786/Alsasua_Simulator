@@ -1,75 +1,92 @@
-# Línea base 5.8 — primera medida del refactor
+# Línea base 5.8 — primera ejecución real del refactor
 
-Sesión del 2026-08-23, `Profile(20260823_144745).csv`, sobre el árbol con los
-21 plugins `GF_*` y el fix de `IMPLEMENT_MODULE` en `AlsasuaKernel`.
+Medido el 2026-08-23 sobre `integracion-total` @ `778bf96`, UE 5.8, standalone,
+1280×720, DX12/SM6. GPU: AMD Radeon RX 6650 XT. CPU: Ryzen 7 PRO 4750G.
 
-**Es la primera vez que este código se ejecuta.** Los seis CSV que había en el
-proyecto original son del 9-ago, una semana antes del refactor, y los números de
-`RESUMEN_TECNICO.md` son de una sesión en **5.4**. No son comparables sin más;
-esta tabla es el nuevo punto de partida.
+**Es la primera vez que el pueblo se ejecuta con el código refactorizado en 21
+plugins.** Los seis CSV que había (`Profile(20260809_*)`) son del proyecto
+original y de una semana antes del refactor: no sirven de comparación directa.
+`RESUMEN_TECNICO.md` es de UE 5.4 y menos aún.
 
-Máquina: Ryzen 7 PRO 4750G (8c/16t), 32 GB, Radeon RX 6650 XT (8 GB),
-Windows 11 25H2, D3D12 / SM6, Development Editor.
+## Qué desbloqueó la ejecución
 
-## Medidas
+Dos fallos, ninguno visible al compilar:
 
-126 filas de datos útiles. Mediana, p95 y máximo:
+1. **`AlsasuaKernel` sin `IMPLEMENT_MODULE`** (`e639a7b`). Era el único módulo
+   del proyecto sin fichero de módulo. El linker producía un DLL válido —de ahí
+   que el build saliera siempre limpio— pero sin el objeto de módulo que busca
+   el `ModuleManager`. El motor abortaba con *"The game module 'AlsasuaKernel'
+   could not be successfully initialized after it was loaded"* y cero líneas de
+   log entre la carga y el fallo. El `EXCEPTION_ACCESS_VIOLATION` posterior era
+   el motor desmontándose a medias, no un bug aparte.
 
-| | mediana | p95 | máx |
+2. **`UMuestreadorAltura::EstaDisponible()` mentía** (`778bf96`). Miraba el
+   puntero `Terreno` a pelo, y ese puntero lo rellena `BuscarTerreno()` desde
+   dentro de `AlturaMundo()`: el primero en preguntar recibía `false` aunque el
+   terreno llevara rato construido. `CargadorArboles` lo usa como guarda, así
+   que descartaba los 2783 árboles del LiDAR y el log los contaba como "fuera
+   del terreno" — cierto de 280 y de ninguno de los otros 2503.
+
+## Rendimiento (mediana de 126 muestras, sesión de 240 s)
+
+| métrica | mediana | mín | máx |
 |---|---:|---:|---:|
-| `FrameTime` (ms) | **15.47** | 523.72 | 49522.52 |
-| `GameThreadTime` (ms) | 9.33 | 25.24 | 5272.48 |
-| `RenderThreadTime` (ms) | **15.31** | 503.67 | 41963.51 |
-| `GPUTime` (ms) | 10.85 | 19.57 | 312.91 |
-| `RHI/DrawCalls` | **4256** | 6034 | 9792 |
-| `RHI/PrimitivesDrawn` | 1 521 325 | 1 995 003 | 9 449 075 |
-| `Basic/TicksQueued` | 215 | 2279 | 2280 |
+| `FrameTime` | **15,5 ms** (≈64 FPS) | 12,2 | 49 522 |
+| `GPUTime` | 10,9 ms | 5,8 | 312,9 |
+| `RenderThreadTime` | 15,3 ms | 12,2 | 41 963 |
+| `GameThreadTime` | 9,3 ms | 6,0 | 5 272 |
+| `RHI/PrimitivesDrawn` | 1 521 325 | 649 141 | 9 449 075 |
+| `PhysicalUsedMB` | 16 486 | 15 599 | 16 616 |
 
-## Lectura
+Los máximos de decenas de segundos son el arranque: compilación de shaders y
+construcción del mundo, no régimen de juego. La mediana es lo comparable.
 
-1. **~65 FPS de mediana** (15.47 ms). Mejor que los 48 FPS del
-   `RESUMEN_TECNICO.md`, pero ese dato es de 5.4 y de otra escena: no cantes
-   victoria, cuenta como punto de partida nuevo.
+`RHI/DrawPrimitiveCalls` **no sale en este CSV** — hay que añadirlo al conjunto
+de stats si se quiere seguir la métrica de §8 de `CLAUDE.md` (los 819 draw calls
+de referencia). Sin ella no se puede verificar la regla del actor-por-pieza.
 
-2. **El cuello de botella es el render thread, no la GPU.** `RenderThreadTime`
-   (15.31) va pegado a `FrameTime` (15.47) mientras la GPU se queda en 10.85.
-   O sea que sobra GPU y falta hilo de render — que es exactamente lo que
-   producen los draw calls, no los shaders.
+Memoria: 16,5 GB de pico. No hay presupuesto declarado contra el que juzgarlo
+(fase 6 del plan de integración).
 
-3. **4256 draw calls de mediana frente a los ~819 de referencia: 5,2 veces
-   más.** Es el hallazgo importante. Encaja con la FASE 5.1 del plan: quedan
-   `SpawnActor` en bucle sin convertir a instanciado en `GF_Edificios` (15),
-   `GF_Vegetacion` (13), `GF_Trafico` (9) y `GF_Carreteras` (6), y 97
-   `LoadObject` repartidos por `Plugins/*/Private`.
+## Qué se construye (52 fases, `Progreso=1.00`)
 
-4. **Los máximos son compilación, no simulación.** `FrameTime` máximo de 49,5 s
-   y p95 de 523 ms son los hitches de compilar shaders y texturas la primera
-   vez. Para medir de verdad hace falta una segunda pasada con la DDC ya
-   caliente. **Estos p95/máx no valen como referencia todavía.**
+| sistema | cantidad |
+|---|---|
+| Terreno procedural | 1024 chunks (4033², origen −168200, 497000) |
+| Suelos poligonales | 278 (plazas + zonas verdes) |
+| Relieve lejano | 315 768 tris, 1 sección, anillo de 60 km |
+| Árboles LiDAR | **2503** en 14 especies (280 descartados) |
+| Vías | 374 (206 aceras, 86 ferrocarril, 74 ríos, 8 caminos) |
+| Calles | 489 |
+| Edificios | 1030 (938 con altura LiDAR; 2357 huellas medidas) |
+| Vegetación | 5000 hierbas + 2068 flores + 500 arbustos en 273 zonas |
+| Aparcamiento | 1880 plazas, 452 coches instanciados |
+| Señalización | 79 señales, 932 marcas viales, 120 placas bilingües |
+| Semáforos | 12 en intersecciones reales (271 candidatos) |
+| Fachadas | 717 toldos + 17 537 persianas, 1030 puertas |
+| Cubiertas | 552 detalles (antenas, chimeneas, placas solares) |
+| Cables aéreos | 887 vanos sobre 1095 postes |
+| Otros | 1647 barandillas, 100 contenedores, 23 murales, 10 bocas de túnel, 21 vehículos ferroviarios |
 
-5. La sesión **no llegó a los 240 s**: murió en el frame 903 (~90 s) sin volcado
-   de crash ni cierre limpio. El log deja el motivo probable a la vista:
+## Lo que sigue roto
 
-   ```
-   BEWARE: AssetCompile memory estimate is greater than available, but we're
-   running it [TextureDerivedData] anyway!
-   RequiredMemory = 5547.67 MiB, MemoryLimit = 5190.96 MiB
-   ```
-
-   Una sola normal map (`T_GV_Shrub_Typ1_N`, 8192², BC6H) pide 5,5 GB para
-   comprimirse, por encima del límite que el propio motor se pone. Es el primer
-   objetivo de la fase de memoria: esa textura no necesita 8192².
-
-## Cómo repetir
-
-```bat
-UnrealEditor.exe "AlsasuaSimulator.uproject" /Game/Maps/L_Alsasua ^
-    -game -windowed -ResX=1280 -ResY=720 -NOSPLASH -log
-```
-
-El CSV sale solo en `Saved/Profiling/CSV/`. Para leerlo, buscar las columnas
-**por nombre**: son 342 y las posiciones cambian entre runs.
-
-**Ojo con lanzarlo desde Git Bash**: MSYS reescribe `/Game/Maps/L_Alsasua` a
-`C:/Program Files/Git/Game/Maps/L_Alsasua` y el mapa no carga, sin decir por
-qué. Usa PowerShell o `cmd`.
+1. **Cuatro materiales no compilan** → Default Material gris en superficies
+   grandes: `M_Terreno_Orto`, `M_Terreno_Calles`, `M_Terreno_Acera`,
+   `M_Tejado_Orto`. Es el fallo de mayor impacto visual del proyecto ahora
+   mismo: el suelo, las calles, las aceras y los tejados salen en gris plano.
+2. **Packs de mallas ausentes**, con degradación funcionando pero pobre:
+   - `/Game/AssetsImportados/Naturaleza/*` — nada importado; 7568 quads de
+     respaldo en las zonas verdes.
+   - `/Game/Meshes/Arboles/SM_*` — los 14 árboles caen a forma básica.
+   - `/Game/Nanite_Plants_Sample_Collection/*` — 0 plantas nanite.
+   - `/Game/VehicleVarietyPack/*` — los coches caen a cubo escalado.
+3. **`lidar_dtm_05m.raw` no está** en `Content/Terreno/`. El heightmap principal
+   (`alsasua_landscape_4033.r16`, 32,5 MB) sí carga; este segundo no, y el
+   terreno tira del procedural.
+4. **`VegetationSpawnerSubsystem` sin DataAssets** de bioma y sin landscape.
+   Corre y no hace nada.
+5. **`TerrenoLejano`: `CeldaM=150` no divide exacto** el borde (176.000 celdas);
+   el anillo solapa 150 m bajo el terreno. El propio log dice la solución: usar
+   100, 150, 200 o 300.
+6. **Sin jugador ni guardia civil verificados.** El mundo se construye; nadie lo
+   habita. Es la fase 3 del plan de integración.
