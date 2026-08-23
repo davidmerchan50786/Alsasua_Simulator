@@ -78,3 +78,15 @@ Content/FreeAnimationLibrary/
 Content/Nanite_Plants_Sample_Collection/
 Content/Vefects/
 Content/HighPoly_Tree_Model/
+
+# Packs crudos sin importar (FBX/7z masters): los .uasset importados SI van al
+# repo; estos originales no, y con el presupuesto de LFS agotado tampoco podrian.
+# Vuelven a descargarse de su origen cuando toque reimportar algo.
+Content/Docks/
+Content/LUTs/
+Content/Pack_Bonus/
+Content/Polyart/
+Content/Realistic_Starter_VFX_Pack_Vol2/
+
+# Estado local de herramientas externas
+.abacusai/
