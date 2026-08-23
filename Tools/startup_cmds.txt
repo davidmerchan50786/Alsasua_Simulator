@@ -1,8 +1,0 @@
-Comandos para pegar en la consola Python del editor (Output Log > Python).
-No lo lee ningún script ni ningún ini: es una chuleta.
-
-Reimportar la ortofoto PNOA y regenerar sus materiales:
-  import unreal; exec(open(unreal.Paths.project_dir() + 'Tools/ImportSatellite.py').read())
-
-Setup completo en orden de dependencias:
-  import unreal; exec(open(unreal.Paths.project_dir() + 'Tools/RunAll.py').read())

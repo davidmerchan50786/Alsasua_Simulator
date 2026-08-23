@@ -31,7 +31,6 @@ public class AlsasuaManifa : ModuleRules
 			"ProceduralMeshComponent",
 			"AlsasuaCore", 
 			"AlsasuaKernel",
-			"GF_Clima",
 			"GF_Trafico",
 			"GF_Audio",
 			"GF_NPCs",
