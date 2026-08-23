@@ -5,12 +5,12 @@
 	"Description": "Alsasua Simulator - migracion de Altsasu Manifa a Unreal Engine 5.8.",
 	"Modules": [
 		{
-			"Name": "AlsasuaManifa",
+			"Name": "AlsasuaKernel",
 			"Type": "Runtime",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "PreDefault"
 		},
 		{
-			"Name": "AlsasuaKernel",
+			"Name": "AlsasuaContracts",
 			"Type": "Runtime",
 			"LoadingPhase": "PreDefault"
 		},

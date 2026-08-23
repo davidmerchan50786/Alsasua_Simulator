@@ -1,6 +1,6 @@
 // DisfrazSubsystem.h (capa GAMEPLAY)
 // Wrapper simple de backward-compat. El sistema completo vive en
-// UDisguiseComponent (módulo AlsasuaManifa).
+// UDisguiseComponent (AlsasuaKernel, antes módulo AlsasuaManifa).
 //
 // Los callers existentes (PlayerController, ArmasComponent, PoliciaController)
 // siguen funcionando sin cambios.

@@ -9,7 +9,7 @@ public class AlsasuaSimulatorTarget : TargetRules
         DefaultBuildSettings = BuildSettingsVersion.Latest;
         IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
         ExtraModuleNames.AddRange(new string[] {
-            "AlsasuaManifa",
+            "AlsasuaKernel", "AlsasuaContracts",
             "AlsasuaCore",
             "AlsasuaWorld",
             "AlsasuaEntities",

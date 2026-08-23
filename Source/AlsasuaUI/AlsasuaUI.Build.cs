@@ -7,7 +7,7 @@ public class AlsasuaUI : ModuleRules
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         PublicDependencyModuleNames.AddRange(new string[] {
             "Core", "CoreUObject", "Engine", "UMG", "Slate", "SlateCore", "InputCore",
-            "AlsasuaCore", "AlsasuaWorld", "AlsasuaEntities", "AlsasuaGameplay", "AlsasuaManifa",
+            "AlsasuaCore", "AlsasuaWorld", "AlsasuaEntities", "AlsasuaGameplay", "AlsasuaKernel",
             "GF_Social", "GF_Politica", "GF_World", "GF_Systems",
             "GameplayAbilities", "Json", "JsonUtilities"
         });

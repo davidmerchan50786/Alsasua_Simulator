@@ -16,7 +16,7 @@ namespace
 
     // Perfil que se aplica al arrancar una partida, configurable en ini:
     //
-    //   [/Script/AlsasuaManifa.AlsasuaGraphicsSettingsSubsystem]
+    //   [/Script/GF_World.AlsasuaGraphicsSettingsSubsystem]
     //   PerfilArranque=3
     //
     // Estaba clavado a Ultra en el código, y eso pisaba lo que dice Config/ en
@@ -26,7 +26,7 @@ namespace
     int32 LeerPerfilDeArranque()
     {
         int32 Perfil = (int32)EAlsasuaGraphicsProfile::Ultra;
-        GConfig->GetInt(TEXT("/Script/AlsasuaManifa.AlsasuaGraphicsSettingsSubsystem"),
+        GConfig->GetInt(TEXT("/Script/GF_World.AlsasuaGraphicsSettingsSubsystem"),
                         TEXT("PerfilArranque"), Perfil, GGameIni);
         return FMath::Clamp(Perfil, 0, 3);
     }
