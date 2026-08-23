@@ -16,6 +16,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "Contratos/AlsasuaContratosUI.h"
 #include "AlsasuaFoliagePainter.generated.h"
 
 USTRUCT(BlueprintType)
@@ -31,9 +32,10 @@ struct FFoliageTypeData
 };
 
 UCLASS()
-class GF_VEGETACION_API UAlsasuaFoliagePainter : public UGameInstanceSubsystem
+class GF_VEGETACION_API UAlsasuaFoliagePainter : public UGameInstanceSubsystem, public IAlsasuaPilarArranque
 {
     GENERATED_BODY()
+
 public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
     virtual void Deinitialize() override;

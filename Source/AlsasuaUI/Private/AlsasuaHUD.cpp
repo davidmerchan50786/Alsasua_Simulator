@@ -22,8 +22,7 @@
 #include "EngineUtils.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
-#include "Systems/Social/SocialMediaSubsystem.h"
-#include "Systemics/Events/EventManagerSubsystem.h"
+#include "Contratos/AlsasuaContratosUI.h"
 #include "AlsasuaAttributeSet.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -31,8 +30,11 @@ void AAlsasuaHUD::BeginPlay()
 {
     Super::BeginPlay();
     if (UWorld* World = GetWorld())
-        if (UEventManagerSubsystem* EventSS = World->GetSubsystem<UEventManagerSubsystem>())
-            EventSS->OnDirectorAction.AddDynamic(this, &AAlsasuaHUD::HandleWorldEvent);
+        World->ForEachSubsystem<UWorldSubsystem>([this](UWorldSubsystem* Sub)
+        {
+            if (IAlsasuaFuenteEventosMundo* Fuente = Cast<IAlsasuaFuenteEventosMundo>(Sub))
+                Fuente->EventoMundo().AddDynamic(this, &AAlsasuaHUD::HandleWorldEvent);
+        });
 }
 
 void AAlsasuaHUD::GetSocialStatus(float& OutFollowers, float& OutViralImpact, float& OutPopularSupport)
@@ -40,8 +42,11 @@ void AAlsasuaHUD::GetSocialStatus(float& OutFollowers, float& OutViralImpact, fl
     OutFollowers = 0.f;
     OutViralImpact = 0.f;
     OutPopularSupport = 0.f;
-    if (USocialMediaSubsystem* SocialSS = GetWorld()->GetSubsystem<USocialMediaSubsystem>())
-        OutFollowers = SocialSS->GlobalFollowers;
+    GetWorld()->ForEachSubsystem<UWorldSubsystem>([&OutFollowers](UWorldSubsystem* Sub)
+    {
+        if (IAlsasuaRedSocial* Social = Cast<IAlsasuaRedSocial>(Sub))
+            OutFollowers = Social->SeguidoresGlobales();
+    });
     if (APawn* Player = UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
         if (AAlsasuaCharacter* Char = Cast<AAlsasuaCharacter>(Player))
             if (const UAlsasuaAttributeSet* Attr = Char->GetAttributeSet())

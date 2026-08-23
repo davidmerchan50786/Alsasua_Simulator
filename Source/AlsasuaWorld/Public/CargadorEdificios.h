@@ -44,9 +44,10 @@ private:
 	void ConstruirUno(const TSharedPtr<class FJsonObject>& O);
 	float AlturaSuelo(const FVector2D& MundoXY) const;
 
-	/** Fachada real del edificio (building_facades.json), o null. */
-	const struct FBuildingFacadeEntry* FachadaDe(int32 IdEdificio) const;
+	/** Medidas de fachada via contrato IAlsasuaDatosFachadas (GF_Edificios). */
+	bool MedidasDe(int32 IdEdificio, float& AlturaPorNivelM,
+		float& AnchoVentanaM, float& AltoVentanaM) const;
 
-	mutable const class UAlsasuaFacadeGenerator* GenFachadas = nullptr;
+	mutable TWeakObjectPtr<USubsystem> DatosFachadas;
 	mutable bool bFachadasBuscadas = false;
 };

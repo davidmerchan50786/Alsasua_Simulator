@@ -16,6 +16,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "Contratos/AlsasuaContratosUI.h"
 #include "AlsasuaRoadSurfaceSystem.generated.h"
 
 USTRUCT(BlueprintType)
@@ -35,9 +36,10 @@ struct FRoadSurfaceEntry
 };
 
 UCLASS()
-class GF_CARRETERAS_API UAlsasuaRoadSurfaceSystem : public UGameInstanceSubsystem
+class GF_CARRETERAS_API UAlsasuaRoadSurfaceSystem : public UGameInstanceSubsystem, public IAlsasuaPilarArranque
 {
     GENERATED_BODY()
+
 public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
     virtual void Deinitialize() override;

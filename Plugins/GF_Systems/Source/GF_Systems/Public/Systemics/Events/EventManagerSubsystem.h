@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "Delegates/Delegate.h"
+#include "Contratos/AlsasuaContratosUI.h"
 #include "Systemics/Urban/UrbanStateSubsystem.h"
 #include "EventManagerSubsystem.generated.h"
 
@@ -20,7 +21,7 @@ struct FWorldEventData {
 };
 
 UCLASS()
-class GF_SYSTEMS_API UEventManagerSubsystem : public UWorldSubsystem {
+class GF_SYSTEMS_API UEventManagerSubsystem : public UWorldSubsystem, public IAlsasuaFuenteEventosMundo {
     GENERATED_BODY()
 public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
@@ -35,9 +36,12 @@ public:
     UFUNCTION(BlueprintCallable, Category="AAA|Director")
     void HandleEvidenceCollected(AActor* Owner, FName Tag);
 
-    DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDirectorAction, FText, ActionDescription);
+    typedef FAlsasuaEventoMundo FOnDirectorAction;
     UPROPERTY(BlueprintAssignable)
     FOnDirectorAction OnDirectorAction;
+
+    //~ IAlsasuaFuenteEventosMundo
+    virtual FAlsasuaEventoMundo& EventoMundo() override { return OnDirectorAction; }
 
 private:
     float CheckTimer = 0.f;

@@ -28,5 +28,11 @@
       "Enabled": true,
       "Name": "GF_Social"
     }
-  ]
+  ],
+  "Dependencies": [
+    "GF_NPCs",
+    "GF_Social"
+  ],
+  "BuiltInInitialFeatureState": "Installed",
+  "ExplicitlyLoaded": true
 }

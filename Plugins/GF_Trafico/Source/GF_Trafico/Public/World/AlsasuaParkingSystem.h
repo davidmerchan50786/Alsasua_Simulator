@@ -23,6 +23,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "Contratos/AlsasuaContratosUI.h"
 #include "AlsasuaParkingSystem.generated.h"
 
 USTRUCT(BlueprintType)
@@ -37,9 +38,14 @@ struct FParkingSpot
 };
 
 UCLASS()
-class GF_TRAFICO_API UAlsasuaParkingSystem : public UGameInstanceSubsystem
+class GF_TRAFICO_API UAlsasuaParkingSystem : public UGameInstanceSubsystem, public IAlsasuaPilarArranque
 {
     GENERATED_BODY()
+	public:
+	virtual int32 EjecutarArranque() override { return GenerarPlazasAparcamiento(); }
+	virtual FString EtiquetaArranque() const override { return TEXT("plazas de aparcamiento"); }
+	virtual int32 OrdenArranque() const override { return 410; }
+
 public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 

@@ -1,3 +1,6 @@
+#include "CalleGenerada.h"
+#include "EngineUtils.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "World/AlsasuaRoadSurfaceSystem.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
@@ -103,4 +106,45 @@ bool UAlsasuaRoadSurfaceSystem::FirmeDe(int32 Id, FString& OutMaterial, FLinearC
     else
         OutColor = FLinearColor(0.15f, 0.15f, 0.15f);
     return true;
+}
+
+//~ IAlsasuaPilarArranque (fase 26 del antiguo DirectorArranque)
+int32 UAlsasuaRoadSurfaceSystem::EjecutarArranque()
+{
+	UWorld* W = GetGameInstance() ? GetGameInstance()->GetWorld() : nullptr;
+	if (!W)
+	{
+		return -1;
+	}
+	int32 NumRoads = 0;
+	for (TActorIterator<ACalleGenerada> It(W); It; ++It)
+	{
+		ACalleGenerada* C = *It;
+		if (!C || !C->Malla) continue;
+
+		FString Firme;
+		FLinearColor Color = FLinearColor::Black;
+		if (!FirmeDe(C->Id, Firme, Color)) continue;
+
+		if (UMaterialInstanceDynamic* MID = C->Malla->CreateDynamicMaterialInstance(0))
+		{
+			// El nombre del parametro depende de que material haya cargado la
+			// calle; si no lo tiene, el Set no hace nada y la calle se queda
+			// con su color de tipo.
+			MID->SetVectorParameterValue(FName(TEXT("Color")), Color);
+			MID->SetVectorParameterValue(FName(TEXT("BaseColor")), Color);
+		}
+		++NumRoads;
+	}
+	return NumRoads;
+}
+
+FString UAlsasuaRoadSurfaceSystem::EtiquetaArranque() const
+{
+	return TEXT("firme aplicado a calles");
+}
+
+int32 UAlsasuaRoadSurfaceSystem::OrdenArranque() const
+{
+	return 260;
 }

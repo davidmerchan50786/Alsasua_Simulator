@@ -1,20 +1,22 @@
 {
-	"FileVersion": 3,
-	"Version": 1,
-	"VersionName": "1.0",
-	"FriendlyName": "GF Clima",
-	"Description": "Weather state and seasonal system for Alsasua",
-	"Category": "Gameplay",
-	"CreatedBy": "AlsasuaTeam",
-	"CanContainContent": true,
-	"IsBetaVersion": false,
-	"IsExperimentalVersion": false,
-	"Installed": false,
-	"Modules": [
-		{
-			"Name": "GF_Clima",
-			"Type": "Runtime",
-			"LoadingPhase": "PreDefault"
-		}
-	]
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0",
+  "FriendlyName": "GF Clima",
+  "Description": "Weather state and seasonal system for Alsasua",
+  "Category": "Gameplay",
+  "CreatedBy": "AlsasuaTeam",
+  "CanContainContent": true,
+  "IsBetaVersion": false,
+  "IsExperimentalVersion": false,
+  "Installed": false,
+  "Modules": [
+    {
+      "Name": "GF_Clima",
+      "Type": "Runtime",
+      "LoadingPhase": "PreDefault"
+    }
+  ],
+  "BuiltInInitialFeatureState": "Installed",
+  "ExplicitlyLoaded": true
 }

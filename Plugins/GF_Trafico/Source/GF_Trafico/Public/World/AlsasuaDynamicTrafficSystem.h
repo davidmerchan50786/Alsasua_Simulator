@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "Contratos/AlsasuaContratosUI.h"
 #include "AlsasuaDynamicTrafficSystem.generated.h"
 
 UENUM(BlueprintType)
@@ -39,9 +40,10 @@ struct FVehiclePath
 };
 
 UCLASS()
-class GF_TRAFICO_API UAlsasuaDynamicTrafficSystem : public UGameInstanceSubsystem
+class GF_TRAFICO_API UAlsasuaDynamicTrafficSystem : public UGameInstanceSubsystem, public IAlsasuaPilarArranque, public IAlsasuaPilarTiquear
 {
     GENERATED_BODY()
+
 public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 

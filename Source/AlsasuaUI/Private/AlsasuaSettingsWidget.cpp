@@ -1,5 +1,5 @@
 #include "AlsasuaSettingsWidget.h"
-#include "World/AlsasuaGraphicsSettingsSubsystem.h"
+#include "Contratos/AlsasuaContratosUI.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "HAL/IConsoleManager.h"
@@ -27,10 +27,15 @@ void UAlsasuaSettingsWidget::ApplySettings()
 	UWorld* W = GetWorld();
 	if (!W) return;
 
-	UAlsasuaGraphicsSettingsSubsystem* GFX = W->GetSubsystem<UAlsasuaGraphicsSettingsSubsystem>();
 	if (GraphicsQuality >= 0 && GraphicsQuality <= 3)
 	{
-		GFX->ApplyGraphicsProfile((EAlsasuaGraphicsProfile)GraphicsQuality);
+		W->ForEachSubsystem<UWorldSubsystem>([this](UWorldSubsystem* Sub)
+		{
+			if (IAlsasuaAjustesGraficos* Ajustes = Cast<IAlsasuaAjustesGraficos>(Sub))
+			{
+				Ajustes->AplicarPerfilGrafico(GraphicsQuality);
+			}
+		});
 	}
 
 	UGameUserSettings* Settings = GEngine->GetGameUserSettings();

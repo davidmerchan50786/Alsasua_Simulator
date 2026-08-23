@@ -3,6 +3,7 @@
 #include "Subsystems/WorldSubsystem.h"
 #include "Tickable.h"
 #include "ContratosClima.h"
+#include "Contratos/AlsasuaContratosUI.h"
 #include "AlsasuaAtmosphereController.generated.h"
 
 class UExponentialHeightFogComponent;
@@ -17,7 +18,7 @@ class AExponentialHeightFog;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTimeOfDayVisualChanged, float, SunAngle);
 
 UCLASS()
-class GF_CLIMA_API UAlsasuaAtmosphereController : public UWorldSubsystem, public FTickableGameObject, public ITimeOfDayService
+class GF_CLIMA_API UAlsasuaAtmosphereController : public UWorldSubsystem, public FTickableGameObject, public ITimeOfDayService, public IAlsasuaDuenoCielo
 {
 	GENERATED_BODY()
 

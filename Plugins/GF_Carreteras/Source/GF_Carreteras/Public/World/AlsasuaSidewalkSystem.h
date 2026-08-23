@@ -18,6 +18,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "Contratos/AlsasuaContratosUI.h"
 #include "AlsasuaSidewalkSystem.generated.h"
 
 USTRUCT(BlueprintType)
@@ -33,9 +34,14 @@ struct FSidewalkSegment
 };
 
 UCLASS()
-class GF_CARRETERAS_API UAlsasuaSidewalkSystem : public UGameInstanceSubsystem
+class GF_CARRETERAS_API UAlsasuaSidewalkSystem : public UGameInstanceSubsystem, public IAlsasuaPilarArranque
 {
     GENERATED_BODY()
+	public:
+	virtual int32 EjecutarArranque() override { return GenerarAceras(); }
+	virtual FString EtiquetaArranque() const override { return TEXT("segmentos de acera"); }
+	virtual int32 OrdenArranque() const override { return 370; }
+
 public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 

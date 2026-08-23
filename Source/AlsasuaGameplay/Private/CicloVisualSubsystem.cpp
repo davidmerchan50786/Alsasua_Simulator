@@ -11,7 +11,7 @@
 #include "Engine/World.h"
 #include "Engine/GameInstance.h"
 #include "EngineUtils.h"   // TActorIterator
-#include "World/AlsasuaAtmosphereController.h"
+#include "Contratos/AlsasuaContratosUI.h"
 
 template<typename T>
 static T* PrimeroONulo(UWorld* W)
@@ -115,7 +115,15 @@ void UCicloVisualSubsystem::Tick(float DeltaTime)
 	// Un solo dueño del cielo. UAlsasuaAtmosphereController agarra la misma
 	// ADirectionalLight y le escribe rotación, color e intensidad desde otro
 	// reloj: con los dos activos el sol daba saltos y el color parpadeaba.
-	if (W->GetSubsystem<UAlsasuaAtmosphereController>()) return;
+	// Un solo dueno del cielo. El pilar de clima agarra la misma luz
+	// direccional desde otro reloj: con los dos activos el sol daba saltos.
+	// Quien implemente IAlsasuaDuenoCielo gana.
+	bool bHayDueno = false;
+	W->ForEachSubsystem<UWorldSubsystem>([&bHayDueno](UWorldSubsystem* Sub)
+	{
+		if (Cast<IAlsasuaDuenoCielo>(Sub)) bHayDueno = true;
+	});
+	if (bHayDueno) return;
 
 	if (!bCreado)
 	{

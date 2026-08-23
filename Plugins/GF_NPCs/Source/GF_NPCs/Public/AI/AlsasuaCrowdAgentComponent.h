@@ -2,13 +2,14 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "AI/AlsasuaCrowdAgentInterface.h"
 #include "AlsasuaCrowdAgentComponent.generated.h"
 
 UENUM(BlueprintType)
 enum class ECrowdAgentState : uint8 { Neutral, Panicking, Resisting, Following };
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class GF_NPCS_API UAlsasuaCrowdAgentComponent : public UActorComponent
+class GF_NPCS_API UAlsasuaCrowdAgentComponent : public UActorComponent, public IAlsasuaCrowdAgentInterface
 {
     GENERATED_BODY()
 
@@ -35,6 +36,9 @@ public:
 
 protected:
     virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+    //~ IAlsasuaCrowdAgentInterface (contrato del Kernel)
+    virtual void AdjustMorale_Implementation(float Delta) override;
 
 private:
     float PanicLevel = 0.0f;

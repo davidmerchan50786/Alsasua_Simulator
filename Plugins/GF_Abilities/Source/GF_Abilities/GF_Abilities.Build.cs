@@ -6,6 +6,7 @@ public class GF_Abilities : ModuleRules
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         CppStandard = CppStandardVersion.Cpp20;
         bEnableExceptions = true;
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "AlsasuaCore", "GameplayAbilities", "GameplayTags", "GameplayTasks", "GF_NPCs", "GF_Social" });
+        PublicDependencyModuleNames.AddRange(new string[] {
+			"AlsasuaKernel", "Core", "CoreUObject", "Engine", "AlsasuaCore", "GameplayAbilities", "GameplayTags", "GameplayTasks", "GF_NPCs", "GF_Social" });
     }
 }

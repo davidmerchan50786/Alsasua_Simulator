@@ -20,5 +20,7 @@
       "Enabled": true,
       "Name": "Niagara"
     }
-  ]
+  ],
+  "BuiltInInitialFeatureState": "Installed",
+  "ExplicitlyLoaded": true
 }

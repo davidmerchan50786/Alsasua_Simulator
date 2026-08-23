@@ -1,5 +1,5 @@
 #include "Items/MegaphoneTool.h"
-#include "AI/AlsasuaCrowdAgentComponent.h"
+#include "AI/AlsasuaCrowdAgentInterface.h"
 #include "NPCGuardCharacter.h"
 #include "Character/Stealth/GuardDetectionComponent.h"
 #include "AlsasuaCharacter.h"
@@ -35,9 +35,9 @@ void AMegaphoneTool::ApplyAudioInfluence(float Intensity) {
     UKismetSystemLibrary::SphereOverlapActors(GetWorld(), GetActorLocation(), InfluenceRadius, ObjectTypes, nullptr, TArray<AActor*>(), OverlappingActors);
 
     for (AActor* Actor : OverlappingActors) {
-        // 1. Aumentar moral de manifestantes.
-        if (UAlsasuaCrowdAgentComponent* Crowd = Actor->FindComponentByClass<UAlsasuaCrowdAgentComponent>()) {
-            Crowd->Morale += 10.f * Intensity;
+        // 1. Aumentar moral de manifestantes via contrato (GF_NPCs).
+        if (Actor->GetClass()->ImplementsInterface(UAlsasuaCrowdAgentInterface::StaticClass())) {
+            IAlsasuaCrowdAgentInterface::Execute_AdjustMorale(Actor, 10.f * Intensity);
         }
 
         // 2. Reducir agresividad de la Guardia Civil.

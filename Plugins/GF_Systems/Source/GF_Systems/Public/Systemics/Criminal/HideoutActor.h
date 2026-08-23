@@ -1,10 +1,11 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Interaction/AlsasuaLockpickTargetInterface.h"
 #include "HideoutActor.generated.h"
 
 UCLASS()
-class GF_SYSTEMS_API AHideoutActor : public AActor {
+class GF_SYSTEMS_API AHideoutActor : public AActor, public IAlsasuaLockpickTarget {
     GENERATED_BODY()
 public:
     AHideoutActor();
@@ -26,4 +27,8 @@ public:
 
     UFUNCTION(BlueprintImplementableEvent, Category="AAA|Zulo")
     void OnZuloOpened();
+
+    //~ IAlsasuaLockpickTarget (contrato del Kernel)
+    virtual bool EstaCerrado_Implementation() const override { return bIsLocked; }
+    virtual void AlForzado_Implementation() override { OpenZulo(); }
 };

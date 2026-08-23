@@ -40,5 +40,12 @@
       "Enabled": true,
       "Name": "ProceduralMeshComponent"
     }
-  ]
+  ],
+  "Dependencies": [
+    "GF_AI",
+    "GF_Politica",
+    "GF_Social"
+  ],
+  "BuiltInInitialFeatureState": "Installed",
+  "ExplicitlyLoaded": true
 }

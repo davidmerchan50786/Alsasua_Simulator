@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Interaction/AlsasuaStealthProfileInterface.h"
 #include "DisguiseComponent.generated.h"
 
 /**
@@ -80,7 +81,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDisguiseDurabilityChanged, float,
  *   4. Consultar GetEffectiveDetectionMultiplier() desde GuardDetectionComponent.
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class GF_SOCIAL_API UDisguiseComponent : public UActorComponent
+class GF_SOCIAL_API UDisguiseComponent : public UActorComponent, public IAlsasuaStealthProfile
 {
 	GENERATED_BODY()
 
@@ -159,6 +160,18 @@ public:
 	/** Durabilidad actual (0-100). */
 	UFUNCTION(BlueprintPure, Category = "Alsasua|Disguise")
 	float GetDurability() const { return Durability; }
+
+	// ── IAlsasuaStealthProfile (contrato del Kernel) ──────────────────────
+
+	virtual float GetVisionMultiplier_Implementation() const override
+	{
+		return GetEffectiveDetectionMultiplier();
+	}
+
+	virtual float GetNoiseDampening_Implementation() const override
+	{
+		return GetNoiseReduction();
+	}
 
 	/** Durabilidad máxima del disfraz actual. */
 	UFUNCTION(BlueprintPure, Category = "Alsasua|Disguise")

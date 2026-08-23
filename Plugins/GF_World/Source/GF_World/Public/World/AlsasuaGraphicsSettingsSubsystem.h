@@ -3,13 +3,14 @@
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "AlsasuaCore.h"
+#include "Contratos/AlsasuaContratosUI.h"
 #include "AlsasuaGraphicsSettingsSubsystem.generated.h"
 
 UENUM(BlueprintType)
 enum class EAlsasuaGraphicsProfile : uint8 { Low, Medium, High, Ultra };
 
 UCLASS()
-class GF_WORLD_API UAlsasuaGraphicsSettingsSubsystem : public UWorldSubsystem
+class GF_WORLD_API UAlsasuaGraphicsSettingsSubsystem : public UWorldSubsystem, public IAlsasuaAjustesGraficos
 {
     GENERATED_BODY()
 
@@ -26,6 +27,12 @@ public:
 
     // Comando de consola: alsasua.SetGraphicsProfile [0-3]
     static void ConsoleSetProfile(const TArray<FString>& Args, UWorld* InWorld);
+
+    //~ IAlsasuaAjustesGraficos
+    virtual void AplicarPerfilGrafico(int32 Perfil) override
+    {
+        ApplyGraphicsProfile((EAlsasuaGraphicsProfile)FMath::Clamp(Perfil, 0, 3));
+    }
 
 private:
     void SetLumenQuality(int32 Level);

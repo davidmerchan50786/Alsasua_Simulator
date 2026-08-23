@@ -6,7 +6,8 @@ public class GF_Social : ModuleRules
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         CppStandard = CppStandardVersion.Cpp20;
         bEnableExceptions = true;
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "AlsasuaCore", "GF_Politica" });
+        PublicDependencyModuleNames.AddRange(new string[] {
+			"AlsasuaKernel", "Core", "CoreUObject", "Engine", "AlsasuaCore", "GF_Politica" });
         PrivateDependencyModuleNames.AddRange(new string[] { "Json", "JsonUtilities" });
     }
 }

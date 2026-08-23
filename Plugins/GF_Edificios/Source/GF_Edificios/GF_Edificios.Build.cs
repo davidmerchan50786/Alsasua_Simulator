@@ -14,6 +14,7 @@ public class GF_Edificios : ModuleRules
             "CoreUObject",
             "Engine",
             "AlsasuaCore",
+			"AlsasuaKernel", "AlsasuaWorld",
             "ProceduralMeshComponent"
         });
 

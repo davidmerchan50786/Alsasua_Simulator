@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "Delegates/Delegate.h"
+#include "Contratos/AlsasuaContratosUI.h"
 #include "SocialMediaSubsystem.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnViralPost, FText, PostContent);
@@ -27,7 +28,7 @@ struct FEvidencePost {
 };
 
 UCLASS()
-class GF_SOCIAL_API USocialMediaSubsystem : public UWorldSubsystem {
+class GF_SOCIAL_API USocialMediaSubsystem : public UWorldSubsystem, public IAlsasuaRedSocial {
     GENERATED_BODY()
 public:
     UFUNCTION(BlueprintCallable, Category="AAA|Media")
@@ -50,4 +51,7 @@ public:
 
     UPROPERTY(BlueprintAssignable)
     FOnViralPost OnViralPost;
+
+    //~ IAlsasuaRedSocial
+    virtual float SeguidoresGlobales() const override { return (float)GlobalFollowers; }
 };

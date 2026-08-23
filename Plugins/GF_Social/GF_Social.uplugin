@@ -20,5 +20,10 @@
       "Enabled": true,
       "Name": "GF_Politica"
     }
-  ]
+  ],
+  "Dependencies": [
+    "GF_Politica"
+  ],
+  "BuiltInInitialFeatureState": "Installed",
+  "ExplicitlyLoaded": true
 }

@@ -16,7 +16,7 @@
 #include "MuestreadorAltura.h"
 #include "CargarMaterialComun.h"
 #include "AlturasLidarComun.h"
-#include "World/AlsasuaFacadeGenerator.h"
+#include "Contratos/AlsasuaContratosUI.h"
 #include "Engine/GameInstance.h"
 #include "Engine/Engine.h"
 
@@ -79,9 +79,10 @@ static EFormaTejado FormaReal(const TSharedPtr<FJsonObject>& O, float& OutEscala
 	return EFormaTejado::Cuatro_Aguas;   // None/desconocido
 }
 
-// Fachada real del edificio, o null. El subsistema se busca una vez: es de
-// GameInstance y GetSubsystem no es gratis por cada uno de los 1030 edificios.
-const FBuildingFacadeEntry* UCargadorEdificios::FachadaDe(int32 IdEdificio) const
+// Medidas de fachada del edificio, o false. El proveedor se busca una vez:
+// ForEachSubsystem no es gratis por cada uno de los 1030 edificios.
+bool UCargadorEdificios::MedidasDe(int32 IdEdificio, float& AlturaPorNivelM,
+	float& AnchoVentanaM, float& AltoVentanaM) const
 {
 	if (!bFachadasBuscadas)
 	{
@@ -90,11 +91,17 @@ const FBuildingFacadeEntry* UCargadorEdificios::FachadaDe(int32 IdEdificio) cons
 		{
 			if (const UGameInstance* GI = W->GetGameInstance())
 			{
-				GenFachadas = GI->GetSubsystem<UAlsasuaFacadeGenerator>();
+				GI->ForEachSubsystem<UGameInstanceSubsystem>([this](UGameInstanceSubsystem* Sub)
+				{
+					if (Cast<IAlsasuaDatosFachadas>(Sub)) DatosFachadas = Sub;
+				});
 			}
 		}
 	}
-	return GenFachadas ? GenFachadas->De(IdEdificio) : nullptr;
+	IAlsasuaDatosFachadas* Proveedor =
+		(DatosFachadas.IsValid() ? Cast<IAlsasuaDatosFachadas>(DatosFachadas.Get()) : nullptr);
+	return Proveedor && Proveedor->MedidasDe(IdEdificio, AlturaPorNivelM,
+		AnchoVentanaM, AltoVentanaM);
 }
 
 void UCargadorEdificios::OnWorldBeginPlay(UWorld& InWorld)
@@ -238,19 +245,18 @@ void UCargadorEdificios::ConstruirUno(const TSharedPtr<FJsonObject>& O)
 		// aparte que caía a 1 cm del centro del edificio (o sea dentro, sin que
 		// se viera nada), mientras el muro de verdad se labraba con las cuentas
 		// aproximadas de arriba. Ahora el dato entra en el muro que se ve.
-		if (const FBuildingFacadeEntry* Fach = FachadaDe(E->Id))
+		float AlturaPorNivelM = 0.f, AnchoVentanaM = 0.f, AltoVentanaM = 0.f;
+		if (MedidasDe(E->Id, AlturaPorNivelM, AnchoVentanaM, AltoVentanaM))
 		{
 			// Altura de planta real, acotada a lo que puede ser una planta: el
 			// fichero tiene 151 edificios entre 0,8 y 2,4 m, que es altura_total
 			// partida por un recuento de plantas que no cuadra.
-			Cfg.EspaciadoY = FMath::Clamp(Fach->AlturaPorNivel * 100.f, 240.f, 420.f);
+			Cfg.EspaciadoY = FMath::Clamp(AlturaPorNivelM * 100.f, 240.f, 420.f);
 
-			if (Fach->Ventanas.Num() > 0)
+			if (AnchoVentanaM > 0.f)
 			{
-				float SumaAncho = 0.f, SumaAlto = 0.f;
-				for (const FWindowData& V : Fach->Ventanas) { SumaAncho += V.Ancho; SumaAlto += V.Alto; }
-				Cfg.AnchoVentana = FMath::Clamp(SumaAncho / Fach->Ventanas.Num() * 100.f, 60.f, 260.f);
-				Cfg.AltoVentana  = FMath::Clamp(SumaAlto  / Fach->Ventanas.Num() * 100.f, 80.f, 300.f);
+				Cfg.AnchoVentana = FMath::Clamp(AnchoVentanaM * 100.f, 60.f, 260.f);
+				Cfg.AltoVentana  = FMath::Clamp(AltoVentanaM * 100.f, 80.f, 300.f);
 			}
 
 			// El espaciado horizontal se queda en la heurística del tamaño: el

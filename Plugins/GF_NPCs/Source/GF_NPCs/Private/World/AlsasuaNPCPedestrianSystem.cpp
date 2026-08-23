@@ -324,3 +324,25 @@ FVector UAlsasuaNPCPedestrianSystem::ObtenerPuntoCalle(const FString& Barrio)
     P.Z = UAlsasuaGeoData::AlturaSueloUE5(GetWorld(), P.X, P.Y);
     return P;
 }
+
+//~ IAlsasuaPilarArranque / IAlsasuaPilarTiquear (fase 35 del antiguo Director)
+int32 UAlsasuaNPCPedestrianSystem::EjecutarArranque()
+{
+	GenerarNPCs();
+	return GetNPCs().Num();
+}
+
+FString UAlsasuaNPCPedestrianSystem::EtiquetaArranque() const
+{
+	return TEXT("peatones generados");
+}
+
+int32 UAlsasuaNPCPedestrianSystem::OrdenArranque() const
+{
+	return 350;
+}
+
+void UAlsasuaNPCPedestrianSystem::TiquearPilar(float DeltaTime)
+{
+	ActualizarNPCs(DeltaTime);
+}

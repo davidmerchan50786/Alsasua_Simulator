@@ -23,17 +23,16 @@ public class AlsasuaKernel : ModuleRules
 			"AIModule",
 			"Niagara",
 			"MotionTrajectory",
-			// Y los plugins de los que sus clases base cuelgan. Ninguno
-			// depende de Kernel, así que el grafo sigue acíclico.
-			"GF_Abilities",
-			"GF_AI",
-			"GF_Systems",
-			"GF_UI",
-			"GF_NPCs"
+			// UI nativa del minimapa (NativePaint) y carga de datos JSON.
+			"Slate",
+			"SlateCore",
+			"Json",
+			"JsonUtilities"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {
-			"GameFeatures"
+			"GameFeatures",
+			"Projects"
 		});
 	}
 }

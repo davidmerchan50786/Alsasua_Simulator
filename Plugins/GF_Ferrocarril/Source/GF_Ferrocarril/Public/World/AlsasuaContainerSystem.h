@@ -20,6 +20,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "Contratos/AlsasuaContratosUI.h"
 #include "AlsasuaContainerSystem.generated.h"
 
 USTRUCT(BlueprintType)
@@ -34,9 +35,14 @@ struct FContainer
 };
 
 UCLASS()
-class GF_FERROCARRIL_API UAlsasuaContainerSystem : public UGameInstanceSubsystem
+class GF_FERROCARRIL_API UAlsasuaContainerSystem : public UGameInstanceSubsystem, public IAlsasuaPilarArranque
 {
     GENERATED_BODY()
+	public:
+	virtual int32 EjecutarArranque() override { return ColocarContenedores(); }
+	virtual FString EtiquetaArranque() const override { return TEXT("contenedores de residuos"); }
+	virtual int32 OrdenArranque() const override { return 440; }
+
 public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 

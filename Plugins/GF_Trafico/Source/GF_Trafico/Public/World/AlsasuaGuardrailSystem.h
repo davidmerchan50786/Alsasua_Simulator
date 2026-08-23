@@ -13,6 +13,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "Contratos/AlsasuaContratosUI.h"
 #include "AlsasuaGuardrailSystem.generated.h"
 
 USTRUCT(BlueprintType)
@@ -26,9 +27,14 @@ struct FGuardrail
 };
 
 UCLASS()
-class GF_TRAFICO_API UAlsasuaGuardrailSystem : public UGameInstanceSubsystem
+class GF_TRAFICO_API UAlsasuaGuardrailSystem : public UGameInstanceSubsystem, public IAlsasuaPilarArranque
 {
     GENERATED_BODY()
+	public:
+	virtual int32 EjecutarArranque() override { return ColocarBarandillas(); }
+	virtual FString EtiquetaArranque() const override { return TEXT("barandillas"); }
+	virtual int32 OrdenArranque() const override { return 450; }
+
 public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 

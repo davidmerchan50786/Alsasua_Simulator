@@ -6,6 +6,6 @@ public class GF_World : ModuleRules
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         CppStandard = CppStandardVersion.Cpp20;
         bEnableExceptions = true;
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "AlsasuaCore", "AlsasuaContracts", "AlsasuaKernel", "Niagara", "ProceduralMeshComponent", "GF_Social", "GF_Politica", "GF_AI", "Json", "JsonUtilities" });
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "AlsasuaCore", "AlsasuaContracts", "AlsasuaWorld", "AlsasuaKernel", "Niagara", "ProceduralMeshComponent", "GF_Social", "GF_Politica", "GF_AI", "Json", "JsonUtilities" });
     }
 }

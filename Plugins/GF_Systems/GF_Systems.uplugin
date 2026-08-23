@@ -40,5 +40,15 @@
       "Enabled": true,
       "Name": "GF_Vehiculos"
     }
-  ]
+  ],
+  "Dependencies": [
+    "GF_Dialogos",
+    "GF_Misiones",
+    "GF_NPCs",
+    "GF_Politica",
+    "GF_Social",
+    "GF_Vehiculos"
+  ],
+  "BuiltInInitialFeatureState": "Installed",
+  "ExplicitlyLoaded": true
 }

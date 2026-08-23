@@ -37,14 +37,26 @@ public:
 
 	/** "GF_Clima" -> URL de plugin del proyecto (via GetPluginURLByName). */
 	static FString UrlDePlugin(const FString& Nombre);
+	static void UrlsDePlugin(const FString& Nombre, TArray<FString>& Fuera);
 
 private:
 	UPROPERTY(Config)
 	TArray<FString> PluginsActivables;
 
+	/** Copia del ini sin el override de consola: define el universo de
+	 *  pilares que este cargador puede apagar en un combo. */
+	TArray<FString> PilaresConocidos;
+
 	/** URLs cuyo ciclo de vida gestiona esta clase (para no desactivar
 	 *  plugins que otro activó). */
 	TArray<FString> ActivadosAqui;
+
+	/** Cola de la activación secuencial: dependencias primero, para que las
+	 *  DLL de los pilares base estén cargadas cuando las importen los
+	 *  dependientes. */
+	TArray<FString> ColaActivacion;
+	int32 LanzadasTotales = 0;
+	void ActivarSiguiente();
 
 	bool bPendienteDeArranque = false;
 
