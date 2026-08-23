@@ -158,11 +158,11 @@ void UCargadorArboles::PrepararCarga()
 
 	// Fallback: meshes DZ_Assets de alta calidad (paquete externo).
 	const TPair<FString, FString> DZFallbacks[] = {
-		{TEXT("Pinus"),    TEXT("/Game/DZ_Assets/DZ_Trees/Meshes/Pine/SM_Pine_1.Pine_1")},
-		{TEXT("QuercusRobur"), TEXT("/Game/DZ_Assets/DZ_Trees/Meshes/Cork_Oak/SM_Cork_Oak_1.Cork_Oak_1")},
-		{TEXT("Populus"),   TEXT("/Game/DZ_Assets/DZ_Trees/Meshes/Aspen/SM_Columnar_Aspen_1.Aspen_1")},
-		{TEXT("CocosNucifera"), TEXT("/Game/DZ_Assets/DZ_Trees/Meshes/Coconut_Tree/SM_Coconut_Tree_1.Coconut_Tree_1")},
-		{TEXT("PhoenixCanariensis"), TEXT("/Game/DZ_Assets/DZ_Trees/Meshes/Windmill_Palm/SM_Windmill_Palm_1.Windmill_Palm_1")},
+		{TEXT("Pinus"),    TEXT("/Game/DZ_Assets/DZ_Trees/Meshes/Pine/SM_Pine_1.SM_Pine_1")},
+		{TEXT("QuercusRobur"), TEXT("/Game/DZ_Assets/DZ_Trees/Meshes/Cork_Oak/SM_Cork_Oak_1.SM_Cork_Oak_1")},
+		{TEXT("Populus"),   TEXT("/Game/DZ_Assets/DZ_Trees/Meshes/Aspen/SM_Columnar_Aspen_1.SM_Columnar_Aspen_1")},
+		{TEXT("CocosNucifera"), TEXT("/Game/DZ_Assets/DZ_Trees/Meshes/Coconut_Tree/SM_Coconut_Tree_1.SM_Coconut_Tree_1")},
+		{TEXT("PhoenixCanariensis"), TEXT("/Game/DZ_Assets/DZ_Trees/Meshes/Windmill_Palm/SM_Windmill_Palm_1.SM_Windmill_Palm_1")},
 	};
 	for (const auto& Pair : DZFallbacks)
 	{

@@ -84,7 +84,7 @@ int32 UAlsasuaGuardrailSystem::ColocarBarandillas()
                 GuardrailActor->SetActorScale3D(FVector(Largo / 100.0f, 0.15f, AlturaBarandilla / 100.0f));
 
                 UStaticMesh* RailingMesh = LoadObject<UStaticMesh>(nullptr,
-                    TEXT("/Game/UnrealDrive_CitySample/Meshes/Rail_Guard/Modular_Rail_Guard_4m_LOD0.Rail_Guard_4m_LOD0"));
+                    TEXT("/Game/UnrealDrive_CitySample/Meshes/Rail_Guard/Modular_Rail_Guard_4m_LOD0.Modular_Rail_Guard_4m_LOD0"));
                 if (!RailingMesh)
                     RailingMesh = LoadObject<UStaticMesh>(nullptr,
                         TEXT("/Engine/BasicShapes/Cube.Cube"));

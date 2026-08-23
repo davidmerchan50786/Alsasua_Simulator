@@ -33,7 +33,7 @@ AVehiculoJugable::AVehiculoJugable()
 	Cuerpo->SetRelativeScale3D(FVector(4.6f, 1.9f, 1.4f));
 	Tags.Add(TEXT("VehiculoJugable"));
 
-	if (UStaticMesh* Real = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/VehicleVarietyPack/Meshes/SM_Hatchback.Hatchback")))
+	if (UStaticMesh* Real = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/VehicleVarietyPack/Meshes/SM_Hatchback.SM_Hatchback")))
 	{
 		Cuerpo->SetStaticMesh(Real);
 		Cuerpo->SetRelativeScale3D(FVector::OneVector);

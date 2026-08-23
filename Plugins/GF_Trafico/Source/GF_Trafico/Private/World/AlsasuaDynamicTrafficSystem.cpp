@@ -116,9 +116,9 @@ void UAlsasuaDynamicTrafficSystem::SpawnVehiculoEnCalle()
 
     // Intentar meshes reales del VehicleVarietyPack por tipo de vehículo.
     static const TCHAR* RutasVehiculo[] = {
-        TEXT("/Game/VehicleVarietyPack/Meshes/SM_Hatchback.Hatchback"),
-        TEXT("/Game/VehicleVarietyPack/Meshes/SM_SUV.SUV"),
-        TEXT("/Game/VehicleVarietyPack/Meshes/SM_Truck_Box.Truck_Box"),
+        TEXT("/Game/VehicleVarietyPack/Meshes/SM_Hatchback.SM_Hatchback"),
+        TEXT("/Game/VehicleVarietyPack/Meshes/SM_SUV.SM_SUV"),
+        TEXT("/Game/VehicleVarietyPack/Meshes/SM_Truck_Box.SM_Truck_Box"),
     };
     const int32 IdxVeh = (Veh.Tipo == ETipoVehiculo::Camion) ? 2
                        : (Veh.Tipo == ETipoVehiculo::Furgoneta) ? 1 : 0;

@@ -185,9 +185,9 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 	TArray<UStaticMesh*> NanitePlants;
 	{
 		const TCHAR* RutasNanite[] = {
-			TEXT("/Game/Nanite_Plants_Sample_Collection/Geometries/SM_Free_Lolium_perenne_3DGardenPlants.Free_Lolium_perenne_3DGardenPlants"),
-			TEXT("/Game/Nanite_Plants_Sample_Collection/Geometries/SM_Free_Ophiopogon_japonicus_3DGardenPlants.Free_Ophiopogon_japonicus_3DGardenPlants"),
-			TEXT("/Game/Nanite_Plants_Sample_Collection/Geometries/SM_Abelia_x_grandiflora_Nanite_Free_Sample.Abelia_x_grandiflora_Nanite_Free_Sample"),
+			TEXT("/Game/Nanite_Plants_Sample_Collection/Geometries/SM_Free_Lolium_perenne_3DGardenPlants.SM_Free_Lolium_perenne_3DGardenPlants"),
+			TEXT("/Game/Nanite_Plants_Sample_Collection/Geometries/SM_Free_Ophiopogon_japonicus_3DGardenPlants.SM_Free_Ophiopogon_japonicus_3DGardenPlants"),
+			TEXT("/Game/Nanite_Plants_Sample_Collection/Geometries/SM_Abelia_x_grandiflora_Nanite_Free_Sample.SM_Abelia_x_grandiflora_Nanite_Free_Sample"),
 		};
 		for (const TCHAR* Ruta : RutasNanite)
 			if (UStaticMesh* M = LoadObject<UStaticMesh>(nullptr, Ruta))

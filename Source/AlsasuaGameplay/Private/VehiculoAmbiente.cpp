@@ -15,11 +15,11 @@
 #include "HAL/PlatformTime.h"
 
 static const TCHAR* RutasCoches[] = {
-	TEXT("/Game/VehicleVarietyPack/Meshes/SM_Hatchback.Hatchback"),
-	TEXT("/Game/VehicleVarietyPack/Meshes/SM_SUV.SUV"),
-	TEXT("/Game/VehicleVarietyPack/Meshes/SM_Pickup.Pickup"),
-	TEXT("/Game/VehicleVarietyPack/Meshes/SM_SportsCar.SportsCar"),
-	TEXT("/Game/VehicleVarietyPack/Meshes/SM_Truck_Box.Truck_Box")
+	TEXT("/Game/VehicleVarietyPack/Meshes/SM_Hatchback.SM_Hatchback"),
+	TEXT("/Game/VehicleVarietyPack/Meshes/SM_SUV.SM_SUV"),
+	TEXT("/Game/VehicleVarietyPack/Meshes/SM_Pickup.SM_Pickup"),
+	TEXT("/Game/VehicleVarietyPack/Meshes/SM_SportsCar.SM_SportsCar"),
+	TEXT("/Game/VehicleVarietyPack/Meshes/SM_Truck_Box.SM_Truck_Box")
 };
 
 AVehiculoAmbiente::AVehiculoAmbiente()

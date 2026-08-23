@@ -251,9 +251,9 @@ namespace
 	/** Nombre de la malla propia para ese tipo, o null si no hay. */
 	const TCHAR* MallaPropiaDe(const FString& Tipo)
 	{
-		if (Tipo == TEXT("coche"))              return TEXT("/Game/VehicleVarietyPack/Meshes/SM_Hatchback.Hatchback");
-		if (Tipo == TEXT("coche_sedan"))        return TEXT("/Game/VehicleVarietyPack/Meshes/SM_SUV.SUV");
-		if (Tipo == TEXT("coche_policia"))      return TEXT("/Game/VehicleVarietyPack/Meshes/SM_SportsCar.SportsCar");
+		if (Tipo == TEXT("coche"))              return TEXT("/Game/VehicleVarietyPack/Meshes/SM_Hatchback.SM_Hatchback");
+		if (Tipo == TEXT("coche_sedan"))        return TEXT("/Game/VehicleVarietyPack/Meshes/SM_SUV.SM_SUV");
+		if (Tipo == TEXT("coche_policia"))      return TEXT("/Game/VehicleVarietyPack/Meshes/SM_SportsCar.SM_SportsCar");
 		if (Tipo == TEXT("banco"))             return TEXT("/Game/Mobiliario/SM_Banco.SM_Banco");
 		if (Tipo == TEXT("papelera"))          return TEXT("/Game/Mobiliario/SM_Papelera.SM_Papelera");
 		if (Tipo == TEXT("bollard"))           return TEXT("/Game/Mobiliario/SM_Bolardo.SM_Bolardo");
