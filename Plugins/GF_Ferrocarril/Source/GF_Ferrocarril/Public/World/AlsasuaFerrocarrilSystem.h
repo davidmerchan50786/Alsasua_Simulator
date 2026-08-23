@@ -20,14 +20,20 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
+#include "Contratos/AlsasuaContratosUI.h"
 #include "AlsasuaFerrocarrilSystem.generated.h"
 
 UCLASS()
-class GF_FERROCARRIL_API UAlsasuaFerrocarrilSystem : public UWorldSubsystem
+class GF_FERROCARRIL_API UAlsasuaFerrocarrilSystem : public UWorldSubsystem, public IAlsasuaPilarArranque
 {
 	GENERATED_BODY()
 
 public:
+	// IAlsasuaPilarArranque: fase 52 (material rodante) del antiguo Director.
+	virtual int32 EjecutarArranque() override { return ColocarMaterialRodante(); }
+	virtual FString EtiquetaArranque() const override { return TEXT("material rodante"); }
+	virtual int32 OrdenArranque() const override { return 520; }
+
 	/** Coloca las composiciones. Devuelve cuántos vehículos se han puesto. */
 	UFUNCTION(BlueprintCallable, Category = "AAA|Ferrocarril")
 	int32 ColocarMaterialRodante();

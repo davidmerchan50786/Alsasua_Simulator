@@ -41,15 +41,16 @@ int32 UCrearGameFeatureDataCommandlet::Main(const FString& Params)
 	for (int32 i = 0; i < Num; ++i)
 	{
 		const FString Nombre = Plugins[i];
-		const FString RutaPaquete =
-			FString::Printf(TEXT("/%s/GameFeatureData"), *Nombre);
+		// El AssetManager registra cada GFD por nombre de asset; si todos se
+		// llaman GameFeatureData chocan (ensure de ID duplicado). El motor
+		// acepta el backup /<Plugin>/<Plugin>.<Plugin>, unico por plugin.
+		const FString RutaPaquete = FString::Printf(TEXT("/%s/%s"), *Nombre, *Nombre);
 
 		// Ruta por fichero, no por punto de montaje: con ExplicitlyLoaded el
 		// contenido del plugin no esta montado y LongPackageNameToFilename
 		// no tiene raiz para /GF_X.
 		const FString Archivo = FPaths::ProjectPluginsDir() / Nombre /
-			TEXT("Content") / (TEXT("GameFeatureData") +
-				FPackageName::GetAssetPackageExtension());
+			TEXT("Content") / (Nombre + FPackageName::GetAssetPackageExtension());
 
 		if (FPaths::FileExists(Archivo))
 		{
@@ -59,7 +60,7 @@ int32 UCrearGameFeatureDataCommandlet::Main(const FString& Params)
 
 		UPackage* Paquete = CreatePackage(*RutaPaquete);
 		UGameFeatureData* Datos = NewObject<UGameFeatureData>(
-			Paquete, TEXT("GameFeatureData"), RF_Public | RF_Standalone);
+			Paquete, *Nombre, RF_Public | RF_Standalone);
 		if (!Datos)
 		{
 			UE_LOG(LogCrearGFD, Error, TEXT("[GFD] fallo creando %s"), *RutaPaquete);
@@ -68,7 +69,6 @@ int32 UCrearGameFeatureDataCommandlet::Main(const FString& Params)
 		// Sin PKG_FilterEditorOnly: con ese flag el uasset se marca cooked y un
 		// build uncooked (-game de editor) rechaza cargarlo.
 
-		// Ruta por fichero, no por punto de montaje: con ExplicitlyLoaded el
 		FSavePackageArgs Args;
 		Args.TopLevelFlags = RF_Public | RF_Standalone;
 		Args.Error = GError;
