@@ -12,32 +12,28 @@ void UAlsasuaOptimizerSubsystem::Tick(float DeltaTime)
 	OptimizationTickTimer += DeltaTime;
 	NPCRefreshTimer += DeltaTime;
 
-	if (OptimizationTickTimer >= 0.5f)
+	if (OptimizationTickTimer < 0.5f) return;
+	OptimizationTickTimer = 0.0f;
+
+	AAlsasuaCharacter* Player = Cast<AAlsasuaCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	if (!Player) return;
+
+	if (NPCRefreshTimer >= NPCRefreshInterval || CachedNPCs.Num() == 0)
 	{
-		OptimizationTickTimer = 0.0f;
-
-		AAlsasuaCharacter* Player = Cast<AAlsasuaCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-		if (Player)
+		NPCRefreshTimer = 0.0f;
+		CachedNPCs.Empty();
+		TArray<AActor*> TempActors;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACharacter::StaticClass(), TempActors);
+		for (AActor* Actor : TempActors)
 		{
-			// Refrescar cache de NPCs cada NPCRefreshInterval segundos.
-			if (NPCRefreshTimer >= NPCRefreshInterval || CachedNPCs.Num() == 0)
+			if (ACharacter* Char = Cast<ACharacter>(Actor))
 			{
-				NPCRefreshTimer = 0.0f;
-				CachedNPCs.Empty();
-				TArray<AActor*> TempActors;
-				UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACharacter::StaticClass(), TempActors);
-				for (AActor* Actor : TempActors)
-				{
-					if (ACharacter* Char = Cast<ACharacter>(Actor))
-					{
-						CachedNPCs.Add(Char);
-					}
-				}
+				CachedNPCs.Add(Char);
 			}
-
-			OptimizeCrowd(Player);
 		}
 	}
+
+	OptimizeCrowd(Player);
 }
 
 void UAlsasuaOptimizerSubsystem::OptimizeCrowd(AAlsasuaCharacter* Player)
@@ -53,45 +49,66 @@ void UAlsasuaOptimizerSubsystem::OptimizeCrowd(AAlsasuaCharacter* Player)
 			continue;
 		}
 
-		const float Dist = FVector::DistSquared(PlayerLoc, NPC->GetActorLocation());
-		const float CullDistSq = AICullDistance * AICullDistance;
+		const float Dist = FVector::Dist(PlayerLoc, NPC->GetActorLocation());
 
-		if (Dist > CullDistSq)
+		// Tier 0: beyond cull distance → hide + disable tick
+		if (Dist > AICullDistance)
 		{
 			NPC->SetActorTickEnabled(false);
-			if (NPC->GetController())
-			{
-				NPC->GetController()->SetActorTickEnabled(false);
-			}
-		}
-		else
-		{
-			NPC->SetActorTickEnabled(true);
-			if (NPC->GetController())
-			{
-				NPC->GetController()->SetActorTickEnabled(true);
-			}
+			if (NPC->GetController()) NPC->GetController()->SetActorTickEnabled(false);
+			ApplyLOD(NPC, 3);
+			continue;
 		}
 
-		// LOD multitud: lejos del jugador, forzar el LOD mas grueso y quitar
-		// sombras dinamicas. Equivale a impostor para SkeletalMesh sin asset.
-		USkeletalMeshComponent* Mesh = NPC->GetMesh();
-		if (Mesh)
-		{
-			const float RenderLODDistSq = RenderLODDistance * RenderLODDistance;
-			if (Dist > RenderLODDistSq)
-			{
-				if (Mesh->GetForcedLOD() == 0)
-				{
-					Mesh->SetForcedLOD(Mesh->GetNumLODs());
-					Mesh->SetCastShadow(false);
-				}
-			}
-			else
-			{
-				Mesh->SetForcedLOD(0);
-				Mesh->SetCastShadow(true);
-			}
-		}
+		// Enable tick for all NPCs within cull distance
+		NPC->SetActorTickEnabled(true);
+		if (NPC->GetController()) NPC->GetController()->SetActorTickEnabled(true);
+
+		// Determine LOD tier
+		if (Dist > LOD3Distance)
+			ApplyLOD(NPC, 3);
+		else if (Dist > LOD2Distance)
+			ApplyLOD(NPC, 2);
+		else if (Dist > LOD1Distance)
+			ApplyLOD(NPC, 1);
+		else
+			ApplyLOD(NPC, 0);
+	}
+}
+
+void UAlsasuaOptimizerSubsystem::ApplyLOD(ACharacter* NPC, int32 LODLevel)
+{
+	USkeletalMeshComponent* Mesh = NPC ? NPC->GetMesh() : nullptr;
+	if (!Mesh) return;
+
+	// Avoid redundant state changes
+	const int32 CurrentForced = Mesh->GetForcedLOD();
+	const bool bCurrentShadow = Mesh->CastShadow;
+
+	switch (LODLevel)
+	{
+	case 0: // Full quality: LOD0, shadows on
+		if (CurrentForced != 0) Mesh->SetForcedLOD(0);
+		if (!bCurrentShadow) Mesh->SetCastShadow(true);
+		Mesh->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
+		break;
+
+	case 1: // Medium: LOD1, shadows on, skip bones when not visible
+		if (CurrentForced != 2) Mesh->SetForcedLOD(2);
+		if (!bCurrentShadow) Mesh->SetCastShadow(true);
+		Mesh->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered;
+		break;
+
+	case 2: // Low: coarsest LOD, no shadows, minimal anim
+		if (CurrentForced != Mesh->GetNumLODs()) Mesh->SetForcedLOD(Mesh->GetNumLODs());
+		if (bCurrentShadow) Mesh->SetCastShadow(false);
+		Mesh->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered;
+		break;
+
+	case 3: // Hidden LOD: same as 2 but render disabled
+		if (CurrentForced != Mesh->GetNumLODs()) Mesh->SetForcedLOD(Mesh->GetNumLODs());
+		if (bCurrentShadow) Mesh->SetCastShadow(false);
+		Mesh->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::OnlyTickMontagesWhenNotRendered;
+		break;
 	}
 }
