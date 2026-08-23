@@ -1,6 +1,7 @@
 #include "World/AlsasuaEnhancedPostProcessComponent.h"
 #include "World/Time/TimeOfDayManager.h"
-#include "World/AlsasuaAtmosphereController.h"
+#include "Services/ITimeOfDayService.h"
+#include "AlsasuaServiceRegistry.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/PostProcessVolume.h"
@@ -27,7 +28,8 @@ void UAlsasuaEnhancedPostProcessComponent::UpdatePostProcess(float DeltaTime)
 	UWorld* W = GetWorld();
 	if (!W) return;
 
-	UAlsasuaAtmosphereController* Atmos = W->GetSubsystem<UAlsasuaAtmosphereController>();
+	UAlsasuaServiceRegistry* Reg = UAlsasuaServiceRegistry::Get(W);
+	ITimeOfDayService* Atmos = Reg ? Reg->PedirComo<ITimeOfDayService>(FName("TimeOfDay")) : nullptr;
 	UTimeOfDayManager* TimeMgr = W->GetSubsystem<UTimeOfDayManager>();
 
 	// La mezcla día/noche sale de la elevación real del sol, no de tramos de
@@ -35,7 +37,7 @@ void UAlsasuaEnhancedPostProcessComponent::UpdatePostProcess(float DeltaTime)
 	float DayFactor;
 	if (Atmos)
 	{
-		DayFactor = FMath::Clamp(Atmos->GetSunElevationDeg() / 10.f, 0.f, 1.f);
+		DayFactor = FMath::Clamp(Atmos->GetSunPitch() / 10.f, 0.f, 1.f);
 	}
 	else
 	{

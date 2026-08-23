@@ -18,10 +18,6 @@
   "Plugins": [
     {
       "Enabled": true,
-      "Name": "GF_Clima"
-    },
-    {
-      "Enabled": true,
       "Name": "Niagara"
     }
   ]

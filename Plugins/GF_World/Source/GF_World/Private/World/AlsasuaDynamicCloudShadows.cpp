@@ -1,7 +1,8 @@
 #include "World/AlsasuaDynamicCloudShadows.h"
 #include "World/Time/TimeOfDayManager.h"
 #include "World/AlsasuaVisualEffectsManager.h"
-#include "World/Weather/WeatherSubsystem.h"
+#include "Services/IWeatherService.h"
+#include "AlsasuaServiceRegistry.h"
 #include "Engine/World.h"
 
 UAlsasuaDynamicCloudShadows::UAlsasuaDynamicCloudShadows()
@@ -28,13 +29,13 @@ void UAlsasuaDynamicCloudShadows::UpdateCloudShadows(float DeltaTime)
 
 	UTimeOfDayManager* TimeMgr = W->GetSubsystem<UTimeOfDayManager>();
 	UAlsasuaVisualEffectsManager* VFXMgr = W->GetSubsystem<UAlsasuaVisualEffectsManager>();
-	UWeatherSubsystem* Weather = W->GetSubsystem<UWeatherSubsystem>();
+	UAlsasuaServiceRegistry* Reg = UAlsasuaServiceRegistry::Get(W);
+	IWeatherService* Weather = Reg ? Reg->PedirComo<IWeatherService>(FName("Weather")) : nullptr;
 
 	if (!TimeMgr || !VFXMgr) return;
 
 	const float Hour = TimeMgr->CurrentTime;
-	const bool bRaining = Weather && (Weather->CurrentWeather == EWeatherSubsystemState::Rainy ||
-		Weather->CurrentWeather == EWeatherSubsystemState::Thunderstorm);
+	const bool bRaining = Weather && Weather->GetRainIntensity() > 0.1f;
 
 	TimeAccum += DeltaTime;
 

@@ -1,6 +1,7 @@
 #include "World/AlsasuaRainParticleComponent.h"
 #include "World/AlsasuaVisualEffectsManager.h"
-#include "World/Weather/WeatherSubsystem.h"
+#include "Services/IWeatherService.h"
+#include "AlsasuaServiceRegistry.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraSystem.h"
@@ -48,24 +49,19 @@ void UAlsasuaRainParticleComponent::UpdateRainState(float DeltaTime)
 	if (!W) return;
 
 	UAlsasuaVisualEffectsManager* VFXMgr = W->GetSubsystem<UAlsasuaVisualEffectsManager>();
-	UWeatherSubsystem* Weather = W->GetSubsystem<UWeatherSubsystem>();
+	UAlsasuaServiceRegistry* Reg = UAlsasuaServiceRegistry::Get(W);
+	IWeatherService* Weather = Reg ? Reg->PedirComo<IWeatherService>(FName("Weather")) : nullptr;
 	if (!VFXMgr || !Weather) return;
 
-	const EWeatherSubsystemState State = Weather->CurrentWeather;
+	const float RainIntensity = Weather->GetRainIntensity();
+	const float Visibility = Weather->GetVisibilityMultiplier();
 	const float Wetness = VFXMgr->GlobalWetness;
 
 	float TargetSpawnRate = 0.f;
 	UNiagaraSystem* TargetSystem = nullptr;
 
-	switch (State)
+	if (RainIntensity > 0.8f)
 	{
-	case EWeatherSubsystemState::Rainy:
-		TargetSpawnRate = FMath::Lerp(LightRainSpawnRate, HeavyRainSpawnRate, Wetness);
-		TargetSystem = RainNiagaraAsset;
-		bIsSnowing = false;
-		break;
-
-	case EWeatherSubsystemState::Thunderstorm:
 		TargetSpawnRate = HeavyRainSpawnRate;
 		TargetSystem = RainNiagaraAsset;
 		bIsSnowing = false;
@@ -76,17 +72,18 @@ void UAlsasuaRainParticleComponent::UpdateRainState(float DeltaTime)
 			ThunderTimer = 0.f;
 			SpawnThunderFlash();
 		}
-		break;
-
-	case EWeatherSubsystemState::HeavyFog:
+	}
+	else if (RainIntensity > 0.1f)
+	{
+		TargetSpawnRate = FMath::Lerp(LightRainSpawnRate, HeavyRainSpawnRate, Wetness);
+		TargetSystem = RainNiagaraAsset;
+		bIsSnowing = false;
+	}
+	else if (Visibility < 0.5f)
+	{
 		TargetSpawnRate = SnowSpawnRate * 0.3f;
 		TargetSystem = SnowNiagaraAsset;
 		bIsSnowing = true;
-		break;
-
-	default:
-		TargetSpawnRate = 0.f;
-		break;
 	}
 
 	CurrentSpawnRate = FMath::FInterpTo(CurrentSpawnRate, TargetSpawnRate, DeltaTime, 3.f);

@@ -1,7 +1,8 @@
 #include "World/AlsasuaVisualEffectsManager.h"
 #include "CargarMaterialComun.h"
 #include "World/Time/TimeOfDayManager.h"
-#include "World/Weather/WeatherSubsystem.h"
+#include "Services/IWeatherService.h"
+#include "AlsasuaServiceRegistry.h"
 #include "Materials/MaterialParameterCollection.h"
 #include "Materials/MaterialParameterCollectionInstance.h"
 #include "Engine/World.h"
@@ -11,7 +12,6 @@ void UAlsasuaVisualEffectsManager::Initialize(FSubsystemCollectionBase& Collecti
 	Super::Initialize(Collection);
 
 	Collection.InitializeDependency<UTimeOfDayManager>();
-	Collection.InitializeDependency<UWeatherSubsystem>();
 
 	CachedMPC = CargarMPCClima();
 
@@ -52,9 +52,13 @@ void UAlsasuaVisualEffectsManager::SetRoadWear(float Wear)
 
 void UAlsasuaVisualEffectsManager::UpdateWetness(float DeltaTime)
 {
-	UWeatherSubsystem* Weather = GetWorld() ? GetWorld()->GetSubsystem<UWeatherSubsystem>() : nullptr;
-	const bool bRaining = Weather && (Weather->CurrentWeather == EWeatherSubsystemState::Rainy || Weather->CurrentWeather == EWeatherSubsystemState::Thunderstorm);
-	const bool bFoggy = Weather && Weather->CurrentWeather == EWeatherSubsystemState::HeavyFog;
+	UWorld* W0 = GetWorld();
+	UAlsasuaServiceRegistry* Reg0 = W0 ? UAlsasuaServiceRegistry::Get(W0) : nullptr;
+	IWeatherService* Weather0 = Reg0 ? Reg0->PedirComo<IWeatherService>(FName("Weather")) : nullptr;
+	const float RainInt = Weather0 ? Weather0->GetRainIntensity() : 0.f;
+	const float Vis = Weather0 ? Weather0->GetVisibilityMultiplier() : 1.f;
+	const bool bRaining = RainInt > 0.1f;
+	const bool bFoggy = Vis < 0.5f;
 
 	float TargetWetness = 0.f;
 	if (bRaining) TargetWetness = 1.f;
@@ -98,8 +102,10 @@ void UAlsasuaVisualEffectsManager::UpdateWind(float DeltaTime)
 	const float Noise = FMath::Sin(TimeAccumulator * 0.7f) * 0.1f;
 	WindIntensity = FMath::Clamp(WindIntensity + (Gust + Noise) * DeltaTime, 0.05f, 1.f);
 
-	UWeatherSubsystem* Weather = GetWorld() ? GetWorld()->GetSubsystem<UWeatherSubsystem>() : nullptr;
-	if (Weather && Weather->CurrentWeather == EWeatherSubsystemState::Thunderstorm)
+	UWorld* W1 = GetWorld();
+	UAlsasuaServiceRegistry* Reg1 = W1 ? UAlsasuaServiceRegistry::Get(W1) : nullptr;
+	IWeatherService* Weather1 = Reg1 ? Reg1->PedirComo<IWeatherService>(FName("Weather")) : nullptr;
+	if (Weather1 && Weather1->GetRainIntensity() > 0.8f)
 	{
 		WindIntensity = FMath::Max(WindIntensity, 0.8f);
 	}

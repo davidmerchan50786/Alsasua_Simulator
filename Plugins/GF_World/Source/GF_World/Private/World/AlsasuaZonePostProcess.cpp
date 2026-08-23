@@ -1,6 +1,6 @@
 #include "World/AlsasuaZonePostProcess.h"
-#include "World/AlsasuaAtmosphereController.h"
-#include "World/Time/TimeOfDayManager.h"
+#include "Services/ITimeOfDayService.h"
+#include "AlsasuaServiceRegistry.h"
 #include "Components/PostProcessComponent.h"
 #include "Engine/PostProcessVolume.h"
 #include "Materials/MaterialParameterCollection.h"
@@ -174,10 +174,11 @@ void UAlsasuaZonePostProcess::UpdatePostProcessVolume(float DeltaTime)
     float DayFactor = 1.f;
     if (UWorld* W = GetWorld())
     {
-        UAlsasuaAtmosphereController* Atmos = W->GetSubsystem<UAlsasuaAtmosphereController>();
+        UAlsasuaServiceRegistry* Reg = UAlsasuaServiceRegistry::Get(W);
+        ITimeOfDayService* Atmos = Reg ? Reg->PedirComo<ITimeOfDayService>(FName("TimeOfDay")) : nullptr;
         if (Atmos)
         {
-            DayFactor = FMath::Clamp(Atmos->GetSunElevationDeg() / 10.f, 0.f, 1.f);
+            DayFactor = FMath::Clamp(Atmos->GetSunPitch() / 10.f, 0.f, 1.f);
         }
     }
 
