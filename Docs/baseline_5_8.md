@@ -70,10 +70,17 @@ Memoria: 16,5 GB de pico. No hay presupuesto declarado contra el que juzgarlo
 
 ## Lo que sigue roto
 
-1. **Cuatro materiales no compilan** → Default Material gris en superficies
-   grandes: `M_Terreno_Orto`, `M_Terreno_Calles`, `M_Terreno_Acera`,
-   `M_Tejado_Orto`. Es el fallo de mayor impacto visual del proyecto ahora
-   mismo: el suelo, las calles, las aceras y los tejados salen en gris plano.
+1. **Materiales que no compilan** → Default Material gris en superficies
+   grandes. La causa es siempre la misma: `TextureSampleParameter2D` con la
+   textura en NULL porque el uasset no existe (los uassets derivados de textura
+   están en `.gitignore`, se reimportan).
+   - `M_Terreno_Orto` y `M_Tejado_Orto`: **resueltos**. Las dos ortofotos eran
+     punteros LFS de 134 bytes en este worktree; las imágenes reales (116 MB y
+     108 MB) estaban en el worktree original. Copiadas e importadas con
+     `Tools/ImportSatellite.py`.
+   - `M_Terreno_Calles` y `M_Terreno_Acera`: dos texturas NULL cada uno. Los 37
+     PNG de `Content/Textures/T_*.png` sí están versionados pero nunca se
+     importaron. Los importa `Tools/ImportTexturasPBR.py` (nuevo).
 2. **Packs de mallas ausentes**, con degradación funcionando pero pobre:
    - `/Game/AssetsImportados/Naturaleza/*` — nada importado; 7568 quads de
      respaldo en las zonas verdes.
@@ -90,3 +97,37 @@ Memoria: 16,5 GB de pico. No hay presupuesto declarado contra el que juzgarlo
    100, 150, 200 o 300.
 6. **Sin jugador ni guardia civil verificados.** El mundo se construye; nadie lo
    habita. Es la fase 3 del plan de integración.
+
+
+## Puesta a punto tras clonar (no está en git)
+
+Tres pasos, en este orden. Ninguno es opcional si quieres ver el pueblo con su
+aspecto real en vez de gris.
+
+1. **Traer las dos ortofotos.** `Content/Terreno/alsasua_satelite_pnoa_8192.png`
+   (116 MB) y `Content/Textures/ortofoto_pnoa_plaza_8192.png` (108 MB) están en
+   LFS y en este worktree se quedaron como punteros de 134 bytes. El presupuesto
+   LFS de la cuenta está agotado (`CLAUDE.md` §5b), así que `git lfs pull` no las
+   trae: hay que copiarlas de otro worktree que las tenga, o regenerarlas con
+   `Tools/DescargarOrtofotoPNOA.py`.
+
+   Cómo saber si te faltan: si pesan ~134 bytes, es un puntero.
+
+2. **Importar las ortofotos**: `Tools/ImportSatellite.py` en el editor, o
+   headless con `-run=pythonscript`. Arregla `M_Terreno_Orto` y `M_Tejado_Orto`.
+
+3. **Importar las texturas PBR**: `Tools/ImportTexturasPBR.py`. Los 37
+   `Content/Textures/T_*.png` sí están versionados, pero sus uassets no. Arregla
+   `M_Terreno_Calles` y `M_Terreno_Acera`.
+
+Tras los tres, los cuatro materiales del proyecto compilan. El único que sigue
+cayendo a Default Material es `MS_DefaultMaterial` del pack de terceros
+`UnrealDrive_CitySample`, cuyas texturas 8K también son punteros LFS; no lo usa
+nada del pueblo.
+
+**Nota sobre el commandlet**: los dos scripts terminan con `exit code 1` y
+`Failure - 2 error(s)` aunque el import haya ido bien. Los dos errores son
+preexistentes y ajenos: *"Asset manager settings do not include a rule for assets
+of type GameFeatureData"* — los plugins `GF_` no son Game Features reales
+(§H2 de `PLAN_INTEGRACION_AAA.md`). Mira `Python script executed successfully` en
+el log, no el código de salida.
