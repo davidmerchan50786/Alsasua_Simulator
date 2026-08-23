@@ -131,3 +131,77 @@ preexistentes y ajenos: *"Asset manager settings do not include a rule for asset
 of type GameFeatureData"* — los plugins `GF_` no son Game Features reales
 (§H2 de `PLAN_INTEGRACION_AAA.md`). Mira `Python script executed successfully` en
 el log, no el código de salida.
+
+
+## Segunda pasada — assets de tu biblioteca (2026-08-23, tarde)
+
+Petición: "faltan los assets de coches de Epic Engine, mi biblioteca" + "añade
+más assets del estilo" (árboles, edificios, casas, asfalto, más coches, todo lo
+que hubiera en la biblioteca ya descargada, un vehículo de Guardia Civil).
+
+### Encontrado y arreglado
+
+**11 rutas con el mismo bug** (`fix(assets)` / `4c32750`): el objeto interno de
+una malla FBX/glTF importada siempre se llama como el paquete (`SM_Cosa` →
+objeto `SM_Cosa`, nunca `Cosa`), y media docena de sitios pedían la forma corta.
+El `.uasset` existía, `LoadObject` fallaba en silencio, y todo caía al
+placeholder más básico. Verificado el nombre interno real de cada uno con el
+name-table del binario antes de tocar nada:
+
+- `VehicleVarietyPack`: SM_Hatchback/SUV/SportsCar/Pickup/Truck_Box — 4 ficheros,
+  8 apariciones (coches, furgonetas, autobús del tráfico dinámico).
+- `DZ_Assets/DZ_Trees`: 5 especies de árbol de alta calidad (pino, roble, chopo,
+  cocotero, palmera).
+- `Nanite_Plants_Sample_Collection`: 3 mallas de vegetación de zona verde.
+- `UnrealDrive_CitySample/Meshes/Rail_Guard`: el guardarraíl — **1647 apariciones**,
+  todas las barandillas del pueblo.
+
+**Packs copiados del worktree original** (mismo disco físico, `cp` instantáneo,
+no descarga): `VehicleVarietyPack` (1,4 GB), `AssetsImportados/Naturaleza`
+(638 MB, hierba/setos/rocas/hiedra), `CitySample` (942 MB, props). Los tres ya
+estaban en `.gitignore` con el nombre correcto — sólo faltaban en disco en este
+worktree.
+
+**Import headless de 106 FBX de Naturaleza** — bloqueado por un bug real en
+`Tools/ue5_import_all_assets.py`: `FbxImportUI.convert_scene` ya no existe con
+ese nombre en 5.8, y la excepción sin capturar abortaba el bucle entero antes de
+importar nada. Envuelto en `try/except` (`bd3a613`): 106 FBX → 169 uassets.
+
+**Generador procedural** (`UAlsasuaAssetGenerator::GenerarTodosLosAssets`, ya
+existía, nunca se había ejecutado): 10 especies de árbol, 8 piezas de
+mobiliario urbano, 7 landmarks (iglesia, ayuntamiento, escuela, estación,
+frontón, nave, bloque cívico), 51 materiales. De paso, un `ensure` real
+(`SetupAttachment` después de `RegisterComponent`, orden invertido) en los
+generadores de río y puente — corregido, aunque esas dos herramientas son
+redundantes con el runtime (`UCargadorVias`/`UCargadorPuentes` ya construyen
+ríos y puentes reales en cada arranque).
+
+**Resultado**: `VehicleVarietyPack` y `AssetsImportados/Naturaleza` a **0**
+fallos de carga (eran 89 y 18). Materiales del proyecto rotos: **0** (era 4,
+luego el `MS_DefaultMaterial` de un pack de terceros no usado por el pueblo).
+
+### Guardia Civil — no resuelto, necesita tu sesión de Epic
+
+No hay ningún vehículo policial en la biblioteca, ni versionado ni en el
+worktree original. Fab no es accesible por MCP — es la pestaña del editor con
+tu login. Candidatos encontrados por búsqueda web:
+[Police Car - Interactable Vehicles](https://www.fab.com/listings/de417e86-8ffa-4adc-a734-6fde5110315b)
+(recomendado, pensado para colocación en mundo, no conducible),
+[Low Poly Vehicles Police Pack 3](https://www.fab.com/listings/bc97b138-592c-4a94-a313-e8edca48c775).
+`AlsasuaPoliceVan.cpp` es un `USkeletalMeshComponent` vacío sin ruta
+hardcodeada — listo para recibir lo que añadas.
+
+### Hueco real que queda: variedad de fachada por barrio
+
+Los 1030 edificios **ya tienen material** (`M_Fachada`, con ventanas nocturnas)
+— no salen grises. `buildings_final.json` trae `material_type` (ladrillo /
+piedra_hormigon / ladrillo_industrial) + `barrio` por edificio, y
+`CargadorEdificios.cpp:300` intenta *sobre-escribir* con `M_<tipo>_<barrio>`
+(p. ej. `M_ladrillo_Intxostia`); si no existe, ni el genérico `M_<tipo>`
+tampoco, se queda con `M_Fachada`. Ninguna de esas ~24 variantes (3 tipos × 8
+barrios) tiene generador. Efecto real: todos los edificios comparten el mismo
+ladrillo genérico en vez de variar por barrio — no bloqueante, trabajo nuevo con
+alcance propio (escribir ~24 entradas de material en un generador, no hay bug
+que arreglar). Mismo patrón con `/Game/LUTs/LUT_Neutral`
+(`AlsasuaBarrioStyleSystem.h:142`): LUT de color grading por barrio, sin
+generador, cae en silencio sin aplicar nada.
