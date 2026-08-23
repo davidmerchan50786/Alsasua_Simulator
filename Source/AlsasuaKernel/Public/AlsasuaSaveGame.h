@@ -10,7 +10,7 @@
  * Esta clase existe para compatibilidad con código existente que use UAlsasuaSaveGame.
  */
 UCLASS(Deprecated, meta=(DeprecationMessage="Usa UAlsasuaLegacySaveGame directamente"))
-class ALSASUAMANIFA_API UDEPRECATED_AlsasuaSaveGame : public USaveGame
+class ALSASUAKERNEL_API UDEPRECATED_AlsasuaSaveGame : public USaveGame
 {
 	GENERATED_BODY()
 

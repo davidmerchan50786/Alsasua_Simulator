@@ -1,24 +1,4 @@
-*.fbx
-*.obj
-*.DAE
-*.gltf
-*.glb
-*.mtl
-*.tscn
-*.txt
-*.png
-*.jpg
-*.tga
-*.psd
-*.blend
-*.usd
-*.usda
-*.usdc
-*.usdz
-*.ma
-*.mp3
-*.wav
-*.ogg
-*.rar
-*.7z
-*.zip
+# Raw extracted 3D assets — imported via UE5, not tracked as raw files
+# Formats: 3D models, textures, audio, metadata, configs
+*.*
+!/.gitignore

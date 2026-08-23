@@ -1,7 +1,7 @@
 #include "AlsasuaGameInstance.h"
 #include "AlsasuaCore.h"
 #include "Kismet/GameplayStatics.h"
-#include "Core/AlsasuaSaveGame.h"
+#include "AlsasuaSaveGame.h"
 #include "AlsasuaCharacter.h"
 #include "GAS/AlsasuaAbilitySystemComponent.h"
 #include "AlsasuaAttributeSet.h"
