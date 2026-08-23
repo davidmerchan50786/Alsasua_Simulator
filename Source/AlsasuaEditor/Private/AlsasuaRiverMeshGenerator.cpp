@@ -101,9 +101,12 @@ bool UAlsasuaRiverMeshGenerator::GenerarLechoRio()
 		Actor->Tags.Add(TEXT("Rio"));
 
 		// ProceduralMesh for riverbed (flat ribbon at river bottom)
+		// Se convierte en raíz del actor, así que no hay a qué adjuntarlo: el
+		// SetupAttachment(nullptr) de aquí era ruido — y encima llamado tras
+		// RegisterComponent(), que dispara el ensure "!bRegistered" de
+		// SceneComponent (SetupAttachment sólo vale antes de registrar).
 		UProceduralMeshComponent* PMC = NewObject<UProceduralMeshComponent>(Actor);
 		PMC->RegisterComponent();
-		PMC->SetupAttachment(Actor->GetRootComponent());
 		PMC->SetMobility(EComponentMobility::Static);
 		PMC->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		Actor->SetRootComponent(PMC);
@@ -161,9 +164,11 @@ bool UAlsasuaRiverMeshGenerator::GenerarLechoRio()
 		}
 
 		// Water surface ribbon at Z=0 (sea level for river = water surface)
+		// Éste sí cuelga de un padre real (el PMC del lecho, ya raíz del actor),
+		// así que SetupAttachment va antes de registrar, que es cuando vale.
 		UProceduralMeshComponent* WaterPMC = NewObject<UProceduralMeshComponent>(Actor);
-		WaterPMC->RegisterComponent();
 		WaterPMC->SetupAttachment(Actor->GetRootComponent());
+		WaterPMC->RegisterComponent();
 		WaterPMC->SetMobility(EComponentMobility::Static);
 		WaterPMC->SetCastShadow(false);
 
@@ -264,9 +269,11 @@ bool UAlsasuaRiverMeshGenerator::GenerarBancasRio()
 #endif
 		Actor->Tags.Add(TEXT("RioBank"));
 
+		// Se convierte en raíz del actor, igual que el lecho de más arriba: sin
+		// SetupAttachment(nullptr) tras registrar, que era lo que disparaba el
+		// ensure de SceneComponent.
 		UProceduralMeshComponent* PMC = NewObject<UProceduralMeshComponent>(Actor);
 		PMC->RegisterComponent();
-		PMC->SetupAttachment(Actor->GetRootComponent());
 		PMC->SetMobility(EComponentMobility::Static);
 		Actor->SetRootComponent(PMC);
 

@@ -327,9 +327,11 @@ bool UAlsasuaBridgeGenerator::GenerarPuentesMejorados()
 #endif
 		Actor->Tags.Add(TEXT("Puente"));
 
+		// Se convierte en raíz del actor: sin SetupAttachment(nullptr) tras
+		// registrar, que dispara el ensure "!bRegistered" de SceneComponent
+		// (mismo patrón que AlsasuaRiverMeshGenerator).
 		UProceduralMeshComponent* PMC = NewObject<UProceduralMeshComponent>(Actor);
 		PMC->RegisterComponent();
-		PMC->SetupAttachment(Actor->GetRootComponent());
 		PMC->SetMobility(EComponentMobility::Static);
 		PMC->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		Actor->SetRootComponent(PMC);
