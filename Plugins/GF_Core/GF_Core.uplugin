@@ -32,5 +32,13 @@
       "Enabled": true,
       "Name": "GF_Optimization"
     }
-  ]
+  ],
+  "Dependencies": [
+    "GF_AI",
+    "GF_Audio",
+    "GF_NPCs",
+    "GF_Optimization"
+  ],
+  "BuiltInInitialFeatureState": "Installed",
+  "ExplicitlyLoaded": true
 }

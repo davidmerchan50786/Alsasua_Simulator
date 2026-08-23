@@ -21,12 +21,18 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "Contratos/AlsasuaContratosUI.h"
 #include "AlsasuaCollisionSystem.generated.h"
 
 UCLASS()
-class GF_WORLD_API UAlsasuaCollisionSystem : public UGameInstanceSubsystem
+class GF_WORLD_API UAlsasuaCollisionSystem : public UGameInstanceSubsystem, public IAlsasuaPilarArranque
 {
     GENERATED_BODY()
+	public:
+	virtual int32 EjecutarArranque() override { return RepasarColisionesDeProps(); }
+	virtual FString EtiquetaArranque() const override { return TEXT("props sin colision repasados"); }
+	virtual int32 OrdenArranque() const override { return 310; }
+
 public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 

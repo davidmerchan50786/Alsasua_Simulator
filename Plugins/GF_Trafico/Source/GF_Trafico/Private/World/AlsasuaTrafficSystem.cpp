@@ -331,3 +331,19 @@ int32 UAlsasuaTrafficSystem::ColocarSenalesTrafico()
     UE_LOG(LogTemp, Log, TEXT("TrafficSystem: %d señales de tráfico en 2 capas instanciadas"), Placed);
     return Placed;
 }
+
+//~ IAlsasuaPilarArranque (fases 41b del antiguo DirectorArranque)
+int32 UAlsasuaTrafficSystem::EjecutarArranque()
+{
+	return ColocarCocheAparcado() + ColocarSenalesTrafico();
+}
+
+FString UAlsasuaTrafficSystem::EtiquetaArranque() const
+{
+	return TEXT("coches y senales estaticos");
+}
+
+int32 UAlsasuaTrafficSystem::OrdenArranque() const
+{
+	return 415;
+}

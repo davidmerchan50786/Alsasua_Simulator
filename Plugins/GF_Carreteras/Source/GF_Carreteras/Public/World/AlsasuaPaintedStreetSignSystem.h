@@ -12,6 +12,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "Contratos/AlsasuaContratosUI.h"
 #include "AlsasuaPaintedStreetSignSystem.generated.h"
 
 USTRUCT(BlueprintType)
@@ -29,9 +30,14 @@ struct FPaintedSignEntry
 };
 
 UCLASS()
-class GF_CARRETERAS_API UAlsasuaPaintedStreetSignSystem : public UGameInstanceSubsystem
+class GF_CARRETERAS_API UAlsasuaPaintedStreetSignSystem : public UGameInstanceSubsystem, public IAlsasuaPilarArranque
 {
     GENERATED_BODY()
+	public:
+	virtual int32 EjecutarArranque() override { return ColocarRotulosPintados(); }
+	virtual FString EtiquetaArranque() const override { return TEXT("rotulos pintados bilingues"); }
+	virtual int32 OrdenArranque() const override { return 510; }
+
 public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 

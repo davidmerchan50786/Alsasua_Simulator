@@ -244,3 +244,39 @@ int32 UAlsasuaFoliagePainter::PintarFoliageEnZonasVerdes()
         TotalPlaced, Poligonos.Num(), Capas.Num(), Capas.Num());
     return TotalPlaced;
 }
+
+//~ IAlsasuaPilarArranque (fase 12 del antiguo DirectorArranque)
+int32 UAlsasuaFoliagePainter::EjecutarArranque()
+{
+	const int32 Num = PintarFoliageEnZonasVerdes();
+	if (Num > 0)
+	{
+		return Num;
+	}
+	// Pack Naturaleza sin mallas: respaldo con los quads del tronco para que
+	// las zonas verdes no queden peladas. Nunca pintor Y respaldo a la vez.
+	UWorld* W = GetGameInstance() ? GetGameInstance()->GetWorld() : nullptr;
+	if (!W)
+	{
+		return -1;
+	}
+	int32 Respuesto = 0;
+	W->ForEachSubsystem<UWorldSubsystem>([&Respuesto](UWorldSubsystem* Sub)
+	{
+		if (IAlsasuaRespaldoVegetacion* Respaldo = Cast<IAlsasuaRespaldoVegetacion>(Sub))
+		{
+			Respuesto = Respaldo->SembrarVegetacion();
+		}
+	});
+	return Respuesto;
+}
+
+FString UAlsasuaFoliagePainter::EtiquetaArranque() const
+{
+	return TEXT("foliage en zonas verdes");
+}
+
+int32 UAlsasuaFoliagePainter::OrdenArranque() const
+{
+	return 120;
+}

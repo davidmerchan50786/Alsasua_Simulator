@@ -1,4 +1,4 @@
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
 
-IMPLEMENT_MODULE(FDefaultModuleImpl, AlsasuaSimulator)
+IMPLEMENT_PRIMARY_GAME_MODULE(FDefaultGameModuleImpl, AlsasuaSimulator, "AlsasuaSimulator");

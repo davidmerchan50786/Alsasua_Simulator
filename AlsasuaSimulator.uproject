@@ -1,107 +1,191 @@
 {
-	"FileVersion": 3,
-	"EngineAssociation": "5.8",
-	"Category": "",
-	"Description": "Alsasua Simulator - migracion de Altsasu Manifa a Unreal Engine 5.8.",
-	"Modules": [
-		{
-			"Name": "AlsasuaKernel",
-			"Type": "Runtime",
-			"LoadingPhase": "PreDefault"
-		},
-		{
-			"Name": "AlsasuaContracts",
-			"Type": "Runtime",
-			"LoadingPhase": "PreDefault"
-		},
-		{
-			"Name": "AlsasuaCore",
-			"Type": "Runtime",
-			"LoadingPhase": "Default"
-		},
-		{
-			"Name": "AlsasuaWorld",
-			"Type": "Runtime",
-			"LoadingPhase": "Default"
-		},
-		{
-			"Name": "AlsasuaEntities",
-			"Type": "Runtime",
-			"LoadingPhase": "Default"
-		},
-		{
-			"Name": "AlsasuaGameplay",
-			"Type": "Runtime",
-			"LoadingPhase": "Default"
-		},
-		{
-			"Name": "AlsasuaUI",
-			"Type": "Runtime",
-			"LoadingPhase": "Default"
-		},
-		{
-			"Name": "AlsasuaEditor",
-			"Type": "Editor",
-			"LoadingPhase": "PostEngineInit"
-		},
-		{
-			"Name": "AlsasuaSimulator",
-			"Type": "Runtime",
-			"LoadingPhase": "Default"
-		}
-	],
-	"Plugins": [
-		{
-			"Name": "EnhancedInput",
-			"Enabled": true
-		},
-		{
-			"Name": "Water",
-			"Enabled": true
-		},
-		{
-			"Name": "Niagara",
-			"Enabled": true
-		},
-		{
-			"Name": "ModelingToolsEditorMode",
-			"Enabled": true
-		},
-		{
-			"Name": "GameplayAbilities",
-			"Enabled": true
-		},
-		{
-			"Name": "MotionTrajectory",
-			"Enabled": true
-		},
-		{
-			"Name": "Fab",
-			"Enabled": true
-		},
-		{
-			"Name": "InterchangeEditor",
-			"Enabled": true
-		},
-		{
-			"Name": "PythonScriptPlugin",
-			"Enabled": true
-		},
-		{
-			"Name": "EditorScriptingUtilities",
-			"Enabled": true
-		},
-		{
-			"Name": "LiveCoding",
-			"Enabled": false
-		},
-		{
-			"Name": "ModularGameplay",
-			"Enabled": true
-		},
-		{
-			"Name": "GameFeatures",
-			"Enabled": true
-		}
-	]
+  "FileVersion": 3,
+  "EngineAssociation": "5.8",
+  "Category": "",
+  "Description": "Alsasua Simulator - migracion de Altsasu Manifa a Unreal Engine 5.8.",
+  "Modules": [
+    {
+      "Name": "AlsasuaKernel",
+      "Type": "Runtime",
+      "LoadingPhase": "PreDefault"
+    },
+    {
+      "Name": "AlsasuaContracts",
+      "Type": "Runtime",
+      "LoadingPhase": "PreDefault"
+    },
+    {
+      "Name": "AlsasuaCore",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    },
+    {
+      "Name": "AlsasuaWorld",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    },
+    {
+      "Name": "AlsasuaEntities",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    },
+    {
+      "Name": "AlsasuaGameplay",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    },
+    {
+      "Name": "AlsasuaUI",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    },
+    {
+      "Name": "AlsasuaEditor",
+      "Type": "Editor",
+      "LoadingPhase": "PostEngineInit"
+    },
+    {
+      "Name": "AlsasuaSimulator",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    }
+  ],
+  "Plugins": [
+    {
+      "Name": "EnhancedInput",
+      "Enabled": true
+    },
+    {
+      "Name": "Water",
+      "Enabled": true
+    },
+    {
+      "Name": "Niagara",
+      "Enabled": true
+    },
+    {
+      "Name": "ModelingToolsEditorMode",
+      "Enabled": true
+    },
+    {
+      "Name": "GameplayAbilities",
+      "Enabled": true
+    },
+    {
+      "Name": "MotionTrajectory",
+      "Enabled": true
+    },
+    {
+      "Name": "Fab",
+      "Enabled": true
+    },
+    {
+      "Name": "InterchangeEditor",
+      "Enabled": true
+    },
+    {
+      "Name": "PythonScriptPlugin",
+      "Enabled": true
+    },
+    {
+      "Name": "EditorScriptingUtilities",
+      "Enabled": true
+    },
+    {
+      "Name": "LiveCoding",
+      "Enabled": false
+    },
+    {
+      "Name": "ModularGameplay",
+      "Enabled": true
+    },
+    {
+      "Name": "GameFeatures",
+      "Enabled": true
+    },
+    {
+      "Name": "GF_AI",
+      "Enabled": false
+    },
+    {
+      "Name": "GF_Abilities",
+      "Enabled": false
+    },
+    {
+      "Name": "GF_Audio",
+      "Enabled": false
+    },
+    {
+      "Name": "GF_Carreteras",
+      "Enabled": false
+    },
+    {
+      "Name": "GF_Clima",
+      "Enabled": false
+    },
+    {
+      "Name": "GF_Core",
+      "Enabled": false
+    },
+    {
+      "Name": "GF_Debug",
+      "Enabled": false
+    },
+    {
+      "Name": "GF_Dialogos",
+      "Enabled": false
+    },
+    {
+      "Name": "GF_Edificios",
+      "Enabled": false
+    },
+    {
+      "Name": "GF_Ferrocarril",
+      "Enabled": false
+    },
+    {
+      "Name": "GF_Misiones",
+      "Enabled": false
+    },
+    {
+      "Name": "GF_NPCs",
+      "Enabled": false
+    },
+    {
+      "Name": "GF_Optimization",
+      "Enabled": false
+    },
+    {
+      "Name": "GF_Politica",
+      "Enabled": false
+    },
+    {
+      "Name": "GF_Social",
+      "Enabled": false
+    },
+    {
+      "Name": "GF_Systems",
+      "Enabled": false
+    },
+    {
+      "Name": "GF_Trafico",
+      "Enabled": false
+    },
+    {
+      "Name": "GF_UI",
+      "Enabled": false
+    },
+    {
+      "Name": "GF_Vegetacion",
+      "Enabled": false
+    },
+    {
+      "Name": "GF_Vehiculos",
+      "Enabled": false
+    },
+    {
+      "Name": "GF_World",
+      "Enabled": false
+    }
+  ]
 }

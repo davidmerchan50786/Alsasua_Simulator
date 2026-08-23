@@ -25,6 +25,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "Contratos/AlsasuaContratosUI.h"
 #include "AlsasuaTerrainLayersSystem.generated.h"
 
 USTRUCT(BlueprintType)
@@ -40,9 +41,14 @@ struct FBarrioTerrainLayer
 };
 
 UCLASS()
-class GF_CARRETERAS_API UAlsasuaTerrainLayersSystem : public UGameInstanceSubsystem
+class GF_CARRETERAS_API UAlsasuaTerrainLayersSystem : public UGameInstanceSubsystem, public IAlsasuaPilarArranque
 {
     GENERATED_BODY()
+	public:
+	virtual int32 EjecutarArranque() override { return PublicarFirmePorBarrio(); }
+	virtual FString EtiquetaArranque() const override { return TEXT("firme publicado por barrio"); }
+	virtual int32 OrdenArranque() const override { return 340; }
+
 public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 

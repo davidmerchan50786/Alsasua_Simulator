@@ -16,5 +16,7 @@
       "Type": "Runtime",
       "LoadingPhase": "PreDefault"
     }
-  ]
+  ],
+  "BuiltInInitialFeatureState": "Installed",
+  "ExplicitlyLoaded": true
 }

@@ -8,5 +8,13 @@
   "CreatedBy": "Ponytail",
   "CanContainContent": true,
   "Installed": false,
-  "Modules": [{ "Name": "GF_Politica", "Type": "Runtime", "LoadingPhase": "PreDefault" }]
+  "Modules": [
+    {
+      "Name": "GF_Politica",
+      "Type": "Runtime",
+      "LoadingPhase": "PreDefault"
+    }
+  ],
+  "BuiltInInitialFeatureState": "Installed",
+  "ExplicitlyLoaded": true
 }

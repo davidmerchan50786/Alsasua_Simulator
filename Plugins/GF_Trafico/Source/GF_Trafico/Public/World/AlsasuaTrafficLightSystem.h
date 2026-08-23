@@ -15,6 +15,7 @@
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "Tickable.h"
+#include "Contratos/AlsasuaContratosUI.h"
 #include "AlsasuaTrafficLightSystem.generated.h"
 
 class APointLight;
@@ -47,9 +48,10 @@ struct FTrafficLight
 };
 
 UCLASS()
-class GF_TRAFICO_API UAlsasuaTrafficLightSystem : public UGameInstanceSubsystem, public FTickableGameObject
+class GF_TRAFICO_API UAlsasuaTrafficLightSystem : public UGameInstanceSubsystem, public FTickableGameObject, public IAlsasuaPilarArranque
 {
 	GENERATED_BODY()
+
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;

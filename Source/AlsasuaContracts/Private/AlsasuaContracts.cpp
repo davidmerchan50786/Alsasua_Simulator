@@ -1,4 +1,4 @@
-#include "AlsasuaContracts.h"
+#include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
 
-IMPLEMENT_MODULE(FAlsasuaContractsModule, AlsasuaContracts)
+IMPLEMENT_MODULE(FDefaultGameModuleImpl, AlsasuaContracts)

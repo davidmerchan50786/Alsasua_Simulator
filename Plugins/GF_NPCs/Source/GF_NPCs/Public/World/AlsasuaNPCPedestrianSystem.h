@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "Contratos/AlsasuaContratosUI.h"
 #include "AlsasuaNPCPedestrianSystem.generated.h"
 
 class ASkeletalMeshActor;
@@ -39,9 +40,10 @@ struct FNPCPedestrian
 };
 
 UCLASS()
-class GF_NPCS_API UAlsasuaNPCPedestrianSystem : public UGameInstanceSubsystem
+class GF_NPCS_API UAlsasuaNPCPedestrianSystem : public UGameInstanceSubsystem, public IAlsasuaPilarArranque, public IAlsasuaPilarTiquear
 {
     GENERATED_BODY()
+
 public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 

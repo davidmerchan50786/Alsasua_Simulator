@@ -1,10 +1,8 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
-#include "Tickable.h"
+#include "Contratos/AlsasuaContratosUI.h"
 #include "AlsasuaDynamicTrafficSystem.generated.h"
-
-class UAlsasuaRedViaria;
 
 UENUM(BlueprintType)
 enum class ETipoVehiculo : uint8
@@ -25,6 +23,7 @@ struct FVehiclePath
      *  volvía de un salto al primero, porque no había forma de saber qué calle
      *  seguía. Con el grafo hay cruces y se puede girar. */
     int32 TramoActual = -1;
+    float Avance = 0.f;
     /** Desplazamiento al carril, perpendicular a la marcha. */
     float CarrilCm = 0.f;
     /** Avanza en cada cruce, para que la elección de giro no sea la misma
@@ -41,9 +40,10 @@ struct FVehiclePath
 };
 
 UCLASS()
-class GF_TRAFICO_API UAlsasuaDynamicTrafficSystem : public UGameInstanceSubsystem, public FTickableGameObject
+class GF_TRAFICO_API UAlsasuaDynamicTrafficSystem : public UGameInstanceSubsystem, public IAlsasuaPilarArranque, public IAlsasuaPilarTiquear
 {
     GENERATED_BODY()
+
 public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
@@ -59,26 +59,14 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Traffic")
     float FrecuenciaSpawn = 10.0f;
 
-    /** Tramos máximos por ruta al elegir destino aleatorio. */
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Traffic")
-    int32 MaxRouteDistance = 50;
-
     const TArray<FVehiclePath>& GetVehiculos() const { return Vehiculos; }
-
-    /** La red viaria, construyéndola si hace falta. Idempotente. */
-    UFUNCTION(BlueprintCallable, Category = "Alsasua|Traffic")
-    UAlsasuaRedViaria* ObtenerRed();
-
-    virtual void Tick(float DeltaTime) override;
-    virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(UAlsasuaDynamicTrafficSystem, STATGROUP_Tickables); }
-    virtual bool IsTickable() const override { return !IsTemplate() && bInicializado; }
 
 private:
     TArray<FVehiclePath> Vehiculos;
     /** El grafo. Lo construye UAlsasuaRedViaria y lo comparte con quien lo pida:
      *  este sistema y el de peatones leían roads_unity.json cada uno por su
      *  cuenta y se quedaban polilíneas sueltas. */
-    UPROPERTY() TObjectPtr<UAlsasuaRedViaria> Red = nullptr;
+    UPROPERTY() TObjectPtr<class UAlsasuaRedViaria> Red = nullptr;
     float TiempoDesdeUltimoSpawn = 0.0f;
     bool bInicializado = false;
 

@@ -6,6 +6,7 @@ public class GF_AI : ModuleRules
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         CppStandard = CppStandardVersion.Cpp20;
         bEnableExceptions = true;
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "AlsasuaCore", "GF_NPCs", "NavigationSystem", "AIModule", "Niagara", "GF_Social" });
+        PublicDependencyModuleNames.AddRange(new string[] {
+			"AlsasuaKernel", "Core", "CoreUObject", "Engine", "AlsasuaCore", "GF_NPCs", "NavigationSystem", "AIModule", "Niagara", "GF_Social" });
     }
 }

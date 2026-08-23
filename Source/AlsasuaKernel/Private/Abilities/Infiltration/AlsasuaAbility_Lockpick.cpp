@@ -1,5 +1,5 @@
 #include "Abilities/Infiltration/AlsasuaAbility_Lockpick.h"
-#include "Systemics/Criminal/HideoutActor.h"
+#include "Interaction/AlsasuaLockpickTargetInterface.h"
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/OverlapResult.h"
@@ -35,8 +35,9 @@ void UAlsasuaAbility_Lockpick::ActivateAbility(const FGameplayAbilitySpecHandle 
         return;
     }
 
-    // SphereOverlapActors en vez de GetAllActorsOfClass.
-    AHideoutActor* BestHideout = nullptr;
+    // SphereOverlapActors en vez de GetAllActorsOfClass. El objetivo es
+    // cualquier actor que implemente el contrato de cerradura (GF_Systems).
+    AActor* BestObjetivo = nullptr;
     float BestDist = 250.f;
 
     TArray<FOverlapResult> Overlaps;
@@ -52,29 +53,31 @@ void UAlsasuaAbility_Lockpick::ActivateAbility(const FGameplayAbilitySpecHandle 
 
     for (const FOverlapResult& Overlap : Overlaps)
     {
-        AHideoutActor* H = Cast<AHideoutActor>(Overlap.GetActor());
-        if (!H || !H->bIsLocked)
+        AActor* Candidato = Overlap.GetActor();
+        if (!Candidato ||
+            !Candidato->GetClass()->ImplementsInterface(UAlsasuaLockpickTarget::StaticClass()) ||
+            !IAlsasuaLockpickTarget::Execute_EstaCerrado(Candidato))
         {
             continue;
         }
 
-        const float Dist = FVector::Dist(Owner->GetActorLocation(), H->GetActorLocation());
+        const float Dist = FVector::Dist(Owner->GetActorLocation(), Candidato->GetActorLocation());
         if (Dist < BestDist)
         {
             BestDist = Dist;
-            BestHideout = H;
+            BestObjetivo = Candidato;
         }
     }
 
-    if (BestHideout)
+    if (BestObjetivo)
     {
         FTimerHandle UnlockTimer;
         FTimerDelegate UnlockDel;
-        UnlockDel.BindLambda([WeakHideout = TWeakObjectPtr<AHideoutActor>(BestHideout)]()
+        UnlockDel.BindWeakLambda(BestObjetivo, [Objetivo = TWeakObjectPtr<AActor>(BestObjetivo)]()
         {
-            if (WeakHideout.IsValid())
+            if (Objetivo.IsValid())
             {
-                WeakHideout->OpenZulo();
+                IAlsasuaLockpickTarget::Execute_AlForzado(Objetivo.Get());
             }
         });
         W->GetTimerManager().SetTimer(UnlockTimer, UnlockDel, BaseUnlockTime, false);

@@ -12,6 +12,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "Contratos/AlsasuaContratosUI.h"
 #include "AlsasuaTreePlacer.generated.h"
 
 USTRUCT(BlueprintType)
@@ -38,9 +39,10 @@ struct FTreePlacement
 };
 
 UCLASS()
-class GF_WORLD_API UAlsasuaTreePlacer : public UGameInstanceSubsystem
+class GF_WORLD_API UAlsasuaTreePlacer : public UGameInstanceSubsystem, public IAlsasuaPilarArranque
 {
     GENERATED_BODY()
+
 public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
     virtual void Deinitialize() override;

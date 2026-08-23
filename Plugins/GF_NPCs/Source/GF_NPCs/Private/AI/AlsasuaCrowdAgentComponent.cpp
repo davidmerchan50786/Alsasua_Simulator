@@ -59,3 +59,9 @@ void UAlsasuaCrowdAgentComponent::TickComponent(float DeltaTime, ELevelTick Tick
         }
     }
 }
+
+//~ IAlsasuaCrowdAgentInterface (contrato del Kernel)
+void UAlsasuaCrowdAgentComponent::AdjustMorale_Implementation(float Delta)
+{
+    Morale += Delta;
+}

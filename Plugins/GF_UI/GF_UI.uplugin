@@ -20,5 +20,10 @@
       "Enabled": true,
       "Name": "GF_Dialogos"
     }
-  ]
+  ],
+  "Dependencies": [
+    "GF_Dialogos"
+  ],
+  "BuiltInInitialFeatureState": "Installed",
+  "ExplicitlyLoaded": true
 }

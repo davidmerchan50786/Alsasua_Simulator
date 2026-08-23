@@ -14,6 +14,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "Contratos/AlsasuaContratosUI.h"
 #include "AlsasuaAwningShutterSystem.generated.h"
 
 USTRUCT(BlueprintType)
@@ -42,9 +43,14 @@ struct FShutterEntry
 };
 
 UCLASS()
-class GF_EDIFICIOS_API UAlsasuaAwningShutterSystem : public UGameInstanceSubsystem
+class GF_EDIFICIOS_API UAlsasuaAwningShutterSystem : public UGameInstanceSubsystem, public IAlsasuaPilarArranque
 {
     GENERATED_BODY()
+	public:
+	virtual int32 EjecutarArranque() override { return ColocarToldosYPersianas(); }
+	virtual FString EtiquetaArranque() const override { return TEXT("toldos + persianas"); }
+	virtual int32 OrdenArranque() const override { return 470; }
+
 public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 

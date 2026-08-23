@@ -3,11 +3,15 @@
 #include "GameFramework/Actor.h"
 #include "DirectorArranque.generated.h"
 
-class UAlsasuaNPCPedestrianSystem;
-class UAlsasuaDynamicTrafficSystem;
-class UAlsasuaWeatherSystem;
-class UAlsasuaAmbientAudioSystem;
+class USubsystem;
 
+/**
+ * Orquestador del arranque del mundo TRONCO (terreno, calles, edificios,
+ * plaza, puentes, POIs...). Las fases de los PILARES GF_* ya no se conocen
+ * aqui: cada plugin activo implementa IAlsasuaPilarArranque (Kernel) y el
+ * director solo las ordena y las registra. Un combo sin un pilar salta su
+ * fase sin tocar las demas.
+ */
 UCLASS()
 class ALSASUAWORLD_API ADirectorArranque : public AActor
 {
@@ -37,8 +41,8 @@ public:
 
 private:
     bool bConstruccionCompleta = false;
-    UPROPERTY() UAlsasuaNPCPedestrianSystem* NPCSystemRef = nullptr;
-    UPROPERTY() UAlsasuaDynamicTrafficSystem* TrafficSystemRef = nullptr;
-    UPROPERTY() UAlsasuaWeatherSystem* WeatherSystemRef = nullptr;
-    UPROPERTY() UAlsasuaAmbientAudioSystem* AudioSystemRef = nullptr;
+
+    /** Pilares que pidieron tiqueo (peatones, trafico, clima->audio...). */
+    UPROPERTY()
+    TArray<TObjectPtr<USubsystem>> PilaresTiqueables;
 };

@@ -20,5 +20,10 @@
       "Enabled": true,
       "Name": "GF_NPCs"
     }
-  ]
+  ],
+  "Dependencies": [
+    "GF_NPCs"
+  ],
+  "BuiltInInitialFeatureState": "Installed",
+  "ExplicitlyLoaded": true
 }

@@ -20,6 +20,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "Contratos/AlsasuaContratosUI.h"
 #include "AlsasuaOverheadCableSystem.generated.h"
 
 USTRUCT(BlueprintType)
@@ -34,9 +35,14 @@ struct FOverheadCable
 };
 
 UCLASS()
-class GF_CARRETERAS_API UAlsasuaOverheadCableSystem : public UGameInstanceSubsystem
+class GF_CARRETERAS_API UAlsasuaOverheadCableSystem : public UGameInstanceSubsystem, public IAlsasuaPilarArranque
 {
     GENERATED_BODY()
+	public:
+	virtual int32 EjecutarArranque() override { return ColocarCables(); }
+	virtual FString EtiquetaArranque() const override { return TEXT("cables aereos"); }
+	virtual int32 OrdenArranque() const override { return 500; }
+
 public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
