@@ -245,8 +245,22 @@ int32 UCargadorArboles::Cargar()
 	const int32 MaxIter = 10000;
 	while (!PasoPresupuesto(1000.0) && ++IterGuard < MaxIter) {}
 	if (IterGuard >= MaxIter) UE_LOG(LogTemp, Warning, TEXT("[Arboles] Iteration guard reached (%d)"), MaxIter);
-	UE_LOG(LogTemp, Log, TEXT("[Arboles] %d árboles en %d especies (%d fuera del terreno)"),
+	// "sin cota" y no "fuera del terreno": AlturaSuelo() devuelve false tanto
+	// si el árbol cae fuera de los 7200 m como si no hay a quién preguntarle la
+	// altura, y decir lo segundo con las palabras de lo primero mandó a buscar
+	// el fallo al sitio equivocado. Si el número se acerca al total, no es que
+	// el dataset esté mal: es que no hay heightmap.
+	UE_LOG(LogTemp, Log, TEXT("[Arboles] %d árboles en %d especies (%d descartados sin cota de suelo)"),
 		Sembrados, PorEspecie.Num(), Descartados);
+
+	if (Descartados > Sembrados)
+	{
+		UE_LOG(LogTemp, Warning,
+			TEXT("[Arboles] Se descartan más de los que se plantan (%d de %d). "
+			     "Lo normal son 280 de 2783; si es mucho más, mira si el muestreador "
+			     "de altura tiene terreno registrado."),
+			Descartados, Descartados + Sembrados);
+	}
 
 	return Sembrados;
 }
