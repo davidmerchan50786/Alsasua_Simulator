@@ -41,8 +41,16 @@ def import_file(filepath, dest_folder):
         s.set_editor_property("import_mesh", True)
         s.set_editor_property("import_textures", True)
         s.set_editor_property("import_materials", True)
-        s.set_editor_property("convert_scene", True)
         s.set_editor_property("import_as_skeletal", False)
+        # convert_scene se movio de sitio entre versiones de UE (5.8 no lo
+        # tiene donde estaba en 5.4): sin este try, la excepcion abortaba la
+        # importacion entera y las 106 mallas de Naturaleza se quedaban sin
+        # importar. No es esencial - controla el ajuste de ejes en origen,
+        # y Fbx ya suele traerlo bien - asi que si no existe, se sigue sin el.
+        try:
+            s.set_editor_property("convert_scene", True)
+        except Exception:
+            pass
         task.set_editor_property("options", s)
     # glTF/GLB van por Interchange y no llevan options: unreal.GltfImportUI no
     # existe (era un AttributeError en cada .gltf, y el except de RunAll lo
