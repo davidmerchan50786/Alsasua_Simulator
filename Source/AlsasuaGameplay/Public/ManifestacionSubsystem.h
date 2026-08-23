@@ -22,19 +22,20 @@ class ALSASUAGAMEPLAY_API UManifestacionSubsystem : public UGameInstanceSubsyste
 	GENERATED_BODY()
 
 public:
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+
 	UPROPERTY(BlueprintAssignable) FOnManifestacionEstado OnEstado;
 
 	UPROPERTY(EditAnywhere, Category="Manifestacion") int32 TamMin = 10;
 	UPROPERTY(EditAnywhere, Category="Manifestacion") int32 TamMax = 60;
-	UPROPERTY(EditAnywhere, Category="Manifestacion") float RadioConcentracion = 1200.f;  // 12 m
+	UPROPERTY(EditAnywhere, Category="Manifestacion") float RadioConcentracion = 1200.f;
 	UPROPERTY(EditAnywhere, Category="Manifestacion") float TasaApoyoPorSeg = 0.4f;
 	UPROPERTY(EditAnywhere, Category="Manifestacion") float DuracionConcentracion = 20.f;
-	UPROPERTY(EditAnywhere, Category="Manifestacion") float VelocidadMarcha = 250.f;       // cm/s
+	UPROPERTY(EditAnywhere, Category="Manifestacion") float VelocidadMarcha = 250.f;
 	UPROPERTY(EditAnywhere, Category="Manifestacion") float RadioPresionPolicia = 1800.f;
 	UPROPERTY(EditAnywhere, Category="Manifestacion") int32 PoliciasParaCarga = 3;
 	UPROPERTY(EditAnywhere, Category="Manifestacion") float DuracionDispersion = 12.f;
 
-	// Convoca una manifestación en un punto, con ruta de marcha opcional.
 	UFUNCTION(BlueprintCallable, Category="Manifestacion")
 	bool Convocar(FVector Punto, const TArray<FVector>& RutaMarcha);
 
@@ -42,6 +43,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Manifestacion") bool Activa() const { return Estado != EEstadoManifestacion::Inactiva; }
 	UFUNCTION(BlueprintCallable, Category="Manifestacion") EEstadoManifestacion EstadoActual() const { return Estado; }
 	UFUNCTION(BlueprintCallable, Category="Manifestacion") int32 NumManifestantes() const { return Multitud.Num(); }
+	UFUNCTION(BlueprintPure, Category="Manifestacion") FVector GetCentroActual() const { return PuntoActual; }
+	UFUNCTION(BlueprintPure, Category="Manifestacion") const TArray<FVector>& GetRuta() const { return Ruta; }
 
 	virtual void Tick(float DeltaTime) override;
 	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(UManifestacionSubsystem, STATGROUP_Tickables); }
@@ -62,4 +65,7 @@ private:
 	void DespawnTodos();
 	void AplicarApoyo(float Delta);
 	void SubirBusqueda(int32 N);
+
+	UFUNCTION()
+	void HandleConvocarDelegate(FVector Punto);
 };

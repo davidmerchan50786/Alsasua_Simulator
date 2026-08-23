@@ -1,4 +1,5 @@
 #pragma once
+
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "Tickable.h"
@@ -8,11 +9,13 @@ UCLASS()
 class GF_CORE_API UManifaManager : public UWorldSubsystem, public FTickableGameObject {
     GENERATED_BODY()
 public:
+    virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+
     UPROPERTY(BlueprintReadOnly, Category="AAA|Manifa")
     int32 ActiveProtesters = 0;
 
     UPROPERTY(BlueprintReadOnly, Category="AAA|Manifa")
-    float Momentum = 0.f; // 0..100 (Fuerza de la protesta)
+    float Momentum = 0.f;
 
     UFUNCTION(BlueprintCallable, Category="AAA|Manifa")
     void TriggerManifestation(FVector CenterLocation);
@@ -28,5 +31,9 @@ public:
     virtual bool IsAllowedToTick() const override { return true; }
     virtual void Tick(float DeltaTime) override;
     virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(ManifaManager, STATGROUP_Game); }
-    virtual bool IsTickable() const override { return !IsTemplate(); }   // no ticar el CDO (CLAUDE.md §9)
+    virtual bool IsTickable() const override { return !IsTemplate(); }
+
+private:
+    bool bMegaActiva = false;
+    FVector ManifestacionCentro = FVector::ZeroVector;
 };

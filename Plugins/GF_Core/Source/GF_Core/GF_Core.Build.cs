@@ -6,6 +6,6 @@ public class GF_Core : ModuleRules
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         CppStandard = CppStandardVersion.Cpp20;
         bEnableExceptions = true;
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "AlsasuaCore", "GF_AI", "GF_Audio", "GF_NPCs", "GF_Optimization" });
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "AlsasuaCore", "AlsasuaKernel", "GF_AI", "GF_Audio", "GF_NPCs", "GF_Optimization" });
     }
 }

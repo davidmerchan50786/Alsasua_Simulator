@@ -1,8 +1,9 @@
 // PoliciaController.cpp
 #include "PoliciaController.h"
-#include "AlsasuaTypes.h"          // IDamageable
+#include "AlsasuaTypes.h"
 #include "DiaNocheSubsystem.h"
 #include "DisfrazSubsystem.h"
+#include "ManifestacionSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Pawn.h"
 #include "Engine/World.h"
@@ -21,18 +22,53 @@ void AAlsasuaPoliciaController::Tick(float DeltaTime)
 	APawn* Yo = GetPawn();
 	if (!Yo) return;
 
+	// Prioridad: dispersar manifestación si hay 3+ policías cerca.
+	if (Estado != EEstado::Dispersion)
+	{
+		FVector CentroManifestacion;
+		if (DetectarManifestacion(CentroManifestacion))
+		{
+			Estado = EEstado::Dispersion;
+			TimerDispersion = 0.f;
+			MoveToLocation(CentroManifestacion, 200.f);
+			return;
+		}
+	}
+
+	if (Estado == EEstado::Dispersion)
+	{
+		TimerDispersion += DeltaTime;
+		if (GetMoveStatus() != EPathFollowingStatus::Moving)
+		{
+			if (UWorld* W = GetWorld())
+				if (UGameInstance* GI = W->GetGameInstance())
+					if (UManifestacionSubsystem* Mf = GI->GetSubsystem<UManifestacionSubsystem>())
+						if (Mf->Activa())
+						{
+							Mf->Disolver(true);
+							UE_LOG(LogTemp, Log, TEXT("[Policía] disolvió manifestación"));
+						}
+			Estado = EEstado::Patrulla;
+			StopMovement();
+		}
+		else if (TimerDispersion > 15.f)
+		{
+			Estado = EEstado::Patrulla;
+			StopMovement();
+		}
+		return;
+	}
+
 	APawn* Jugador = nullptr;
 	const bool bVe = VeJugador(Jugador);
 
 	if (bVe && Jugador)
 	{
-		UltimaPosVista = Jugador->GetActorLocation();   // recuerda dónde te vio
+		UltimaPosVista = Jugador->GetActorLocation();
 		const float Dist = FVector::Dist(Yo->GetActorLocation(), Jugador->GetActorLocation());
 		if (Dist > RadioAtaque)
 		{
 			Estado = EEstado::Persigue;
-			// Flanqueo: cada agente se acerca a un punto distinto alrededor del jugador
-			// (ángulo según su id), para rodearlo en vez de ir todos en fila.
 			const float Ang = (Yo->GetUniqueID() % 360) * (PI / 180.f);
 			const FVector Flanco = Jugador->GetActorLocation() + FVector(FMath::Cos(Ang), FMath::Sin(Ang), 0.f) * (RadioAtaque * 0.85f);
 			MoveToLocation(Flanco, 120.f);
@@ -41,7 +77,6 @@ void AAlsasuaPoliciaController::Tick(float DeltaTime)
 		{
 			Estado = EEstado::Ataca;
 			StopMovement();
-			// mirar al jugador
 			FVector Dir = Jugador->GetActorLocation() - Yo->GetActorLocation(); Dir.Z = 0.f;
 			if (!Dir.IsNearlyZero()) Yo->SetActorRotation(Dir.Rotation());
 			TimerAtaque -= DeltaTime;
@@ -50,7 +85,6 @@ void AAlsasuaPoliciaController::Tick(float DeltaTime)
 	}
 	else if (Estado == EEstado::Persigue || Estado == EEstado::Ataca)
 	{
-		// Acaba de perderte de vista: va a tu última posición conocida a buscar.
 		Estado = EEstado::Busca;
 		TimerBusqueda = TiempoBusqueda;
 		MoveToLocation(UltimaPosVista, 100.f);
@@ -58,13 +92,13 @@ void AAlsasuaPoliciaController::Tick(float DeltaTime)
 	else if (Estado == EEstado::Busca)
 	{
 		TimerBusqueda -= DeltaTime;
-		if (GetMoveStatus() != EPathFollowingStatus::Moving)   // llegó: husmea alrededor
+		if (GetMoveStatus() != EPathFollowingStatus::Moving)
 			if (UNavigationSystemV1* Nav = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld()))
 			{
 				FNavLocation L;
 				if (Nav->GetRandomReachablePointInRadius(UltimaPosVista, 800.f, L)) MoveToLocation(L.Location, 100.f);
 			}
-		if (TimerBusqueda <= 0.f) { Estado = EEstado::Patrulla; StopMovement(); }   // se rinde
+		if (TimerBusqueda <= 0.f) { Estado = EEstado::Patrulla; StopMovement(); }
 	}
 }
 
@@ -105,4 +139,20 @@ void AAlsasuaPoliciaController::Disparar(APawn* Jugador)
 	if (IDamageable* D = Cast<IDamageable>(Jugador))
 		if (!D->EstaMuerto())
 			D->RecibirDano(Dano, GetPawn() ? GetPawn()->GetActorLocation() : FVector::ZeroVector, ETipoDano::Bala);
+}
+
+bool AAlsasuaPoliciaController::DetectarManifestacion(FVector& OutCentro) const
+{
+	const UWorld* W = GetWorld();
+	if (!W) return false;
+	const UGameInstance* GI = W->GetGameInstance();
+	if (!GI) return false;
+	const UManifestacionSubsystem* Mf = GI->GetSubsystem<UManifestacionSubsystem>();
+	if (!Mf || !Mf->Activa()) return false;
+
+	const float Dist = FVector::Dist(GetPawn() ? GetPawn()->GetActorLocation() : FVector::ZeroVector, Mf->GetCentroActual());
+	if (Dist > 5000.f) return false;
+
+	OutCentro = Mf->GetCentroActual();
+	return true;
 }

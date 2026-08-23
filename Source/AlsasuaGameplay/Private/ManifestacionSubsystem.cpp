@@ -4,10 +4,19 @@
 #include "PoliciaActor.h"
 #include "ApoyoPopularSubsystem.h"
 #include "WantedSubsystem.h"
+#include "AI/AlsasuaCrowdSentiment.h"
 #include "NavigationSystem.h"
 #include "EngineUtils.h"
 #include "Engine/World.h"
 #include "Engine/GameInstance.h"
+
+void UManifestacionSubsystem::Initialize(FSubsystemCollectionBase& Collection)
+{
+	Super::Initialize(Collection);
+	if (UWorld* W = GetGameInstance() ? GetGameInstance()->GetWorld() : nullptr)
+		if (UAlsasuaCrowdSentiment* Sent = W->GetSubsystem<UAlsasuaCrowdSentiment>())
+			Sent->OnConvocarManifestacion.AddDynamic(this, &UManifestacionSubsystem::HandleConvocarDelegate);
+}
 
 int32 UManifestacionSubsystem::TamanoPorApoyo() const
 {
@@ -163,4 +172,10 @@ void UManifestacionSubsystem::Tick(float DeltaTime)
 
 	default: break;
 	}
+}
+
+void UManifestacionSubsystem::HandleConvocarDelegate(FVector Punto)
+{
+	if (!Activa())
+		Convocar(Punto, TArray<FVector>());
 }

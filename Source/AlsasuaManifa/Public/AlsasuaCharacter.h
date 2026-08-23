@@ -103,6 +103,8 @@ protected:
 	void AgacharseToggle();
 	void SaltarOTrepar();
 	bool IntentarTrepar();
+	void EntradaRally(const FInputActionValue& V);
+	void EntradaShout(const FInputActionValue& V);
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Input")
 	UInputMappingContext* ContextoMapeo = nullptr;
@@ -118,6 +120,10 @@ protected:
 	UInputAction* IA_Agacharse = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Input")
 	UInputAction* IA_Apuntar = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Input")
+	UInputAction* IA_Rally = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Input")
+	UInputAction* IA_Shout = nullptr;
 
 	// ── Fallback clásico ───────────────────────────────────────────────────
 	void MoveForward(float Value);

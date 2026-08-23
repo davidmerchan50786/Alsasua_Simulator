@@ -18,6 +18,9 @@
 #include "AbilitySystemGlobals.h"
 #include "GameplayEffectTypes.h"
 #include "HAL/IConsoleManager.h"
+#include "AI/AlsasuaCrowdSentiment.h"
+#include "Kismet/GameplayStatics.h"
+#include "Engine/GameInstance.h"
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Ajustes de ratón del menú de opciones.
@@ -152,6 +155,8 @@ void AAlsasuaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 			EIC->BindAction(IA_Apuntar, ETriggerEvent::Started,   this, &AAlsasuaCharacter::ApuntarInicio);
 			EIC->BindAction(IA_Apuntar, ETriggerEvent::Completed, this, &AAlsasuaCharacter::ApuntarFin);
 		}
+		if (IA_Rally)  EIC->BindAction(IA_Rally, ETriggerEvent::Started, this, &AAlsasuaCharacter::EntradaRally);
+		if (IA_Shout)  EIC->BindAction(IA_Shout, ETriggerEvent::Started, this, &AAlsasuaCharacter::EntradaShout);
 	}
 
 	// Legacy fallback: only bind if Enhanced Input actions are not set.
@@ -406,6 +411,14 @@ void AAlsasuaCharacter::AsegurarInputRuntime()
 	IMC->MapKey(IA_Apuntar, EKeys::RightMouseButton);
 	IMC->MapKey(IA_Apuntar, EKeys::Gamepad_LeftTrigger);
 
+	IA_Rally = NuevaIA(EInputActionValueType::Boolean);
+	IMC->MapKey(IA_Rally, EKeys::R);
+	IMC->MapKey(IA_Rally, EKeys::Gamepad_FaceButton_Left);
+
+	IA_Shout = NuevaIA(EInputActionValueType::Boolean);
+	IMC->MapKey(IA_Shout, EKeys::Q);
+	IMC->MapKey(IA_Shout, EKeys::Gamepad_FaceButton_Top);
+
 	ContextoMapeo = IMC;
 }
 
@@ -482,4 +495,18 @@ void AAlsasuaCharacter::LookUpAt(float Value)
 	const float SignoY = CVarInvertirY.GetValueOnGameThread() != 0 ? -1.f : 1.f;
 	AddControllerPitchInput(Value * Sensitivity * SignoY
 		* FMath::Max(0.05f, CVarSensibilidadRaton.GetValueOnGameThread()));
+}
+
+void AAlsasuaCharacter::EntradaRally(const FInputActionValue& V)
+{
+	if (!GetWorld()) return;
+	if (UAlsasuaCrowdSentiment* Sent = GetWorld()->GetSubsystem<UAlsasuaCrowdSentiment>())
+		Sent->OnConvocarManifestacion.Broadcast(GetActorLocation());
+}
+
+void AAlsasuaCharacter::EntradaShout(const FInputActionValue& V)
+{
+	if (!GetWorld()) return;
+	if (UAlsasuaCrowdSentiment* Sent = GetWorld()->GetSubsystem<UAlsasuaCrowdSentiment>())
+		Sent->TriggerSocialEvent(GetActorLocation(), 0.5f, 3000.f);
 }

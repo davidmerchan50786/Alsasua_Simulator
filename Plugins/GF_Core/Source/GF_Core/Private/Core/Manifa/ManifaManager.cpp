@@ -1,24 +1,58 @@
 #include "Core/Manifa/ManifaManager.h"
 #include "AI/AlsasuaCrowdAgentComponent.h"
+#include "AI/AlsasuaCrowdSentiment.h"
 #include "Kismet/GameplayStatics.h"
+#include "GameFramework/GameStateBase.h"
+#include "Engine/GameInstance.h"
+#include "Engine/World.h"
 
-void UManifaManager::TriggerManifestation(FVector CenterLocation) {
+void UManifaManager::Initialize(FSubsystemCollectionBase& Collection)
+{
+    Super::Initialize(Collection);
+}
+
+void UManifaManager::TriggerManifestation(FVector CenterLocation)
+{
     TArray<AActor*> NPCs;
     UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("Civilian"), NPCs);
 
     ActiveProtesters = 0;
-    for(AActor* Actor : NPCs) {
-        if(UAlsasuaCrowdAgentComponent* Crowd = Actor->FindComponentByClass<UAlsasuaCrowdAgentComponent>()) {
+    for (AActor* Actor : NPCs)
+    {
+        if (UAlsasuaCrowdAgentComponent* Crowd = Actor->FindComponentByClass<UAlsasuaCrowdAgentComponent>())
+        {
             Crowd->CurrentState = ECrowdAgentState::Following;
             ActiveProtesters++;
         }
     }
-    OnManifaStateChanged.Broadcast(true);
+    bMegaActiva = ActiveProtesters > 0;
+    ManifestacionCentro = CenterLocation;
+    OnManifaStateChanged.Broadcast(bMegaActiva);
 }
 
-void UManifaManager::Tick(float DeltaTime) {
+void UManifaManager::Tick(float DeltaTime)
+{
+    Momentum = FMath::Clamp(Momentum, 0.f, 100.f);
+
+    if (!GetWorld()) return;
+
+    if (UAlsasuaCrowdSentiment* Sent = GetWorld()->GetSubsystem<UAlsasuaCrowdSentiment>())
+    {
+        AGameStateBase* GS = GetWorld()->GetGameState();
+        if (GS)
+        {
+            UFunction* Fn = GS->FindFunction(FName("SetCrowdTension"));
+            if (Fn)
+            {
+                struct { float NewTension; } Params;
+                Params.NewTension = FMath::Clamp(Sent->GlobalTension, 0.f, 1.f);
+                GS->ProcessEvent(Fn, &Params);
+            }
+        }
+    }
 }
 
-void UManifaManager::UpdateManifestationStrength(float DeltaPopularSupport) {
+void UManifaManager::UpdateManifestationStrength(float DeltaPopularSupport)
+{
     Momentum = FMath::Clamp(Momentum + DeltaPopularSupport, 0.f, 100.f);
 }

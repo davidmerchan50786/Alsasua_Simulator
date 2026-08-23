@@ -25,12 +25,14 @@ public:
 	UPROPERTY(EditAnywhere, Category="IA") float TiempoBusqueda = 8.f;   // s buscando tras perder de vista
 
 private:
-	enum class EEstado : uint8 { Patrulla, Persigue, Ataca, Busca };
+	enum class EEstado : uint8 { Patrulla, Persigue, Ataca, Busca, Dispersion };
 	EEstado Estado = EEstado::Patrulla;
 	float TimerAtaque = 0.f;
 	float TimerBusqueda = 0.f;
 	FVector UltimaPosVista = FVector::ZeroVector;
+	float TimerDispersion = 0.f;
 
 	bool VeJugador(APawn*& OutJugador) const;
 	void Disparar(APawn* Jugador);
+	bool DetectarManifestacion(FVector& OutCentro) const;
 };

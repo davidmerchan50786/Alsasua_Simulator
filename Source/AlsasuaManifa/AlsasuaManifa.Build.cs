@@ -56,7 +56,6 @@ public class AlsasuaManifa : ModuleRules
             "AudioMixer",
             "Json",
             "JsonUtilities",
-            // AlsasuaMallaFab busca en el registro las mallas bajadas de Fab.
             "AssetRegistry"
         });
     }

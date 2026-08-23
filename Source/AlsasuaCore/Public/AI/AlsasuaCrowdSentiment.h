@@ -15,6 +15,8 @@ enum class ECrowdMood : uint8
 	Panic       // Dispersión desordenada
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnConvocarManifestacion, FVector, Punto);
+
 UCLASS()
 class ALSASUACORE_API UAlsasuaCrowdSentiment : public UWorldSubsystem, public FTickableGameObject
 {
@@ -24,7 +26,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual bool IsAllowedToTick() const override { return true; }
 	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(AlsasuaCrowdSentiment, STATGROUP_Game); }
-	virtual bool IsTickable() const override { return !IsTemplate(); }   // no ticar el CDO (CLAUDE.md §9)
+	virtual bool IsTickable() const override { return !IsTemplate(); }
 
 	UPROPERTY(BlueprintReadOnly, Category = "AAA|Social")
 	float PopularSupport = 0.0f;
@@ -36,11 +38,15 @@ public:
 	// Obtiene el humor dominante en una zona de la ciudad
 	ECrowdMood GetMoodAtLocation(FVector Location) const;
 
+	// Delegate que dispara cuando alguien quiere convocar una manifestación.
+	// ManifestacionSubsystem se suscribe; el Character lo dispara.
+	UPROPERTY(BlueprintAssignable, Category = "AAA|Social")
+	FOnConvocarManifestacion OnConvocarManifestacion;
+
 	UPROPERTY(BlueprintReadOnly, Category = "AAA|Social")
 	float GlobalTension = 0.0f;
 
 private:
-	// Mapa de tensión por zonas (integrado con el SpatialGrid en el futuro)
 	TMap<FIntPoint, float> TensionMap;
 
 	void DecayTension(float DeltaTime);
