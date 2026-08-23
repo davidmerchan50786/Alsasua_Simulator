@@ -38,7 +38,7 @@ public:
 	 * Barrio del edificio, de buildings_final.json.
 	 *
 	 * Lo rellena ADirectorArranque al colgar el componente: MANIFA no puede ver
-	 * a AEdificioGenerado —AlsasuaWorld depende de AlsasuaManifa y no al revés—
+	 * a AEdificioGenerado —AlsasuaWorld depende de AlsasuaKernel y no al revés—
 	 * así que el dato entra por aquí, igual que el firme de calle entra por el
 	 * director en la fase 26.
 	 *

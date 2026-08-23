@@ -12,7 +12,28 @@ public class AlsasuaKernel : ModuleRules
 			"Core",
 			"CoreUObject",
 			"Engine",
-			"AlsasuaContracts"
+			// Capa personaje/GAS absorbida de AlsasuaManifa.
+			"AlsasuaCore",
+			"GameplayAbilities",
+			"GameplayTags",
+			"GameplayTasks",
+			"EnhancedInput",
+			"InputCore",
+			"UMG",
+			"AIModule",
+			"Niagara",
+			"MotionTrajectory",
+			// Y los plugins de los que sus clases base cuelgan. Ninguno
+			// depende de Kernel, así que el grafo sigue acíclico.
+			"GF_Abilities",
+			"GF_AI",
+			"GF_Systems",
+			"GF_UI",
+			"GF_NPCs"
+		});
+
+		PrivateDependencyModuleNames.AddRange(new string[] {
+			"GameFeatures"
 		});
 	}
 }

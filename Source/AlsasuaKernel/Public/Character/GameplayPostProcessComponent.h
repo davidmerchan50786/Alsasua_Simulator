@@ -1,0 +1,106 @@
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Components/ActorComponent.h"
+#include "GameplayPostProcessComponent.generated.h"
+
+class UPostProcessComponent;
+class UMaterialInstanceDynamic;
+class UCurveFloat;
+
+/**
+ * Componente de post-procesado dinámico que responde al gameplay.
+ * Se añade al jugador y controla:
+ *   - Viñeta de bajo vida (rojo pulsante)
+ *   - Flash de daño (blanco rápido)
+ *   - Líneas de velocidad
+ *   - Polvo de multitud (screen dirt)
+ *   - Screen shake sutil
+ *   - Blur de concentración (ADS)
+ */
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+class ALSASUAKERNEL_API UGameplayPostProcessComponent : public UActorComponent
+{
+    GENERATED_BODY()
+
+public:
+    UGameplayPostProcessComponent();
+
+    // ── API pública ────────────────────────────────────────────────────────
+
+    /** Llamar al recibir daño para flash de daño. */
+    UFUNCTION(BlueprintCallable, Category = "Alsasua|PostProcess")
+    void TriggerDamageFlash(float Intensity = 1.0f);
+
+    /** Activar/desactivar blur de ADS (apuntado). */
+    UFUNCTION(BlueprintCallable, Category = "Alsasua|PostProcess")
+    void SetADSBloom(bool bActive);
+
+    /** Activar efecto de polvo de multitud. */
+    UFUNCTION(BlueprintCallable, Category = "Alsasua|PostProcess")
+    void TriggerCrowdDust(float Intensity = 1.0f);
+
+    /** Activar líneas de velocidad. */
+    UFUNCTION(BlueprintCallable, Category = "Alsasua|PostProcess")
+    void SetSpeedLines(bool bActive, float Intensity = 1.0f);
+
+    /** Activar visión de drogas (ya existía como "Modo Droga"). */
+    UFUNCTION(BlueprintCallable, Category = "Alsasua|PostProcess")
+    void SetDrugVision(bool bActive, float Intensity = 1.0f);
+
+    // ── Configuración ──────────────────────────────────────────────────────
+
+    /** Intensidad máxima de la viñeta de bajo vida. */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PostProcess|Health", meta = (ClampMin = "0", ClampMax = "1"))
+    float MaxHealthVignetteIntensity = 0.7f;
+
+    /** Umbral de vida para empezar a mostrar viñeta (0-1, fracción de vida max). */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PostProcess|Health", meta = (ClampMin = "0", ClampMax = "1"))
+    float HealthVignetteThreshold = 0.4f;
+
+    /** Duración del flash de daño (segundos). */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PostProcess|Damage", meta = (ClampMin = "0.05"))
+    float DamageFlashDuration = 0.15f;
+
+protected:
+    virtual void BeginPlay() override;
+    virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+private:
+    UPROPERTY()
+    TObjectPtr<UPostProcessComponent> PostProcessComponent;
+
+    // ── Health Vignette ────────────────────────────────────────────────────
+    void UpdateHealthVignette(float DeltaTime);
+
+    // ── Damage Flash ───────────────────────────────────────────────────────
+    void UpdateDamageFlash(float DeltaTime);
+    float DamageFlashTimer = 0.f;
+    float DamageFlashIntensity = 0.f;
+
+    // ── Speed Lines ────────────────────────────────────────────────────────
+    void UpdateSpeedLines(float DeltaTime);
+    bool bSpeedLinesActive = false;
+    float SpeedLinesTargetIntensity = 0.f;
+    float SpeedLinesCurrentIntensity = 0.f;
+
+    // ── Crowd Dust ─────────────────────────────────────────────────────────
+    void UpdateCrowdDust(float DeltaTime);
+    float CrowdDustTimer = 0.f;
+    float CrowdDustIntensity = 0.f;
+
+    // ── ADS Bloom ──────────────────────────────────────────────────────────
+    bool bADSBloomActive = false;
+
+    // ── Drug Vision ────────────────────────────────────────────────────────
+    bool bDrugVisionActive = false;
+    float DrugVisionIntensity = 0.f;
+    float DrugVisionTargetIntensity = 0.f;
+
+    // ── Weight actual (blend total) ────────────────────────────────────────
+    float CurrentWeight = 0.f;
+    float TargetWeight = 0.f;
+
+    /** Obtener la vida actual como fracción 0-1. */
+    float GetHealthFraction() const;
+};

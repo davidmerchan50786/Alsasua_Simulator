@@ -12,12 +12,13 @@ Linux:
      tenía.
 
   2. Un ciclo nuevo entre módulos. UBT 5.8 los marca como ERROR, no como aviso.
-     Hay UNO heredado y confesado —AlsasuaManifa <-> AlsasuaUI, declarado con
-     CircularlyReferencedDependentModules en AlsasuaManifa.Build.cs— y ése se
-     deja pasar. Cualquier otro se canta.
+     Hoy el grafo es acíclico: el único que hubo —AlsasuaManifa <-> AlsasuaUI,
+     confesado con CircularlyReferencedDependentModules— murió con el módulo en
+     la Fase 5. Cualquier aparición se canta; si algún día hay que convivir con
+     uno confesado, se lista aquí la arista a ignorar.
 
 Ojo con la dirección real de las dependencias, que es fácil de suponer al revés:
-AlsasuaWorld depende de AlsasuaManifa, no al contrario. Un #include de
+AlsasuaWorld depende de AlsasuaKernel, no al contrario. Un #include de
 EdificioGenerado.h (World) desde un sistema de Manifa parece inocente y es un
 ciclo.
 
