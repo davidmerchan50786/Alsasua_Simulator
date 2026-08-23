@@ -1,6 +1,6 @@
 #include "World/AlsasuaZonePostProcess.h"
-#include "Services/ITimeOfDayService.h"
 #include "AlsasuaServiceRegistry.h"
+#include "ContratosClima.h"
 #include "Components/PostProcessComponent.h"
 #include "Engine/PostProcessVolume.h"
 #include "Materials/MaterialParameterCollection.h"
@@ -170,15 +170,16 @@ void UAlsasuaZonePostProcess::ApplyZoneBlending(float DeltaTime)
 
 void UAlsasuaZonePostProcess::UpdatePostProcessVolume(float DeltaTime)
 {
-    // Day/night factor from sun elevation (0 = night, 1 = day).
+    // Day/night factor from sun elevation (0 = night, 1 = day), via the
+    // published "Clima.TiempoDelDia" contract; day if the plugin is asleep.
     float DayFactor = 1.f;
     if (UWorld* W = GetWorld())
     {
-        UAlsasuaServiceRegistry* Reg = UAlsasuaServiceRegistry::Get(W);
-        ITimeOfDayService* Atmos = Reg ? Reg->PedirComo<ITimeOfDayService>(FName("TimeOfDay")) : nullptr;
-        if (Atmos)
+        UAlsasuaServiceRegistry* Registro = UAlsasuaServiceRegistry::Get(W);
+        ITimeOfDayService* Tiempo = Registro ? Registro->PedirComo<ITimeOfDayService>("Clima.TiempoDelDia") : nullptr;
+        if (Tiempo)
         {
-            DayFactor = FMath::Clamp(Atmos->GetSunPitch() / 10.f, 0.f, 1.f);
+            DayFactor = FMath::Clamp(Tiempo->GetSunPitch() / 10.f, 0.f, 1.f);
         }
     }
 
@@ -251,14 +252,9 @@ void UAlsasuaZonePostProcess::UpdatePostProcessVolume(float DeltaTime)
     UWorld* W = GetWorld();
     if (!W) return;
 
-    PPVolumeRefreshTimer += DeltaTime;
-    if (PPVolumeRefreshTimer >= 5.f || CachedPPVolumes.Num() == 0)
-    {
-        PPVolumeRefreshTimer = 0.f;
-        CachedPPVolumes.Empty();
-        UGameplayStatics::GetAllActorsOfClass(W, APostProcessVolume::StaticClass(), CachedPPVolumes);
-    }
-    APostProcessVolume* PPV = CachedPPVolumes.Num() > 0 ? Cast<APostProcessVolume>(CachedPPVolumes[0]) : nullptr;
+    TArray<AActor*> PPVols;
+    UGameplayStatics::GetAllActorsOfClass(W, APostProcessVolume::StaticClass(), PPVols);
+    APostProcessVolume* PPV = PPVols.Num() > 0 ? Cast<APostProcessVolume>(PPVols[0]) : nullptr;
     if (!PPV) return;
 
     FPostProcessSettings& S = PPV->Settings;

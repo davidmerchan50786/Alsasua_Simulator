@@ -2,18 +2,10 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
-#include "Services/IWeatherService.h"
+#include "ContratosClima.h"
 #include "WeatherSubsystem.generated.h"
 
-UENUM(BlueprintType)
-enum class EWeatherSubsystemState : uint8 {
-    Clear,
-    Rainy,
-    HeavyFog,
-    Thunderstorm
-};
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeatherChanged, EWeatherSubsystemState, NewState);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeatherChanged, EAlsasuaWeatherState, NewState);
 
 UCLASS()
 class GF_CLIMA_API UWeatherSubsystem : public UWorldSubsystem, public IWeatherService
@@ -22,35 +14,31 @@ class GF_CLIMA_API UWeatherSubsystem : public UWorldSubsystem, public IWeatherSe
 
 public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+    virtual void Deinitialize() override;
 
+    /** El enum vive en AlsasuaContracts: es parte del contrato, no del plugin. */
     UPROPERTY(BlueprintReadOnly, Category="AAA|Weather")
-    EWeatherSubsystemState CurrentWeather = EWeatherSubsystemState::Clear;
-
-    UPROPERTY(BlueprintReadOnly, Category="AAA|Weather")
-    float RainIntensity = 0.f;
-
-    UPROPERTY(BlueprintReadOnly, Category="AAA|Weather")
-    float WindSpeed = 0.f;
-
-    UPROPERTY(BlueprintReadOnly, Category="AAA|Weather")
-    FVector WindDirection = FVector::ForwardVector;
-
-    UPROPERTY(BlueprintReadOnly, Category="AAA|Weather")
-    float Temperature = 15.f;
+    EAlsasuaWeatherState CurrentWeather = EAlsasuaWeatherState::Clear;
 
     UPROPERTY(BlueprintAssignable, Category="AAA|Weather")
     FOnWeatherChanged OnWeatherChanged;
 
     UFUNCTION(BlueprintCallable, Category="AAA|Weather")
-    void SetWeather(EWeatherSubsystemState NewState);
+    void SetWeather(EAlsasuaWeatherState NewState);
 
-    // IWeatherService
-    virtual float GetRainIntensity() const override { return RainIntensity; }
-    virtual float GetWindSpeed() const override { return WindSpeed; }
-    virtual FVector GetWindDirection() const override { return WindDirection; }
-    virtual float GetTemperature() const override { return Temperature; }
-    virtual float GetVisibilityMultiplier() const override;
-    virtual float GetTireGripMultiplier() const override;
-    virtual float GetAIVisibilityMultiplier() const override;
-    virtual float GetFootstepNoiseMultiplier() const override;
+    // Impacto en la jugabilidad
+    UFUNCTION(BlueprintPure, Category="AAA|Weather")
+    float GetTireGripMultiplier() const override;
+
+    UFUNCTION(BlueprintPure, Category="AAA|Weather")
+    float GetAIVisibilityMultiplier() const override;
+
+    UFUNCTION(BlueprintPure, Category="AAA|Weather")
+    float GetFootstepNoiseMultiplier() const override;
+
+    // ── Contrato IWeatherService (publicado como "Clima.Meteorologia") ──
+    virtual EAlsasuaWeatherState GetWeatherState() const override { return CurrentWeather; }
+    virtual float GetRainIntensity() const override;
+    virtual float GetWindSpeedKmh() const override;
+    virtual float GetTemperatureCelsius() const override;
 };

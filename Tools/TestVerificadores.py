@@ -26,6 +26,7 @@ import tempfile
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import VerificarFuentes as VF          # noqa: E402
 import VerificarModulos as VM          # noqa: E402
+import VerificarPlugins as VP          # noqa: E402
 
 
 # ── andamiaje ───────────────────────────────────────────────────────────────
@@ -45,6 +46,33 @@ class Arbol:
 
     def borrar(self):
         shutil.rmtree(self.raiz, ignore_errors=True)
+
+
+class MentiraRaiz:
+    """Apunta RAIZ/FUENTE de los verificadores al arbol de mentira.
+
+    Sin esto los relpath comparan rutas del arbol (en %TEMP%, otra unidad) con
+    la constante RAIZ del repo real y ValueError: path is on mount...
+    """
+
+    def __init__(self, arbol):
+        self.arbol = arbol
+        self.antes = []
+
+    def __enter__(self):
+        for mod in (VF, VM):
+            if hasattr(mod, "RAIZ"):
+                self.antes.append((mod, "RAIZ", getattr(mod, "RAIZ")))
+                setattr(mod, "RAIZ", self.arbol.raiz)
+            if hasattr(mod, "FUENTE"):
+                self.antes.append((mod, "FUENTE", getattr(mod, "FUENTE")))
+                setattr(mod, "FUENTE", self.arbol.raiz)
+        return self.arbol
+
+    def __exit__(self, *excepcion):
+        for mod, nombre, valor in reversed(self.antes):
+            setattr(mod, nombre, valor)
+        return False
 
 
 RESULTADOS = []
@@ -71,15 +99,15 @@ def comprobar(nombre, malo, bueno):
 
 def test_cvars():
     def caso(registrar):
-        a = Arbol()
-        try:
-            reg = ('static TAutoConsoleVariable<int32> CVarX(\n'
-                   '    TEXT("g.Prueba"), 0, TEXT(""));\n') if registrar else ''
-            a.escribir("M/Private/A.cpp",
-                       reg + 'void F() { IConsoleManager::Get().FindConsoleVariable(TEXT("g.Prueba")); }\n')
-            return list(VF.cvars_sin_registrar(a.raiz))
-        finally:
-            a.borrar()
+        with MentiraRaiz(Arbol()) as a:
+            try:
+                reg = ('static TAutoConsoleVariable<int32> CVarX(\n'
+                       '    TEXT("g.Prueba"), 0, TEXT(""));\n') if registrar else ''
+                a.escribir("M/Private/A.cpp",
+                           reg + 'void F() { IConsoleManager::Get().FindConsoleVariable(TEXT("g.Prueba")); }\n')
+                return list(VF.cvars_sin_registrar(a.raiz))
+            finally:
+                a.borrar()
     comprobar("4  CVar g.* sin registrar",
               lambda: caso(False), lambda: caso(True))
 
@@ -116,40 +144,40 @@ public:
 
 def test_declarada_sin_definir():
     def caso(como):
-        a = Arbol()
-        try:
-            a.escribir("M/Public/Cosa.h", CAB_10)
-            cuerpos = {
-                # el fallo que motivó la comprobación: definida sólo como
-                # función libre, en el namespace anónimo
-                "libre": 'namespace\n{\n    bool Hacer(int32 X) { return true; }\n}\n',
-                "miembro": 'bool UCosa::Hacer(int32 X) { return true; }\n',
-            }
-            a.escribir("M/Private/Cosa.cpp", cuerpos[como])
-            return VF.declaradas_sin_definir(a.raiz)
-        finally:
-            a.borrar()
+        with MentiraRaiz(Arbol()) as a:
+            try:
+                a.escribir("M/Public/Cosa.h", CAB_10)
+                cuerpos = {
+                    # el fallo que motivó la comprobación: definida sólo como
+                    # función libre, en el namespace anónimo
+                    "libre": 'namespace\n{\n    bool Hacer(int32 X) { return true; }\n}\n',
+                    "miembro": 'bool UCosa::Hacer(int32 X) { return true; }\n',
+                }
+                a.escribir("M/Private/Cosa.cpp", cuerpos[como])
+                return VF.declaradas_sin_definir(a.raiz)
+            finally:
+                a.borrar()
     comprobar("10 declarado y no definido",
               lambda: caso("libre"), lambda: caso("miembro"))
 
 
-# ── comprobación 11: UObject* sin UPROPERTY ────────────────────────────────
+# �� comprobaci�n 11: UObject* sin UPROPERTY ��������������������������������
 
 def test_uproperty():
     def caso(con):
-        a = Arbol()
-        try:
-            marca = "    UPROPERTY()\n" if con else ""
-            a.escribir("M/Public/Cosa.h",
-                       "#pragma once\n"
-                       "class MI_API UCosa\n{\n"
-                       "    GENERATED_BODY()\n"
-                       "private:\n"
-                       + marca +
-                       "    AActor* Objetivo = nullptr;\n};\n")
-            return VF.punteros_sin_uproperty(a.raiz)
-        finally:
-            a.borrar()
+        with MentiraRaiz(Arbol()) as a:
+            try:
+                marca = "    UPROPERTY()\n" if con else ""
+                a.escribir("M/Public/Cosa.h",
+                           "#pragma once\n"
+                           "class MI_API UCosa\n{\n"
+                           "    GENERATED_BODY()\n"
+                           "private:\n"
+                           + marca +
+                           "    AActor* Objetivo = nullptr;\n};\n")
+                return VF.punteros_sin_uproperty(a.raiz)
+            finally:
+                a.borrar()
     comprobar("11 UObject* sin UPROPERTY",
               lambda: caso(False), lambda: caso(True))
 
@@ -171,17 +199,13 @@ def _modulos(deps_a, deps_b):
 
 def test_modulos():
     def correr(arbol):
-        anterior = VM.FUENTE
-        VM.FUENTE = arbol.raiz
-        try:
+        with MentiraRaiz(arbol):
             import io
             import contextlib
             buf = io.StringIO()
             with contextlib.redirect_stdout(buf):
                 rc = VM.main()
             return [buf.getvalue()] if rc else []
-        finally:
-            VM.FUENTE = anterior
 
     def dep(declarada):
         a = _modulos('"Core"', '"Core", "A"' if declarada else '"Core"')
@@ -203,12 +227,46 @@ def test_modulos():
               lambda: ciclo(True), lambda: ciclo(False))
 
 
+# �� VerificarPlugins: activable fantasma y cargador vaciado ������������������
+
+UPLUGIN = '{ "FileVersion": 3, "FriendlyName": "Mentira" }\n'
+
+CARGADOR = ('void UAlsasuaCargadorPlugins::ActivarTodos()\n{\n'
+            '\tGFS.LoadAndActivateGameFeaturePlugin(URL, Completa);\n}\n'
+            'void UAlsasuaCargadorPlugins::DesactivarTodos()\n{\n'
+            '\tGFS.DeactivateGameFeaturePlugin(URL);\n'
+            '\tGFS.UnloadGameFeaturePlugin(URL);\n}\n')
+
+
+def test_plugins():
+    def caso(con_plugin, con_llamadas):
+        with MentiraRaiz(Arbol()) as a:
+            try:
+                if con_plugin:
+                    a.escribir("Plugins/GF_Mentira/GF_Mentira.uplugin", UPLUGIN)
+                a.escribir("Config/DefaultGame.ini",
+                           "[/Script/AlsasuaKernel.AlsasuaCargadorPlugins]\n"
+                           "+PluginsActivables=GF_Mentira\n")
+                if con_llamadas:
+                    a.escribir("Source/AlsasuaKernel/Private/Plugins/"
+                               "AlsasuaCargadorPlugins.cpp", CARGADOR)
+                return VP.activables_inexistentes(a.raiz) + VP.cargador_roto(a.raiz)
+            finally:
+                a.borrar()
+
+    comprobar("P1 plugin activable inexistente",
+              lambda: caso(False, True), lambda: caso(True, True))
+    comprobar("P2 cargador sin llamadas",
+              lambda: caso(True, False), lambda: caso(True, True))
+
+
 def main():
     test_cvars()
     test_include_roto()
     test_declarada_sin_definir()
     test_uproperty()
     test_modulos()
+    test_plugins()
 
     print("Pruebas de los verificadores\n")
     fallos = 0

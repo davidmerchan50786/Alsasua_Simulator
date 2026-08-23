@@ -66,6 +66,9 @@ jobs:
       - name: VerificarModulos (grafo de módulos y ciclos nuevos)
         run: python3 Tools/VerificarModulos.py
 
+      - name: VerificarPlugins (interruptor de los GF_*, lista y cargador)
+        run: python3 Tools/VerificarPlugins.py
+
       - name: VerificarRedViaria (el grafo de calzada, contra el dato)
         run: python3 Tools/VerificarRedViaria.py
 
