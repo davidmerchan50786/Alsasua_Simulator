@@ -10,6 +10,7 @@
 #include "Components/ExponentialHeightFogComponent.h"
 #include "World/Time/TimeOfDayManager.h"
 #include "World/Weather/WeatherSubsystem.h"
+#include "AlsasuaServiceRegistry.h"
 #include "Engine/World.h"
 
 namespace
@@ -32,6 +33,30 @@ void UAlsasuaAtmosphereController::Initialize(FSubsystemCollectionBase& Collecti
 
 	FindOrCreateAtmosphereActors();
 	ApplyLightSetup();
+
+	// Publicacion en el tablon: los consumidores preguntan por el contrato,
+	// no por esta clase. Si el plugin duerme, PedirComo<> devuelve nullptr.
+	if (UAlsasuaServiceRegistry* Registro = UAlsasuaServiceRegistry::Get(this))
+	{
+		Registro->Publicar(TEXT("Clima.TiempoDelDia"), this);
+	}
+}
+
+void UAlsasuaAtmosphereController::Deinitialize()
+{
+	if (UAlsasuaServiceRegistry* Registro = UAlsasuaServiceRegistry::Get(this))
+	{
+		Registro->Retirar(TEXT("Clima.TiempoDelDia"));
+	}
+	Super::Deinitialize();
+}
+
+FVector UAlsasuaAtmosphereController::GetSunDirection() const
+{
+	// Misma orientacion que la luz direccional (UpdateSunVisuals); el forward
+	// del actor apunta DESDE el sol, asi que hacia el sol es el inverso.
+	const FRotator OrientacionLuz(-CurrentSunElevation, CurrentSunAzimuth - 180.f, 0.f);
+	return -OrientacionLuz.Vector();
 }
 
 void UAlsasuaAtmosphereController::FindOrCreateAtmosphereActors()
@@ -265,16 +290,17 @@ float UAlsasuaAtmosphereController::GetCloudAttenuation() const
 
 	switch (Weather->CurrentWeather)
 	{
-	case EWeatherSubsystemState::Rainy:        return 0.35f;
-	case EWeatherSubsystemState::Thunderstorm: return 0.20f;
-	case EWeatherSubsystemState::HeavyFog:     return 0.45f;
-	case EWeatherSubsystemState::Clear:
+	case EAlsasuaWeatherState::Rainy:        return 0.35f;
+	case EAlsasuaWeatherState::Thunderstorm: return 0.20f;
+	case EAlsasuaWeatherState::HeavyFog:     return 0.45f;
+	case EAlsasuaWeatherState::Clear:
 	default:                                   return 1.f;
 	}
 }
 
 void UAlsasuaAtmosphereController::UpdateAtmosphere(float Hour, float DeltaTime)
 {
+	CurrentHour = Hour;
 	ComputeCelestialPosition(Hour, /*bAntiSolar*/ false, CurrentSunElevation, CurrentSunAzimuth);
 
 	// Iluminancia horizontal ∝ seno de la elevación: es la razón física de que
@@ -382,8 +408,8 @@ void UAlsasuaAtmosphereController::UpdateFogVisuals(float DeltaTime)
 	if (!FogComp) return;
 
 	const UWeatherSubsystem* Weather = GetWorld() ? GetWorld()->GetSubsystem<UWeatherSubsystem>() : nullptr;
-	const bool bRaining = Weather && (Weather->CurrentWeather == EWeatherSubsystemState::Rainy || Weather->CurrentWeather == EWeatherSubsystemState::Thunderstorm);
-	const bool bFoggy = Weather && Weather->CurrentWeather == EWeatherSubsystemState::HeavyFog;
+	const bool bRaining = Weather && (Weather->CurrentWeather == EAlsasuaWeatherState::Rainy || Weather->CurrentWeather == EAlsasuaWeatherState::Thunderstorm);
+	const bool bFoggy = Weather && Weather->CurrentWeather == EAlsasuaWeatherState::HeavyFog;
 
 	// De noche la inversión térmica del valle deja más niebla; al alba es cálida.
 	const float DayT = FMath::Clamp(CurrentSunElevation / 10.f, 0.f, 1.f);
@@ -417,10 +443,10 @@ void UAlsasuaAtmosphereController::UpdateCloudVisuals()
 	{
 		switch (Weather->CurrentWeather)
 		{
-		case EWeatherSubsystemState::Clear:        CurrentCloudDensity *= 0.4f; break;
-		case EWeatherSubsystemState::Rainy:        CurrentCloudDensity *= 1.5f; break;
-		case EWeatherSubsystemState::Thunderstorm: CurrentCloudDensity *= 2.0f; break;
-		case EWeatherSubsystemState::HeavyFog:     CurrentCloudDensity *= 0.2f; break;
+		case EAlsasuaWeatherState::Clear:        CurrentCloudDensity *= 0.4f; break;
+		case EAlsasuaWeatherState::Rainy:        CurrentCloudDensity *= 1.5f; break;
+		case EAlsasuaWeatherState::Thunderstorm: CurrentCloudDensity *= 2.0f; break;
+		case EAlsasuaWeatherState::HeavyFog:     CurrentCloudDensity *= 0.2f; break;
 		}
 	}
 

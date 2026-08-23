@@ -1,6 +1,7 @@
 #include "World/AlsasuaRainParticleComponent.h"
 #include "World/AlsasuaVisualEffectsManager.h"
-#include "World/Weather/WeatherSubsystem.h"
+#include "AlsasuaServiceRegistry.h"
+#include "ContratosClima.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraSystem.h"
@@ -48,10 +49,10 @@ void UAlsasuaRainParticleComponent::UpdateRainState(float DeltaTime)
 	if (!W) return;
 
 	UAlsasuaVisualEffectsManager* VFXMgr = W->GetSubsystem<UAlsasuaVisualEffectsManager>();
-	UWeatherSubsystem* Weather = W->GetSubsystem<UWeatherSubsystem>();
+	IWeatherService* Weather = [&]{ auto* R = UAlsasuaServiceRegistry::Get(W); return R ? R->PedirComo<IWeatherService>("Clima.Meteorologia") : nullptr; }();
 	if (!VFXMgr || !Weather) return;
 
-	const EWeatherSubsystemState State = Weather->CurrentWeather;
+	const EAlsasuaWeatherState State = Weather->GetWeatherState();
 	const float Wetness = VFXMgr->GlobalWetness;
 
 	float TargetSpawnRate = 0.f;
@@ -59,13 +60,13 @@ void UAlsasuaRainParticleComponent::UpdateRainState(float DeltaTime)
 
 	switch (State)
 	{
-	case EWeatherSubsystemState::Rainy:
+	case EAlsasuaWeatherState::Rainy:
 		TargetSpawnRate = FMath::Lerp(LightRainSpawnRate, HeavyRainSpawnRate, Wetness);
 		TargetSystem = RainNiagaraAsset;
 		bIsSnowing = false;
 		break;
 
-	case EWeatherSubsystemState::Thunderstorm:
+	case EAlsasuaWeatherState::Thunderstorm:
 		TargetSpawnRate = HeavyRainSpawnRate;
 		TargetSystem = RainNiagaraAsset;
 		bIsSnowing = false;
@@ -78,7 +79,7 @@ void UAlsasuaRainParticleComponent::UpdateRainState(float DeltaTime)
 		}
 		break;
 
-	case EWeatherSubsystemState::HeavyFog:
+	case EAlsasuaWeatherState::HeavyFog:
 		TargetSpawnRate = SnowSpawnRate * 0.3f;
 		TargetSystem = SnowNiagaraAsset;
 		bIsSnowing = true;

@@ -1,6 +1,6 @@
 #include "World/AlsasuaEnhancedPostProcessComponent.h"
-#include "World/Time/TimeOfDayManager.h"
-#include "World/AlsasuaAtmosphereController.h"
+#include "AlsasuaServiceRegistry.h"
+#include "ContratosClima.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/PostProcessVolume.h"
@@ -27,20 +27,17 @@ void UAlsasuaEnhancedPostProcessComponent::UpdatePostProcess(float DeltaTime)
 	UWorld* W = GetWorld();
 	if (!W) return;
 
-	UAlsasuaAtmosphereController* Atmos = W->GetSubsystem<UAlsasuaAtmosphereController>();
-	UTimeOfDayManager* TimeMgr = W->GetSubsystem<UTimeOfDayManager>();
+	UAlsasuaServiceRegistry* Registro = UAlsasuaServiceRegistry::Get(W);
+	ITimeOfDayService* Tiempo = Registro ? Registro->PedirComo<ITimeOfDayService>("Clima.TiempoDelDia") : nullptr;
 
 	// La mezcla día/noche sale de la elevación real del sol, no de tramos de
 	// hora: así el grading cambia cuando cambia la luz, no a las 20:00 en punto.
-	float DayFactor;
-	if (Atmos)
+	// Sin servicio publicado (plugin dormido) se asume día, como en el resto
+	// de consumidores.
+	float DayFactor = 1.f;
+	if (Tiempo)
 	{
-		DayFactor = FMath::Clamp(Atmos->GetSunElevationDeg() / 10.f, 0.f, 1.f);
-	}
-	else
-	{
-		const float Hour = TimeMgr ? TimeMgr->CurrentTime : 12.f;
-		DayFactor = (Hour >= 7.f && Hour <= 20.f) ? 1.f : 0.f;
+		DayFactor = FMath::Clamp(Tiempo->GetSunPitch() / 10.f, 0.f, 1.f);
 	}
 
 	CurrentTint = FLinearColor::LerpUsingHSV(NightColorTint, DayColorTint, DayFactor);

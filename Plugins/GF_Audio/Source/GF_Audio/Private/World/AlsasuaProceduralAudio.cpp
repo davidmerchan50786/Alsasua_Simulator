@@ -1,6 +1,7 @@
 #include "World/AlsasuaProceduralAudio.h"
 #include "World/Time/TimeOfDayManager.h"
-#include "World/Weather/WeatherSubsystem.h"
+#include "AlsasuaServiceRegistry.h"
+#include "ContratosClima.h"
 #include "Components/AudioComponent.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
@@ -62,19 +63,20 @@ void UAlsasuaProceduralAudio::UpdateAudioLayers(float DeltaTime)
 	if (!W) return;
 
 	UTimeOfDayManager* TimeMgr = W->GetSubsystem<UTimeOfDayManager>();
-	UWeatherSubsystem* Weather = W->GetSubsystem<UWeatherSubsystem>();
+	UAlsasuaServiceRegistry* Registro = UAlsasuaServiceRegistry::Get(W);
+	IWeatherService* Weather = Registro ? Registro->PedirComo<IWeatherService>("Clima.Meteorologia") : nullptr;
 
 	if (!TimeMgr) return;
 
 	const float Hour = TimeMgr->CurrentTime;
-	const bool bRaining = Weather && (Weather->CurrentWeather == EWeatherSubsystemState::Rainy ||
-		Weather->CurrentWeather == EWeatherSubsystemState::Thunderstorm);
+	const bool bRaining = Weather && (Weather->GetWeatherState() == EAlsasuaWeatherState::Rainy ||
+		Weather->GetWeatherState() == EAlsasuaWeatherState::Thunderstorm);
 	const bool bIsNight = Hour >= CricketStartHour || Hour < CricketEndHour;
 	const bool bIsDay = Hour >= BirdStartHour && Hour < BirdEndHour;
 
 	// Wind approximation from weather state (no VEM dependency)
 	float Wind = 0.3f;
-	if (Weather && Weather->CurrentWeather == EWeatherSubsystemState::Thunderstorm) Wind = 0.9f;
+	if (Weather && Weather->GetWeatherState() == EAlsasuaWeatherState::Thunderstorm) Wind = 0.9f;
 	else if (bRaining) Wind = 0.6f;
 
 	// --- Wind ---

@@ -1,7 +1,8 @@
 #include "World/AlsasuaVisualEffectsManager.h"
 #include "CargarMaterialComun.h"
 #include "World/Time/TimeOfDayManager.h"
-#include "World/Weather/WeatherSubsystem.h"
+#include "AlsasuaServiceRegistry.h"
+#include "ContratosClima.h"
 #include "Materials/MaterialParameterCollection.h"
 #include "Materials/MaterialParameterCollectionInstance.h"
 #include "Engine/World.h"
@@ -11,7 +12,6 @@ void UAlsasuaVisualEffectsManager::Initialize(FSubsystemCollectionBase& Collecti
 	Super::Initialize(Collection);
 
 	Collection.InitializeDependency<UTimeOfDayManager>();
-	Collection.InitializeDependency<UWeatherSubsystem>();
 
 	CachedMPC = CargarMPCClima();
 
@@ -52,9 +52,10 @@ void UAlsasuaVisualEffectsManager::SetRoadWear(float Wear)
 
 void UAlsasuaVisualEffectsManager::UpdateWetness(float DeltaTime)
 {
-	UWeatherSubsystem* Weather = GetWorld() ? GetWorld()->GetSubsystem<UWeatherSubsystem>() : nullptr;
-	const bool bRaining = Weather && (Weather->CurrentWeather == EWeatherSubsystemState::Rainy || Weather->CurrentWeather == EWeatherSubsystemState::Thunderstorm);
-	const bool bFoggy = Weather && Weather->CurrentWeather == EWeatherSubsystemState::HeavyFog;
+	UAlsasuaServiceRegistry* RegistroVFX = UAlsasuaServiceRegistry::Get(GetWorld());
+	IWeatherService* Weather = RegistroVFX ? RegistroVFX->PedirComo<IWeatherService>("Clima.Meteorologia") : nullptr;
+	const bool bRaining = Weather && (Weather->GetWeatherState() == EAlsasuaWeatherState::Rainy || Weather->GetWeatherState() == EAlsasuaWeatherState::Thunderstorm);
+	const bool bFoggy = Weather && Weather->GetWeatherState() == EAlsasuaWeatherState::HeavyFog;
 
 	float TargetWetness = 0.f;
 	if (bRaining) TargetWetness = 1.f;
@@ -98,8 +99,9 @@ void UAlsasuaVisualEffectsManager::UpdateWind(float DeltaTime)
 	const float Noise = FMath::Sin(TimeAccumulator * 0.7f) * 0.1f;
 	WindIntensity = FMath::Clamp(WindIntensity + (Gust + Noise) * DeltaTime, 0.05f, 1.f);
 
-	UWeatherSubsystem* Weather = GetWorld() ? GetWorld()->GetSubsystem<UWeatherSubsystem>() : nullptr;
-	if (Weather && Weather->CurrentWeather == EWeatherSubsystemState::Thunderstorm)
+	UAlsasuaServiceRegistry* RegistroVFX = UAlsasuaServiceRegistry::Get(GetWorld());
+	IWeatherService* Weather = RegistroVFX ? RegistroVFX->PedirComo<IWeatherService>("Clima.Meteorologia") : nullptr;
+	if (Weather && Weather->GetWeatherState() == EAlsasuaWeatherState::Thunderstorm)
 	{
 		WindIntensity = FMath::Max(WindIntensity, 0.8f);
 	}

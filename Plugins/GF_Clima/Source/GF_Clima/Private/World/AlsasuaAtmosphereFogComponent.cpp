@@ -36,12 +36,12 @@ void UAlsasuaAtmosphereFogComponent::UpdateFog(float DeltaTime)
 	const float Hour = TimeMgr->CurrentTime;
 
 	float Wetness = 0.f;
-	if (Weather && (Weather->CurrentWeather == EWeatherSubsystemState::Rainy ||
-		Weather->CurrentWeather == EWeatherSubsystemState::Thunderstorm))
+	if (Weather && (Weather->CurrentWeather == EAlsasuaWeatherState::Rainy ||
+		Weather->CurrentWeather == EAlsasuaWeatherState::Thunderstorm))
 	{
 		Wetness = 1.f;
 	}
-	else if (Weather && Weather->CurrentWeather == EWeatherSubsystemState::HeavyFog)
+	else if (Weather && Weather->CurrentWeather == EAlsasuaWeatherState::HeavyFog)
 	{
 		Wetness = 0.3f;
 	}
@@ -69,12 +69,12 @@ void UAlsasuaAtmosphereFogComponent::UpdateFog(float DeltaTime)
 	}
 
 	// Rain boost
-	if (Weather && (Weather->CurrentWeather == EWeatherSubsystemState::Rainy ||
-		Weather->CurrentWeather == EWeatherSubsystemState::Thunderstorm))
+	if (Weather && (Weather->CurrentWeather == EAlsasuaWeatherState::Rainy ||
+		Weather->CurrentWeather == EAlsasuaWeatherState::Thunderstorm))
 	{
 		TargetDensity *= 3.f;
 	}
-	else if (Weather && Weather->CurrentWeather == EWeatherSubsystemState::HeavyFog)
+	else if (Weather && Weather->CurrentWeather == EAlsasuaWeatherState::HeavyFog)
 	{
 		TargetDensity *= 5.f;
 	}

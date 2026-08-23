@@ -13,7 +13,11 @@ public class GF_Clima : ModuleRules
 			"Core",
 			"CoreUObject",
 			"Engine",
-			"AlsasuaCore"
+			"AlsasuaCore",
+			// Los contratos que este plugin implementa, y el registro donde los
+			// publica. Kernel no depende de GF_Clima: sin ciclo.
+			"AlsasuaContracts",
+			"AlsasuaKernel"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]

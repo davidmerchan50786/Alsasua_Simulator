@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "Tickable.h"
+#include "ContratosClima.h"
 #include "AlsasuaAtmosphereController.generated.h"
 
 class UExponentialHeightFogComponent;
@@ -16,12 +17,13 @@ class AExponentialHeightFog;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTimeOfDayVisualChanged, float, SunAngle);
 
 UCLASS()
-class GF_CLIMA_API UAlsasuaAtmosphereController : public UWorldSubsystem, public FTickableGameObject
+class GF_CLIMA_API UAlsasuaAtmosphereController : public UWorldSubsystem, public FTickableGameObject, public ITimeOfDayService
 {
 	GENERATED_BODY()
 
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+	virtual void Deinitialize() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual bool IsAllowedToTick() const override { return true; }
 	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(AlsasuaAtmosphereController, STATGROUP_Game); }
@@ -53,6 +55,14 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Alsasua|Atmosphere")
 	FOnTimeOfDayVisualChanged OnTimeOfDayVisualChanged;
+
+	// ── Contrato ITimeOfDayService (publicado como "Clima.TiempoDelDia") ──
+	virtual float GetSunPitch() const override { return GetSunElevationDeg(); }
+	virtual float GetHour() const override { return CurrentHour; }
+	virtual bool IsNight() const override { return CurrentSunElevation <= 0.f; }
+	virtual FVector GetSunDirection() const override;
+	virtual FLinearColor GetSunColor() const override { return CurrentSunColor; }
+	virtual float GetSunIntensity() const override { return CurrentSunIntensity; }
 
 	// ── Emplazamiento: Alsasua / Altsasu (Navarra) ─────────────────────────
 	// La posición del sol se calcula de verdad a partir de estos datos, así que
@@ -203,6 +213,9 @@ private:
 	TObjectPtr<AExponentialHeightFog> HeightFog;
 
 	float TimeToUpdate = 0.f;
+
+	/** Hora simulada actual (0-24); la escribe UpdateAtmosphere cada tick. */
+	float CurrentHour = 12.f;
 
 	FLinearColor CurrentSunColor = FLinearColor::White;
 	FLinearColor CurrentFogColor = FLinearColor(0.7f, 0.75f, 0.85f);

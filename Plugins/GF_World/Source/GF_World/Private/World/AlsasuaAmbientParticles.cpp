@@ -1,7 +1,8 @@
 #include "World/AlsasuaAmbientParticles.h"
 #include "World/AlsasuaVisualEffectsManager.h"
 #include "World/Time/TimeOfDayManager.h"
-#include "World/Weather/WeatherSubsystem.h"
+#include "AlsasuaServiceRegistry.h"
+#include "ContratosClima.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Engine/World.h"
@@ -37,13 +38,13 @@ void UAlsasuaAmbientParticles::UpdateAmbientParticles(float DeltaTime)
 
 	UAlsasuaVisualEffectsManager* VFXMgr = W->GetSubsystem<UAlsasuaVisualEffectsManager>();
 	UTimeOfDayManager* TimeMgr = W->GetSubsystem<UTimeOfDayManager>();
-	UWeatherSubsystem* Weather = W->GetSubsystem<UWeatherSubsystem>();
+	IWeatherService* Weather = [&]{ auto* R = UAlsasuaServiceRegistry::Get(W); return R ? R->PedirComo<IWeatherService>("Clima.Meteorologia") : nullptr; }();
 
 	const float Wind = VFXMgr ? VFXMgr->WindIntensity : 0.3f;
 	const float Hour = TimeMgr ? TimeMgr->CurrentTime : 12.f;
 	const float Season = TimeMgr ? TimeMgr->CurrentTime / 365.f : 0.5f;
-	const bool bRaining = Weather && (Weather->CurrentWeather == EWeatherSubsystemState::Rainy ||
-		Weather->CurrentWeather == EWeatherSubsystemState::Thunderstorm);
+	const bool bRaining = Weather && (Weather->GetWeatherState() == EAlsasuaWeatherState::Rainy ||
+		Weather->GetWeatherState() == EAlsasuaWeatherState::Thunderstorm);
 
 	TimeAccum += DeltaTime;
 
