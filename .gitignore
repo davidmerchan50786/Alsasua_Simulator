@@ -24,6 +24,12 @@ Content/CitySample/
 Content/Materiales/
 Content/Road/
 
+# Regenerados por UAlsasuaAssetGenerator::GenerarTodosLosAssets() — mismo
+# criterio que Content/Materiales/: mallas procedurales, no assets de origen.
+Content/Landmarks/
+Content/Meshes/
+Content/Mobiliario/
+
 # Descargas de Fab / biblioteca de Epic (Megascans, packs del launcher).
 # Son decenas de GB de .uasset: cada quien las baja con el plugin Fab.
 Content/Megascans/
