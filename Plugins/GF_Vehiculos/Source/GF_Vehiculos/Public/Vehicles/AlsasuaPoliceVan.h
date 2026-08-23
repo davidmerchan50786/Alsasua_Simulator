@@ -12,8 +12,10 @@ class GF_VEHICULOS_API AAlsasuaPoliceVan : public APawn
 public:
     AAlsasuaPoliceVan();
 
+    // Interceptor.fbx (Police Car & Helicopter) es una malla estática sin
+    // esqueleto, no un personaje: UStaticMeshComponent, no Skeletal.
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AAA|Physics")
-    class USkeletalMeshComponent* Mesh;
+    class UStaticMeshComponent* Mesh;
 
     // Sistema de sirenas y luces
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AAA|Effects")
