@@ -1,6 +1,7 @@
 #include "Plugins/AlsasuaCargadorPlugins.h"
 #include "Arranque/AlsasuaPilarArranque.h"
 #include "GameFeaturesSubsystem.h"
+#include "HAL/ConsoleManager.h"
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
 #include "Interfaces/IPluginManager.h"
@@ -354,3 +355,113 @@ void UAlsasuaCargadorPlugins::DesactivarTodos()
 		Descargadas);
 	ActivadosAqui.Reset();
 }
+
+void UAlsasuaCargadorPlugins::ActivarPilar(const FString& Nombre)
+{
+	if (Nombre.IsEmpty())
+	{
+		return;
+	}
+	UGameFeaturesSubsystem& GFS = UGameFeaturesSubsystem::Get();
+
+	// Dependencias transitivas primero: el modulo de un pilar dependiente no
+	// importa si la DLL de su base no esta cargada (ExplicitlyLoaded).
+	TArray<FString> Cadena;
+	TSet<FString> Vistos;
+	TFunction<void(const FString&)> Visitar = [&](const FString& Actual)
+	{
+		if (Actual.IsEmpty() || !Actual.StartsWith(TEXT("GF_")) ||
+			Vistos.Contains(Actual))
+		{
+			return;
+		}
+		Vistos.Add(Actual);
+		TSet<FString> Deps;
+		DependenciasDePlugin(Actual, Deps);
+		for (const FString& Dep : Deps)
+		{
+			Visitar(Dep);
+		}
+		Cadena.AddUnique(Actual); // postorden: bases antes que dependientes
+	};
+	Visitar(Nombre);
+
+	int32 EnCola = 0;
+	for (const FString& Pilar : Cadena)
+	{
+		TArray<FString> URLs;
+		UrlsDePlugin(Pilar, URLs);
+		if (URLs.Num() == 0)
+		{
+			UE_LOG(LogCargadorPlugins, Warning,
+				TEXT("[Plugins] ActivarPilar: %s no existe como plugin."),
+				*Pilar);
+			continue;
+		}
+		const bool bActivo = URLs.ContainsByPredicate([&GFS](const FString& URL)
+			{
+				return GFS.IsGameFeaturePluginActive(URL, /*bCheckForActivating*/true);
+			});
+		if (!bActivo)
+		{
+			ColaActivacion.Add(URLs[0]);
+			++EnCola;
+		}
+	}
+	UE_LOG(LogCargadorPlugins, Log,
+		TEXT("[Plugins] ActivarPilar %s: %d en cola (%d con dependencias)."),
+		*Nombre, EnCola, Cadena.Num());
+	ActivarSiguiente();
+}
+
+void UAlsasuaCargadorPlugins::DesactivarPilar(const FString& Nombre)
+{
+	UGameFeaturesSubsystem& GFS = UGameFeaturesSubsystem::Get();
+
+	TArray<FString> URLs;
+	UrlsDePlugin(Nombre, URLs);
+	int32 Apagadas = 0;
+	for (const FString& URL : URLs)
+	{
+		if (GFS.IsGameFeaturePluginActive(URL))
+		{
+			GFS.DeactivateGameFeaturePlugin(URL);
+			GFS.UnloadGameFeaturePlugin(URL);
+			++Apagadas;
+		}
+		ActivadosAqui.Remove(URL);
+	}
+	UE_LOG(LogCargadorPlugins, Log,
+		TEXT("[Plugins] DesactivarPilar %s: %d descargados."), *Nombre, Apagadas);
+}
+
+static UAlsasuaCargadorPlugins* CargadorDelMundo(UWorld* Mundo)
+{
+	return Mundo && Mundo->GetGameInstance()
+		? Mundo->GetGameInstance()->GetSubsystem<UAlsasuaCargadorPlugins>()
+		: nullptr;
+}
+
+FAutoConsoleCommandWithWorldAndArgs GCmdDesactivarPilar(
+	TEXT("Alsasua.Pilar.Desactivar"),
+	TEXT("Descarga un pilar GF_* en runtime. Uso: Alsasua.Pilar.Desactivar GF_Clima"),
+	FConsoleCommandWithWorldAndArgsDelegate::CreateLambda(
+		[](const TArray<FString>& Args, UWorld* Mundo)
+		{
+			if (UAlsasuaCargadorPlugins* C = CargadorDelMundo(Mundo); C && Args.Num() > 0)
+			{
+				C->DesactivarPilar(Args[0]);
+			}
+		}));
+
+FAutoConsoleCommandWithWorldAndArgs GCmdActivarPilar(
+	TEXT("Alsasua.Pilar.Activar"),
+	TEXT("Activa un pilar GF_* y sus dependencias en runtime. Uso: Alsasua.Pilar.Activar GF_Clima"),
+	FConsoleCommandWithWorldAndArgsDelegate::CreateLambda(
+		[](const TArray<FString>& Args, UWorld* Mundo)
+		{
+			if (UAlsasuaCargadorPlugins* C = CargadorDelMundo(Mundo); C && Args.Num() > 0)
+			{
+				C->ActivarPilar(Args[0]);
+			}
+		}));

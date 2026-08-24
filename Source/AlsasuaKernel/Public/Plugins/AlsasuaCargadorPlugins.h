@@ -35,6 +35,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Alsasua|Plugins")
 	void DesactivarTodos();
 
+	/** Activa un pilar y sus dependencias GF_* en runtime (criterio del plan
+	 *  §9: activar/desactivar sin reiniciar). Asíncrono vía cola común. */
+	UFUNCTION(BlueprintCallable, Category = "Alsasua|Plugins")
+	void ActivarPilar(const FString& Nombre);
+
+	/** Descarga un pilar en runtime: Deactivate+Unload de sus URLs. */
+	UFUNCTION(BlueprintCallable, Category = "Alsasua|Plugins")
+	void DesactivarPilar(const FString& Nombre);
+
 	/** "GF_Clima" -> URL de plugin del proyecto (via GetPluginURLByName). */
 	static FString UrlDePlugin(const FString& Nombre);
 	static void UrlsDePlugin(const FString& Nombre, TArray<FString>& Fuera);
