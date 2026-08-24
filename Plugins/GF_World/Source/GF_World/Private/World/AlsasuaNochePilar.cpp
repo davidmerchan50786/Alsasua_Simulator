@@ -1,6 +1,6 @@
 #include "World/AlsasuaNochePilar.h"
 #include "World/AlsasuaNightLightingSystem.h"
-#include "Engine/WorldSettings.h"
+#include "GameFramework/WorldSettings.h"
 
 int32 UAlsasuaNochePilar::EjecutarArranque()
 {

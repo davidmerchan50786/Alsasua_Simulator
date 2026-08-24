@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Arranque/AlsasuaPilarArranque.h"
 #include "DirectorArranque.generated.h"
 
 class USubsystem;

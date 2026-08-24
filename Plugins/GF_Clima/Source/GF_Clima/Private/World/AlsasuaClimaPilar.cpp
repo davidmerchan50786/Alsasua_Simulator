@@ -1,13 +1,13 @@
 #include "World/AlsasuaClimaPilar.h"
 #include "World/AlsasuaWeatherSystem.h"
 #include "Engine/World.h"
-#include "Engine/WorldSettings.h"
+#include "GameFramework/WorldSettings.h"
 
 bool UAlsasuaClimaPilar::ShouldCreateSubsystem(UObject* Outer) const
 {
 	// Solo en mundos de partida; en el editor cambiaria el cielo al abrir nivel.
 	UWorld* W = Cast<UWorld>(Outer->GetWorld());
-	return W && W->WorldType == EWorldType::GameOrPIE && Super::ShouldCreateSubsystem(Outer);
+	return W && (W->WorldType == EWorldType::Game || W->WorldType == EWorldType::PIE) && Super::ShouldCreateSubsystem(Outer);
 }
 
 void UAlsasuaClimaPilar::Deinitialize()

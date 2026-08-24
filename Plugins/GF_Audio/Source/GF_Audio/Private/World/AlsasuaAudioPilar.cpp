@@ -1,12 +1,12 @@
 #include "World/AlsasuaAudioPilar.h"
 #include "World/AlsasuaAmbientAudioSystem.h"
 #include "Engine/World.h"
-#include "Engine/WorldSettings.h"
+#include "GameFramework/WorldSettings.h"
 
 bool UAlsasuaAudioPilar::ShouldCreateSubsystem(UObject* Outer) const
 {
 	UWorld* W = Cast<UWorld>(Outer->GetWorld());
-	return W && W->WorldType == EWorldType::GameOrPIE && Super::ShouldCreateSubsystem(Outer);
+	return W && (W->WorldType == EWorldType::Game || W->WorldType == EWorldType::PIE) && Super::ShouldCreateSubsystem(Outer);
 }
 
 void UAlsasuaAudioPilar::Deinitialize()
