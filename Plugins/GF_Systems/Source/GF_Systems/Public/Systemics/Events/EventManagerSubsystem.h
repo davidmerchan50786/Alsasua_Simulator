@@ -3,6 +3,7 @@
 #include "Subsystems/WorldSubsystem.h"
 #include "Delegates/Delegate.h"
 #include "Contratos/AlsasuaContratosUI.h"
+#include "Arranque/AlsasuaPilarArranque.h"
 #include "Systemics/Urban/UrbanStateSubsystem.h"
 #include "EventManagerSubsystem.generated.h"
 
@@ -36,9 +37,9 @@ public:
     UFUNCTION(BlueprintCallable, Category="AAA|Director")
     void HandleEvidenceCollected(AActor* Owner, FName Tag);
 
-    typedef FAlsasuaEventoMundo FOnDirectorAction;
+    // UHT no resuelve typedefs en UPROPERTY: tipo real del contrato kernel.
     UPROPERTY(BlueprintAssignable)
-    FOnDirectorAction OnDirectorAction;
+    FAlsasuaEventoMundo OnDirectorAction;
 
     //~ IAlsasuaFuenteEventosMundo
     virtual FAlsasuaEventoMundo& EventoMundo() override { return OnDirectorAction; }

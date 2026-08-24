@@ -15,6 +15,7 @@
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "Contratos/AlsasuaContratosUI.h"
+#include "Arranque/AlsasuaPilarArranque.h"
 #include "AlsasuaAwningShutterSystem.generated.h"
 
 USTRUCT(BlueprintType)

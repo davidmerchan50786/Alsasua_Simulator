@@ -15,6 +15,7 @@
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "Contratos/AlsasuaContratosUI.h"
+#include "Arranque/AlsasuaPilarArranque.h"
 #include "AlsasuaTrafficSystem.generated.h"
 
 USTRUCT(BlueprintType)
@@ -46,6 +47,9 @@ class GF_TRAFICO_API UAlsasuaTrafficSystem : public UGameInstanceSubsystem, publ
     GENERATED_BODY()
 
 public:
+	virtual int32 EjecutarArranque() override;
+	virtual FString EtiquetaArranque() const override;
+	virtual int32 OrdenArranque() const override;
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
     virtual void Deinitialize() override;
 

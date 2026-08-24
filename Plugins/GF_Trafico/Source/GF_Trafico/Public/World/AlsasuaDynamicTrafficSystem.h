@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "Contratos/AlsasuaContratosUI.h"
+#include "Arranque/AlsasuaPilarArranque.h"
 #include "AlsasuaDynamicTrafficSystem.generated.h"
 
 UENUM(BlueprintType)
@@ -45,6 +46,10 @@ class GF_TRAFICO_API UAlsasuaDynamicTrafficSystem : public UGameInstanceSubsyste
     GENERATED_BODY()
 
 public:
+	virtual int32 EjecutarArranque() override;
+	virtual FString EtiquetaArranque() const override;
+	virtual int32 OrdenArranque() const override;
+	virtual void TiquearPilar(float Dt) override;
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
     UFUNCTION(BlueprintCallable, Category = "Alsasua|Traffic")

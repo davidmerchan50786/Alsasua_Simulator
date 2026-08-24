@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "Contratos/AlsasuaContratosUI.h"
+#include "Arranque/AlsasuaPilarArranque.h"
 #include "AlsasuaFarolaPlacer.generated.h"
 
 USTRUCT(BlueprintType)

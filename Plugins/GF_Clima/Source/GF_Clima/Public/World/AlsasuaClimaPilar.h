@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "Contratos/AlsasuaContratosUI.h"
+#include "Arranque/AlsasuaPilarArranque.h"
 #include "AlsasuaClimaPilar.generated.h"
 
 class UAlsasuaWeatherSystem;
