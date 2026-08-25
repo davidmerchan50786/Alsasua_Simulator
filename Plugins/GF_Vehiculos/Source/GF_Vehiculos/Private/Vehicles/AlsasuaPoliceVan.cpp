@@ -8,12 +8,17 @@ AAlsasuaPoliceVan::AAlsasuaPoliceVan()
     Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VehicleMesh"));
     RootComponent = Mesh;
 
-    // Interceptor real si Content/AssetsImportados/PoliceCarHelicopter existe
-    // (no se versiona — es "puesta a punto tras clonar", como las ortofotos).
-    // Fallback al SUV del VehicleVarietyPack, que sí se copia con el proyecto
-    // en la mayoría de los clones, antes de caer a la forma básica del motor.
+    // Cadena de fallback, de mejor a peor. Ninguno de los tres primeros se
+    // versiona (son "puesta a punto tras clonar", como las ortofotos):
+    //  1. Coche_Policia — hecho a medida para Alsasua (MeshyAI), livrea real.
+    //  2. Interceptor — genérico del pack "Police Car & Helicopter".
+    //  3. SM_SUV de VehicleVarietyPack, que sí se copia en la mayoría de clones.
+    //  4. Cubo del motor, si no hay nada.
     UStaticMesh* Malla = LoadObject<UStaticMesh>(nullptr,
-        TEXT("/Game/AssetsImportados/PoliceCarHelicopter/Models/Interceptor.Interceptor"));
+        TEXT("/Game/AssetsImportados/MeshyAI_Altsasu/Coche_Policia.Coche_Policia"));
+    if (!Malla)
+        Malla = LoadObject<UStaticMesh>(nullptr,
+            TEXT("/Game/AssetsImportados/PoliceCarHelicopter/Models/Interceptor.Interceptor"));
     if (!Malla)
         Malla = LoadObject<UStaticMesh>(nullptr,
             TEXT("/Game/VehicleVarietyPack/Meshes/SM_SUV.SM_SUV"));
