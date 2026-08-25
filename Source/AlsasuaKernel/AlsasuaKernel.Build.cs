@@ -32,7 +32,8 @@ public class AlsasuaKernel : ModuleRules
 
 		PrivateDependencyModuleNames.AddRange(new string[] {
 			"GameFeatures",
-			"Projects"
+			"Projects",
+			"Sockets"
 		});
 	}
 }
