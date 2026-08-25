@@ -15,14 +15,14 @@ public:
 	int32 SembrarVegetacion();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Alsasua|Vegetacion")
-	float DensidadHierba = 0.5f;
+	float DensidadHierba = 0.6f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Alsasua|Vegetacion")
-	float DensidadArbusto = 0.1f;
+	float DensidadArbusto = 0.15f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Alsasua|Vegetacion")
-	int32 MaxHierba = 5000;
+	int32 MaxHierba = 12000;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Alsasua|Vegetacion")
-	int32 MaxArbustos = 500;
+	int32 MaxArbustos = 1500;
 };

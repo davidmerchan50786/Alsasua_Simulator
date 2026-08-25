@@ -46,6 +46,11 @@ void AAguaNivel::CrearMaterialDinamico()
 	if (!BaseMat)
 	{
 		BaseMat = LoadObject<UMaterialInterface>(nullptr,
+			TEXT("/Game/Materiales/M_AguaNivel.M_AguaNivel"));
+	}
+	if (!BaseMat)
+	{
+		BaseMat = LoadObject<UMaterialInterface>(nullptr,
 			TEXT("/Engine/EngineMaterials/DefaultWaterMaterial.DefaultWaterMaterial"));
 	}
 	if (!BaseMat)
@@ -56,16 +61,18 @@ void AAguaNivel::CrearMaterialDinamico()
 	if (BaseMat)
 	{
 		WaterMatInst = UMaterialInstanceDynamic::Create(BaseMat, this);
-		if (WaterMatInst)
-		{
-			WaterMesh->SetMaterial(0, WaterMatInst);
-			WaterMatInst->SetVectorParameterValue(TEXT("WaterColor"), WaterColor);
-			WaterMatInst->SetScalarParameterValue(TEXT("OpacityBase"), OpacityBase);
-			WaterMatInst->SetScalarParameterValue(TEXT("FresnelPower"), FresnelPower);
-			WaterMatInst->SetScalarParameterValue(TEXT("WaveAmplitude"), WaveAmplitude);
-			WaterMatInst->SetScalarParameterValue(TEXT("WaveFrequency"), WaveFrequency);
-			WaterMatInst->SetScalarParameterValue(TEXT("WaveSteepness"), WaveSteepness);
-		}
+	if (WaterMatInst)
+	{
+		WaterMesh->SetMaterial(0, WaterMatInst);
+		WaterMatInst->SetVectorParameterValue(TEXT("WaterColor"), WaterColor);
+		WaterMatInst->SetScalarParameterValue(TEXT("OpacityBase"), OpacityBase);
+		WaterMatInst->SetScalarParameterValue(TEXT("FresnelPower"), FresnelPower);
+		WaterMatInst->SetScalarParameterValue(TEXT("WaveAmplitude"), WaveAmplitude);
+		WaterMatInst->SetScalarParameterValue(TEXT("WaveFrequency"), WaveFrequency);
+		WaterMatInst->SetScalarParameterValue(TEXT("WaveSteepness"), WaveSteepness);
+		WaterMatInst->SetScalarParameterValue(TEXT("WaveSpeed"), WaveSpeed);
+		WaterMatInst->SetScalarParameterValue(TEXT("ShorelineDepth"), ShorelineDepth);
+	}
 	}
 }
 

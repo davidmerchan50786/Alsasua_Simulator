@@ -138,7 +138,7 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 	HierbaPMC->SetMobility(EComponentMobility::Static);
 	HierbaPMC->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	HierbaPMC->SetCanEverAffectNavigation(false);
-	HierbaPMC->SetCullDistance(60000.f);
+	HierbaPMC->SetCullDistance(80000.f);
 	HierbaActor->SetRootComponent(HierbaPMC);
 
 	// El paquete externo aporta un arbusto completo. HISM conserva una sola draw
@@ -154,7 +154,7 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 		ArbustosHISM->SetMobility(EComponentMobility::Static);
 		ArbustosHISM->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		ArbustosHISM->SetCanEverAffectNavigation(false);
-		ArbustosHISM->SetCullDistances(0, 60000);
+		ArbustosHISM->SetCullDistances(0, 80000);
 		ArbustosHISM->RegisterComponent();
 	}
 	else
@@ -173,7 +173,7 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 		FloresHISM->SetMobility(EComponentMobility::Static);
 		FloresHISM->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		FloresHISM->SetCanEverAffectNavigation(false);
-		FloresHISM->SetCullDistances(0, 60000);
+		FloresHISM->SetCullDistances(0, 80000);
 		FloresHISM->RegisterComponent();
 	}
 	else
@@ -203,7 +203,7 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 		NaniteHISM->SetMobility(EComponentMobility::Static);
 		NaniteHISM->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		NaniteHISM->SetCanEverAffectNavigation(false);
-		NaniteHISM->SetCullDistances(0, 60000);
+		NaniteHISM->SetCullDistances(0, 80000);
 		NaniteHISM->RegisterComponent();
 	}
 
@@ -218,8 +218,8 @@ int32 UAlsasuaVegetationSpawner::SembrarVegetacion()
 	int32 ArbustoCount = 0;
 	int32 FlorCount = 0;
 	int32 NaniteCount = 0;
-	const float ProbFlor = FlorMesh ? 0.3f : 0.f;
-	const float ProbNanite = NaniteHISM ? 0.4f : 0.f;  // 40% hierba → Nanite real
+	const float ProbFlor = FlorMesh ? 0.35f : 0.f;
+	const float ProbNanite = NaniteHISM ? 0.55f : 0.f;  // 55% hierba → Nanite real
 	const float StepSize = 150.f; // sample every 1.5m
 	FRandomStream Rng(42);
 	const auto CercaDeAgua = [&PuntosAgua](const FVector& P) -> float

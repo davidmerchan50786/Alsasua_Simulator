@@ -109,7 +109,7 @@ UHierarchicalInstancedStaticMeshComponent* UCargadorArboles::ComponenteDe(const 
 	{
 		C->SetStaticMesh(MallaDefecto);
 	}
-	C->SetCullDistances(0, 60000);
+	C->SetCullDistances(0, 80000);
 	C->SetCastShadow(true);
 	C->RegisterComponent();
 	C->AttachToComponent(Host->GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
