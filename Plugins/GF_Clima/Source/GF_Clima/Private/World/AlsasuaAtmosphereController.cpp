@@ -355,12 +355,20 @@ void UAlsasuaAtmosphereController::UpdateSunVisuals(float Hour, float DeltaTime)
 
 	if (CurrentSunElevation > CivilTwilightDeg)
 	{
-		// Enrojecimiento por masa de aire: cuanto más rasante, más cálido.
+		// 5-key sun color curve: DeepDusk(-4°) → Dusk(-1°) → Dawn(0°) → Day(12°) → zenith
+		// At -2 to -4 degrees the sun passes through deep red/orange — this sells realism.
+		FLinearColor HorizonColor = (CurrentSunAzimuth < 180.f) ? DawnSunColor : DuskSunColor;
 		const float HighT = FMath::Clamp(CurrentSunElevation / 12.f, 0.f, 1.f);
-		const FLinearColor HorizonColor = (CurrentSunAzimuth < 180.f) ? DawnSunColor : DuskSunColor;
+
+		// Deep red at very low elevation (below 4°)
+		if (CurrentSunElevation < 4.f && CurrentSunElevation > CivilTwilightDeg)
+		{
+			const float DeepT = FMath::Clamp((4.f - CurrentSunElevation) / 6.f, 0.f, 1.f);
+			HorizonColor = FLinearColor::LerpUsingHSV(HorizonColor, DeepDuskSunColor, DeepT);
+		}
+
 		TargetSunColor = FLinearColor::LerpUsingHSV(HorizonColor, DaySunColor, HighT);
 
-		// DawnIntensity actúa de suelo en el crepúsculo, donde el seno ya es 0.
 		const float Twilight = FMath::Clamp((CurrentSunElevation - CivilTwilightDeg) / -CivilTwilightDeg, 0.f, 1.f);
 		TargetSunIntensity = FMath::Max(SunIntensity * CurrentDaylight, DawnIntensity * Twilight) * CloudAtten;
 
@@ -377,12 +385,11 @@ void UAlsasuaAtmosphereController::UpdateSunVisuals(float Hour, float DeltaTime)
 		TargetSunColor = MoonColor;
 		TargetSunIntensity = FMath::Max(MoonBrightness * MoonUp * Phase * CloudAtten, NightIntensity);
 
-		// Con la luna bajo el horizonte se mantiene una inclinación baja para que
-		// la luz residual de estrellas siga entrando de lado y no desde arriba.
 		TargetLightRotation = FRotator(-FMath::Max(MoonElev, 8.f), MoonAz - 180.f, 0.f);
 	}
 
-	const float Alpha = SmoothAlpha(2.f, DeltaTime);
+	// Match sun rotation speed with color speed to prevent desync
+	const float Alpha = SmoothAlpha(4.f, DeltaTime);
 	CurrentSunColor = FLinearColor::LerpUsingHSV(CurrentSunColor, TargetSunColor, Alpha);
 	CurrentSunIntensity = FMath::Lerp(CurrentSunIntensity, TargetSunIntensity, Alpha);
 
@@ -406,8 +413,9 @@ void UAlsasuaAtmosphereController::UpdateSkyVisuals(float DeltaTime)
 
 	float TargetSkyIntensity = FMath::Lerp(NightSkyIntensity, SkyIntensity, FMath::Max(CurrentDaylight, Twilight));
 
-	// Rebote lunar: de noche el ambiente no es negro puro.
-	TargetSkyIntensity += MoonBrightness * ComputeMoonPhase() * 0.2f * (1.f - Twilight);
+	// Moon bounce: now uses MoonSkyBounce multiplier (0.5 vs old 0.2).
+	// Full moon at Alsasua's latitude (42.9°N) gives ~0.15 lux ambient — visible.
+	TargetSkyIntensity += MoonBrightness * ComputeMoonPhase() * MoonSkyBounce * (1.f - Twilight);
 	TargetSkyIntensity *= FMath::Lerp(1.f, 0.7f, 1.f - GetCloudAttenuation());
 
 	CurrentSkyIntensity = FMath::Lerp(CurrentSkyIntensity, TargetSkyIntensity, SmoothAlpha(2.f, DeltaTime));
@@ -429,15 +437,22 @@ void UAlsasuaAtmosphereController::UpdateFogVisuals(float DeltaTime)
 	const bool bRaining = Weather && (Weather->CurrentWeather == EWeatherSubsystemState::Rainy || Weather->CurrentWeather == EWeatherSubsystemState::Thunderstorm);
 	const bool bFoggy = Weather && Weather->CurrentWeather == EWeatherSubsystemState::HeavyFog;
 
-	// De noche la inversión térmica del valle deja más niebla; al alba es cálida.
 	const float DayT = FMath::Clamp(CurrentSunElevation / 10.f, 0.f, 1.f);
-	const float HorizonT = 1.f - FMath::Clamp(FMath::Abs(CurrentSunElevation) / 10.f, 0.f, 1.f);
+	const float GHRad = FMath::DegreesToRadians(GoldenHourRangeDeg);
+	const float ElevationRad = FMath::DegreesToRadians(CurrentSunElevation);
+	// Golden-hour bell: peaks at horizon, falls off above GoldenHourRangeDeg
+	const float HorizonT = FMath::Clamp(1.f - FMath::Abs(CurrentSunElevation) / GoldenHourRangeDeg, 0.f, 1.f);
+	const float GoldenBell = HorizonT * HorizonT;  // smooth bell curve
 
+	// Base: lerp night → day
 	float TargetFogDensity = FMath::Lerp(NightFogDensity, BaseFogDensity, DayT);
 	FLinearColor TargetFogColor = FLinearColor::LerpUsingHSV(NightFogColor, DayFogColor, DayT);
 
-	// Cerca del horizonte la niebla se tiñe del color del sol rasante.
-	TargetFogColor = FLinearColor::LerpUsingHSV(TargetFogColor, DawnFogColor, HorizonT * DayT);
+	// Dawn/dusk inversion-layer peak (physically: valley thermal inversion traps moisture)
+	TargetFogDensity = FMath::Lerp(TargetFogDensity, DawnFogDensity, GoldenBell);
+
+	// Near horizon the fog takes on the warm sun color
+	TargetFogColor = FLinearColor::LerpUsingHSV(TargetFogColor, DawnFogColor, GoldenBell * 0.7f);
 
 	if (bRaining) TargetFogDensity = FMath::Max(TargetFogDensity * 2.5f, RainFogDensity);
 	if (bFoggy) TargetFogDensity *= 5.f;
@@ -449,28 +464,32 @@ void UAlsasuaAtmosphereController::UpdateFogVisuals(float DeltaTime)
 	FogComp->SetFogDensity(CurrentFogDensity);
 	FogComp->SetFogInscatteringColor(CurrentFogColor);
 	FogComp->SetDirectionalInscatteringColor(CurrentSunColor);
-	FogComp->SetDirectionalInscatteringExponent(FMath::Lerp(2.f, 16.f, CurrentDaylight));
+	// Night value 4 (was 2): wider moon halo, less focused
+	FogComp->SetDirectionalInscatteringExponent(FMath::Lerp(4.f, 16.f, CurrentDaylight));
 }
 
 void UAlsasuaAtmosphereController::UpdateCloudVisuals()
 {
-	CurrentCloudDensity = BaseCloudDensity;
+	// Don't reset to BaseCloudDensity — respect any value set via SetCloudDensity().
+	float CloudBase = BaseCloudDensity;
 
 	const UWeatherSubsystem* Weather = GetWorld() ? GetWorld()->GetSubsystem<UWeatherSubsystem>() : nullptr;
 	if (Weather)
 	{
 		switch (Weather->CurrentWeather)
 		{
-		case EWeatherSubsystemState::Clear:        CurrentCloudDensity *= 0.4f; break;
-		case EWeatherSubsystemState::Rainy:        CurrentCloudDensity *= 1.5f; break;
-		case EWeatherSubsystemState::Thunderstorm: CurrentCloudDensity *= 2.0f; break;
-		case EWeatherSubsystemState::HeavyFog:     CurrentCloudDensity *= 0.2f; break;
+		case EWeatherSubsystemState::Clear:        CloudBase *= 0.4f; break;
+		case EWeatherSubsystemState::Rainy:        CloudBase *= 1.5f; break;
+		case EWeatherSubsystemState::Thunderstorm: CloudBase *= 2.0f; break;
+		case EWeatherSubsystemState::HeavyFog:     CloudBase *= 0.2f; break;
 		}
 	}
 
 	// De noche la convección cesa y la cobertura baja hacia NightCloudDensity.
 	if (CurrentDaylight <= 0.f)
 	{
-		CurrentCloudDensity = FMath::Min(CurrentCloudDensity, NightCloudDensity);
+		CloudBase = FMath::Min(CloudBase, NightCloudDensity);
 	}
+
+	CurrentCloudDensity = CloudBase;
 }

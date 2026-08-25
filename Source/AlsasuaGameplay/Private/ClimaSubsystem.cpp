@@ -2,6 +2,8 @@
 #include "ClimaSubsystem.h"
 #include "ArranqueMundo.h"
 #include "DiaNocheSubsystem.h"
+#include "World/Time/TimeOfDayManager.h"
+#include "AlsasuaServiceRegistry.h"
 #include "Engine/ExponentialHeightFog.h"
 #include "Components/ExponentialHeightFogComponent.h"
 #include "NiagaraFunctionLibrary.h"
@@ -46,13 +48,23 @@ void UClimaSubsystem::ElegirClimaAleatorio()
 
 void UClimaSubsystem::AplicarNiebla()
 {
+	// AtmosphereController (GF_Clima) is the sole fog density owner when active.
+	// Detect via ITimeOfDayService registration — no GF_Clima header dependency.
 	if (!Niebla_) return;
+	if (UWorld* W = GetWorld())
+	{
+		if (UGameInstance* GI = W->GetGameInstance())
+		{
+			if (UAlsasuaServiceRegistry* Reg = GI->GetSubsystem<UAlsasuaServiceRegistry>())
+			{
+				if (Reg->Pedir(FName("TimeOfDay")) != nullptr) return;
+			}
+		}
+	}
 	UExponentialHeightFogComponent* F = Niebla_->GetComponent();
 	if (!F) return;
-	// Densidad base + niebla meteorológica + algo de lluvia.
 	const float Dens = 0.02f + Cur.Niebla * 0.18f + Cur.Lluvia * 0.04f;
 	F->SetFogDensity(Dens);
-	// Color más gris/plomizo cuanto más nublado.
 	const FLinearColor Claro(0.6f, 0.7f, 0.85f), Plomo(0.5f, 0.52f, 0.55f);
 	F->SetFogInscatteringColor(FMath::Lerp(Claro, Plomo, Cur.Nubosidad));
 }

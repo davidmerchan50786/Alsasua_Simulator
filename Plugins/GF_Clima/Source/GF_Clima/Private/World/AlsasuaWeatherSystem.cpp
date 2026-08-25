@@ -1,4 +1,5 @@
 #include "World/AlsasuaWeatherSystem.h"
+#include "World/AlsasuaAtmosphereController.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "Components/ExponentialHeightFogComponent.h"
@@ -337,6 +338,9 @@ void UAlsasuaWeatherSystem::ApplyWeatherEffects()
 {
     UWorld* World = GetWorld();
     if (!World) return;
+
+    // AtmosphereController owns fog density when active — don't fight it.
+    if (World->GetSubsystem<UAlsasuaAtmosphereController>()) return;
 
     // Fase 5: Niebla matutina en ribera del Arakil (6-9 AM).
     float RiverFogBoost = 0.f;

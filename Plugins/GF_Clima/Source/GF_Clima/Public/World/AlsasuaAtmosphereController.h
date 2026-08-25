@@ -90,6 +90,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere", meta = (ClampMin = "0.0"))
 	float UpdateInterval = 0.1f;
 
+	// ── Sun ──────────────────────────────────────────────────────────────────
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Sun")
 	FLinearColor DawnSunColor = FLinearColor(1.0f, 0.6f, 0.3f);
 
@@ -98,6 +100,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Sun")
 	FLinearColor DuskSunColor = FLinearColor(1.0f, 0.4f, 0.15f);
+
+	/** Deep red for the lowest sun (-2 to -4 deg elevation). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Sun")
+	FLinearColor DeepDuskSunColor = FLinearColor(0.9f, 0.2f, 0.05f);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Sun")
 	float SunIntensity = 10.f;
@@ -123,11 +129,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Sun")
 	float SunVolumetricScattering = 1.f;
 
+	// ── Fog ──────────────────────────────────────────────────────────────────
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Fog")
 	float BaseFogDensity = 0.005f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Fog")
 	float NightFogDensity = 0.01f;
+
+	/** Dawn/dusk inversion-layer fog peak (physically: valley thermal inversion). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Fog")
+	float DawnFogDensity = 0.018f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Fog")
 	float RainFogDensity = 0.02f;
@@ -151,6 +163,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Fog")
 	float VolumetricFogDistance = 25000.f;
 
+	/** Extended golden-hour range in degrees (±). Default 15° covers Alsasua's latitude. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Fog")
+	float GoldenHourRangeDeg = 15.f;
+
+	// ── Clouds ───────────────────────────────────────────────────────────────
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Clouds")
 	float CloudSpeed = 30.f;
 
@@ -159,6 +177,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Clouds")
 	float NightCloudDensity = 0.3f;
+
+	// ── Sky ──────────────────────────────────────────────────────────────────
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Sky")
 	FLinearColor DaySkyColor = FLinearColor(0.1f, 0.3f, 0.8f);
@@ -172,11 +192,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Sky")
 	float NightSkyIntensity = 0.05f;
 
+	// ── Moon ─────────────────────────────────────────────────────────────────
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Moon")
 	float MoonBrightness = 0.3f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Moon")
 	FLinearColor MoonColor = FLinearColor(0.7f, 0.75f, 0.9f);
+
+	/** Moon contribution multiplier to sky light (was 0.2, too dim). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Moon")
+	float MoonSkyBounce = 0.5f;
 
 private:
 	void FindOrCreateAtmosphereActors();
