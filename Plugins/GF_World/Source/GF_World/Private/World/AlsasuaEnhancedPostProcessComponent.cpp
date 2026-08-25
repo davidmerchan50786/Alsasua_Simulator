@@ -1,6 +1,7 @@
 #include "World/AlsasuaEnhancedPostProcessComponent.h"
+#include "World/Time/TimeOfDayManager.h"
+#include "Services/ITimeOfDayService.h"
 #include "AlsasuaServiceRegistry.h"
-#include "ContratosClima.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/PostProcessVolume.h"
@@ -27,17 +28,19 @@ void UAlsasuaEnhancedPostProcessComponent::UpdatePostProcess(float DeltaTime)
 	UWorld* W = GetWorld();
 	if (!W) return;
 
-	UAlsasuaServiceRegistry* Registro = UAlsasuaServiceRegistry::Get(W);
-	ITimeOfDayService* Tiempo = Registro ? Registro->PedirComo<ITimeOfDayService>("Clima.TiempoDelDia") : nullptr;
+	UAlsasuaServiceRegistry* Reg = UAlsasuaServiceRegistry::Get(W);
+	ITimeOfDayService* Atmos = Reg ? Reg->PedirComo<ITimeOfDayService>(FName("TimeOfDay")) : nullptr;
+	UTimeOfDayManager* TimeMgr = W->GetSubsystem<UTimeOfDayManager>();
 
-	// La mezcla día/noche sale de la elevación real del sol, no de tramos de
-	// hora: así el grading cambia cuando cambia la luz, no a las 20:00 en punto.
-	// Sin servicio publicado (plugin dormido) se asume día, como en el resto
-	// de consumidores.
-	float DayFactor = 1.f;
-	if (Tiempo)
+	float DayFactor;
+	if (Atmos)
 	{
-		DayFactor = FMath::Clamp(Tiempo->GetSunPitch() / 10.f, 0.f, 1.f);
+		DayFactor = FMath::Clamp(Atmos->GetSunPitch() / 10.f, 0.f, 1.f);
+	}
+	else
+	{
+		const float Hour = TimeMgr ? TimeMgr->CurrentTime : 12.f;
+		DayFactor = (Hour >= 7.f && Hour <= 20.f) ? 1.f : 0.f;
 	}
 
 	CurrentTint = FLinearColor::LerpUsingHSV(NightColorTint, DayColorTint, DayFactor);
@@ -57,19 +60,21 @@ void UAlsasuaEnhancedPostProcessComponent::UpdatePostProcess(float DeltaTime)
 	CurrentExposureBias = FMath::FInterpTo(CurrentExposureBias,
 		FMath::Lerp(NightExposureBias, DayExposureBias, DayFactor), DeltaTime, 1.f);
 
-	TArray<AActor*> PPVolumes;
-	UGameplayStatics::GetAllActorsOfClass(W, APostProcessVolume::StaticClass(), PPVolumes);
+	// Refresh cached PP volumes every 5s instead of every tick
+	PPVolumeRefreshTimer += DeltaTime;
+	if (PPVolumeRefreshTimer >= 5.f || CachedPPVolumes.Num() == 0)
+	{
+		PPVolumeRefreshTimer = 0.f;
+		CachedPPVolumes.Empty();
+		UGameplayStatics::GetAllActorsOfClass(W, APostProcessVolume::StaticClass(), CachedPPVolumes);
+	}
 
-	for (AActor* VolActor : PPVolumes)
+	for (AActor* VolActor : CachedPPVolumes)
 	{
 		APostProcessVolume* PPV = Cast<APostProcessVolume>(VolActor);
 		if (!PPV) continue;
 
 		FPostProcessSettings& S = PPV->Settings;
-
-		// ColorSaturation, BloomIntensity, VignetteIntensity are owned by
-		// UAlsasuaZonePostProcess (per-barrio grading). Only set our unique
-		// fields here to avoid fighting every tick.
 
 		S.bOverride_MotionBlurAmount = true;
 		S.MotionBlurAmount = NormalMotionBlur;

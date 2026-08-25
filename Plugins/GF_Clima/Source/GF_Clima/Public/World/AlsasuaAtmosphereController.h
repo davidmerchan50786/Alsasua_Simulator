@@ -2,8 +2,7 @@
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "Tickable.h"
-#include "ContratosClima.h"
-#include "Contratos/AlsasuaContratosUI.h"
+#include "Services/ITimeOfDayService.h"
 #include "AlsasuaAtmosphereController.generated.h"
 
 class UExponentialHeightFogComponent;
@@ -18,17 +17,24 @@ class AExponentialHeightFog;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTimeOfDayVisualChanged, float, SunAngle);
 
 UCLASS()
-class GF_CLIMA_API UAlsasuaAtmosphereController : public UWorldSubsystem, public FTickableGameObject, public ITimeOfDayService, public IAlsasuaDuenoCielo
+class GF_CLIMA_API UAlsasuaAtmosphereController : public UWorldSubsystem, public FTickableGameObject, public ITimeOfDayService
 {
 	GENERATED_BODY()
 
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
-	virtual void Deinitialize() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual bool IsAllowedToTick() const override { return true; }
 	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(AlsasuaAtmosphereController, STATGROUP_Game); }
-	virtual bool IsTickable() const override { return !IsTemplate(); }   // no ticar el CDO (CLAUDE.md §9)
+	virtual bool IsTickable() const override { return !IsTemplate(); }
+
+	// ITimeOfDayService
+	virtual float GetHour() const override;
+	virtual float GetSunPitch() const override;
+	virtual FRotator GetSunDirection() const override;
+	virtual bool IsNight() const override;
+	virtual FLinearColor GetSunColor() const override;
+	virtual float GetSunIntensity() const override;
 
 	UFUNCTION(BlueprintCallable, Category = "Alsasua|Atmosphere")
 	void SetSunAngle(float AngleDeg);
@@ -57,14 +63,6 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Alsasua|Atmosphere")
 	FOnTimeOfDayVisualChanged OnTimeOfDayVisualChanged;
 
-	// ── Contrato ITimeOfDayService (publicado como "Clima.TiempoDelDia") ──
-	virtual float GetSunPitch() const override { return GetSunElevationDeg(); }
-	virtual float GetHour() const override { return CurrentHour; }
-	virtual bool IsNight() const override { return CurrentSunElevation <= 0.f; }
-	virtual FVector GetSunDirection() const override;
-	virtual FLinearColor GetSunColor() const override { return CurrentSunColor; }
-	virtual float GetSunIntensity() const override { return CurrentSunIntensity; }
-
 	// ── Emplazamiento: Alsasua / Altsasu (Navarra) ─────────────────────────
 	// La posición del sol se calcula de verdad a partir de estos datos, así que
 	// la altura de mediodía, el azimut de salida/puesta y la duración del día
@@ -92,6 +90,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere", meta = (ClampMin = "0.0"))
 	float UpdateInterval = 0.1f;
 
+	// ── Sun ──────────────────────────────────────────────────────────────────
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Sun")
 	FLinearColor DawnSunColor = FLinearColor(1.0f, 0.6f, 0.3f);
 
@@ -100,6 +100,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Sun")
 	FLinearColor DuskSunColor = FLinearColor(1.0f, 0.4f, 0.15f);
+
+	/** Deep red for the lowest sun (-2 to -4 deg elevation). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Sun")
+	FLinearColor DeepDuskSunColor = FLinearColor(0.9f, 0.2f, 0.05f);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Sun")
 	float SunIntensity = 10.f;
@@ -125,11 +129,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Sun")
 	float SunVolumetricScattering = 1.f;
 
+	// ── Fog ──────────────────────────────────────────────────────────────────
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Fog")
 	float BaseFogDensity = 0.005f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Fog")
 	float NightFogDensity = 0.01f;
+
+	/** Dawn/dusk inversion-layer fog peak (physically: valley thermal inversion). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Fog")
+	float DawnFogDensity = 0.018f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Fog")
 	float RainFogDensity = 0.02f;
@@ -153,6 +163,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Fog")
 	float VolumetricFogDistance = 25000.f;
 
+	/** Extended golden-hour range in degrees (±). Default 15° covers Alsasua's latitude. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Fog")
+	float GoldenHourRangeDeg = 15.f;
+
+	// ── Clouds ───────────────────────────────────────────────────────────────
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Clouds")
 	float CloudSpeed = 30.f;
 
@@ -161,6 +177,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Clouds")
 	float NightCloudDensity = 0.3f;
+
+	// ── Sky ──────────────────────────────────────────────────────────────────
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Sky")
 	FLinearColor DaySkyColor = FLinearColor(0.1f, 0.3f, 0.8f);
@@ -174,17 +192,85 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Sky")
 	float NightSkyIntensity = 0.05f;
 
+	// ── Moon ─────────────────────────────────────────────────────────────────
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Moon")
 	float MoonBrightness = 0.3f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Moon")
 	FLinearColor MoonColor = FLinearColor(0.7f, 0.75f, 0.9f);
 
+	/** Moon contribution multiplier to sky light (was 0.2, too dim). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Moon")
+	float MoonSkyBounce = 0.5f;
+
+	// ── Sky Atmosphere (Rayleigh / Mie) ─────────────────────────────────────
+
+	/** Base Rayleigh scattering color. Shifts warm at golden hour. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
+	FLinearColor DayRayleighColor = FLinearColor(0.00582f, 0.01355f, 0.0331f);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
+	float DayRayleighScale = 1.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
+	float NightRayleighScale = 0.1f;
+
+	/** Rayleigh color shifts toward orange/red at low sun. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
+	FLinearColor SunsetRayleighColor = FLinearColor(0.06f, 0.015f, 0.008f);
+
+	/** Rayleigh scale drops at sunset (less blue scattering, more red path length). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
+	float SunsetRayleighScale = 0.6f;
+
+	/** Rayleigh scale increases with rain (cleaner air scatters more blue). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
+	float RainRayleighScale = 1.3f;
+
+	/** Rayleigh distribution altitude (km). Lower = denser low-altitude sky. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
+	float RayleighDistribution = 8.0f;
+
+	/** Base Mie scattering (haze around sun). Increases at golden hour. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
+	FLinearColor DayMieColor = FLinearColor(0.005f, 0.005f, 0.005f);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
+	float DayMieScale = 0.5f;
+
+	/** Mie increases at golden hour (haze bands near horizon). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
+	float SunsetMieScale = 1.5f;
+
+	/** Mie sky-high during rain/fog (uniform gray haze). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
+	float RainMieScale = 3.0f;
+
+	/** Mie anisotropy: higher = tighter sun halo, lower = wider glow. 0.85-0.999 typical. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
+	float DayMieAnisotropy = 0.9f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
+	float SunsetMieAnisotropy = 0.95f;
+
+	/** Mie distribution altitude (km). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
+	float MieDistribution = 1.2f;
+
+	/** Multi-scattering: 0 = single scatter only, 2 = recommended default for LUT quality. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
+	float DayMultiScattering = 2.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
+	float NightMultiScattering = 0.5f;
+
 private:
 	void FindOrCreateAtmosphereActors();
 	void ApplyLightSetup();
 	void UpdateAtmosphere(float Hour, float DeltaTime);
 	void UpdateSunVisuals(float Hour, float DeltaTime);
+	void UpdateSkyAtmosphereVisuals(float DeltaTime);
 	void UpdateFogVisuals(float DeltaTime);
 	void UpdateSkyVisuals(float DeltaTime);
 	void UpdateCloudVisuals();
@@ -215,9 +301,6 @@ private:
 
 	float TimeToUpdate = 0.f;
 
-	/** Hora simulada actual (0-24); la escribe UpdateAtmosphere cada tick. */
-	float CurrentHour = 12.f;
-
 	FLinearColor CurrentSunColor = FLinearColor::White;
 	FLinearColor CurrentFogColor = FLinearColor(0.7f, 0.75f, 0.85f);
 	float CurrentFogDensity = 0.005f;
@@ -227,4 +310,12 @@ private:
 	float CurrentSunElevation = 45.f;
 	float CurrentSunAzimuth = 180.f;
 	float CurrentDaylight = 1.f;
+
+	// SkyAtmosphere smooth state
+	FLinearColor CurrentRayleighColor = FLinearColor(0.00582f, 0.01355f, 0.0331f);
+	float CurrentRayleighScale = 1.0f;
+	float CurrentMieScale = 0.5f;
+	FLinearColor CurrentMieColor = FLinearColor(0.005f, 0.005f, 0.005f);
+	float CurrentMieAnisotropy = 0.9f;
+	float CurrentMultiScattering = 2.0f;
 };
