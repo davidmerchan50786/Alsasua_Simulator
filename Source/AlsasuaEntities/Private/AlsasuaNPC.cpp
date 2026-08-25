@@ -4,6 +4,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/AlsasuaParanoiaComponent.h"
 #include "Audio/AlsasuaWhisperManager.h"
+#include "Sound/SoundBase.h"
 
 AAlsasuaNPC::AAlsasuaNPC()
 {
@@ -11,6 +12,35 @@ AAlsasuaNPC::AAlsasuaNPC()
 
 	ParanoiaComp = CreateDefaultSubobject<UAlsasuaParanoiaComponent>(TEXT("ParanoiaComp"));
 	WhisperComp = CreateDefaultSubobject<UAlsasuaWhisperManager>(TEXT("WhisperComp"));
+}
+
+void AAlsasuaNPC::BeginPlay()
+{
+	Super::BeginPlay();
+	if (ParanoiaComp)
+	{
+		ParanoiaComp->OnParanoiaChanged.AddDynamic(this, &AAlsasuaNPC::OnParanoiaLevelChanged);
+	}
+}
+
+void AAlsasuaNPC::OnParanoiaLevelChanged(float NewLevel)
+{
+	// Whisper at paranoia thresholds — subtle audio feedback for nearby players.
+	if (WhisperComp && !bMuerto)
+	{
+		static USoundBase* WhisperSound = nullptr;
+		if (!WhisperSound)
+			WhisperSound = LoadObject<USoundBase>(nullptr, TEXT("/Game/Audio/SC_Whisper.SB_Whisper"));
+
+		if (WhisperSound)
+		{
+			if (NewLevel > 75.f && LastWhisperThreshold < 75.f)
+				WhisperComp->PlaySpatialWhisper(WhisperSound, 0.6f);
+			else if (NewLevel > 50.f && LastWhisperThreshold < 50.f)
+				WhisperComp->PlaySpatialWhisper(WhisperSound, 0.3f);
+		}
+	}
+	LastWhisperThreshold = NewLevel;
 }
 
 void AAlsasuaNPC::RecibirDano(int32 Cantidad, FVector Origen, ETipoDano Tipo)

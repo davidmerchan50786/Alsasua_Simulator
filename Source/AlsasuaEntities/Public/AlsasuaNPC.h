@@ -51,4 +51,12 @@ public:
 protected:
 	FVector UltimoOrigenDano = FVector::ZeroVector;
 	void Morir();
+
+	virtual void BeginPlay() override;
+
+private:
+	float LastWhisperThreshold = 0.f;
+
+	UFUNCTION()
+	void OnParanoiaLevelChanged(float NewLevel);
 };

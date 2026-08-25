@@ -14,6 +14,8 @@ public:
     FOnParanoiaLevelChanged OnParanoiaChanged;
     UFUNCTION(BlueprintCallable, Category = "Alsasua|Paranoia")
     void AddStress(float Amount);
+    UFUNCTION(BlueprintCallable, Category = "Alsasua|Paranoia")
+    float GetParanoiaLevel() const { return CurrentParanoia; }
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Paranoia")
     float DecayRate = 0.5f;
 protected:
