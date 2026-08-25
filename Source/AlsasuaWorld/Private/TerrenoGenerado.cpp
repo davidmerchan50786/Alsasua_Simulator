@@ -686,16 +686,57 @@ void ATerrenoGenerado::ActualizarLODs()
 	FRotator CamRot;
 	PC->GetPlayerViewPoint(CamLoc, CamRot);
 
-	for (FInfoChunk& Info : ChunksInfo)
+	// Pass 1: compute raw LOD per chunk from camera distance
+	const int32 NumChunks = ChunksInfo.Num();
+	TArray<int32> RawLOD;
+	RawLOD.SetNumUninitialized(NumChunks);
+
+	for (int32 i = 0; i < NumChunks; i++)
 	{
-		const double Dist = FVector::Dist(CamLoc, Info.CentroWorld);
+		const double Dist = FVector::Dist(CamLoc, ChunksInfo[i].CentroWorld);
+		if (Dist < LOD1Distance)      RawLOD[i] = 0;
+		else if (Dist < LOD2Distance) RawLOD[i] = 1;
+		else                          RawLOD[i] = 2;
+	}
 
-		const bool bShowLOD0 = Dist < LOD1Distance;
-		const bool bShowLOD1 = !bShowLOD0 && Dist < LOD2Distance;
-		const bool bShowLOD2 = !bShowLOD0 && !bShowLOD1;
+	// Pass 2: neighbor constraint — no chunk's LOD may be more than 1 level
+	// worse than any 4-connected neighbor. Prevents T-junction cracks.
+	TArray<int32> FinalLOD = RawLOD;
+	bool bChanged = true;
+	int32 Iterations = 0;
+	while (bChanged && Iterations < 8)
+	{
+		bChanged = false;
+		for (int32 Cy = 0; Cy < NumChunksY; Cy++)
+		{
+			for (int32 Cx = 0; Cx < NumChunksX; Cx++)
+			{
+				const int32 Idx = Cy * NumChunksX + Cx;
+				int32 MaxNeighborLOD = FinalLOD[Idx];
+				if (Cx > 0)                  MaxNeighborLOD = FMath::Max(MaxNeighborLOD, FinalLOD[Idx - 1]);
+				if (Cx < NumChunksX - 1)     MaxNeighborLOD = FMath::Max(MaxNeighborLOD, FinalLOD[Idx + 1]);
+				if (Cy > 0)                  MaxNeighborLOD = FMath::Max(MaxNeighborLOD, FinalLOD[Idx - NumChunksX]);
+				if (Cy < NumChunksY - 1)     MaxNeighborLOD = FMath::Max(MaxNeighborLOD, FinalLOD[Idx + NumChunksX]);
 
-		if (Info.MeshLOD0) Info.MeshLOD0->SetMeshSectionVisible(0, bShowLOD0);
-		if (Info.MeshLOD1) Info.MeshLOD1->SetMeshSectionVisible(0, bShowLOD1);
-		if (Info.MeshLOD2) Info.MeshLOD2->SetMeshSectionVisible(0, bShowLOD2);
+				const int32 Clamped = FMath::Min(FinalLOD[Idx], MaxNeighborLOD);
+				if (Clamped != FinalLOD[Idx])
+				{
+					FinalLOD[Idx] = Clamped;
+					bChanged = true;
+				}
+			}
+		}
+		Iterations++;
+	}
+
+	// Pass 3: apply visibility
+	for (int32 i = 0; i < NumChunks; i++)
+	{
+		FInfoChunk& Info = ChunksInfo[i];
+		const int32 LOD = FinalLOD[i];
+
+		if (Info.MeshLOD0) Info.MeshLOD0->SetMeshSectionVisible(0, LOD == 0);
+		if (Info.MeshLOD1) Info.MeshLOD1->SetMeshSectionVisible(0, LOD == 1);
+		if (Info.MeshLOD2) Info.MeshLOD2->SetMeshSectionVisible(0, LOD == 2);
 	}
 }
