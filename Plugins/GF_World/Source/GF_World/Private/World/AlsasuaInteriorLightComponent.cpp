@@ -163,9 +163,20 @@ void UAlsasuaInteriorLightComponent::UpdateInteriorLights(float DeltaTime)
 		float TargetIntensity = 0.f;
 		if (LightActive[i] && CurrentBlend > 0.01f)
 		{
-			LightFlickerPhase[i] += DeltaTime * 0.5f;
-			const float Flicker = 0.9f + 0.1f * FMath::Sin(LightFlickerPhase[i] + i * 2.1f);
-			TargetIntensity = LightIntensity * CurrentBlend * Flicker;
+			LightFlickerPhase[i] += DeltaTime;
+
+			// Base sine: slow warm pulse (0.92-1.0 range)
+			const float SlowPulse = 0.92f + 0.08f * FMath::Sin(LightFlickerPhase[i] * 0.3f + i * 2.1f);
+
+			// Occasional sharp flicker: every ~4-8 seconds a brief dip (TV channel change, bulb wobble)
+			const float FlickerTime = FMath::Fmod(LightFlickerPhase[i] * 0.15f + i * 3.7f, 1.f);
+			const float SharpFlicker = (FlickerTime < 0.05f) ? FMath::Lerp(0.7f, 1.f, FlickerTime / 0.05f) : 1.f;
+
+			// Rare TV glow: ~3% of lights shift cooler and pulse faster (someone watching TV)
+			const bool bTV = FMath::Fmod(i * 0.61803398f, 1.f) < 0.03f;
+			const float TVPulse = bTV ? (0.85f + 0.15f * FMath::Sin(LightFlickerPhase[i] * 2.5f)) : 1.f;
+
+			TargetIntensity = LightIntensity * CurrentBlend * SlowPulse * SharpFlicker * TVPulse;
 		}
 
 		const float Nueva = FMath::FInterpTo(UltimaIntensidad[i], TargetIntensity, DeltaTime, 3.f);
