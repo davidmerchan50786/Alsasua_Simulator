@@ -3,6 +3,8 @@
 #include "Components/ActorComponent.h"
 #include "AlsasuaEnhancedPostProcessComponent.generated.h"
 
+class APostProcessVolume;
+
 /**
  * Componente de post-procesado avanzado. Extiende el GameplayPostProcessComponent
  * con: color grading LUT dinámico, chromatic aberration, vignette nocturno,
@@ -80,4 +82,8 @@ private:
 	float CurrentVignette = 0.15f;
 	float CurrentBloom = 0.35f;
 	float CurrentExposureBias = 0.f;
+
+	// Cached PP volumes (refresh every 5s instead of GetAllActors every 0.1s)
+	float PPVolumeRefreshTimer = 0.f;
+	TArray<AActor*> CachedPPVolumes;
 };

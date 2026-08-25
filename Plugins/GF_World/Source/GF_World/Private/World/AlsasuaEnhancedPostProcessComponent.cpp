@@ -32,8 +32,6 @@ void UAlsasuaEnhancedPostProcessComponent::UpdatePostProcess(float DeltaTime)
 	ITimeOfDayService* Atmos = Reg ? Reg->PedirComo<ITimeOfDayService>(FName("TimeOfDay")) : nullptr;
 	UTimeOfDayManager* TimeMgr = W->GetSubsystem<UTimeOfDayManager>();
 
-	// La mezcla día/noche sale de la elevación real del sol, no de tramos de
-	// hora: así el grading cambia cuando cambia la luz, no a las 20:00 en punto.
 	float DayFactor;
 	if (Atmos)
 	{
@@ -62,19 +60,21 @@ void UAlsasuaEnhancedPostProcessComponent::UpdatePostProcess(float DeltaTime)
 	CurrentExposureBias = FMath::FInterpTo(CurrentExposureBias,
 		FMath::Lerp(NightExposureBias, DayExposureBias, DayFactor), DeltaTime, 1.f);
 
-	TArray<AActor*> PPVolumes;
-	UGameplayStatics::GetAllActorsOfClass(W, APostProcessVolume::StaticClass(), PPVolumes);
+	// Refresh cached PP volumes every 5s instead of every tick
+	PPVolumeRefreshTimer += DeltaTime;
+	if (PPVolumeRefreshTimer >= 5.f || CachedPPVolumes.Num() == 0)
+	{
+		PPVolumeRefreshTimer = 0.f;
+		CachedPPVolumes.Empty();
+		UGameplayStatics::GetAllActorsOfClass(W, APostProcessVolume::StaticClass(), CachedPPVolumes);
+	}
 
-	for (AActor* VolActor : PPVolumes)
+	for (AActor* VolActor : CachedPPVolumes)
 	{
 		APostProcessVolume* PPV = Cast<APostProcessVolume>(VolActor);
 		if (!PPV) continue;
 
 		FPostProcessSettings& S = PPV->Settings;
-
-		// ColorSaturation, BloomIntensity, VignetteIntensity are owned by
-		// UAlsasuaZonePostProcess (per-barrio grading). Only set our unique
-		// fields here to avoid fighting every tick.
 
 		S.bOverride_MotionBlurAmount = true;
 		S.MotionBlurAmount = NormalMotionBlur;

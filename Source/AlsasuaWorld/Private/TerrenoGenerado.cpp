@@ -550,6 +550,12 @@ UMaterialInterface* ATerrenoGenerado::CrearMaterialTerreno()
 		return Mat;
 	}
 
+	// Slope-based blended material (grass/rock/ground/snow via vertex color)
+	if (UMaterialInterface* Mat = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_TerrenoEnhanced.M_TerrenoEnhanced")))
+	{
+		return Mat;
+	}
+
 	if (UMaterialInterface* Mat = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materiales/M_TerrenoAlsasua.M_TerrenoAlsasua")))
 	{
 		return Mat;
