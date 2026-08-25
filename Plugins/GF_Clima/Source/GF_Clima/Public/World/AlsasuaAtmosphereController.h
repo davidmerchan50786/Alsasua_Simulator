@@ -129,6 +129,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Sun")
 	float SunVolumetricScattering = 1.f;
 
+	/** Light shaft override direction for god rays through foliage. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Sun")
+	FVector LightShaftDirection = FVector(-1.f, 0.f, -1.f);
+
 	// ── Fog ──────────────────────────────────────────────────────────────────
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Fog")
@@ -265,6 +269,28 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
 	float NightMultiScattering = 0.5f;
 
+	// ── Night Sky (Stars + Moon Corona) ───────────────────────────────────
+
+	/** Star visibility: 0 = invisible, 1 = full. Fades with daylight + clouds. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Stars")
+	float StarIntensity = 1.0f;
+
+	/** Star brightness scales with moon phase (full moon washes out dim stars). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Stars")
+	float MoonWashoutFactor = 0.3f;
+
+	/** Milky Way band visibility (extra diffuse glow on the sky dome). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Stars")
+	float MilkyWayIntensity = 0.15f;
+
+	/** Moon corona glow radius in degrees. Larger = more atmospheric scattering. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Moon")
+	float MoonCoronaRadius = 15.f;
+
+	/** Moon corona brightness (emissive halo). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Moon")
+	float MoonCoronaIntensity = 0.5f;
+
 private:
 	void FindOrCreateAtmosphereActors();
 	void ApplyLightSetup();
@@ -274,6 +300,7 @@ private:
 	void UpdateFogVisuals(float DeltaTime);
 	void UpdateSkyVisuals(float DeltaTime);
 	void UpdateCloudVisuals();
+	void UpdateStarSky(float DeltaTime);
 
 	/**
 	 * Posición del sol (o del punto antisolar, donde va la luna llena) para la
