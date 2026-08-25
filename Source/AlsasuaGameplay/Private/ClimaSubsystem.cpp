@@ -4,6 +4,7 @@
 #include "DiaNocheSubsystem.h"
 #include "World/Time/TimeOfDayManager.h"
 #include "AlsasuaServiceRegistry.h"
+#include "World/AlsasuaWorldSubsystem.h"
 #include "Engine/ExponentialHeightFog.h"
 #include "Components/ExponentialHeightFogComponent.h"
 #include "NiagaraFunctionLibrary.h"
@@ -137,15 +138,20 @@ void UClimaSubsystem::GestionarMojado(float DeltaTime)
 {
 	UWorld* W = GetGameInstance() ? GetGameInstance()->GetWorld() : nullptr;
 	if (!W) return;
+
+	// Delegar al WorldSubsystem — gestiona los 4 parámetros MPC de una vez.
+	if (UAlsasuaWorldSubsystem* WorldSS = W->GetSubsystem<UAlsasuaWorldSubsystem>())
+	{
+		// El suelo se moja deprisa con lluvia y se seca despacio al escampar.
+		const float ObjetivoMojado = Cur.Lluvia;
+		if (ObjetivoMojado > Wetness) Wetness = FMath::Min(ObjetivoMojado, Wetness + 0.25f * DeltaTime);
+		else                          Wetness = FMath::Max(0.f,            Wetness - 0.04f * DeltaTime);
+		WorldSS->SetGlobalWetness(Wetness);
+	}
+
 	if (!MPCClima)
 		MPCClima = LoadObject<UMaterialParameterCollection>(nullptr, TEXT("/Game/Materiales/MPC_Clima.MPC_Clima"));
 	if (!MPCClima) return;
-
-	// El suelo se moja deprisa con lluvia y se seca despacio al escampar.
-	const float ObjetivoMojado = Cur.Lluvia;
-	if (ObjetivoMojado > Wetness) Wetness = FMath::Min(ObjetivoMojado, Wetness + 0.25f * DeltaTime);
-	else                          Wetness = FMath::Max(0.f,            Wetness - 0.04f * DeltaTime);
-	UKismetMaterialLibrary::SetScalarParameterValue(W, MPCClima, TEXT("Wetness"), Wetness);
 
 	// Noche (0 día .. 1 noche): enciende las ventanas de las fachadas.
 	float Noche = 0.f;

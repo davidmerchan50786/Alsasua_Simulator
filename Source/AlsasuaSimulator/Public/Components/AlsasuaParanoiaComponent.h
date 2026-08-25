@@ -19,4 +19,7 @@ public:
 protected:
     virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
     float CurrentParanoia = 0.0f;
+
+private:
+    void ApplyVisualEffect();
 };

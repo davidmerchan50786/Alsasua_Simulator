@@ -2,10 +2,15 @@
 #include "AlsasuaNPC.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/AlsasuaParanoiaComponent.h"
+#include "Audio/AlsasuaWhisperManager.h"
 
 AAlsasuaNPC::AAlsasuaNPC()
 {
 	PrimaryActorTick.bCanEverTick = false;
+
+	ParanoiaComp = CreateDefaultSubobject<UAlsasuaParanoiaComponent>(TEXT("ParanoiaComp"));
+	WhisperComp = CreateDefaultSubobject<UAlsasuaWhisperManager>(TEXT("WhisperComp"));
 }
 
 void AAlsasuaNPC::RecibirDano(int32 Cantidad, FVector Origen, ETipoDano Tipo)
