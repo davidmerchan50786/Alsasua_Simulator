@@ -16,7 +16,12 @@ public class AlsasuaSimulatorEditorTarget : TargetRules
             "AlsasuaGameplay",
             "AlsasuaUI",
             "AlsasuaEditor",
-            "AlsasuaSimulator"
+            "AlsasuaSimulator",
+            "GF_Abilities", "GF_AI", "GF_Audio", "GF_Carreteras", "GF_Clima",
+            "GF_Core", "GF_Debug", "GF_Dialogos", "GF_Edificios", "GF_Ferrocarril",
+            "GF_Misiones", "GF_NPCs", "GF_Optimization", "GF_Politica", "GF_Social",
+            "GF_Systems", "GF_Trafico", "GF_UI", "GF_Vegetacion", "GF_Vehiculos",
+            "GF_World"
         });
         CppStandard = CppStandardVersion.Cpp20;
     }
