@@ -6,6 +6,7 @@
 #include "Engine/ExponentialHeightFog.h"
 #include "Components/DirectionalLightComponent.h"
 #include "Components/SkyAtmosphereComponent.h"
+#include "Components/SkyAtmosphereComponent.h"
 #include "Components/SkyLightComponent.h"
 #include "Components/ExponentialHeightFogComponent.h"
 #include "World/Time/TimeOfDayManager.h"
@@ -327,6 +328,7 @@ void UAlsasuaAtmosphereController::UpdateAtmosphere(float Hour, float DeltaTime)
 
 	UpdateSunVisuals(Hour, DeltaTime);
 	UpdateSkyVisuals(DeltaTime);
+	UpdateSkyAtmosphereVisuals(DeltaTime);
 	UpdateFogVisuals(DeltaTime);
 	UpdateCloudVisuals();
 
@@ -501,4 +503,92 @@ void UAlsasuaAtmosphereController::UpdateCloudVisuals()
 	}
 
 	CurrentCloudDensity = CloudBase;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  UpdateSkyAtmosphereVisuals
+//  Dynamic Rayleigh/Mie/MultiScattering: sky color shifts physically with sun
+//  elevation and weather. No static defaults — every frame is tuned.
+// ─────────────────────────────────────────────────────────────────────────────
+void UAlsasuaAtmosphereController::UpdateSkyAtmosphereVisuals(float DeltaTime)
+{
+	if (!SkyAtmosphere) return;
+
+	USkyAtmosphereComponent* AtmoComp = SkyAtmosphere->GetRootComponent() ? Cast<USkyAtmosphereComponent>(SkyAtmosphere->GetRootComponent()) : nullptr;
+	if (!AtmoComp) return;
+
+	const UWeatherSubsystem* Weather = GetWorld() ? GetWorld()->GetSubsystem<UWeatherSubsystem>() : nullptr;
+	const bool bRaining = Weather && (Weather->CurrentWeather == EWeatherSubsystemState::Rainy || Weather->CurrentWeather == EWeatherSubsystemState::Thunderstorm);
+	const bool bFoggy = Weather && Weather->CurrentWeather == EWeatherSubsystemState::HeavyFog;
+
+	// ── Sun elevation zones ──────────────────────────────────────────────
+	// Day:      sun > 10° — clean Rayleigh, low Mie
+	// Golden:   sun 0-10° — warm Rayleigh, boosted Mie (haze bands)
+	// Twilight: sun -6° to 0° — deep red Rayleigh, high Mie
+	const float DayT = FMath::Clamp(CurrentSunElevation / 10.f, 0.f, 1.f);
+	const float GoldenT = FMath::Clamp(1.f - FMath::Abs(CurrentSunElevation) / GoldenHourRangeDeg, 0.f, 1.f);
+	const bool bTwilight = CurrentSunElevation < 0.f && CurrentSunElevation > CivilTwilightDeg;
+
+	// ── Rayleigh ─────────────────────────────────────────────────────────
+	// Color: lerp day→sunset at golden hour, deeper red at twilight
+	FLinearColor TargetRayleighColor = FLinearColor::LerpUsingHSV(SunsetRayleighColor, DayRayleighColor, DayT);
+	if (bTwilight)
+	{
+		const float TwilightT = FMath::Clamp((CivilTwilightDeg - CurrentSunElevation) / CivilTwilightDeg, 0.f, 1.f);
+		TargetRayleighColor = FLinearColor::LerpUsingHSV(TargetRayleighColor, SunsetRayleighColor, TwilightT);
+	}
+
+	// Scale: drops at golden hour (less blue, more red path), night floor
+	float TargetRayleighScale = FMath::Lerp(SunsetRayleighScale, DayRayleighScale, DayT);
+	if (CurrentSunElevation <= CivilTwilightDeg)
+	{
+		TargetRayleighScale = NightRayleighScale;
+	}
+	if (bRaining) TargetRayleighScale *= RainRayleighScale;
+	if (bFoggy) TargetRayleighScale *= 0.3f;
+
+	// ── Mie ──────────────────────────────────────────────────────────────
+	// Mie boost at golden hour (haze bands), high during rain/fog
+	float TargetMieScale = FMath::Lerp(SunsetMieScale, DayMieScale, DayT);
+	if (bTwilight)
+	{
+		const float TwilightT = FMath::Clamp((CivilTwilightDeg - CurrentSunElevation) / CivilTwilightDeg, 0.f, 1.f);
+		TargetMieScale = FMath::Lerp(TargetMieScale, SunsetMieScale * 1.5f, TwilightT);
+	}
+	if (bRaining) TargetMieScale = FMath::Max(TargetMieScale, RainMieScale);
+	if (bFoggy) TargetMieScale = FMath::Max(TargetMieScale, RainMieScale * 1.5f);
+	if (CurrentSunElevation <= CivilTwilightDeg) TargetMieScale *= 0.3f;
+
+	// Mie anisotropy: tighter halo at sunset (forward scattering dominates)
+	float TargetMieAnisotropy = FMath::Lerp(SunsetMieAnisotropy, DayMieAnisotropy, DayT);
+
+	// Mie color: shift warm at sunset
+	FLinearColor TargetMieColor = FLinearColor::LerpUsingHSV(DayMieColor, FLinearColor(0.02f, 0.01f, 0.005f), GoldenT);
+
+	// ── Multi-scattering ─────────────────────────────────────────────────
+	// Higher at day (energy conservation), lower at night
+	float TargetMultiScattering = FMath::Lerp(NightMultiScattering, DayMultiScattering, CurrentDaylight);
+	if (bRaining) TargetMultiScattering *= 1.5f;
+
+	// ── Apply with smooth interpolation ──────────────────────────────────
+	const float Alpha = SmoothAlpha(2.f, DeltaTime);
+
+	CurrentRayleighColor = FLinearColor::LerpUsingHSV(CurrentRayleighColor, TargetRayleighColor, Alpha);
+	CurrentRayleighScale = FMath::Lerp(CurrentRayleighScale, TargetRayleighScale, Alpha);
+	CurrentMieScale = FMath::Lerp(CurrentMieScale, TargetMieScale, Alpha);
+	CurrentMieColor = FLinearColor::LerpUsingHSV(CurrentMieColor, TargetMieColor, Alpha);
+	CurrentMieAnisotropy = FMath::Lerp(CurrentMieAnisotropy, TargetMieAnisotropy, Alpha);
+	CurrentMultiScattering = FMath::Lerp(CurrentMultiScattering, TargetMultiScattering, Alpha);
+
+	AtmoComp->SetRayleighScattering(CurrentRayleighColor);
+	AtmoComp->SetRayleighScatteringScale(CurrentRayleighScale);
+	AtmoComp->SetRayleighExponentialDistribution(RayleighDistribution);
+
+	AtmoComp->SetMieScattering(CurrentMieColor);
+	AtmoComp->SetMieScatteringScale(CurrentMieScale);
+	AtmoComp->SetMieAnisotropy(CurrentMieAnisotropy);
+	AtmoComp->SetMieExponentialDistribution(MieDistribution);
+
+	AtmoComp->SetMultiScatteringFactor(CurrentMultiScattering);
+	AtmoComp->SetGroundAlbedo(FColor(26, 26, 26));
 }

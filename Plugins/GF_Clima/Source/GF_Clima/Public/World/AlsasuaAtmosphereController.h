@@ -204,11 +204,73 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Moon")
 	float MoonSkyBounce = 0.5f;
 
+	// ── Sky Atmosphere (Rayleigh / Mie) ─────────────────────────────────────
+
+	/** Base Rayleigh scattering color. Shifts warm at golden hour. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
+	FLinearColor DayRayleighColor = FLinearColor(0.00582f, 0.01355f, 0.0331f);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
+	float DayRayleighScale = 1.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
+	float NightRayleighScale = 0.1f;
+
+	/** Rayleigh color shifts toward orange/red at low sun. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
+	FLinearColor SunsetRayleighColor = FLinearColor(0.06f, 0.015f, 0.008f);
+
+	/** Rayleigh scale drops at sunset (less blue scattering, more red path length). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
+	float SunsetRayleighScale = 0.6f;
+
+	/** Rayleigh scale increases with rain (cleaner air scatters more blue). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
+	float RainRayleighScale = 1.3f;
+
+	/** Rayleigh distribution altitude (km). Lower = denser low-altitude sky. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
+	float RayleighDistribution = 8.0f;
+
+	/** Base Mie scattering (haze around sun). Increases at golden hour. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
+	FLinearColor DayMieColor = FLinearColor(0.005f, 0.005f, 0.005f);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
+	float DayMieScale = 0.5f;
+
+	/** Mie increases at golden hour (haze bands near horizon). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
+	float SunsetMieScale = 1.5f;
+
+	/** Mie sky-high during rain/fog (uniform gray haze). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
+	float RainMieScale = 3.0f;
+
+	/** Mie anisotropy: higher = tighter sun halo, lower = wider glow. 0.85-0.999 typical. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
+	float DayMieAnisotropy = 0.9f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
+	float SunsetMieAnisotropy = 0.95f;
+
+	/** Mie distribution altitude (km). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
+	float MieDistribution = 1.2f;
+
+	/** Multi-scattering: 0 = single scatter only, 2 = recommended default for LUT quality. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
+	float DayMultiScattering = 2.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
+	float NightMultiScattering = 0.5f;
+
 private:
 	void FindOrCreateAtmosphereActors();
 	void ApplyLightSetup();
 	void UpdateAtmosphere(float Hour, float DeltaTime);
 	void UpdateSunVisuals(float Hour, float DeltaTime);
+	void UpdateSkyAtmosphereVisuals(float DeltaTime);
 	void UpdateFogVisuals(float DeltaTime);
 	void UpdateSkyVisuals(float DeltaTime);
 	void UpdateCloudVisuals();
@@ -248,4 +310,12 @@ private:
 	float CurrentSunElevation = 45.f;
 	float CurrentSunAzimuth = 180.f;
 	float CurrentDaylight = 1.f;
+
+	// SkyAtmosphere smooth state
+	FLinearColor CurrentRayleighColor = FLinearColor(0.00582f, 0.01355f, 0.0331f);
+	float CurrentRayleighScale = 1.0f;
+	float CurrentMieScale = 0.5f;
+	FLinearColor CurrentMieColor = FLinearColor(0.005f, 0.005f, 0.005f);
+	float CurrentMieAnisotropy = 0.9f;
+	float CurrentMultiScattering = 2.0f;
 };
