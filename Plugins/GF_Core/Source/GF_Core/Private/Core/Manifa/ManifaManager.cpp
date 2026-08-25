@@ -11,6 +11,16 @@
 void UManifaManager::Initialize(FSubsystemCollectionBase& Collection)
 {
     Super::Initialize(Collection);
+
+    // Subscribe to the cross-module delegate so TriggerManifestation fires
+    // automatically when Character presses R (no direct dependency on AlsasuaGameplay).
+    if (UWorld* W = GetWorld())
+    {
+        if (UAlsasuaCrowdSentiment* Sent = W->GetSubsystem<UAlsasuaCrowdSentiment>())
+        {
+            Sent->OnConvocarManifestacion.AddDynamic(this, &UManifaManager::HandleConvocarDelegate);
+        }
+    }
 }
 
 void UManifaManager::TriggerManifestation(FVector CenterLocation)
@@ -85,4 +95,9 @@ void UManifaManager::Tick(float DeltaTime)
 void UManifaManager::UpdateManifestationStrength(float DeltaPopularSupport)
 {
     Momentum = FMath::Clamp(Momentum + DeltaPopularSupport, 0.f, 100.f);
+}
+
+void UManifaManager::HandleConvocarDelegate(FVector Punto)
+{
+    TriggerManifestation(Punto);
 }

@@ -36,4 +36,7 @@ public:
 private:
     bool bMegaActiva = false;
     FVector ManifestacionCentro = FVector::ZeroVector;
+
+    UFUNCTION()
+    void HandleConvocarDelegate(FVector Punto);
 };
