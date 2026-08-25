@@ -14,6 +14,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Engine/EngineTypes.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "AlsasuaCargadorPlugins.generated.h"
 
@@ -44,6 +45,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Alsasua|Plugins")
 	void DesactivarPilar(const FString& Nombre);
 
+	/** Criterio §9: espera a que el pilar esté Active, cuenta objetos C++ del
+	 *  módulo, desactiva, GC x2 y vuelve a contar. Log
+	 *  "[Fuga] X: antes=N despues=0 LIMPIO|RESIDUO". */
+	void VerificarFugaPilar(const FString& Nombre, UWorld* Mundo);
+
 	/** "GF_Clima" -> URL de plugin del proyecto (via GetPluginURLByName). */
 	static FString UrlDePlugin(const FString& Nombre);
 	static void UrlsDePlugin(const FString& Nombre, TArray<FString>& Fuera);
@@ -68,6 +74,16 @@ private:
 	void ActivarSiguiente();
 
 	bool bPendienteDeArranque = false;
+
+	/** La verificacion de fuga (-AlsasuaFugaPilar=) se lanza una sola vez. */
+	bool bFugaLanzada = false;
+
+	/** Estado del sondeo de fuga: el nombre vive aqui y no en el delegado
+	 *  del timer (las capturas grandes viajan mal hasta su primer tick). */
+	FString FugaPendiente;
+	int32 IntentosFuga = 0;
+	FTimerHandle MangoFuga;
+	void SondeoFuga(TWeakObjectPtr<UWorld> MundoDebil);
 
 	/** Gancho a FWorldDelegates::OnPostWorldInitialization: el primer mundo de
 	 *  juego dispara la activación. */

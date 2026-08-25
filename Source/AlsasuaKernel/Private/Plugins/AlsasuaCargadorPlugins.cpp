@@ -10,6 +10,8 @@
 #include "Misc/Paths.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
+#include "UObject/GarbageCollection.h"
+#include "UObject/UObjectIterator.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogCargadorPlugins, Log, All);
 
@@ -134,6 +136,18 @@ void UAlsasuaCargadorPlugins::Initialize(FSubsystemCollectionBase& Collection)
 
 void UAlsasuaCargadorPlugins::AlIniciarMundo(UWorld* Mundo)
 {
+	// Criterio 9 automatizado: -AlsasuaFugaPilar=GF_Clima lanza la verificacion
+	// de fuga en el primer mundo de juego persistente (el -game crea un mundo
+	// "Untitled" efimero antes del mapa real; su timer moriria con el).
+	FString NombreFuga;
+	if (!bFugaLanzada && Mundo && Mundo->IsGameWorld() &&
+		!Mundo->GetName().Contains(TEXT("Untitled")) &&
+		FParse::Value(FCommandLine::Get(), TEXT("-AlsasuaFugaPilar="), NombreFuga))
+	{
+		bFugaLanzada = true;
+		VerificarFugaPilar(NombreFuga, Mundo);
+	}
+
 	if (!bPendienteDeArranque || !Mundo || !Mundo->IsGameWorld())
 	{
 		return;
@@ -420,6 +434,35 @@ void UAlsasuaCargadorPlugins::DesactivarPilar(const FString& Nombre)
 
 	TArray<FString> URLs;
 	UrlsDePlugin(Nombre, URLs);
+
+	// Criterio 9: Deactivate/Unload de GFP no revoca los subsistemas ni los
+	// componentes que el pilar coloco en mundos ya vivos (sobreviven al GC
+	// por su cadena de Outer). Quitarlos aqui, generico por paquete
+	// /Script/<Nombre>, mientras el modulo sigue cargado.
+	const FString Paquete = TEXT("/Script/") + Nombre;
+	TArray<UClass*> ClasesSubsistema;
+	for (TObjectIterator<UClass> It; It; ++It)
+	{
+		if (It->GetOutermost() && It->GetOutermost()->GetName() == Paquete &&
+			It->IsChildOf<USubsystem>())
+		{
+			ClasesSubsistema.Add(*It);
+		}
+	}
+	for (UClass* Clase : ClasesSubsistema)
+	{
+		FSubsystemCollectionBase::DeactivateExternalSubsystem(Clase);
+	}
+	for (TObjectIterator<UActorComponent> It; It; ++It)
+	{
+		if (!It->HasAnyFlags(RF_ClassDefaultObject | RF_BeginDestroyed) &&
+			It->GetClass()->GetOutermost() &&
+			It->GetClass()->GetOutermost()->GetName() == Paquete)
+		{
+			It->DestroyComponent();
+		}
+	}
+
 	int32 Apagadas = 0;
 	for (const FString& URL : URLs)
 	{
@@ -433,6 +476,124 @@ void UAlsasuaCargadorPlugins::DesactivarPilar(const FString& Nombre)
 	}
 	UE_LOG(LogCargadorPlugins, Log,
 		TEXT("[Plugins] DesactivarPilar %s: %d descargados."), *Nombre, Apagadas);
+}
+
+void UAlsasuaCargadorPlugins::VerificarFugaPilar(const FString& Nombre, UWorld* Mundo)
+{
+	// Objetos cuyo paquete de clase es /Script/<Nombre>: instancias y CDO del
+	// modulo. Tras Deactivate+Unload+GC no debe quedar ninguno.
+	if (!Mundo)
+	{
+		return;
+	}
+	FugaPendiente = Nombre;
+	Mundo->GetTimerManager().SetTimer(MangoFuga,
+		FTimerDelegate::CreateUObject(this, &UAlsasuaCargadorPlugins::SondeoFuga,
+			TWeakObjectPtr<UWorld>(Mundo)),
+		0.5f, /*bLoop*/true);
+}
+
+void UAlsasuaCargadorPlugins::SondeoFuga(TWeakObjectPtr<UWorld> MundoDebil)
+{
+	UWorld* Mundo = MundoDebil.Get();
+	if (!Mundo)
+	{
+		GetGameInstance()->GetTimerManager().ClearTimer(MangoFuga);
+		FugaPendiente.Reset();
+		return;
+	}
+
+	UGameFeaturesSubsystem& GFS = UGameFeaturesSubsystem::Get();
+	const FString URL = UrlDePlugin(FugaPendiente);
+	if (!GFS.IsGameFeaturePluginActive(URL, /*bCheckForActivating*/true))
+	{
+		// La activacion es async: esperar a Active o el conteo saldria de un
+		// pilar a medio nacer y daria LIMPIO falso.
+		if (++IntentosFuga > 60) // 30 s a 0.5 s
+		{
+			UE_LOG(LogCargadorPlugins, Warning,
+				TEXT("[Fuga] %s: no llego a Active en 30 s; prueba abortada."),
+				*FugaPendiente);
+			Mundo->GetTimerManager().ClearTimer(MangoFuga);
+			FugaPendiente.Reset();
+			IntentosFuga = 0;
+		}
+		return;
+	}
+	Mundo->GetTimerManager().ClearTimer(MangoFuga);
+	IntentosFuga = 0;
+
+	auto ObjetosDelModulo = [](const FString& Modulo)
+	{
+		const FString Paquete = TEXT("/Script/") + Modulo;
+		int32 N = 0;
+		for (TObjectIterator<UObject> It; It; ++It)
+		{
+			if (const UPackage* P = It->GetClass()->GetOutermost();
+				P && P->GetName() == Paquete)
+			{
+				++N;
+			}
+		}
+		return N;
+	};
+
+	CollectGarbage(GARBAGE_COLLECTION_KEEPFLAGS);
+	const int32 Antes = ObjetosDelModulo(FugaPendiente);
+
+	DesactivarPilar(FugaPendiente);
+	CollectGarbage(GARBAGE_COLLECTION_KEEPFLAGS); // 1a: destruye
+	CollectGarbage(GARBAGE_COLLECTION_KEEPFLAGS); // 2a: purga pendientes
+
+	// Red de seguridad: alguna instancia puede quedar fuera de toda coleccion
+	// (RemoveAllInstances salta las que no tienen dueno). Marcarlas para que
+	// el siguiente GC las recoja; si algo las referenciaba de verdad, el
+	// conteo lo delata como RESIDUO.
+	const FString PaqueteFuga = TEXT("/Script/") + FugaPendiente;
+	int32 Huerfanos = 0;
+	for (TObjectIterator<USubsystem> It; It; ++It)
+	{
+		if (!It->IsUnreachable() &&
+			It->GetClass()->GetOutermost() &&
+			It->GetClass()->GetOutermost()->GetName() == PaqueteFuga)
+		{
+			It->MarkAsGarbage();
+			++Huerfanos;
+		}
+	}
+	if (Huerfanos > 0)
+	{
+		UE_LOG(LogCargadorPlugins, Warning,
+			TEXT("[Fuga] %s: %d subsistema(s) huerfano(s) fuera de coleccion, marcados."),
+			*FugaPendiente, Huerfanos);
+		CollectGarbage(GARBAGE_COLLECTION_KEEPFLAGS);
+	}
+
+	const int32 Despues = ObjetosDelModulo(FugaPendiente);
+	if (Despues > 0)
+	{
+		const FString PaqueteResiduo = TEXT("/Script/") + FugaPendiente;
+		for (TObjectIterator<UObject> It; It; ++It)
+		{
+			if (const UPackage* P = It->GetClass()->GetOutermost();
+				P && P->GetName() == PaqueteResiduo)
+			{
+				UWorld* MundoResiduo = GetGameInstance()->GetWorld();
+				const bool bEnColeccion = MundoResiduo &&
+					MundoResiduo->GetSubsystemBase(It->GetClass()) == *It;
+				UE_LOG(LogCargadorPlugins, Log,
+					TEXT("[Fuga] residuo: %s flags=%d enColeccion=%d"),
+					*It->GetFullName(),
+					(uint32)It->GetFlags(),
+					bEnColeccion ? 1 : 0);
+			}
+		}
+	}
+	UE_LOG(LogCargadorPlugins, Log,
+		TEXT("[Fuga] %s: antes=%d despues=%d %s"),
+		*FugaPendiente, Antes, Despues,
+		Despues == 0 ? TEXT("LIMPIO") : TEXT("RESIDUO"));
+	FugaPendiente.Reset();
 }
 
 static UAlsasuaCargadorPlugins* CargadorDelMundo(UWorld* Mundo)
@@ -451,6 +612,18 @@ FAutoConsoleCommandWithWorldAndArgs GCmdDesactivarPilar(
 			if (UAlsasuaCargadorPlugins* C = CargadorDelMundo(Mundo); C && Args.Num() > 0)
 			{
 				C->DesactivarPilar(Args[0]);
+			}
+		}));
+
+FAutoConsoleCommandWithWorldAndArgs GCmdFugaPilar(
+	TEXT("Alsasua.Pilar.Fuga"),
+	TEXT("Criterio 9: GC, desactiva el pilar, GC x2 y compara conteo de objetos. Uso: Alsasua.Pilar.Fuga GF_Clima"),
+	FConsoleCommandWithWorldAndArgsDelegate::CreateLambda(
+		[](const TArray<FString>& Args, UWorld* Mundo)
+		{
+			if (UAlsasuaCargadorPlugins* C = CargadorDelMundo(Mundo); C && Args.Num() > 0)
+			{
+				C->VerificarFugaPilar(Args[0], Mundo);
 			}
 		}));
 
