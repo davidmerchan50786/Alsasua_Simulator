@@ -1,6 +1,8 @@
 #include "Core/Manifa/ManifaManager.h"
 #include "AI/AlsasuaCrowdAgentComponent.h"
 #include "AI/AlsasuaCrowdSentiment.h"
+#include "AI/Crowd/AlsasuaManifestacionManager.h"
+#include "CrowdAudioManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/GameStateBase.h"
 #include "Engine/GameInstance.h"
@@ -13,6 +15,7 @@ void UManifaManager::Initialize(FSubsystemCollectionBase& Collection)
 
 void UManifaManager::TriggerManifestation(FVector CenterLocation)
 {
+    // Mark existing crowd agents as following
     TArray<AActor*> NPCs;
     UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("Civilian"), NPCs);
 
@@ -28,6 +31,21 @@ void UManifaManager::TriggerManifestation(FVector CenterLocation)
     bMegaActiva = ActiveProtesters > 0;
     ManifestacionCentro = CenterLocation;
     OnManifaStateChanged.Broadcast(bMegaActiva);
+
+    // Launch ISMC mega-crowd via ManifestacionManager (GF_AI)
+    if (UAlsasuaManifestacionManager* Mgr = GetWorld()->GetSubsystem<UAlsasuaManifestacionManager>())
+    {
+        if (Mgr->GetTensionActual() == EManifestacionTension::Pacifica /* not already active */)
+        {
+            FManifestacionConfig Cfg;
+            Cfg.TotalManifestantes = 500;
+            Cfg.NumLeaders = 10;
+            Cfg.SpawnRadius = 2000.f;
+            Cfg.MarchSpeed = 120.f;
+            Cfg.RouteWaypoints = { CenterLocation, CenterLocation + FVector(5000, 0, 0), CenterLocation + FVector(5000, 5000, 0) };
+            Mgr->IniciarManifestacion(Cfg);
+        }
+    }
 }
 
 void UManifaManager::Tick(float DeltaTime)
@@ -36,6 +54,7 @@ void UManifaManager::Tick(float DeltaTime)
 
     if (!GetWorld()) return;
 
+    // Sync CrowdSentiment → GameState.CrowdTension
     if (UAlsasuaCrowdSentiment* Sent = GetWorld()->GetSubsystem<UAlsasuaCrowdSentiment>())
     {
         AGameStateBase* GS = GetWorld()->GetGameState();
@@ -48,6 +67,17 @@ void UManifaManager::Tick(float DeltaTime)
                 Params.NewTension = FMath::Clamp(Sent->GlobalTension, 0.f, 1.f);
                 GS->ProcessEvent(Fn, &Params);
             }
+        }
+
+        // Drive CrowdAudioManager layers based on tension + protester count
+        if (UCrowdAudioManager* Audio = GetWorld()->GetSubsystem<UCrowdAudioManager>())
+        {
+            float Dist = 10000.f;
+            if (APawn* P = UGameplayStatics::GetPlayerPawn(GetWorld(), 0))
+            {
+                Dist = FVector::Dist(P->GetActorLocation(), ManifestacionCentro);
+            }
+            Audio->UpdateCrowdAudio(ActiveProtesters, Sent->GlobalTension, Dist);
         }
     }
 }
