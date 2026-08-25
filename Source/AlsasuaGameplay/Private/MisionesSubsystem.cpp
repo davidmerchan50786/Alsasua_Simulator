@@ -4,6 +4,7 @@
 #include "DialogoTipos.h"
 #include "EconomiaSubsystem.h"
 #include "ApoyoPopularSubsystem.h"
+#include "WantedSubsystem.h"
 #include "ArranqueMundo.h"
 #include "GeoDataAlsasua.h"
 #include "Kismet/GameplayStatics.h"
@@ -64,6 +65,16 @@ bool UMisionesSubsystem::IniciarMision(FName Id)
 {
 	UMisionDef** F = Registro.Find(Id);
 	if (!F || !*F) { UE_LOG(LogTemp, Warning, TEXT("[Misiones] no existe %s"), *Id.ToString()); return false; }
+
+	// Check prerequisites.
+	for (const FName& Req : (*F)->MisionesRequeridas)
+	{
+		if (!Completadas.Contains(Req))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[Misiones] %s requiere %s (no completada)"), *Id.ToString(), *Req.ToString());
+			return false;
+		}
+	}
 
 	Actual = *F;
 	Estado = EEstadoMision::Activa;
@@ -160,6 +171,9 @@ void UMisionesSubsystem::CompletarMision()
 		if (!FMath::IsNearlyZero(Actual->RecompensaApoyo))
 			if (UApoyoPopularSubsystem* Ap = GI->GetSubsystem<UApoyoPopularSubsystem>())
 				Ap->SumarApoyo(Actual->RecompensaApoyo, TEXT("mision"));
+		if (!FMath::IsNearlyZero(Actual->RecompensaNivelBusqueda))
+			if (UWantedSubsystem* Wnt = GI->GetSubsystem<UWantedSubsystem>())
+				Wnt->AumentarBusqueda(FMath::RoundToInt32(Actual->RecompensaNivelBusqueda));
 	}
 
 	const FName Sig = Actual->Siguiente;

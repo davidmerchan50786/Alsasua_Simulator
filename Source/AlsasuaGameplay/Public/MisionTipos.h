@@ -46,6 +46,13 @@ public:
 	// Recompensas al completar.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) int32 RecompensaDinero = 0;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) float RecompensaApoyo  = 0.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite) float RecompensaNivelBusqueda = 0.f;
+
+	// Requisitos para aceptar la misión.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite) FName RequiereFaccion;   // NAME_None = ninguna
+	UPROPERTY(EditAnywhere, BlueprintReadWrite) TArray<FName> MisionesRequeridas;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite) float LimiteTiempo = 0.f;  // 0 = sin límite
+	UPROPERTY(EditAnywhere, BlueprintReadWrite) int32 Dificultad = 1;
 
 	// Si true, al iniciar convoca una manifestación. La ruta (mundo, cm) define la
 	// marcha; el objetivo "manifestacion" se completa cuando la protesta termina.
