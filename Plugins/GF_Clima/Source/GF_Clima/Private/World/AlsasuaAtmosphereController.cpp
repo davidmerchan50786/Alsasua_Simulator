@@ -6,12 +6,14 @@
 #include "Engine/ExponentialHeightFog.h"
 #include "Components/DirectionalLightComponent.h"
 #include "Components/SkyAtmosphereComponent.h"
+#include "Components/SkyAtmosphereComponent.h"
 #include "Components/SkyLightComponent.h"
 #include "Components/ExponentialHeightFogComponent.h"
 #include "World/Time/TimeOfDayManager.h"
 #include "World/Weather/WeatherSubsystem.h"
-#include "AlsasuaServiceRegistry.h"
 #include "Engine/World.h"
+#include "AlsasuaServiceRegistry.h"
+#include "Engine/GameInstance.h"
 
 namespace
 {
@@ -34,29 +36,14 @@ void UAlsasuaAtmosphereController::Initialize(FSubsystemCollectionBase& Collecti
 	FindOrCreateAtmosphereActors();
 	ApplyLightSetup();
 
-	// Publicacion en el tablon: los consumidores preguntan por el contrato,
-	// no por esta clase. Si el plugin duerme, PedirComo<> devuelve nullptr.
-	if (UAlsasuaServiceRegistry* Registro = UAlsasuaServiceRegistry::Get(this))
+	// Register as ITimeOfDayService
+	if (UGameInstance* GI = GetWorld() ? GetWorld()->GetGameInstance() : nullptr)
 	{
-		Registro->Publicar(TEXT("Clima.TiempoDelDia"), this);
+		if (UAlsasuaServiceRegistry* Reg = GI->GetSubsystem<UAlsasuaServiceRegistry>())
+		{
+			Reg->Publicar(FName("TimeOfDay"), this);
+		}
 	}
-}
-
-void UAlsasuaAtmosphereController::Deinitialize()
-{
-	if (UAlsasuaServiceRegistry* Registro = UAlsasuaServiceRegistry::Get(this))
-	{
-		Registro->Retirar(TEXT("Clima.TiempoDelDia"));
-	}
-	Super::Deinitialize();
-}
-
-FVector UAlsasuaAtmosphereController::GetSunDirection() const
-{
-	// Misma orientacion que la luz direccional (UpdateSunVisuals); el forward
-	// del actor apunta DESDE el sol, asi que hacia el sol es el inverso.
-	const FRotator OrientacionLuz(-CurrentSunElevation, CurrentSunAzimuth - 180.f, 0.f);
-	return -OrientacionLuz.Vector();
 }
 
 void UAlsasuaAtmosphereController::FindOrCreateAtmosphereActors()
@@ -210,6 +197,39 @@ void UAlsasuaAtmosphereController::SetTimeOfDay(float Hour)
 	UpdateAtmosphere(Hour, 1000.f);
 }
 
+// ── ITimeOfDayService ──────────────────────────────────────────────────────
+float UAlsasuaAtmosphereController::GetHour() const
+{
+	const UWorld* W = GetWorld();
+	const UTimeOfDayManager* TimeMgr = W ? W->GetSubsystem<UTimeOfDayManager>() : nullptr;
+	return TimeMgr ? TimeMgr->CurrentTime : 12.f;
+}
+
+float UAlsasuaAtmosphereController::GetSunPitch() const
+{
+	return CurrentSunElevation;
+}
+
+FRotator UAlsasuaAtmosphereController::GetSunDirection() const
+{
+	return FRotator(-CurrentSunElevation, CurrentSunAzimuth - 180.f, 0.f);
+}
+
+bool UAlsasuaAtmosphereController::IsNight() const
+{
+	return CurrentSunElevation < -6.f;
+}
+
+FLinearColor UAlsasuaAtmosphereController::GetSunColor() const
+{
+	return CurrentSunColor;
+}
+
+float UAlsasuaAtmosphereController::GetSunIntensity() const
+{
+	return CurrentSunIntensity;
+}
+
 void UAlsasuaAtmosphereController::SetSunAngle(float AngleDeg)
 {
 	if (SunLight)
@@ -290,17 +310,16 @@ float UAlsasuaAtmosphereController::GetCloudAttenuation() const
 
 	switch (Weather->CurrentWeather)
 	{
-	case EAlsasuaWeatherState::Rainy:        return 0.35f;
-	case EAlsasuaWeatherState::Thunderstorm: return 0.20f;
-	case EAlsasuaWeatherState::HeavyFog:     return 0.45f;
-	case EAlsasuaWeatherState::Clear:
+	case EWeatherSubsystemState::Rainy:        return 0.35f;
+	case EWeatherSubsystemState::Thunderstorm: return 0.20f;
+	case EWeatherSubsystemState::HeavyFog:     return 0.45f;
+	case EWeatherSubsystemState::Clear:
 	default:                                   return 1.f;
 	}
 }
 
 void UAlsasuaAtmosphereController::UpdateAtmosphere(float Hour, float DeltaTime)
 {
-	CurrentHour = Hour;
 	ComputeCelestialPosition(Hour, /*bAntiSolar*/ false, CurrentSunElevation, CurrentSunAzimuth);
 
 	// Iluminancia horizontal ∝ seno de la elevación: es la razón física de que
@@ -309,6 +328,7 @@ void UAlsasuaAtmosphereController::UpdateAtmosphere(float Hour, float DeltaTime)
 
 	UpdateSunVisuals(Hour, DeltaTime);
 	UpdateSkyVisuals(DeltaTime);
+	UpdateSkyAtmosphereVisuals(DeltaTime);
 	UpdateFogVisuals(DeltaTime);
 	UpdateCloudVisuals();
 
@@ -337,12 +357,20 @@ void UAlsasuaAtmosphereController::UpdateSunVisuals(float Hour, float DeltaTime)
 
 	if (CurrentSunElevation > CivilTwilightDeg)
 	{
-		// Enrojecimiento por masa de aire: cuanto más rasante, más cálido.
+		// 5-key sun color curve: DeepDusk(-4°) → Dusk(-1°) → Dawn(0°) → Day(12°) → zenith
+		// At -2 to -4 degrees the sun passes through deep red/orange — this sells realism.
+		FLinearColor HorizonColor = (CurrentSunAzimuth < 180.f) ? DawnSunColor : DuskSunColor;
 		const float HighT = FMath::Clamp(CurrentSunElevation / 12.f, 0.f, 1.f);
-		const FLinearColor HorizonColor = (CurrentSunAzimuth < 180.f) ? DawnSunColor : DuskSunColor;
+
+		// Deep red at very low elevation (below 4°)
+		if (CurrentSunElevation < 4.f && CurrentSunElevation > CivilTwilightDeg)
+		{
+			const float DeepT = FMath::Clamp((4.f - CurrentSunElevation) / 6.f, 0.f, 1.f);
+			HorizonColor = FLinearColor::LerpUsingHSV(HorizonColor, DeepDuskSunColor, DeepT);
+		}
+
 		TargetSunColor = FLinearColor::LerpUsingHSV(HorizonColor, DaySunColor, HighT);
 
-		// DawnIntensity actúa de suelo en el crepúsculo, donde el seno ya es 0.
 		const float Twilight = FMath::Clamp((CurrentSunElevation - CivilTwilightDeg) / -CivilTwilightDeg, 0.f, 1.f);
 		TargetSunIntensity = FMath::Max(SunIntensity * CurrentDaylight, DawnIntensity * Twilight) * CloudAtten;
 
@@ -359,12 +387,11 @@ void UAlsasuaAtmosphereController::UpdateSunVisuals(float Hour, float DeltaTime)
 		TargetSunColor = MoonColor;
 		TargetSunIntensity = FMath::Max(MoonBrightness * MoonUp * Phase * CloudAtten, NightIntensity);
 
-		// Con la luna bajo el horizonte se mantiene una inclinación baja para que
-		// la luz residual de estrellas siga entrando de lado y no desde arriba.
 		TargetLightRotation = FRotator(-FMath::Max(MoonElev, 8.f), MoonAz - 180.f, 0.f);
 	}
 
-	const float Alpha = SmoothAlpha(2.f, DeltaTime);
+	// Match sun rotation speed with color speed to prevent desync
+	const float Alpha = SmoothAlpha(4.f, DeltaTime);
 	CurrentSunColor = FLinearColor::LerpUsingHSV(CurrentSunColor, TargetSunColor, Alpha);
 	CurrentSunIntensity = FMath::Lerp(CurrentSunIntensity, TargetSunIntensity, Alpha);
 
@@ -388,8 +415,9 @@ void UAlsasuaAtmosphereController::UpdateSkyVisuals(float DeltaTime)
 
 	float TargetSkyIntensity = FMath::Lerp(NightSkyIntensity, SkyIntensity, FMath::Max(CurrentDaylight, Twilight));
 
-	// Rebote lunar: de noche el ambiente no es negro puro.
-	TargetSkyIntensity += MoonBrightness * ComputeMoonPhase() * 0.2f * (1.f - Twilight);
+	// Moon bounce: now uses MoonSkyBounce multiplier (0.5 vs old 0.2).
+	// Full moon at Alsasua's latitude (42.9°N) gives ~0.15 lux ambient — visible.
+	TargetSkyIntensity += MoonBrightness * ComputeMoonPhase() * MoonSkyBounce * (1.f - Twilight);
 	TargetSkyIntensity *= FMath::Lerp(1.f, 0.7f, 1.f - GetCloudAttenuation());
 
 	CurrentSkyIntensity = FMath::Lerp(CurrentSkyIntensity, TargetSkyIntensity, SmoothAlpha(2.f, DeltaTime));
@@ -408,18 +436,25 @@ void UAlsasuaAtmosphereController::UpdateFogVisuals(float DeltaTime)
 	if (!FogComp) return;
 
 	const UWeatherSubsystem* Weather = GetWorld() ? GetWorld()->GetSubsystem<UWeatherSubsystem>() : nullptr;
-	const bool bRaining = Weather && (Weather->CurrentWeather == EAlsasuaWeatherState::Rainy || Weather->CurrentWeather == EAlsasuaWeatherState::Thunderstorm);
-	const bool bFoggy = Weather && Weather->CurrentWeather == EAlsasuaWeatherState::HeavyFog;
+	const bool bRaining = Weather && (Weather->CurrentWeather == EWeatherSubsystemState::Rainy || Weather->CurrentWeather == EWeatherSubsystemState::Thunderstorm);
+	const bool bFoggy = Weather && Weather->CurrentWeather == EWeatherSubsystemState::HeavyFog;
 
-	// De noche la inversión térmica del valle deja más niebla; al alba es cálida.
 	const float DayT = FMath::Clamp(CurrentSunElevation / 10.f, 0.f, 1.f);
-	const float HorizonT = 1.f - FMath::Clamp(FMath::Abs(CurrentSunElevation) / 10.f, 0.f, 1.f);
+	const float GHRad = FMath::DegreesToRadians(GoldenHourRangeDeg);
+	const float ElevationRad = FMath::DegreesToRadians(CurrentSunElevation);
+	// Golden-hour bell: peaks at horizon, falls off above GoldenHourRangeDeg
+	const float HorizonT = FMath::Clamp(1.f - FMath::Abs(CurrentSunElevation) / GoldenHourRangeDeg, 0.f, 1.f);
+	const float GoldenBell = HorizonT * HorizonT;  // smooth bell curve
 
+	// Base: lerp night → day
 	float TargetFogDensity = FMath::Lerp(NightFogDensity, BaseFogDensity, DayT);
 	FLinearColor TargetFogColor = FLinearColor::LerpUsingHSV(NightFogColor, DayFogColor, DayT);
 
-	// Cerca del horizonte la niebla se tiñe del color del sol rasante.
-	TargetFogColor = FLinearColor::LerpUsingHSV(TargetFogColor, DawnFogColor, HorizonT * DayT);
+	// Dawn/dusk inversion-layer peak (physically: valley thermal inversion traps moisture)
+	TargetFogDensity = FMath::Lerp(TargetFogDensity, DawnFogDensity, GoldenBell);
+
+	// Near horizon the fog takes on the warm sun color
+	TargetFogColor = FLinearColor::LerpUsingHSV(TargetFogColor, DawnFogColor, GoldenBell * 0.7f);
 
 	if (bRaining) TargetFogDensity = FMath::Max(TargetFogDensity * 2.5f, RainFogDensity);
 	if (bFoggy) TargetFogDensity *= 5.f;
@@ -431,28 +466,129 @@ void UAlsasuaAtmosphereController::UpdateFogVisuals(float DeltaTime)
 	FogComp->SetFogDensity(CurrentFogDensity);
 	FogComp->SetFogInscatteringColor(CurrentFogColor);
 	FogComp->SetDirectionalInscatteringColor(CurrentSunColor);
-	FogComp->SetDirectionalInscatteringExponent(FMath::Lerp(2.f, 16.f, CurrentDaylight));
+	// Night value 4 (was 2): wider moon halo, less focused
+	FogComp->SetDirectionalInscatteringExponent(FMath::Lerp(4.f, 16.f, CurrentDaylight));
+
+	// Volumetric fog quality: scale grid distance by frame time.
+	// ≤16.6ms (60fps) → full distance; >25ms (40fps) → halve distance.
+	// Same logic as GobernadorRender but avoids circular module dep.
+	const float FrameMs = DeltaTime * 1000.f;
+	const float BudgetScale = FMath::Lerp(0.5f, 1.f, FMath::Clamp((25.f - FrameMs) / (25.f - 16.6f), 0.f, 1.f));
+	FogComp->SetVolumetricFogDistance(VolumetricFogDistance * BudgetScale);
+	FogComp->SetVolumetricFogScatteringDistribution(VolumetricFogScattering);
+	FogComp->bEnableVolumetricFog = true;
 }
 
 void UAlsasuaAtmosphereController::UpdateCloudVisuals()
 {
-	CurrentCloudDensity = BaseCloudDensity;
+	// Don't reset to BaseCloudDensity — respect any value set via SetCloudDensity().
+	float CloudBase = BaseCloudDensity;
 
 	const UWeatherSubsystem* Weather = GetWorld() ? GetWorld()->GetSubsystem<UWeatherSubsystem>() : nullptr;
 	if (Weather)
 	{
 		switch (Weather->CurrentWeather)
 		{
-		case EAlsasuaWeatherState::Clear:        CurrentCloudDensity *= 0.4f; break;
-		case EAlsasuaWeatherState::Rainy:        CurrentCloudDensity *= 1.5f; break;
-		case EAlsasuaWeatherState::Thunderstorm: CurrentCloudDensity *= 2.0f; break;
-		case EAlsasuaWeatherState::HeavyFog:     CurrentCloudDensity *= 0.2f; break;
+		case EWeatherSubsystemState::Clear:        CloudBase *= 0.4f; break;
+		case EWeatherSubsystemState::Rainy:        CloudBase *= 1.5f; break;
+		case EWeatherSubsystemState::Thunderstorm: CloudBase *= 2.0f; break;
+		case EWeatherSubsystemState::HeavyFog:     CloudBase *= 0.2f; break;
 		}
 	}
 
 	// De noche la convección cesa y la cobertura baja hacia NightCloudDensity.
 	if (CurrentDaylight <= 0.f)
 	{
-		CurrentCloudDensity = FMath::Min(CurrentCloudDensity, NightCloudDensity);
+		CloudBase = FMath::Min(CloudBase, NightCloudDensity);
 	}
+
+	CurrentCloudDensity = CloudBase;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  UpdateSkyAtmosphereVisuals
+//  Dynamic Rayleigh/Mie/MultiScattering: sky color shifts physically with sun
+//  elevation and weather. No static defaults — every frame is tuned.
+// ─────────────────────────────────────────────────────────────────────────────
+void UAlsasuaAtmosphereController::UpdateSkyAtmosphereVisuals(float DeltaTime)
+{
+	if (!SkyAtmosphere) return;
+
+	USkyAtmosphereComponent* AtmoComp = SkyAtmosphere->GetRootComponent() ? Cast<USkyAtmosphereComponent>(SkyAtmosphere->GetRootComponent()) : nullptr;
+	if (!AtmoComp) return;
+
+	const UWeatherSubsystem* Weather = GetWorld() ? GetWorld()->GetSubsystem<UWeatherSubsystem>() : nullptr;
+	const bool bRaining = Weather && (Weather->CurrentWeather == EWeatherSubsystemState::Rainy || Weather->CurrentWeather == EWeatherSubsystemState::Thunderstorm);
+	const bool bFoggy = Weather && Weather->CurrentWeather == EWeatherSubsystemState::HeavyFog;
+
+	// ── Sun elevation zones ──────────────────────────────────────────────
+	// Day:      sun > 10° — clean Rayleigh, low Mie
+	// Golden:   sun 0-10° — warm Rayleigh, boosted Mie (haze bands)
+	// Twilight: sun -6° to 0° — deep red Rayleigh, high Mie
+	const float DayT = FMath::Clamp(CurrentSunElevation / 10.f, 0.f, 1.f);
+	const float GoldenT = FMath::Clamp(1.f - FMath::Abs(CurrentSunElevation) / GoldenHourRangeDeg, 0.f, 1.f);
+	const bool bTwilight = CurrentSunElevation < 0.f && CurrentSunElevation > CivilTwilightDeg;
+
+	// ── Rayleigh ─────────────────────────────────────────────────────────
+	// Color: lerp day→sunset at golden hour, deeper red at twilight
+	FLinearColor TargetRayleighColor = FLinearColor::LerpUsingHSV(SunsetRayleighColor, DayRayleighColor, DayT);
+	if (bTwilight)
+	{
+		const float TwilightT = FMath::Clamp((CivilTwilightDeg - CurrentSunElevation) / CivilTwilightDeg, 0.f, 1.f);
+		TargetRayleighColor = FLinearColor::LerpUsingHSV(TargetRayleighColor, SunsetRayleighColor, TwilightT);
+	}
+
+	// Scale: drops at golden hour (less blue, more red path), night floor
+	float TargetRayleighScale = FMath::Lerp(SunsetRayleighScale, DayRayleighScale, DayT);
+	if (CurrentSunElevation <= CivilTwilightDeg)
+	{
+		TargetRayleighScale = NightRayleighScale;
+	}
+	if (bRaining) TargetRayleighScale *= RainRayleighScale;
+	if (bFoggy) TargetRayleighScale *= 0.3f;
+
+	// ── Mie ──────────────────────────────────────────────────────────────
+	// Mie boost at golden hour (haze bands), high during rain/fog
+	float TargetMieScale = FMath::Lerp(SunsetMieScale, DayMieScale, DayT);
+	if (bTwilight)
+	{
+		const float TwilightT = FMath::Clamp((CivilTwilightDeg - CurrentSunElevation) / CivilTwilightDeg, 0.f, 1.f);
+		TargetMieScale = FMath::Lerp(TargetMieScale, SunsetMieScale * 1.5f, TwilightT);
+	}
+	if (bRaining) TargetMieScale = FMath::Max(TargetMieScale, RainMieScale);
+	if (bFoggy) TargetMieScale = FMath::Max(TargetMieScale, RainMieScale * 1.5f);
+	if (CurrentSunElevation <= CivilTwilightDeg) TargetMieScale *= 0.3f;
+
+	// Mie anisotropy: tighter halo at sunset (forward scattering dominates)
+	float TargetMieAnisotropy = FMath::Lerp(SunsetMieAnisotropy, DayMieAnisotropy, DayT);
+
+	// Mie color: shift warm at sunset
+	FLinearColor TargetMieColor = FLinearColor::LerpUsingHSV(DayMieColor, FLinearColor(0.02f, 0.01f, 0.005f), GoldenT);
+
+	// ── Multi-scattering ─────────────────────────────────────────────────
+	// Higher at day (energy conservation), lower at night
+	float TargetMultiScattering = FMath::Lerp(NightMultiScattering, DayMultiScattering, CurrentDaylight);
+	if (bRaining) TargetMultiScattering *= 1.5f;
+
+	// ── Apply with smooth interpolation ──────────────────────────────────
+	const float Alpha = SmoothAlpha(2.f, DeltaTime);
+
+	CurrentRayleighColor = FLinearColor::LerpUsingHSV(CurrentRayleighColor, TargetRayleighColor, Alpha);
+	CurrentRayleighScale = FMath::Lerp(CurrentRayleighScale, TargetRayleighScale, Alpha);
+	CurrentMieScale = FMath::Lerp(CurrentMieScale, TargetMieScale, Alpha);
+	CurrentMieColor = FLinearColor::LerpUsingHSV(CurrentMieColor, TargetMieColor, Alpha);
+	CurrentMieAnisotropy = FMath::Lerp(CurrentMieAnisotropy, TargetMieAnisotropy, Alpha);
+	CurrentMultiScattering = FMath::Lerp(CurrentMultiScattering, TargetMultiScattering, Alpha);
+
+	AtmoComp->SetRayleighScattering(CurrentRayleighColor);
+	AtmoComp->SetRayleighScatteringScale(CurrentRayleighScale);
+	AtmoComp->SetRayleighExponentialDistribution(RayleighDistribution);
+
+	AtmoComp->SetMieScattering(CurrentMieColor);
+	AtmoComp->SetMieScatteringScale(CurrentMieScale);
+	AtmoComp->SetMieAnisotropy(CurrentMieAnisotropy);
+	AtmoComp->SetMieExponentialDistribution(MieDistribution);
+
+	AtmoComp->SetMultiScatteringFactor(CurrentMultiScattering);
+	AtmoComp->SetGroundAlbedo(FColor(26, 26, 26));
 }
