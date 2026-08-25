@@ -4,6 +4,7 @@ public class GF_Abilities : ModuleRules
     public GF_Abilities(ReadOnlyTargetRules Target) : base(Target)
     {
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+	 bUseUnity = false;
         CppStandard = CppStandardVersion.Cpp20;
         bEnableExceptions = true;
         PublicDependencyModuleNames.AddRange(new string[] {

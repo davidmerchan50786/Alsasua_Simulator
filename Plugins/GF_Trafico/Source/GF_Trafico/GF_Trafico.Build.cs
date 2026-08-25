@@ -5,6 +5,7 @@ public class GF_Trafico : ModuleRules
 	public GF_Trafico(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+	 bUseUnity = false;
 		CppStandard = CppStandardVersion.Cpp20;
 		bEnableExceptions = true;
 

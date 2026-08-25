@@ -4,6 +4,7 @@ public class GF_NPCs : ModuleRules
     public GF_NPCs(ReadOnlyTargetRules Target) : base(Target)
     {
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+	 bUseUnity = false;
         CppStandard = CppStandardVersion.Cpp20;
         bEnableExceptions = true;
         PublicDependencyModuleNames.AddRange(new string[] {
