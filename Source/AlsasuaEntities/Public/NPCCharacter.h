@@ -1,16 +1,12 @@
 #pragma once
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
+#include "AlsasuaNPC.h"
 #include "NPCCharacter.generated.h"
 
 UCLASS()
-class ALSASUAENTITIES_API ANPCCharacter : public ACharacter
+class ALSASUAENTITIES_API ANPCCharacter : public AAlsasuaNPC
 {
     GENERATED_BODY()
 public:
     ANPCCharacter();
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|NPC")
-    float Morale = 50.0f;
-protected:
-    virtual void BeginPlay() override;
 };
