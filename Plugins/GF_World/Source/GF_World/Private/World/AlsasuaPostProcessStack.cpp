@@ -29,14 +29,15 @@ void UAlsasuaPostProcessStack::UpdatePostProcess(float DeltaTime)
 	UAlsasuaVisualEffectsManager* VFXMgr = W->GetSubsystem<UAlsasuaVisualEffectsManager>();
 	const float Rain = VFXMgr ? VFXMgr->GlobalWetness : 0.f;
 
-	// Viñeta, aberración cromática y bloom los lleva
-	// UAlsasuaEnhancedPostProcessComponent. Los dos escribían los mismos
-	// campos de los mismos volúmenes con valores distintos cada 0.15 s y
-	// 0.1 s: la imagen parpadeaba al ritmo del que ticaba último.
-	TArray<AActor*> PPVolumes;
-	UGameplayStatics::GetAllActorsOfClass(W, APostProcessVolume::StaticClass(), PPVolumes);
+	PPVolumeRefreshTimer += DeltaTime;
+	if (PPVolumeRefreshTimer >= 5.f || CachedPPVolumes.Num() == 0)
+	{
+		PPVolumeRefreshTimer = 0.f;
+		CachedPPVolumes.Empty();
+		UGameplayStatics::GetAllActorsOfClass(W, APostProcessVolume::StaticClass(), CachedPPVolumes);
+	}
 
-	for (AActor* VolActor : PPVolumes)
+	for (AActor* VolActor : CachedPPVolumes)
 	{
 		APostProcessVolume* PPV = Cast<APostProcessVolume>(VolActor);
 		if (!PPV) continue;
@@ -52,15 +53,12 @@ void UAlsasuaPostProcessStack::UpdatePostProcess(float DeltaTime)
 		S.bOverride_BloomThreshold = true;
 		S.BloomThreshold = BloomThreshold;
 
-		// Rango de adaptación estrecho. Con 0.1-10 el auto-exposure recuperaba
-		// dos órdenes de magnitud y la noche acababa igual de clara que el día.
 		S.bOverride_AutoExposureMinBrightness = true;
 		S.AutoExposureMinBrightness = ExposureMinBrightness;
 
 		S.bOverride_AutoExposureMaxBrightness = true;
 		S.AutoExposureMaxBrightness = ExposureMaxBrightness;
 
-		// Adaptación del ojo: rápida al deslumbrarse, lenta al oscuro.
 		S.bOverride_AutoExposureSpeedUp = true;
 		S.AutoExposureSpeedUp = ExposureSpeed * 1.5f;
 

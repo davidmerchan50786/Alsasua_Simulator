@@ -3,6 +3,8 @@
 #include "Components/ActorComponent.h"
 #include "AlsasuaPostProcessStack.generated.h"
 
+class APostProcessVolume;
+
 /**
  * Stack de post-procesado avanzado: LUT, vignette, film grain, chromatic aberration.
  * Extiende el sistema existente con más efectos.
@@ -48,4 +50,7 @@ public:
 
 private:
 	void UpdatePostProcess(float DeltaTime);
+
+	float PPVolumeRefreshTimer = 0.f;
+	TArray<AActor*> CachedPPVolumes;
 };

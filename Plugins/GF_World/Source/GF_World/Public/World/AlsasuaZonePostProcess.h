@@ -157,4 +157,7 @@ private:
 	float CurrentTemperature = 6500.f;
 	float TargetGrain = 0.f;
 	float CurrentGrain = 0.f;
+
+	float PPVolumeRefreshTimer = 0.f;
+	TArray<AActor*> CachedPPVolumes;
 };

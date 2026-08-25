@@ -251,9 +251,14 @@ void UAlsasuaZonePostProcess::UpdatePostProcessVolume(float DeltaTime)
     UWorld* W = GetWorld();
     if (!W) return;
 
-    TArray<AActor*> PPVols;
-    UGameplayStatics::GetAllActorsOfClass(W, APostProcessVolume::StaticClass(), PPVols);
-    APostProcessVolume* PPV = PPVols.Num() > 0 ? Cast<APostProcessVolume>(PPVols[0]) : nullptr;
+    PPVolumeRefreshTimer += DeltaTime;
+    if (PPVolumeRefreshTimer >= 5.f || CachedPPVolumes.Num() == 0)
+    {
+        PPVolumeRefreshTimer = 0.f;
+        CachedPPVolumes.Empty();
+        UGameplayStatics::GetAllActorsOfClass(W, APostProcessVolume::StaticClass(), CachedPPVolumes);
+    }
+    APostProcessVolume* PPV = CachedPPVolumes.Num() > 0 ? Cast<APostProcessVolume>(CachedPPVolumes[0]) : nullptr;
     if (!PPV) return;
 
     FPostProcessSettings& S = PPV->Settings;
