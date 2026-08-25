@@ -87,5 +87,18 @@ void UAlsasuaEnhancedPostProcessComponent::UpdatePostProcess(float DeltaTime)
 
 		S.bOverride_AutoExposureBias = true;
 		S.AutoExposureBias = CurrentExposureBias;
+
+		// Bloom: adaptive day/night
+		S.bOverride_BloomIntensity = true;
+		S.BloomIntensity = CurrentBloom;
+
+		// Vignette: tighter at night for tunnel-vision fear
+		S.bOverride_VignetteIntensity = true;
+		S.VignetteIntensity = CurrentVignette;
+
+		// Saturation: desaturate at night (Purkinje / scotopic vision)
+		S.bOverride_ColorSaturation = true;
+		const float SatVal = FMath::Lerp(NightSaturation, DaySaturation, DayFactor);
+		S.ColorSaturation = FLinearColor(SatVal, SatVal, SatVal);
 	}
 }
