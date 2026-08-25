@@ -8,7 +8,7 @@
 AAguaNivel::AAguaNivel()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	PrimaryActorTick.TickInterval = 0.25f;
+	PrimaryActorTick.TickInterval = 0.033f; // 30fps for smooth waves
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 
@@ -62,7 +62,19 @@ void AAguaNivel::CrearMaterialDinamico()
 			WaterMatInst->SetVectorParameterValue(TEXT("WaterColor"), WaterColor);
 			WaterMatInst->SetScalarParameterValue(TEXT("OpacityBase"), OpacityBase);
 			WaterMatInst->SetScalarParameterValue(TEXT("FresnelPower"), FresnelPower);
+			WaterMatInst->SetScalarParameterValue(TEXT("WaveAmplitude"), WaveAmplitude);
+			WaterMatInst->SetScalarParameterValue(TEXT("WaveFrequency"), WaveFrequency);
+			WaterMatInst->SetScalarParameterValue(TEXT("WaveSteepness"), WaveSteepness);
 		}
+	}
+}
+
+void AAguaNivel::ActualizarOndas(float Time)
+{
+	// Gerstner wave parameters are passed to material for vertex displacement
+	if (WaterMatInst)
+	{
+		WaterMatInst->SetScalarParameterValue(TEXT("TimeParam"), Time * WaveSpeed);
 	}
 }
 
@@ -71,9 +83,7 @@ void AAguaNivel::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	UWorld* W = GetWorld();
 	if (!W) return;
-	if (WaterMatInst)
-	{
-		const float Time = W->GetTimeSeconds();
-		WaterMatInst->SetScalarParameterValue(TEXT("TimeParam"), Time * WaveSpeed);
-	}
+
+	const float Time = W->GetTimeSeconds();
+	ActualizarOndas(Time);
 }

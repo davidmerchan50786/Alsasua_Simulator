@@ -36,6 +36,26 @@ public:
 	UPROPERTY(EditAnywhere, Category="Agua|Visual")
 	float WaveSpeed = 0.5f;
 
+	// Gerstner wave parameters
+	UPROPERTY(EditAnywhere, Category="Agua|Waves")
+	float WaveAmplitude = 15.0f;
+
+	UPROPERTY(EditAnywhere, Category="Agua|Waves")
+	float WaveFrequency = 0.02f;
+
+	UPROPERTY(EditAnywhere, Category="Agua|Waves")
+	float WaveSteepness = 0.5f;
+
+	UPROPERTY(EditAnywhere, Category="Agua|Waves")
+	int32 WaveDirections = 3;
+
+	// Shoreline parameters
+	UPROPERTY(EditAnywhere, Category="Agua|Shoreline")
+	float ShorelineDepth = 200.0f;
+
+	UPROPERTY(EditAnywhere, Category="Agua|Shoreline")
+	FLinearColor ShorelineFoamColor = FLinearColor(0.8f, 0.85f, 0.9f, 0.6f);
+
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
@@ -43,9 +63,6 @@ private:
 	UPROPERTY() UStaticMeshComponent* WaterMesh;
 	UPROPERTY() UMaterialInstanceDynamic* WaterMatInst;
 
-	// CrearMeshAgua() estaba declarada aquí y no la definía nadie: la malla la
-	// crea y configura el constructor, incluido el SetStaticMesh del plano. Una
-	// declaración sin definición no es un aviso, es una trampa —el primero
-	// que la llame se lleva un error de ENLAZADO, que no lo canta el editor.
 	void CrearMaterialDinamico();
+	void ActualizarOndas(float Time);
 };
