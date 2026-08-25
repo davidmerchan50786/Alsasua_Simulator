@@ -8,6 +8,8 @@
 
 #include "GAS/AlsasuaAbilitySystemComponent.h"
 #include "AlsasuaAttributeSet.h"
+#include "Abilities/AlsasuaAbility_Sprint.h"
+#include "Abilities/AlsasuaAbility_Rally.h"
 #include "CharacterTrajectoryComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -178,7 +180,12 @@ void AAlsasuaCharacter::InitializeGAS()
 	if (AbilitySystemComponent)
 	{
 		AbilitySystemComponent->InitAbilityActorInfo(this, this);
-		UE_LOG(LogAlsasuaGAS, Log, TEXT("GAS inicializado: %s"), *GetName());
+
+		// Grant default abilities so they're available at runtime.
+		AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(UAlsasuaAbility_Sprint::StaticClass(), 1, 0, this));
+		AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(UAlsasuaAbility_Rally::StaticClass(), 1, 1, this));
+
+		UE_LOG(LogAlsasuaGAS, Log, TEXT("GAS inicializado: %s (Sprint+Rally granted)"), *GetName());
 	}
 }
 
