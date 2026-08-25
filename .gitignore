@@ -19,6 +19,9 @@ Saved/
 
 # Content pesado (assets importados, mapa, lidar raw): fuera de git
 Content/AssetsImportados/
+# Nombre en inglés que dejó BatchImportAssets.py antes de esta corrección
+# (/Game/ImportedAssets -> /Game/AssetsImportados); 7,2 GB ya en disco.
+Content/ImportedAssets/
 Content/External/
 Content/CitySample/
 Content/Materiales/
