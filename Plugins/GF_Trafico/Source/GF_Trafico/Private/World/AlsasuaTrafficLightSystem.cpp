@@ -1,5 +1,4 @@
 #include "World/AlsasuaTrafficLightSystem.h"
-#include "Arranque/AlsasuaPilarArranque.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "Engine/StaticMeshActor.h"
@@ -220,24 +219,4 @@ int32 UAlsasuaTrafficLightSystem::ColocarSemaforos()
     UE_LOG(LogTemp, Log, TEXT("TrafficLights: %d semaforos en intersecciones reales (%d candidatos)"),
         Placed, Candidates.Num());
     return Placed;
-}
-
-//~ IAlsasuaPilarArranque (fase 46 del antiguo DirectorArranque)
-int32 UAlsasuaTrafficLightSystem::EjecutarArranque()
-{
-	if (!AlsasuaArranqueFlags::bSemaforos)
-	{
-		return -1;
-	}
-	return ColocarSemaforos();
-}
-
-FString UAlsasuaTrafficLightSystem::EtiquetaArranque() const
-{
-	return TEXT("semaforos con ciclo");
-}
-
-int32 UAlsasuaTrafficLightSystem::OrdenArranque() const
-{
-	return 460;
 }

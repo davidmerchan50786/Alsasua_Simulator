@@ -238,25 +238,3 @@ FVector UAlsasuaDynamicTrafficSystem::ObtenerPuntoInicio() const
     P.Z = UAlsasuaGeoData::AlturaSueloUE5(GetWorld(), P.X, P.Y);
     return P;
 }
-
-//~ IAlsasuaPilarArranque / IAlsasuaPilarTiquear (fase 36 del antiguo Director)
-int32 UAlsasuaDynamicTrafficSystem::EjecutarArranque()
-{
-	IniciarTrafico();
-	return GetVehiculos().Num();
-}
-
-FString UAlsasuaDynamicTrafficSystem::EtiquetaArranque() const
-{
-	return TEXT("trafico dinamico iniciado");
-}
-
-int32 UAlsasuaDynamicTrafficSystem::OrdenArranque() const
-{
-	return 360;
-}
-
-void UAlsasuaDynamicTrafficSystem::TiquearPilar(float DeltaTime)
-{
-	ActualizarTrafico(DeltaTime);
-}
