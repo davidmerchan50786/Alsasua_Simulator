@@ -247,19 +247,3 @@ int32 UAlsasuaTreePlacer::ColocarArbolesReales()
     UE_LOG(LogTemp, Log, TEXT("TreePlacer: %d arboles reales, %d con malla real"), Placed, WithMesh);
     return Placed;
 }
-
-//~ IAlsasuaPilarArranque (fase 23 del antiguo DirectorArranque)
-int32 UAlsasuaTreePlacer::EjecutarArranque()
-{
-	return CargarArboles() ? GetArboles().Num() : -1;
-}
-
-FString UAlsasuaTreePlacer::EtiquetaArranque() const
-{
-	return TEXT("fichas de arbol");
-}
-
-int32 UAlsasuaTreePlacer::OrdenArranque() const
-{
-	return 230;
-}

@@ -14,8 +14,6 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
-#include "Contratos/AlsasuaContratosUI.h"
-#include "Arranque/AlsasuaPilarArranque.h"
 #include "AlsasuaDoorEntranceSystem.generated.h"
 
 USTRUCT(BlueprintType)
@@ -34,14 +32,9 @@ struct FDoorEntry
 };
 
 UCLASS()
-class GF_WORLD_API UAlsasuaDoorEntranceSystem : public UGameInstanceSubsystem, public IAlsasuaPilarArranque
+class GF_WORLD_API UAlsasuaDoorEntranceSystem : public UGameInstanceSubsystem
 {
     GENERATED_BODY()
-	public:
-	virtual int32 EjecutarArranque() override { return ColocarPuertas(); }
-	virtual FString EtiquetaArranque() const override { return TEXT("puertas y entradas"); }
-	virtual int32 OrdenArranque() const override { return 490; }
-
 public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 

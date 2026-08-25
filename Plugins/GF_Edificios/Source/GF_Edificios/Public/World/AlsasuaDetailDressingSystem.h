@@ -1,8 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
-#include "Contratos/AlsasuaContratosUI.h"
-#include "Arranque/AlsasuaPilarArranque.h"
 #include "AlsasuaDetailDressingSystem.generated.h"
 
 USTRUCT(BlueprintType)
@@ -19,14 +17,9 @@ struct FDetailItem
 };
 
 UCLASS()
-class GF_EDIFICIOS_API UAlsasuaDetailDressingSystem : public UGameInstanceSubsystem, public IAlsasuaPilarArranque
+class GF_EDIFICIOS_API UAlsasuaDetailDressingSystem : public UGameInstanceSubsystem
 {
     GENERATED_BODY()
-	public:
-	virtual int32 EjecutarArranque() override { return ColocarDetalle(); }
-	virtual FString EtiquetaArranque() const override { return TEXT("items de detalle"); }
-	virtual int32 OrdenArranque() const override { return 390; }
-
 public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 

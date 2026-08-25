@@ -1,9 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
-#include "Contratos/AlsasuaContratosUI.h"
-#include "Contratos/AlsasuaContratosUI.h"
-#include "Arranque/AlsasuaPilarArranque.h"
 #include "AlsasuaFacadeGenerator.generated.h"
 
 USTRUCT(BlueprintType)
@@ -65,14 +62,10 @@ struct FBuildingFacadeEntry
 
 
 UCLASS()
-class GF_EDIFICIOS_API UAlsasuaFacadeGenerator : public UGameInstanceSubsystem, public IAlsasuaDatosFachadas, public IAlsasuaPilarArranque
+class GF_EDIFICIOS_API UAlsasuaFacadeGenerator : public UGameInstanceSubsystem
 {
     GENERATED_BODY()
-
 public:
-	virtual int32 EjecutarArranque() override;
-	virtual FString EtiquetaArranque() const override;
-	virtual int32 OrdenArranque() const override;
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
     virtual void Deinitialize() override;
 
@@ -97,10 +90,6 @@ public:
      * inventadas a partir del tamaño.
      */
     const FBuildingFacadeEntry* De(int32 BuildingId) const;
-
-    //~ IAlsasuaDatosFachadas
-    virtual bool MedidasDe(int32 IdEdificio, float& AlturaPorNivelM,
-        float& AnchoVentanaM, float& AltoVentanaM) const override;
 
 private:
     TArray<FBuildingFacadeEntry> Fachadas;

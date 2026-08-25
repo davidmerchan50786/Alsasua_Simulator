@@ -14,8 +14,6 @@ public class GF_Clima : ModuleRules
 			"CoreUObject",
 			"Engine",
 			"AlsasuaCore",
-			// Los contratos que este plugin implementa, y el registro donde los
-			// publica. Kernel no depende de GF_Clima: sin ciclo.
 			"AlsasuaContracts",
 			"AlsasuaKernel"
 		});

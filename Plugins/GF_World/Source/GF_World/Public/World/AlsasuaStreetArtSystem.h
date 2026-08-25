@@ -19,8 +19,6 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
-#include "Contratos/AlsasuaContratosUI.h"
-#include "Arranque/AlsasuaPilarArranque.h"
 #include "AlsasuaStreetArtSystem.generated.h"
 
 USTRUCT(BlueprintType)
@@ -40,14 +38,9 @@ struct FStreetArt
 };
 
 UCLASS()
-class GF_WORLD_API UAlsasuaStreetArtSystem : public UGameInstanceSubsystem, public IAlsasuaPilarArranque
+class GF_WORLD_API UAlsasuaStreetArtSystem : public UGameInstanceSubsystem
 {
     GENERATED_BODY()
-	public:
-	virtual int32 EjecutarArranque() override { return ColocarArteCallejero(); }
-	virtual FString EtiquetaArranque() const override { return TEXT("arte callejero"); }
-	virtual int32 OrdenArranque() const override { return 430; }
-
 public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
