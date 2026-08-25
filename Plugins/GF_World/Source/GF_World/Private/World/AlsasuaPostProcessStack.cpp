@@ -64,5 +64,28 @@ void UAlsasuaPostProcessStack::UpdatePostProcess(float DeltaTime)
 
 		S.bOverride_AutoExposureSpeedDown = true;
 		S.AutoExposureSpeedDown = ExposureSpeed * 0.5f;
+
+		// Contextual DOF: diaphragm DOF via F-stop (UE 5.8 physical camera)
+		if (bEnableContextualDOF)
+		{
+			S.bOverride_DepthOfFieldEnabled = true;
+			S.DepthOfFieldEnabled = true;
+
+			S.bOverride_DepthOfFieldFocalDistance = true;
+			S.DepthOfFieldFocalDistance = DOFFocalDistance;
+
+			S.bOverride_DepthOfFieldFstop = true;
+			S.DepthOfFieldFstop = DOFAperture;
+
+			S.bOverride_DepthOfFieldDepthBlurAmount = true;
+			S.DepthOfFieldDepthBlurAmount = DOFMaxBlur;
+		}
+
+		// Color Grading LUT
+		if (bEnableLUT && ColorGradingLUT)
+		{
+			S.bOverride_ColorGradingLUT = true;
+			S.ColorGradingLUT = ColorGradingLUT;
+		}
 	}
 }

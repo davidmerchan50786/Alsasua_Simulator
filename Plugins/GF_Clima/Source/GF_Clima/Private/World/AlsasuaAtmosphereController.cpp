@@ -466,6 +466,15 @@ void UAlsasuaAtmosphereController::UpdateFogVisuals(float DeltaTime)
 	FogComp->SetDirectionalInscatteringColor(CurrentSunColor);
 	// Night value 4 (was 2): wider moon halo, less focused
 	FogComp->SetDirectionalInscatteringExponent(FMath::Lerp(4.f, 16.f, CurrentDaylight));
+
+	// Volumetric fog quality: scale grid distance by frame time.
+	// ≤16.6ms (60fps) → full distance; >25ms (40fps) → halve distance.
+	// Same logic as GobernadorRender but avoids circular module dep.
+	const float FrameMs = DeltaTime * 1000.f;
+	const float BudgetScale = FMath::Lerp(0.5f, 1.f, FMath::Clamp((25.f - FrameMs) / (25.f - 16.6f), 0.f, 1.f));
+	FogComp->SetVolumetricFogDistance(VolumetricFogDistance * BudgetScale);
+	FogComp->SetVolumetricFogScatteringDistribution(VolumetricFogScattering);
+	FogComp->bEnableVolumetricFog = true;
 }
 
 void UAlsasuaAtmosphereController::UpdateCloudVisuals()
