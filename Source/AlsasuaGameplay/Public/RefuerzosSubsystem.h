@@ -16,8 +16,12 @@ class ALSASUAGAMEPLAY_API URefuerzosSubsystem : public UWorldSubsystem
 public:
 	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
 
-	UPROPERTY(EditAnywhere, Category="Refuerzos") float Cooldown = 30.f;   // s entre oleadas
+	UPROPERTY(EditAnywhere, Category="Refuerzos") float Cooldown = 30.f;
 	UPROPERTY(EditAnywhere, Category="Refuerzos") float RadioSpawn = 2500.f;
+
+	/** Clase de refuerzo vehicular (wanted 3+). SoftClassPath para no depender
+	 *  de GF_Vehiculos en compile-time. */
+	UPROPERTY(EditAnywhere, Category="Refuerzos") FSoftClassPath ClaseVehiculoPolicia;
 
 private:
 	float UltimaOleada = -1000.f;
@@ -26,4 +30,5 @@ private:
 	void OnWanted(int32 Nivel);
 
 	void Despachar(int32 Cantidad);
+	void SpawnVehiculoPolicia(FVector Centro, FRotator Rotacion);
 };

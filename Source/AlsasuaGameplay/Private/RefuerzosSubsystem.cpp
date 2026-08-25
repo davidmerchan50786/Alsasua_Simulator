@@ -35,6 +35,7 @@ void URefuerzosSubsystem::Despachar(int32 Cantidad)
 	FActorSpawnParameters P;
 	P.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
+	// Foot police (all wanted levels).
 	for (int32 i = 0; i < Cantidad; ++i)
 	{
 		const float Ang = (2.f * PI / Cantidad) * i;
@@ -42,4 +43,26 @@ void URefuerzosSubsystem::Despachar(int32 Cantidad)
 		const FVector Pos = Centro + Off + FVector(0, 0, 120.f);
 		W->SpawnActor<APoliciaActor>(APoliciaActor::StaticClass(), Pos, (Off * -1).Rotation(), P);
 	}
+
+	// Vehicle reinforcements at wanted 3+.
+	if (Cantidad >= 3)
+	{
+		const float AngV = FMath::FRand() * 2.f * PI;
+		const FVector OffV(FMath::Cos(AngV) * (RadioSpawn + 500.f), FMath::Sin(AngV) * (RadioSpawn + 500.f), 0.f);
+		SpawnVehiculoPolicia(Centro + OffV, (Centro - (Centro + OffV)).Rotation());
+	}
+}
+
+void URefuerzosSubsystem::SpawnVehiculoPolicia(FVector Centro, FRotator Rotacion)
+{
+	if (ClaseVehiculoPolicia.IsNull()) return;
+	UWorld* W = GetWorld();
+	if (!W) return;
+
+	UClass* Clase = ClaseVehiculoPolicia.TryLoadClass<APawn>();
+	if (!Clase) return;
+
+	FActorSpawnParameters P;
+	P.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+	W->SpawnActor<APawn>(Clase, Centro, Rotacion, P);
 }
