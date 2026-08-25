@@ -3,6 +3,7 @@
 // amenaza sale del conteo y solo se emite el delegado cuando el nivel cambia,
 // para no inundar a los suscriptores con el mismo aviso cada dos segundos.
 #include "Systemics/Megasion/SecurityRadarComponent.h"
+#include "Engine/OverlapResult.h"
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
 
