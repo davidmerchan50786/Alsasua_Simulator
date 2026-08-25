@@ -128,6 +128,11 @@ void UAlsasuaAtmosphereController::ApplyLightSetup()
 			// propiedad pública y el MarkRenderStateDirty de abajo la aplica.
 			DirComp->ContactShadowLength = ContactShadowLength;
 			DirComp->SetVolumetricScatteringIntensity(SunVolumetricScattering);
+
+			// God rays (light shafts): enable occlusion through foliage/buildings
+			DirComp->SetEnableLightShaftOcclusion(true);
+			DirComp->SetLightShaftOverrideDirection(LightShaftDirection);
+
 			DirComp->MarkRenderStateDirty();
 		}
 	}
@@ -331,6 +336,7 @@ void UAlsasuaAtmosphereController::UpdateAtmosphere(float Hour, float DeltaTime)
 	UpdateSkyAtmosphereVisuals(DeltaTime);
 	UpdateFogVisuals(DeltaTime);
 	UpdateCloudVisuals();
+	UpdateStarSky(DeltaTime);
 
 	OnTimeOfDayVisualChanged.Broadcast(CurrentSunElevation);
 }
@@ -591,4 +597,67 @@ void UAlsasuaAtmosphereController::UpdateSkyAtmosphereVisuals(float DeltaTime)
 
 	AtmoComp->SetMultiScatteringFactor(CurrentMultiScattering);
 	AtmoComp->SetGroundAlbedo(FColor(26, 26, 26));
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  UpdateStarSky
+//  Night sky visual: star visibility, Milky Way glow, moon corona, sky
+//  luminance tint. Stars fade with daylight and cloud cover. Moon washout
+//  reduces faint star visibility during full moon.
+// ─────────────────────────────────────────────────────────────────────────────
+void UAlsasuaAtmosphereController::UpdateStarSky(float DeltaTime)
+{
+	// ── Star visibility ──────────────────────────────────────────────────
+	// Stars only visible below civil twilight, fade out completely at dawn
+	const float NightT = FMath::Clamp(1.f - FMath::Clamp(CurrentSunElevation / CivilTwilightDeg, 0.f, 1.f), 0.f, 1.f);
+	const float MoonPhase = ComputeMoonPhase();
+	const float MoonWashout = FMath::Lerp(1.f, MoonWashoutFactor, MoonPhase);
+	const float CloudBlock = 1.f - GetCloudAttenuation();
+	const float StarVisibility = NightT * MoonWashout * CloudBlock * StarIntensity;
+
+	// ── SkyAtmosphere: star-like luminance tint at night ─────────────────
+	if (SkyAtmosphere)
+	{
+		USkyAtmosphereComponent* AtmoComp = SkyAtmosphere->GetRootComponent() ? Cast<USkyAtmosphereComponent>(SkyAtmosphere->GetRootComponent()) : nullptr;
+		if (AtmoComp)
+		{
+			// SkyLuminanceFactor: subtle warm white at night (stars), invisible at day
+			const FLinearColor StarLuminance = FLinearColor(0.1f, 0.1f, 0.15f) * StarVisibility;
+			AtmoComp->SetSkyLuminanceFactor(StarLuminance);
+
+			// Milky Way: diffuse blue-white glow on the sky dome
+			const FLinearColor MilkyGlow = FLinearColor(0.05f, 0.05f, 0.08f) * MilkyWayIntensity * StarVisibility;
+			AtmoComp->SetGroundAlbedo(FColor(
+				FMath::Clamp(static_cast<int32>((0.1f + MilkyGlow.R) * 255), 0, 255),
+				FMath::Clamp(static_cast<int32>((0.1f + MilkyGlow.G) * 255), 0, 255),
+				FMath::Clamp(static_cast<int32>((0.1f + MilkyGlow.B) * 255), 0, 255)));
+		}
+	}
+
+	// ── Sky Light: star/night ambient glow ───────────────────────────────
+	if (SkyLight)
+	{
+		USkyLightComponent* SLComp = SkyLight->GetLightComponent();
+		if (SLComp)
+		{
+			// Subtle warm tint from starlight at night — more realistic than pure black
+			const FLinearColor StarAmbient = FLinearColor(0.02f, 0.018f, 0.025f) * StarVisibility;
+			const FLinearColor DayColor = FLinearColor::White * CurrentDaylight;
+			SLComp->SetLightColor(StarAmbient + DayColor);
+		}
+	}
+
+	// ── Moon corona: glow around moon from atmospheric scattering ────────
+	// Uses the fog's DirectionalInscattering to create a wide diffuse halo
+	if (HeightFog)
+	{
+		UExponentialHeightFogComponent* FogComp = HeightFog->GetComponent();
+		if (FogComp && CurrentDaylight < 0.1f)
+		{
+			const float MoonGlow = MoonPhase * MoonCoronaIntensity * (1.f - CurrentDaylight) * CloudBlock;
+			const FLinearColor CoronaColor = MoonColor * MoonGlow;
+			FogComp->SetDirectionalInscatteringColor(CoronaColor);
+			FogComp->SetDirectionalInscatteringExponent(MoonCoronaRadius);
+		}
+	}
 }
