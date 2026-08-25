@@ -125,16 +125,12 @@ int32 UAlsasuaMinimapWidget::NativePaint(const FPaintArgs& Args, const FGeometry
 
 	// Background border
 	FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
-		AllottedGeometry.ToPaintGeometry(
-			FVector2D(Center.X - HalfMap - 2.f, Center.Y - HalfMap - 2.f),
-			FVector2D(MapSize + 4.f, MapSize + 4.f)),
+		AllottedGeometry.ToPaintGeometry(FVector2D(MapSize + 4.f, MapSize + 4.f), FSlateLayoutTransform(FVector2D(Center.X - HalfMap - 2.f, Center.Y - HalfMap - 2.f))),
 		WhiteBox, ESlateDrawEffect::None, FLinearColor::Black);
 
 	// Background fill
 	FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
-		AllottedGeometry.ToPaintGeometry(
-			FVector2D(Center.X - HalfMap, Center.Y - HalfMap),
-			FVector2D(MapSize, MapSize)),
+		AllottedGeometry.ToPaintGeometry(FVector2D(MapSize, MapSize), FSlateLayoutTransform(FVector2D(Center.X - HalfMap, Center.Y - HalfMap))),
 		WhiteBox, ESlateDrawEffect::None, BackgroundColor);
 
 	// --- Draw roads ---
@@ -183,7 +179,7 @@ int32 UAlsasuaMinimapWidget::NativePaint(const FPaintArgs& Args, const FGeometry
 				if (SegLine.Num() >= 2)
 				{
 					FSlateDrawElement::MakeLines(OutDrawElements, LayerId,
-						AllottedGeometry.ToPaintGeometry(), SegLine,
+						AllottedGeometry.ToPaintGeometry(FSlateLayoutTransform()), SegLine,
 						ESlateDrawEffect::None, RoadColor, false, 2.f);
 				}
 			}
@@ -230,7 +226,7 @@ int32 UAlsasuaMinimapWidget::NativePaint(const FPaintArgs& Args, const FGeometry
 				if (RivLine.Num() >= 2)
 				{
 					FSlateDrawElement::MakeLines(OutDrawElements, LayerId,
-						AllottedGeometry.ToPaintGeometry(), RivLine,
+						AllottedGeometry.ToPaintGeometry(FSlateLayoutTransform()), RivLine,
 						ESlateDrawEffect::None, RiverColor, false, 2.5f);
 				}
 			}
@@ -250,14 +246,12 @@ int32 UAlsasuaMinimapWidget::NativePaint(const FPaintArgs& Args, const FGeometry
 		if (Dist > MinimapRadius * 1.5f) continue;
 
 		FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
-			AllottedGeometry.ToPaintGeometry(
-				MapPos - FVector2D(Icon.IconRadius), FVector2D(Icon.IconRadius * 2.f)),
+			AllottedGeometry.ToPaintGeometry(FVector2D(Icon.IconRadius * 2.f), FSlateLayoutTransform(MapPos - FVector2D(Icon.IconRadius))),
 			WhiteBox, ESlateDrawEffect::None, Icon.IconColor);
 
 		FSlateFontInfo FontInfo = FCoreStyle::GetDefaultFontStyle("Bold", 8);
 		FSlateDrawElement::MakeText(OutDrawElements, LayerId,
-			AllottedGeometry.ToPaintGeometry(
-				MapPos + FVector2D(Icon.IconRadius + 3.f, -6.f), FVector2D(200.f, 14.f)),
+			AllottedGeometry.ToPaintGeometry(FVector2D(200.f, 14.f), FSlateLayoutTransform(MapPos + FVector2D(Icon.IconRadius + 3.f, -6.f))),
 			FText::FromString(Icon.Label),
 			FontInfo, ESlateDrawEffect::None, Icon.IconColor);
 	}
@@ -272,12 +266,12 @@ int32 UAlsasuaMinimapWidget::NativePaint(const FPaintArgs& Args, const FGeometry
 			const float Pulse = 6.f + FMath::Sin(FPlatformTime::Seconds() * 3.f) * 2.f;
 
 			FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
-				AllottedGeometry.ToPaintGeometry(WPos - FVector2D(Pulse), FVector2D(Pulse * 2.f)),
+				AllottedGeometry.ToPaintGeometry(FVector2D(Pulse * 2.f), FSlateLayoutTransform(WPos - FVector2D(Pulse))),
 				WhiteBox, ESlateDrawEffect::None,
 				FLinearColor(WaypointColor.R, WaypointColor.G, WaypointColor.B, 0.3f));
 
 			FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
-				AllottedGeometry.ToPaintGeometry(WPos - FVector2D(3.f), FVector2D(6.f)),
+				AllottedGeometry.ToPaintGeometry(FVector2D(6.f), FSlateLayoutTransform(WPos - FVector2D(3.f))),
 				WhiteBox, ESlateDrawEffect::None, WaypointColor);
 
 			const float Distance = FVector::Dist(PlayerLoc, WaypointLocation);
@@ -287,7 +281,7 @@ int32 UAlsasuaMinimapWidget::NativePaint(const FPaintArgs& Args, const FGeometry
 
 			FSlateFontInfo FontInfo = FCoreStyle::GetDefaultFontStyle("Bold", 9);
 			FSlateDrawElement::MakeText(OutDrawElements, LayerId,
-				AllottedGeometry.ToPaintGeometry(WPos + FVector2D(8.f, -6.f), FVector2D(120.f, 14.f)),
+				AllottedGeometry.ToPaintGeometry(FVector2D(120.f, 14.f), FSlateLayoutTransform(WPos + FVector2D(8.f, -6.f))),
 				FText::FromString(DistStr),
 				FontInfo, ESlateDrawEffect::None, WaypointColor);
 		}
@@ -297,11 +291,11 @@ int32 UAlsasuaMinimapWidget::NativePaint(const FPaintArgs& Args, const FGeometry
 	const float DotSize = 6.f;
 
 	FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
-		AllottedGeometry.ToPaintGeometry(Center - FVector2D(DotSize + 2.f), FVector2D((DotSize + 2.f) * 2.f)),
+		AllottedGeometry.ToPaintGeometry(FVector2D((DotSize + 2.f) * 2.f), FSlateLayoutTransform(Center - FVector2D(DotSize + 2.f))),
 		WhiteBox, ESlateDrawEffect::None, FLinearColor(0.f, 0.f, 0.f, 0.5f));
 
 	FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
-		AllottedGeometry.ToPaintGeometry(Center - FVector2D(DotSize), FVector2D(DotSize * 2.f)),
+		AllottedGeometry.ToPaintGeometry(FVector2D(DotSize * 2.f), FSlateLayoutTransform(Center - FVector2D(DotSize))),
 		WhiteBox, ESlateDrawEffect::None, PlayerColor);
 
 	if (bRotateWithPlayer)
@@ -318,7 +312,7 @@ int32 UAlsasuaMinimapWidget::NativePaint(const FPaintArgs& Args, const FGeometry
 			Center.Y - FMath::Sin(Rad - 2.5f) * ArrowLen * 0.4f);
 
 		FSlateDrawElement::MakeLines(OutDrawElements, LayerId,
-			AllottedGeometry.ToPaintGeometry(),
+			AllottedGeometry.ToPaintGeometry(FSlateLayoutTransform()),
 			TArray<FVector2D>{ Tip, L, R, Tip },
 			ESlateDrawEffect::None, PlayerColor, true, 1.f);
 	}
@@ -331,8 +325,7 @@ int32 UAlsasuaMinimapWidget::NativePaint(const FPaintArgs& Args, const FGeometry
 		const float CompassLeft = Center.X - CompassWidth * 0.5f;
 
 		FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
-			AllottedGeometry.ToPaintGeometry(FVector2D(CompassLeft, MapTop),
-				FVector2D(CompassWidth, CompassHeight)),
+			AllottedGeometry.ToPaintGeometry(FVector2D(CompassWidth, CompassHeight), FSlateLayoutTransform(FVector2D(CompassLeft, MapTop))),
 			WhiteBox, ESlateDrawEffect::None, FLinearColor(0.05f, 0.05f, 0.1f, 0.7f));
 
 		const float Yaw = GetPlayerYaw();
@@ -351,8 +344,7 @@ int32 UAlsasuaMinimapWidget::NativePaint(const FPaintArgs& Args, const FGeometry
 			const bool bN = (Dirs[i] == TEXT("N"));
 
 			FSlateDrawElement::MakeText(OutDrawElements, LayerId,
-				AllottedGeometry.ToPaintGeometry(FVector2D(X - 5.f, MapTop + 4.f),
-					FVector2D(20.f, CompassHeight - 4.f)),
+				AllottedGeometry.ToPaintGeometry(FVector2D(20.f, CompassHeight - 4.f), FSlateLayoutTransform(FVector2D(X - 5.f, MapTop + 4.f))),
 				FText::FromString(Dirs[i]),
 				FontInfo, ESlateDrawEffect::None,
 				bN ? FLinearColor(1.f, 0.2f, 0.2f, 1.f) : CompassColor);
@@ -360,7 +352,7 @@ int32 UAlsasuaMinimapWidget::NativePaint(const FPaintArgs& Args, const FGeometry
 
 		const float ArrowY = MapTop + CompassHeight + 2.f;
 		FSlateDrawElement::MakeLines(OutDrawElements, LayerId,
-			AllottedGeometry.ToPaintGeometry(),
+			AllottedGeometry.ToPaintGeometry(FSlateLayoutTransform()),
 			TArray<FVector2D>{
 				FVector2D(Center.X, ArrowY + NorthArrowSize),
 				FVector2D(Center.X - 4.f, ArrowY),
@@ -376,7 +368,7 @@ int32 UAlsasuaMinimapWidget::NativePaint(const FPaintArgs& Args, const FGeometry
 	OutDrawElements.PushClip(FSlateClippingZone(FSlateRect(MaskMin, MaskMax)));
 
 	FSlateDrawElement::MakeLines(OutDrawElements, LayerId + 1,
-		AllottedGeometry.ToPaintGeometry(),
+		AllottedGeometry.ToPaintGeometry(FSlateLayoutTransform()),
 		TArray<FVector2D>{ MaskMin, FVector2D(MaskMax.X, MaskMin.Y),
 			MaskMax, FVector2D(MaskMin.X, MaskMax.Y), MaskMin },
 		ESlateDrawEffect::None, FLinearColor::White, true, 1.5f);

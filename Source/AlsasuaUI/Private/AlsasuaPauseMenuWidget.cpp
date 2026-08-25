@@ -121,26 +121,23 @@ int32 UAlsasuaPauseMenuWidget::NativePaint(const FPaintArgs& Args, const FGeomet
 	const float PanelY = (Size.Y - PanelHeight) * 0.5f;
 
 	FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
-		AllottedGeometry.ToPaintGeometry(FVector2D(0, 0), Size),
+		AllottedGeometry.ToPaintGeometry(Size, FSlateLayoutTransform(FVector2D(0, 0))),
 		FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")),
 		ESlateDrawEffect::None, BackgroundColor);
 
 	FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
-		AllottedGeometry.ToPaintGeometry(FVector2D(PanelX, PanelY),
-			FVector2D(PanelWidth, PanelHeight)),
+		AllottedGeometry.ToPaintGeometry(FVector2D(PanelWidth, PanelHeight), FSlateLayoutTransform(FVector2D(PanelX, PanelY))),
 		FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")),
 		ESlateDrawEffect::None, FLinearColor(0.08f, 0.08f, 0.12f, 0.95f));
 
 	FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
-		AllottedGeometry.ToPaintGeometry(FVector2D(PanelX, PanelY),
-			FVector2D(PanelWidth, 2.f)),
+		AllottedGeometry.ToPaintGeometry(FVector2D(PanelWidth, 2.f), FSlateLayoutTransform(FVector2D(PanelX, PanelY))),
 		FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")),
 		ESlateDrawEffect::None, ButtonColor);
 
 	FSlateFontInfo TitleFont = FCoreStyle::GetDefaultFontStyle("Bold", 18);
 	FSlateDrawElement::MakeText(OutDrawElements, LayerId,
-		AllottedGeometry.ToPaintGeometry(FVector2D(PanelX + (PanelWidth - 120.f) * 0.5f, PanelY + 16.f),
-			FVector2D(120.f, 26.f)),
+		AllottedGeometry.ToPaintGeometry(FVector2D(120.f, 26.f), FSlateLayoutTransform(FVector2D(PanelX + (PanelWidth - 120.f) * 0.5f, PanelY + 16.f))),
 		FText::FromString(TEXT("PAUSA")),
 		TitleFont, ESlateDrawEffect::None, TextColor);
 
@@ -162,14 +159,12 @@ int32 UAlsasuaPauseMenuWidget::NativePaint(const FPaintArgs& Args, const FGeomet
 		const FLinearColor Hovered = (i == 0) ? ButtonHoverColor : ButtonColor;
 
 		FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
-			AllottedGeometry.ToPaintGeometry(FVector2D(PanelX + 16.f, Y),
-				FVector2D(PanelWidth - 32.f, ItemHeight)),
+			AllottedGeometry.ToPaintGeometry(FVector2D(PanelWidth - 32.f, ItemHeight), FSlateLayoutTransform(FVector2D(PanelX + 16.f, Y))),
 			FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")),
 			ESlateDrawEffect::None, Hovered);
 
 		FSlateDrawElement::MakeText(OutDrawElements, LayerId,
-			AllottedGeometry.ToPaintGeometry(FVector2D(PanelX + 32.f, Y + 10.f),
-				FVector2D(PanelWidth - 64.f, ItemHeight - 20.f)),
+			AllottedGeometry.ToPaintGeometry(FVector2D(PanelWidth - 64.f, ItemHeight - 20.f), FSlateLayoutTransform(FVector2D(PanelX + 32.f, Y + 10.f))),
 			FText::FromString(Items[i]),
 			ItemFont, ESlateDrawEffect::None, TextColor);
 	}
