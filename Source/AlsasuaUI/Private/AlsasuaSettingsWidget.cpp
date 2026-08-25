@@ -220,12 +220,12 @@ int32 UAlsasuaSettingsWidget::NativePaint(const FPaintArgs& Args, const FGeometr
 	const float PanelY = (Size.Y - PanelHeight) * 0.5f;
 
 	FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
-		AllottedGeometry.ToPaintGeometry(FVector2D(0, 0), Size),
+		AllottedGeometry.ToPaintGeometry(Size, FSlateLayoutTransform(FVector2D(0, 0))),
 		FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")),
 		ESlateDrawEffect::None, FLinearColor(0, 0, 0, 0.6f));
 
 	FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
-		AllottedGeometry.ToPaintGeometry(FVector2D(PanelX, PanelY), FVector2D(PanelWidth, PanelHeight)),
+		AllottedGeometry.ToPaintGeometry(FVector2D(PanelWidth, PanelHeight), FSlateLayoutTransform(FVector2D(PanelX, PanelY))),
 		FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")),
 		ESlateDrawEffect::None, BackgroundColor);
 
@@ -233,7 +233,7 @@ int32 UAlsasuaSettingsWidget::NativePaint(const FPaintArgs& Args, const FGeometr
 
 	FSlateFontInfo TitleFont = FCoreStyle::GetDefaultFontStyle("Bold", 16);
 	FSlateDrawElement::MakeText(OutDrawElements, LayerId,
-		AllottedGeometry.ToPaintGeometry(FVector2D(PanelX + 16.f, Y), FVector2D(200.f, 24.f)),
+		AllottedGeometry.ToPaintGeometry(FVector2D(200.f, 24.f), FSlateLayoutTransform(FVector2D(PanelX + 16.f, Y))),
 		FText::FromString(TEXT("OPCIONES")),
 		TitleFont, ESlateDrawEffect::None, TextColor);
 	Y += 36.f;
@@ -264,9 +264,7 @@ int32 UAlsasuaSettingsWidget::NativePaint(const FPaintArgs& Args, const FGeometr
 
 	FSlateFontInfo HintFont = FCoreStyle::GetDefaultFontStyle("Italic", 9);
 	FSlateDrawElement::MakeText(OutDrawElements, LayerId,
-		AllottedGeometry.ToPaintGeometry(
-			FVector2D(PanelX + 16.f, PanelY + PanelHeight - 28.f),
-			FVector2D(PanelWidth - 32.f, 20.f)),
+		AllottedGeometry.ToPaintGeometry(FVector2D(PanelWidth - 32.f, 20.f), FSlateLayoutTransform(FVector2D(PanelX + 16.f, PanelY + PanelHeight - 28.f))),
 		FText::FromString(TEXT("ESC para aplicar y cerrar")),
 		HintFont, ESlateDrawEffect::None, FLinearColor(0.5f, 0.5f, 0.5f, 0.7f));
 
@@ -282,12 +280,12 @@ void UAlsasuaSettingsWidget::DrawSectionHeader(FSlateWindowElementList& OutDrawE
 	const float PanelX = (Size.X - PanelWidth) * 0.5f;
 
 	FSlateDrawElement::MakeBox(OutDrawElements, 0,
-		Geom.ToPaintGeometry(FVector2D(PanelX + 16.f, Y), FVector2D(PanelWidth - 32.f, 1.f)),
+		Geom.ToPaintGeometry(FVector2D(PanelWidth - 32.f, 1.f), FSlateLayoutTransform(FVector2D(PanelX + 16.f, Y))),
 		FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")),
 		ESlateDrawEffect::None, SectionColor);
 
 	FSlateDrawElement::MakeText(OutDrawElements, 0,
-		Geom.ToPaintGeometry(FVector2D(PanelX + 20.f, Y + 6.f), FVector2D(200.f, 16.f)),
+		Geom.ToPaintGeometry(FVector2D(200.f, 16.f), FSlateLayoutTransform(FVector2D(PanelX + 20.f, Y + 6.f))),
 		FText::FromString(Title),
 		Font, ESlateDrawEffect::None, FLinearColor(0.7f, 0.3f, 0.3f, 1.f));
 
@@ -304,20 +302,19 @@ void UAlsasuaSettingsWidget::DrawSlider(FSlateWindowElementList& OutDrawElements
 
 	FSlateFontInfo Font = FCoreStyle::GetDefaultFontStyle("Regular", 10);
 	FSlateDrawElement::MakeText(OutDrawElements, 0,
-		Geom.ToPaintGeometry(FVector2D(PanelX + 20.f, Y + 6.f), FVector2D(180.f, 16.f)),
+		Geom.ToPaintGeometry(FVector2D(180.f, 16.f), FSlateLayoutTransform(FVector2D(PanelX + 20.f, Y + 6.f))),
 		FText::FromString(Label),
 		Font, ESlateDrawEffect::None, TextColor);
 
 	const float SliderX = PanelX + PanelWidth - SliderWidth - 50.f;
 	FSlateDrawElement::MakeBox(OutDrawElements, 0,
-		Geom.ToPaintGeometry(FVector2D(SliderX, Y + 10.f), FVector2D(SliderWidth, 4.f)),
+		Geom.ToPaintGeometry(FVector2D(SliderWidth, 4.f), FSlateLayoutTransform(FVector2D(SliderX, Y + 10.f))),
 		FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")),
 		ESlateDrawEffect::None, FLinearColor(0.2f, 0.2f, 0.25f, 1.f));
 
 	const float Normalized = (MaxVal > MinVal) ? (Value - MinVal) / (MaxVal - MinVal) : 0.f;
 	FSlateDrawElement::MakeBox(OutDrawElements, 0,
-		Geom.ToPaintGeometry(FVector2D(SliderX, Y + 10.f),
-			FVector2D(SliderWidth * Normalized, 4.f)),
+		Geom.ToPaintGeometry(FVector2D(SliderWidth * Normalized, 4.f), FSlateLayoutTransform(FVector2D(SliderX, Y + 10.f))),
 		FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")),
 		ESlateDrawEffect::None, FLinearColor(0.8f, 0.2f, 0.2f, 1.f));
 
@@ -326,7 +323,7 @@ void UAlsasuaSettingsWidget::DrawSlider(FSlateWindowElementList& OutDrawElements
 		: FString::Printf(TEXT("%.0f"), Value);
 
 	FSlateDrawElement::MakeText(OutDrawElements, 0,
-		Geom.ToPaintGeometry(FVector2D(SliderX + SliderWidth + 8.f, Y + 4.f), FVector2D(30.f, 16.f)),
+		Geom.ToPaintGeometry(FVector2D(30.f, 16.f), FSlateLayoutTransform(FVector2D(SliderX + SliderWidth + 8.f, Y + 4.f))),
 		FText::FromString(ValStr),
 		Font, ESlateDrawEffect::None, TextColor);
 }
@@ -340,7 +337,7 @@ void UAlsasuaSettingsWidget::DrawToggle(FSlateWindowElementList& OutDrawElements
 
 	FSlateFontInfo Font = FCoreStyle::GetDefaultFontStyle("Regular", 10);
 	FSlateDrawElement::MakeText(OutDrawElements, 0,
-		Geom.ToPaintGeometry(FVector2D(PanelX + 20.f, Y + 6.f), FVector2D(200.f, 16.f)),
+		Geom.ToPaintGeometry(FVector2D(200.f, 16.f), FSlateLayoutTransform(FVector2D(PanelX + 20.f, Y + 6.f))),
 		FText::FromString(Label),
 		Font, ESlateDrawEffect::None, TextColor);
 
@@ -350,13 +347,13 @@ void UAlsasuaSettingsWidget::DrawToggle(FSlateWindowElementList& OutDrawElements
 		: FLinearColor(0.3f, 0.3f, 0.35f, 1.f);
 
 	FSlateDrawElement::MakeBox(OutDrawElements, 0,
-		Geom.ToPaintGeometry(FVector2D(ToggleX, Y + 4.f), FVector2D(40.f, 18.f)),
+		Geom.ToPaintGeometry(FVector2D(40.f, 18.f), FSlateLayoutTransform(FVector2D(ToggleX, Y + 4.f))),
 		FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")),
 		ESlateDrawEffect::None, BoxColor);
 
 	const FString StateStr = bValue ? TEXT("ON") : TEXT("OFF");
 	FSlateDrawElement::MakeText(OutDrawElements, 0,
-		Geom.ToPaintGeometry(FVector2D(ToggleX + 6.f, Y + 5.f), FVector2D(28.f, 16.f)),
+		Geom.ToPaintGeometry(FVector2D(28.f, 16.f), FSlateLayoutTransform(FVector2D(ToggleX + 6.f, Y + 5.f))),
 		FText::FromString(StateStr),
 		Font, ESlateDrawEffect::None, FLinearColor::White);
 }
@@ -370,7 +367,7 @@ void UAlsasuaSettingsWidget::DrawOption(FSlateWindowElementList& OutDrawElements
 
 	FSlateFontInfo Font = FCoreStyle::GetDefaultFontStyle("Regular", 10);
 	FSlateDrawElement::MakeText(OutDrawElements, 0,
-		Geom.ToPaintGeometry(FVector2D(PanelX + 20.f, Y + 6.f), FVector2D(200.f, 16.f)),
+		Geom.ToPaintGeometry(FVector2D(200.f, 16.f), FSlateLayoutTransform(FVector2D(PanelX + 20.f, Y + 6.f))),
 		FText::FromString(Label),
 		Font, ESlateDrawEffect::None, TextColor);
 
@@ -384,13 +381,13 @@ void UAlsasuaSettingsWidget::DrawOption(FSlateWindowElementList& OutDrawElements
 		const FLinearColor BG = bSelected ? FLinearColor(0.6f, 0.1f, 0.1f, 1.f) : FLinearColor(0.15f, 0.15f, 0.2f, 1.f);
 
 		FSlateDrawElement::MakeBox(OutDrawElements, 0,
-			Geom.ToPaintGeometry(FVector2D(X, Y + 2.f), FVector2D(OptWidth - 2.f, 22.f)),
+			Geom.ToPaintGeometry(FVector2D(OptWidth - 2.f, 22.f), FSlateLayoutTransform(FVector2D(X, Y + 2.f))),
 			FCoreStyle::Get().GetBrush(TEXT("GenericWhiteBox")),
 			ESlateDrawEffect::None, BG);
 
 		FSlateFontInfo OptFont = FCoreStyle::GetDefaultFontStyle(bSelected ? "Bold" : "Regular", 9);
 		FSlateDrawElement::MakeText(OutDrawElements, 0,
-			Geom.ToPaintGeometry(FVector2D(X + 4.f, Y + 5.f), FVector2D(OptWidth - 8.f, 16.f)),
+			Geom.ToPaintGeometry(FVector2D(OptWidth - 8.f, 16.f), FSlateLayoutTransform(FVector2D(X + 4.f, Y + 5.f))),
 			FText::FromString(Options[i]),
 			OptFont, ESlateDrawEffect::None, bSelected ? FLinearColor::White : FLinearColor(0.6f, 0.6f, 0.6f, 1.f));
 	}
