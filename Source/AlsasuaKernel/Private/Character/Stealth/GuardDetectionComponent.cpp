@@ -5,6 +5,8 @@
 #include "Engine/World.h"
 #include "CollisionQueryParams.h"
 
+FOnAnyGuardCombat UGuardDetectionComponent::OnAnyGuardEnterCombat;
+
 UGuardDetectionComponent::UGuardDetectionComponent()
 {
     PrimaryComponentTick.bCanEverTick = true;
@@ -208,6 +210,9 @@ void UGuardDetectionComponent::TransitionToState(EGuardAlertState NewState)
     }
 
     OnAlertStateChanged.Broadcast(GetOwner(), NewState, OldState);
+
+    if (NewState == EGuardAlertState::Combat && OldState != EGuardAlertState::Combat)
+        OnAnyGuardEnterCombat.Broadcast(GetOwner());
 }
 
 void UGuardDetectionComponent::TickStateTimer(float DeltaTime)

@@ -2,6 +2,7 @@
 #include "RefuerzosSubsystem.h"
 #include "WantedSubsystem.h"
 #include "PoliciaActor.h"
+#include "Character/Stealth/GuardDetectionComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Pawn.h"
 #include "Engine/World.h"
@@ -13,6 +14,16 @@ void URefuerzosSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 	if (UGameInstance* GI = InWorld.GetGameInstance())
 		if (UWantedSubsystem* Wn = GI->GetSubsystem<UWantedSubsystem>())
 			Wn->OnEstrellasCambia.AddDynamic(this, &URefuerzosSubsystem::OnWanted);
+
+	// When any guard enters combat, bump wanted +1.
+	UGuardDetectionComponent::OnAnyGuardEnterCombat.AddDynamic(this, &URefuerzosSubsystem::OnGuardCombat);
+}
+
+void URefuerzosSubsystem::OnGuardCombat(AActor* Guard)
+{
+	if (UGameInstance* GI = GetWorld() ? GetWorld()->GetGameInstance() : nullptr)
+		if (UWantedSubsystem* Wn = GI->GetSubsystem<UWantedSubsystem>())
+			Wn->AumentarBusqueda(1);
 }
 
 void URefuerzosSubsystem::OnWanted(int32 Nivel)

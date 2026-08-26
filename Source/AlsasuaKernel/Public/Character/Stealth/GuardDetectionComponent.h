@@ -21,6 +21,9 @@ enum class EGuardAlertState : uint8
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnGuardAlertStateChanged, AActor*, Guard, EGuardAlertState, NewState, EGuardAlertState, OldState);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnGuardDetectedPlayer, AActor*, Guard, FVector, DetectionLocation);
 
+/** Static delegate: broadcast when ANY guard enters Combat. Subscribes from Gameplay layer. */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAnyGuardCombat, AActor*, Guard);
+
 /**
  * Componente de detección para guardias y policía.
  * Cone de visión + detección por sonido + máquina de estados de alerta.
@@ -75,6 +78,9 @@ public:
 
     UPROPERTY(BlueprintAssignable, Category = "Alsasua|Guard")
     FOnGuardDetectedPlayer OnDetectedPlayer;
+
+    /** Static: fires when ANY guard enters Combat. Gameplay layer subscribes for reinforcements. */
+    static FOnAnyGuardCombat OnAnyGuardEnterCombat;
 
     // ── Configuración ──────────────────────────────────────────────────────
 

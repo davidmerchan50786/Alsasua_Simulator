@@ -29,6 +29,9 @@ private:
 	UFUNCTION()
 	void OnWanted(int32 Nivel);
 
+	UFUNCTION()
+	void OnGuardCombat(AActor* Guard);
+
 	void Despachar(int32 Cantidad);
 	void SpawnVehiculoPolicia(FVector Centro, FRotator Rotacion);
 };
