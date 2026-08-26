@@ -98,13 +98,22 @@ void UAlsasuaVisualEffectsManager::UpdateWind(float DeltaTime)
 {
 	TimeAccumulator += DeltaTime;
 
-	const float Gust = FMath::Sin(TimeAccumulator * WindGustFrequency * 6.283f) * WindGustAmplitude;
-	const float Noise = FMath::Sin(TimeAccumulator * 0.7f) * 0.1f;
-	WindIntensity = FMath::Clamp(WindIntensity + (Gust + Noise) * DeltaTime, 0.05f, 1.f);
-
+	// Read wind from weather subsystem
 	UWorld* W1 = GetWorld();
 	UAlsasuaServiceRegistry* Reg1 = W1 ? UAlsasuaServiceRegistry::Get(W1) : nullptr;
 	IWeatherService* Weather1 = Reg1 ? Reg1->PedirComo<IWeatherService>(FName("Weather")) : nullptr;
+
+	const float WeatherWindSpd = Weather1 ? Weather1->GetWindSpeed() : 0.f;
+	const float WeatherWindNorm = FMath::Clamp(WeatherWindSpd / 30.f, 0.f, 1.f);
+
+	// Gust overlay
+	const float Gust = FMath::Sin(TimeAccumulator * WindGustFrequency * 6.283f) * WindGustAmplitude;
+	const float Noise = FMath::Sin(TimeAccumulator * 0.7f) * 0.1f;
+
+	// Blend weather base wind with procedural gusts
+	const float TargetWind = FMath::Clamp(WeatherWindNorm + Gust + Noise, 0.05f, 1.f);
+	WindIntensity = FMath::FInterpTo(WindIntensity, TargetWind, DeltaTime, 2.0f);
+
 	if (Weather1 && Weather1->GetRainIntensity() > 0.8f)
 	{
 		WindIntensity = FMath::Max(WindIntensity, 0.8f);

@@ -1,4 +1,6 @@
 #include "AlsasuaFoliageWindComponent.h"
+#include "AlsasuaServiceRegistry.h"
+#include "Services/IWeatherService.h"
 
 UAlsasuaFoliageWindComponent::UAlsasuaFoliageWindComponent()
 {
@@ -30,7 +32,30 @@ void UAlsasuaFoliageWindComponent::TickComponent(float DeltaTime, ELevelTick Tic
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (!GetOwner() || DeltaTime <= 0.f || WindIntensity <= 0.f) return;
+	if (!GetOwner() || DeltaTime <= 0.f) return;
+
+	// Read wind del servicio de clima, sin depender de GF_Clima en compile-time
+	// (evitaria un ciclo: GF_Clima ya depende de AlsasuaKernel).
+	const UGameInstance* GI = GetWorld() ? GetWorld()->GetGameInstance() : nullptr;
+	const UAlsasuaServiceRegistry* Reg = GI ? GI->GetSubsystem<UAlsasuaServiceRegistry>() : nullptr;
+	const IWeatherService* Weather = Reg ? Reg->PedirComo<IWeatherService>(FName("Weather")) : nullptr;
+	const float WindSpd = Weather ? Weather->GetWindSpeed() : 0.f;
+
+	// Normalize: 0-30 kmh → 0-1
+	const float WindNorm = FMath::Clamp(WindSpd / 30.f, 0.f, 1.f);
+	const float EffectiveIntensity = WindIntensity * WindNorm;
+
+	if (EffectiveIntensity <= 0.01f)
+	{
+		// No wind: return to rest
+		if (GetOwner())
+		{
+			const FRotator Rest(OriginalRotation.X, OriginalRotation.Y, OriginalRotation.Z);
+			GetOwner()->SetActorRotation(Rest);
+		}
+		CurrentSway = 0.f;
+		return;
+	}
 
 	// Sinusoidal sway with phase
 	CurrentPhase += DeltaTime * SwayFrequency;
@@ -41,12 +66,12 @@ void UAlsasuaFoliageWindComponent::TickComponent(float DeltaTime, ELevelTick Tic
 	const float CombinedSway = (SwayRaw + Sway2) * 0.5f;
 
 	// Target sway angle
-	const float TargetSway = CombinedSway * MaxSwayAngle * WindIntensity;
+	const float TargetSway = CombinedSway * MaxSwayAngle * EffectiveIntensity;
 
-	// Smooth interpolation (spring-like)
+	// Smooth spring interpolation
 	CurrentSway = FMath::FInterpTo(CurrentSway, TargetSway, DeltaTime, 5.f);
 
-	// Apply as pitch + roll
+	// Apply rotation
 	const FRotator NewRotation(
 		OriginalRotation.X + CurrentSway,
 		OriginalRotation.Y,

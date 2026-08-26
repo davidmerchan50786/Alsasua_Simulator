@@ -14,6 +14,9 @@ public class AlsasuaKernel : ModuleRules
 			"Engine",
 			// Capa personaje/GAS absorbida de AlsasuaManifa.
 			"AlsasuaCore",
+			// Interfaces de servicio (IWeatherService, etc.) sin depender del
+			// plugin que las implementa — se piden por UAlsasuaServiceRegistry.
+			"AlsasuaContracts",
 			"GameplayAbilities",
 			"GameplayTags",
 			"GameplayTasks",

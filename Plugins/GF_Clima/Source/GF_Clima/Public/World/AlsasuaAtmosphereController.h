@@ -332,6 +332,7 @@ private:
 	void UpdateSkyVisuals(float DeltaTime);
 	void UpdateCloudVisuals();
 	void UpdateCloudLayer(float DeltaTime);
+	void UpdateRainShadows(float DeltaTime);
 	void UpdateStarSky(float DeltaTime);
 
 	/**
@@ -380,4 +381,5 @@ private:
 	FLinearColor CurrentMieColor = FLinearColor(0.005f, 0.005f, 0.005f);
 	float CurrentMieAnisotropy = 0.9f;
 	float CurrentMultiScattering = 2.0f;
+	float CurrentRainIntensity = 0.f;
 };

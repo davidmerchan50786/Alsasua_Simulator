@@ -352,6 +352,7 @@ void UAlsasuaAtmosphereController::UpdateAtmosphere(float Hour, float DeltaTime)
 	UpdateCloudVisuals();
 	UpdateCloudLayer(DeltaTime);
 	UpdateStarSky(DeltaTime);
+	UpdateRainShadows(DeltaTime);
 
 	OnTimeOfDayVisualChanged.Broadcast(CurrentSunElevation);
 }
@@ -524,6 +525,37 @@ void UAlsasuaAtmosphereController::UpdateCloudVisuals()
 	}
 
 	CurrentCloudDensity = CloudBase;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  UpdateRainShadows
+//  During rain: reduce directional light intensity (diffuse overcast),
+//  soften contact shadows, reduce shadow distance. Creates the visual
+//  impression of diffuse, omnidirectional rain lighting.
+// ─────────────────────────────────────────────────────────────────────────────
+void UAlsasuaAtmosphereController::UpdateRainShadows(float DeltaTime)
+{
+	const UWeatherSubsystem* Weather = GetWorld() ? GetWorld()->GetSubsystem<UWeatherSubsystem>() : nullptr;
+	if (!Weather) return;
+
+	const float Rain = Weather->GetRainIntensity();
+	if (Rain <= 0.01f && CurrentRainIntensity <= 0.01f) return;
+
+	// Smooth blend
+	CurrentRainIntensity = FMath::FInterpTo(CurrentRainIntensity, Rain, DeltaTime, 2.0f);
+
+	if (SunLight)
+	{
+		if (UDirectionalLightComponent* DirLight = Cast<UDirectionalLightComponent>(SunLight->GetLightComponent()))
+		{
+			// Reduce direct light: rain makes light more diffuse
+			const float DirectIntensity = FMath::Lerp(1.0f, 0.55f, CurrentRainIntensity);
+			DirLight->SetIntensity(CurrentSunIntensity * DirectIntensity);
+
+			// Soften contact shadows during rain
+			DirLight->ContactShadowLength = FMath::Lerp(0.f, 20.f, CurrentRainIntensity);
+		}
+	}
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
