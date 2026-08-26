@@ -89,6 +89,22 @@ void UArmasComponent::TickComponent(float DeltaTime, ELevelTick, FActorComponent
 	}
 }
 
+void UArmasComponent::NotifyNearbyGuards(FVector Location, float Loudness)
+{
+	UWorld* W = GetWorld();
+	if (!W) return;
+	TArray<FOverlapResult> Overlaps;
+	FCollisionShape Shape = FCollisionShape::MakeSphere(3000.f);
+	if (W->OverlapMultiByChannel(Overlaps, Location, FQuat::Identity, ECC_Pawn, Shape))
+	{
+		for (const FOverlapResult& Ov : Overlaps)
+		{
+			if (UGuardDetectionComponent* Det = Ov.GetActor()->FindComponentByClass<UGuardDetectionComponent>())
+				Det->ReportNoise(Location, Loudness);
+		}
+	}
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  Munición
 // ─────────────────────────────────────────────────────────────────────────────
@@ -259,19 +275,7 @@ void UArmasComponent::DispararFuego(int32 Dano, int32 Perdigones, float Dispersi
 	if (SDisparo && GetOwner()) UGameplayStatics::PlaySoundAtLocation(W, SDisparo, GetOwner()->GetActorLocation());
 
 	// Notificar a guardias cercanos del sonido del disparo.
-	if (AActor* Owner = GetOwner())
-	{
-		TArray<FOverlapResult> Overlaps;
-		FCollisionShape Shape = FCollisionShape::MakeSphere(3000.f);
-		if (W->OverlapMultiByChannel(Overlaps, Owner->GetActorLocation(), FQuat::Identity, ECC_Pawn, Shape))
-		{
-			for (const FOverlapResult& Ov : Overlaps)
-			{
-				if (UGuardDetectionComponent* Det = Ov.GetActor()->FindComponentByClass<UGuardDetectionComponent>())
-					Det->ReportNoise(Owner->GetActorLocation(), 1.0f);
-			}
-		}
-	}
+	if (GetOwner()) NotifyNearbyGuards(GetOwner()->GetActorLocation(), 1.0f);
 
 	// Fogonazo en el cañón.
 	if (NSFogonazo)
@@ -500,7 +504,8 @@ void UArmasComponent::LanzarMolotov()
 				}
 		}
 	}
-	SubirBusqueda(4);
+		SubirBusqueda(4);
+	NotifyNearbyGuards(ImpactPoint, 1.0f);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -587,6 +592,7 @@ void UArmasComponent::DetonarBombaLapa()
 
 	bBombaLapaActive = false;
 	SubirBusqueda(5);
+	NotifyNearbyGuards(BombaLapaLocation, 1.0f);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -649,4 +655,5 @@ void UArmasComponent::CocheBombaDetonar()
 	}
 
 	SubirBusqueda(6);
+	NotifyNearbyGuards(BoomLocation, 1.0f);
 }

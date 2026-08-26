@@ -105,4 +105,5 @@ private:
 	void Consecuencias(AActor* Victima) const;
 
 	void InitAmmoArrays();
+	void NotifyNearbyGuards(FVector Location, float Loudness);
 };
