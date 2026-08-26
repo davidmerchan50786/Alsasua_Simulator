@@ -157,6 +157,9 @@ private:
 	UPROPERTY()
 	TObjectPtr<UAlsasuaAttributeSet> AttributeSet;
 
+	UPROPERTY()
+	TObjectPtr<class UGameplayPostProcessComponent> PostProcessFX;
+
 	void InitializeGAS();
 
 	// ── ADS ────────────────────────────────────────────────────────────────

@@ -23,6 +23,7 @@
 #include "AI/AlsasuaCrowdSentiment.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/GameInstance.h"
+#include "Character/GameplayPostProcessComponent.h"
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Ajustes de ratón del menú de opciones.
@@ -63,6 +64,7 @@ AAlsasuaCharacter::AAlsasuaCharacter()
 
 	AbilitySystemComponent = CreateDefaultSubobject<UAlsasuaAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 	AttributeSet = CreateDefaultSubobject<UAlsasuaAttributeSet>(TEXT("AttributeSet"));
+	PostProcessFX = CreateDefaultSubobject<UGameplayPostProcessComponent>(TEXT("PostProcessFX"));
 
 	GetCapsuleComponent()->InitCapsuleSize(40.f, 90.f);
 	bUseControllerRotationYaw = false;
@@ -246,6 +248,9 @@ void AAlsasuaCharacter::RecibirDano(int32 Cantidad, FVector Origen, ETipoDano Ti
 	AbilitySystemComponent->ApplyModToAttribute(AttributeSet->GetHealthAttribute(),
 		EGameplayModOp::Additive, -DanoReal);
 
+	if (PostProcessFX)
+		PostProcessFX->TriggerDamageFlash(FMath::Clamp(DanoReal / 50.f, 0.2f, 1.f));
+
 	if (GetHealth() <= 0.f)
 	{
 		AbilitySystemComponent->ApplyModToAttribute(AttributeSet->GetWantedLevelAttribute(),
@@ -328,8 +333,17 @@ UCharacterTrajectoryComponent* AAlsasuaCharacter::GetCharacterTrajectory() const
 
 // ── ADS ─────────────────────────────────────────────────────────────────────
 
-void AAlsasuaCharacter::ApuntarInicio() { bApuntando = true; }
-void AAlsasuaCharacter::ApuntarFin() { bApuntando = false; }
+void AAlsasuaCharacter::ApuntarInicio()
+{
+	bApuntando = true;
+	if (PostProcessFX) PostProcessFX->SetADSBloom(true);
+}
+
+void AAlsasuaCharacter::ApuntarFin()
+{
+	bApuntando = false;
+	if (PostProcessFX) PostProcessFX->SetADSBloom(false);
+}
 
 // ── Parkour ─────────────────────────────────────────────────────────────────
 
@@ -456,12 +470,14 @@ void AAlsasuaCharacter::CorrerInicio()
 {
 	bCorriendo = true;
 	if (UCharacterMovementComponent* Mv = GetCharacterMovement()) Mv->MaxWalkSpeed = VelCorrer;
+	if (PostProcessFX) PostProcessFX->SetSpeedLines(true, 0.8f);
 }
 
 void AAlsasuaCharacter::CorrerFin()
 {
 	bCorriendo = false;
 	if (UCharacterMovementComponent* Mv = GetCharacterMovement()) Mv->MaxWalkSpeed = VelCaminar;
+	if (PostProcessFX) PostProcessFX->SetSpeedLines(false);
 }
 
 void AAlsasuaCharacter::AgacharseToggle()
