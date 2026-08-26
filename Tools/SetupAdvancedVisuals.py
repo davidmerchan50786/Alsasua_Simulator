@@ -15,7 +15,7 @@ import ue5_compat as compat
 
 def add_water_flow_map():
     """Añade UAlsasuaWaterFlowMap al agua."""
-    cls = unreal.load_class("/Script/AlsasuaManifa.AlsasuaWaterFlowMap")
+    cls = unreal.load_class("/Script/GF_World.AlsasuaWaterFlowMap")
     if not cls:
         unreal.log_error("[AdvancedVisuals] No se pudo cargar UAlsasuaWaterFlowMap")
         return
@@ -34,7 +34,7 @@ def add_water_flow_map():
 
 def add_road_decals():
     """Añade UAlsasuaRoadDecalSystem a carreteras."""
-    cls = unreal.load_class("/Script/AlsasuaManifa.AlsasuaRoadDecalSystem")
+    cls = unreal.load_class("/Script/GF_Carreteras.AlsasuaRoadDecalSystem")
     if not cls:
         unreal.log_error("[AdvancedVisuals] No se pudo cargar UAlsasuaRoadDecalSystem")
         return
@@ -53,7 +53,7 @@ def add_road_decals():
 
 def add_building_facades():
     """Añade UAlsasuaBuildingFacadeSystem a edificios."""
-    cls = unreal.load_class("/Script/AlsasuaManifa.AlsasuaBuildingFacadeSystem")
+    cls = unreal.load_class("/Script/GF_Edificios.AlsasuaBuildingFacadeSystem")
     if not cls:
         unreal.log_error("[AdvancedVisuals] No se pudo cargar UAlsasuaBuildingFacadeSystem")
         return
@@ -72,7 +72,7 @@ def add_building_facades():
 
 def add_light_probes():
     """Añade UAlsasuaLightProbeSystem a edificios interiores."""
-    cls = unreal.load_class("/Script/AlsasuaManifa.AlsasuaLightProbeSystem")
+    cls = unreal.load_class("/Script/GF_World.AlsasuaLightProbeSystem")
     if not cls:
         unreal.log_error("[AdvancedVisuals] No se pudo cargar UAlsasuaLightProbeSystem")
         return
@@ -91,7 +91,7 @@ def add_light_probes():
 
 def add_post_process_stack():
     """Añade UAlsasuaPostProcessStack al jugador."""
-    cls = unreal.load_class("/Script/AlsasuaManifa.AlsasuaPostProcessStack")
+    cls = unreal.load_class("/Script/GF_World.AlsasuaPostProcessStack")
     if not cls:
         unreal.log_error("[AdvancedVisuals] No se pudo cargar UAlsasuaPostProcessStack")
         return
@@ -107,23 +107,13 @@ def add_post_process_stack():
 
 
 def add_foliage_density():
-    """Añade UAlsasuaFoliageDensitySystem al nivel."""
-    cls = unreal.load_class("/Script/AlsasuaManifa.AlsasuaFoliageDensitySystem")
-    if not cls:
-        unreal.log_error("[AdvancedVisuals] No se pudo cargar UAlsasuaFoliageDensitySystem")
-        return
-
-    world_settings = compat.ajustes_mundo()
-    if world_settings:
-        if not world_settings.get_component_by_class(cls):
-            comp = compat.anadir_componente(world_settings, cls)
-            if comp:
-                unreal.log("[AdvancedVisuals] FoliageDensitySystem añadido")
+    """UAlsasuaFoliageDensitySystem — not yet implemented. Skipped."""
+    unreal.log_warning("[AdvancedVisuals] FoliageDensitySystem not implemented — skipped")
 
 
 def add_terrain_blender():
     """Añade UAlsasuaTerrainMaterialBlender al terreno."""
-    cls = unreal.load_class("/Script/AlsasuaManifa.AlsasuaTerrainMaterialBlender")
+    cls = unreal.load_class("/Script/GF_World.AlsasuaTerrainMaterialBlender")
     if not cls:
         unreal.log_error("[AdvancedVisuals] No se pudo cargar UAlsasuaTerrainMaterialBlender")
         return
@@ -142,7 +132,7 @@ def add_terrain_blender():
 
 def add_reverb_zones():
     """Añade UAlsasuaReverbZoneSystem a edificios y lugares especiales."""
-    cls = unreal.load_class("/Script/AlsasuaManifa.AlsasuaReverbZoneSystem")
+    cls = unreal.load_class("/Script/GF_Audio.AlsasuaReverbZoneSystem")
     if not cls:
         unreal.log_error("[AdvancedVisuals] No se pudo cargar UAlsasuaReverbZoneSystem")
         return

@@ -15,7 +15,7 @@ import ue5_compat as compat
 def add_ground_cover():
     """Añade UAlsasuaGroundCoverSystem al terreno."""
     cover_class = unreal.load_class(
-        "/Script/AlsasuaManifa.AlsasuaGroundCoverSystem")
+        "/Script/GF_World.AlsasuaGroundCoverSystem")
     if not cover_class:
         unreal.log_error("[GroundCover] No se pudo cargar UAlsasuaGroundCoverSystem")
         return
@@ -37,34 +37,14 @@ def add_ground_cover():
 
 
 def add_seasonal_foliage():
-    """Añade UAlsasuaSeasonalFoliage a actores de vegetation."""
-    seasonal_class = unreal.load_class(
-        "/Script/AlsasuaManifa.AlsasuaSeasonalFoliage")
-    if not seasonal_class:
-        unreal.log_error("[SeasonalFoliage] No se pudo cargar UAlsasuaSeasonalFoliage")
-        return
-
-    actors = compat.actores().get_all_level_actors_of_class(
-        unreal.StaticMeshActor)
-    count = 0
-
-    for actor in actors:
-        name = actor.get_actor_label().lower()
-        if any(x in name for x in ["tree", "arbol", "bush", "arbusto",
-                                    "foliage", "hierba", "grass"]):
-            existing = actor.get_component_by_class(seasonal_class)
-            if not existing:
-                comp = compat.anadir_componente(actor, seasonal_class)
-                if comp:
-                    count += 1
-
-    unreal.log(f"[SeasonalFoliage] {count} actores con colores estacionales")
+    """UAlsasuaSeasonalFoliage — not yet implemented. Skipped."""
+    unreal.log_warning("[SeasonalFoliage] Not implemented — skipped")
 
 
 def add_environmental_decals():
     """Añade UAlsasuaEnvironmentalDecals a edificios."""
     env_class = unreal.load_class(
-        "/Script/AlsasuaManifa.AlsasuaEnvironmentalDecals")
+        "/Script/GF_World.AlsasuaEnvironmentalDecals")
     if not env_class:
         unreal.log_error("[EnvironmentalDecals] No se pudo cargar UAlsasuaEnvironmentalDecals")
         return
@@ -89,7 +69,7 @@ def add_environmental_decals():
 def add_procedural_audio():
     """Añade UAlsasuaProceduralAudio al jugador."""
     audio_class = unreal.load_class(
-        "/Script/AlsasuaManifa.AlsasuaProceduralAudio")
+        "/Script/GF_Audio.AlsasuaProceduralAudio")
     if not audio_class:
         unreal.log_error("[ProceduralAudio] No se pudo cargar UAlsasuaProceduralAudio")
         return
@@ -109,7 +89,7 @@ def add_procedural_audio():
 def add_dynamic_cloud_shadows():
     """Añade UAlsasuaDynamicCloudShadows al WorldSettings."""
     cloud_class = unreal.load_class(
-        "/Script/AlsasuaManifa.AlsasuaDynamicCloudShadows")
+        "/Script/GF_World.AlsasuaDynamicCloudShadows")
     if not cloud_class:
         unreal.log_error("[CloudShadows] No se pudo cargar UAlsasuaDynamicCloudShadows")
         return

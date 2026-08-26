@@ -68,7 +68,7 @@ def add_emissive_components():
         name = actor.get_actor_label()
         if any(x in name.lower() for x in ["edificio", "building", "casa", "bloque"]):
             emissive_class = unreal.load_class(
-                "/Script/AlsasuaManifa.AlsasuaBuildingEmissiveComponent")
+                "/Script/GF_Edificios.AlsasuaBuildingEmissiveComponent")
             if emissive_class:
                 existing = actor.get_component_by_class(emissive_class)
                 if not existing:

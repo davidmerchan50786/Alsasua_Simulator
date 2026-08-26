@@ -15,7 +15,7 @@ import ue5_compat as compat
 def add_decals_to_roads():
     """Añade UAlsasuaDecalSystem a carreteras."""
     decal_class = unreal.load_class(
-        "/Script/AlsasuaManifa.AlsasuaDecalSystem")
+        "/Script/GF_World.AlsasuaDecalSystem")
     if not decal_class:
         unreal.log_error("[Decals] No se pudo cargar UAlsasuaDecalSystem")
         return

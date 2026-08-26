@@ -15,7 +15,7 @@ import ue5_compat as compat
 def add_water_reflections():
     """Añade UAlsasuaWaterReflectionManager al agua del río."""
     reflection_class = unreal.load_class(
-        "/Script/AlsasuaManifa.AlsasuaWaterReflectionManager")
+        "/Script/GF_World.AlsasuaWaterReflectionManager")
     if not reflection_class:
         unreal.log_error("[WaterReflections] No se pudo cargar UAlsasuaWaterReflectionManager")
         return
@@ -39,7 +39,7 @@ def add_water_reflections():
 def add_fog_to_valley():
     """Añade UAlsasuaAtmosphereFogComponent al nivel para niebla de valle."""
     fog_class = unreal.load_class(
-        "/Script/AlsasuaManifa.AlsasuaAtmosphereFogComponent")
+        "/Script/GF_Clima.AlsasuaAtmosphereFogComponent")
     if not fog_class:
         unreal.log_error("[ValleyFog] No se pudo cargar UAlsasuaAtmosphereFogComponent")
         return

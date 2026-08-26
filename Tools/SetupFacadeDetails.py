@@ -15,7 +15,7 @@ import ue5_compat as compat
 def add_facade_details():
     """Añade UAlsasuaFacadeDetailSystem a edificios."""
     facade_class = unreal.load_class(
-        "/Script/AlsasuaManifa.AlsasuaFacadeDetailSystem")
+        "/Script/GF_Edificios.AlsasuaFacadeDetailSystem")
     if not facade_class:
         unreal.log_error("[FacadeDetails] No se pudo cargar UAlsasuaFacadeDetailSystem")
         return

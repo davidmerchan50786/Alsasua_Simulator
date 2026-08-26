@@ -47,6 +47,10 @@ public:
     UFUNCTION(BlueprintPure, Category="AAA|Animation|Blend")
     float GetLeanAmount(float Speed, float TurnRate) const;
 
+    /** Last computed FootIK result — read from Animation Blueprint. */
+    UPROPERTY(BlueprintReadOnly, Category="AAA|Animation|FootIK")
+    FFootIKResult LastFootIK;
+
 protected:
     virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
