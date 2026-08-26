@@ -35,4 +35,5 @@ public:
 
 private:
 	float Cooldown = 0.f;
+	void UpdateGuardDetection();
 };

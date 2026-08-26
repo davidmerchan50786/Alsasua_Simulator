@@ -147,4 +147,9 @@ private:
 
     /** Última posición desde la que se vio al jugador. */
     FVector LastSeenLocation = FVector::ZeroVector;
+
+public:
+    /** Multiplier for vision range (0-1). Set by disguise system. */
+    UPROPERTY(BlueprintReadWrite, Category = "Alsasua|Guard")
+    float DetectionRangeMultiplier = 1.f;
 };

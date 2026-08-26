@@ -95,7 +95,7 @@ bool UGuardDetectionComponent::IsInVisionCone(const AActor* Target) const
 
     // Radio de visión efectivo: se reduce si el objetivo lleva disfraz
     // (o cualquier componente que publique perfil de sigilo).
-    float EffectiveRange = VisionRange;
+    float EffectiveRange = VisionRange * DetectionRangeMultiplier;
     if (Target->GetClass()->ImplementsInterface(UAlsasuaStealthProfile::StaticClass()))
     {
         EffectiveRange *= IAlsasuaStealthProfile::Execute_GetVisionMultiplier(Target);
