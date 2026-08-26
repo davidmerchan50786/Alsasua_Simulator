@@ -50,7 +50,7 @@ def spawn_farolas_from_json():
         return
 
     wind_class = unreal.load_class(
-        "/Script/AlsasuaManifa.AlsasuaStreetLightController")
+        "/Script/GF_Carreteras.AlsasuaStreetLightController")
     if not wind_class:
         unreal.log_error("[StreetLights] No se pudo cargar UAlsasuaStreetLightController")
         return
@@ -89,7 +89,7 @@ def spawn_farolas_from_json():
 def add_light_to_existing_farolas():
     """Añade UAlsasuaStreetLightController a farolas existentes en el nivel."""
     wind_class = unreal.load_class(
-        "/Script/AlsasuaManifa.AlsasuaStreetLightController")
+        "/Script/GF_Carreteras.AlsasuaStreetLightController")
     if not wind_class:
         return
 

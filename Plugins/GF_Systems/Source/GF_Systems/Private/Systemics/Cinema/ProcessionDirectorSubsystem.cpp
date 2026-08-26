@@ -75,4 +75,39 @@ void UProcessionDirectorSubsystem::TriggerBombFailure() {
 }
 
 void UProcessionDirectorSubsystem::UpdateCityStateByOutcome() {
+    UWorld* W = GetWorld();
+    if (!W) return;
+
+    switch (CurrentOutcome)
+    {
+    case EProcessionOutcome::PublicJustice:
+        if (auto* Urban = W->GetSubsystem<UUrbanStateSubsystem>())
+        {
+            Urban->IncreaseTension("Global", -40.f);
+        }
+        if (auto* Social = W->GetSubsystem<USocialMediaSubsystem>())
+        {
+            Social->AddFollowers(20000);
+        }
+        break;
+
+    case EProcessionOutcome::StateRepression:
+        if (auto* Urban = W->GetSubsystem<UUrbanStateSubsystem>())
+        {
+            Urban->IncreaseTension("Global", 60.f);
+        }
+        OnPlayerStatsModified.Broadcast(3.f, -40.f);
+        break;
+
+    case EProcessionOutcome::BloodySunday:
+        if (auto* Urban = W->GetSubsystem<UUrbanStateSubsystem>())
+        {
+            Urban->IncreaseTension("Global", 100.f);
+        }
+        OnPlayerStatsModified.Broadcast(5.f, -80.f);
+        break;
+
+    default:
+        break;
+    }
 }

@@ -294,7 +294,31 @@ bool AAlsasuaCharacter::IsCrouchingState() const
 
 bool AAlsasuaCharacter::CanVault() const
 {
-	return true;
+	const UCharacterMovementComponent* CMC = GetCharacterMovement();
+	if (!CMC || CMC->IsFalling()) return false;
+
+	// Must be grounded or nearly so
+	if (!CMC->IsMovingOnGround() && CMC->Velocity.Z > 50.f) return false;
+
+	// Trace forward to find a vaultable obstacle
+	const FVector Start = GetActorLocation() + FVector(0, 0, 40.f);
+	const FVector End = Start + GetActorForwardVector() * 100.f;
+
+	FHitResult Hit;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+
+	if (!GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params))
+	{
+		return false; // No obstacle in front
+	}
+
+	// Check if obstacle top is within vault height (20-120 cm)
+	const float ObstacleTopZ = Hit.ImpactPoint.Z;
+	const float FootZ = GetActorLocation().Z;
+	const float HeightAboveFoot = ObstacleTopZ - FootZ;
+
+	return HeightAboveFoot > 20.f && HeightAboveFoot < 120.f;
 }
 
 float AAlsasuaCharacter::GetAimOffsetYaw() const
