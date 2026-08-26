@@ -65,4 +65,5 @@ def main():
 
     unreal.log(f'=== Done: {enabled} meshes got Nanite, {skipped} skipped, {failed} failed ===')
 
-main()
+if __name__ == "__main__":
+    main()
