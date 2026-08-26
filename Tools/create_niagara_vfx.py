@@ -223,7 +223,7 @@ def create_firefly_system():
     if not system:
         return None
     
-    emitter = system.add_or_add_emitter()
+    emitter = system.add_emitter()
     emitter.set_editor_property("name", "Fireflies")
     
     spawn = emitter.find_or_add_module("SpawnRate")

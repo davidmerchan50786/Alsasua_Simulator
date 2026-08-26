@@ -61,20 +61,23 @@ def assign_materials_to_buildings():
 
 def add_emissive_components():
     """Añade UAlsasuaBuildingEmissiveComponent a cada edificio."""
+    emissive_class = unreal.load_class(
+        "/Script/GF_Edificios.AlsasuaBuildingEmissiveComponent")
+    if not emissive_class:
+        unreal.log_error("[NightBuildings] No se pudo cargar UAlsasuaBuildingEmissiveComponent")
+        return
+
     actors = compat.actores().get_all_level_actors_of_class(
         unreal.StaticMeshActor)
     count = 0
     for actor in actors:
         name = actor.get_actor_label()
         if any(x in name.lower() for x in ["edificio", "building", "casa", "bloque"]):
-            emissive_class = unreal.load_class(
-                "/Script/GF_Edificios.AlsasuaBuildingEmissiveComponent")
-            if emissive_class:
-                existing = actor.get_component_by_class(emissive_class)
-                if not existing:
-                    comp = compat.anadir_componente(actor, emissive_class)
-                    if comp:
-                        count += 1
+            existing = actor.get_component_by_class(emissive_class)
+            if not existing:
+                comp = compat.anadir_componente(actor, emissive_class)
+                if comp:
+                    count += 1
 
     unreal.log(f"[NightBuildings] Componentes añadidos: {count}")
 

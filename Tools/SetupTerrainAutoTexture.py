@@ -1,6 +1,5 @@
 """
 SetupTerrainAutoTexture.py — Crea material de terreno con auto-textura por pendiente.
-Usa el MPC del clima (MPC_Clima) para blending dinámico:
   - Pendiente < 15°: hierba
   - Pendiente 15-35°: tierra
   - Pendiente > 35°: roca
@@ -10,41 +9,65 @@ Ejecutar en el editor UE5:  Tools > Execute Python Script
 """
 import unreal
 
-# La API de editor de 5.8 pasa por aquí: subsistemas en vez de las
-# librerías obsoletas, y los nombres que no existían. Ver ue5_compat.py.
 import sys as _sys, os as _os
 _sys.path.append(_os.path.join(unreal.Paths.project_dir(), "Tools"))
 import ue5_compat as compat
 
-# La única colección que existe. Antes apuntaba a
-# /Game/Materials/MPC_AlsasuaGlobal —otra carpeta, en inglés—, que no la crea
-# ningún generador: load_asset devolvía None, el script avisaba "MPC no
-# encontrado" y seguía, y el material se quedaba sin su cableado al clima.
-# La crea Tools/SetupMaterials.py (y UCreadorMaterialEdificio desde C++).
 MPC_PATH = "/Game/Materiales/MPC_Clima"
-# Nombres reales de Content/Textures (los pone Tools/DownloadTextures.py).
-# Antes apuntaban a T_Grass_01_D, T_Rock_05_D, T_StoneWall_02_D y T_Ground_01_D,
-# que no existen: el material salia sin ninguna textura.
 GRASS_TEXTURE = "/Game/Textures/T_Grass_Color"
 DIRT_TEXTURE = "/Game/Textures/T_Ground_Color"
 ROCK_TEXTURE = "/Game/Textures/T_StoneWall_Color"
 SNOW_TEXTURE = "/Game/Textures/T_Concrete_Color"
 
 
-def create_terrain_material():
-    """Crea M_Terreno_AutoTexture con slope-based blending via MPC."""
-    pkg_path = "/Game/Materials/M_Terreno_AutoTexture"
-    asset_tools = unreal.AssetToolsHelpers.get_asset_tools()
+def _constant(x, y, r=1.0, g=1.0, b=1.0, a=1.0):
+    n = unreal.MaterialExpressionConstant.new()
+    n.r, n.g, n.b, n.a = r, g, b, a
+    n.position_x, n.position_y = x, y
+    return n
 
-    existing = compat.assets().does_asset_exist(pkg_path)
-    if existing:
-        unreal.log(f"[TerrainAutoTex] Material ya existe: {pkg_path}")
+
+def _subtract(a, b, x=0, y=0):
+    n = unreal.MaterialExpressionSubtract.new()
+    n.a, n.b = a, b
+    n.position_x, n.position_y = x, y
+    return n
+
+
+def _lerp(a, b, alpha, x=0, y=0):
+    n = unreal.MaterialExpressionLinearInterpolate.new()
+    n.a, n.b, n.alpha = a, b, alpha
+    n.position_x, n.position_y = x, y
+    return n
+
+
+def _texture(x, y, tex_path):
+    tex = compat.assets().load_asset(tex_path)
+    n = unreal.MaterialExpressionTextureSample.new()
+    if tex:
+        n.texture = tex
+    n.position_x, n.position_y = x, y
+    return n
+
+
+def _func_input(x, y, name):
+    n = unreal.MaterialExpressionFunctionInput.new()
+    n.input_name = name
+    n.input_type = unreal.MaterialFunctionInputType.MIT_FLOAT1
+    n.position_x, n.position_y = x, y
+    return n
+
+
+def create_terrain_material():
+    """Crea M_Terreno_AutoTexture: slope-based grass/dirt/rock + altitude snow."""
+    pkg_path = "/Game/Materials/M_Terreno_AutoTexture"
+    if compat.assets().does_asset_exist(pkg_path):
+        unreal.log(f"[TerrainAutoTex] Ya existe: {pkg_path}")
         return
 
-    mat_factory = unreal.MaterialFactoryNew()
+    asset_tools = unreal.AssetToolsHelpers.get_asset_tools()
     mat = asset_tools.create_asset("M_Terreno_AutoTexture", "/Game/Materials",
-                                   unreal.Material, mat_factory)
-
+                                   unreal.Material, unreal.MaterialFactoryNew())
     if not mat:
         unreal.log_error("[TerrainAutoTex] No se pudo crear material")
         return
@@ -53,37 +76,35 @@ def create_terrain_material():
     mat.set_editor_property("ShadingModel", compat.LIT)
     mat.set_two_sided(False)
 
-    mpc_param = unreal.MaterialParameterCollection()
-    mpc_loaded = compat.assets().load_asset(MPC_PATH)
+    # Textures
+    t_grass = _texture(-600, 0, GRASS_TEXTURE)
+    t_dirt  = _texture(-600, 200, DIRT_TEXTURE)
+    t_rock  = _texture(-600, 400, ROCK_TEXTURE)
+    t_snow  = _texture(-600, 600, SNOW_TEXTURE)
 
-    if mpc_loaded and isinstance(mpc_loaded, unreal.MaterialParameterCollection):
-        mpc_param = mpc_loaded
-        unreal.log("[TerrainAutoTex] MPC cargado correctamente")
-    else:
-        unreal.log_warning("[TerrainAutoTex] MPC no encontrado, usando defaults")
+    # Normal Z = cos(slope). 1=flat, 0=vertical
+    normal_z = _func_input(-200, 0, "NormalZ")
 
-    # World position for slope calculation
-    abs_node = unreal.MaterialExpressionAbsolute.new()
-    abs_node.input = unreal.MaterialExpressionPixelNormalWS.new()
-    abs_node.position_x = -800
-    abs_node.position_y = 0
+    # Slope thresholds (cosine)
+    s_flat = _constant(-200, 100, 0.97)  # cos(15°)
+    s_mid  = _constant(-200, 150, 0.82)  # cos(35°)
 
-    # Z component of world normal = cos(slope)
-    z_extract = new_material_expression_function_input(abs_node, "NormalZ",
-        unreal.MaterialFunctionInputType.MIT_FLOAT1, abs_node.position_x - 200,
-        abs_node.position_y + 100)
+    # Grass ↔ Dirt
+    a1 = _subtract(normal_z, s_flat, -100, 100)
+    c1 = _lerp(t_dirt, t_grass, a1, 0, 200)
 
-    # Slope: 1.0 = flat, 0.0 = vertical
-    slope_param = new_material_expression_constant(abs_node.position_x - 200,
-        abs_node.position_y + 250, 0.15)  # slope threshold
-    slope = new_material_expression_subtract(z_extract, slope_param)
+    # (Grass↔Dirt) ↔ Rock
+    a2 = _subtract(normal_z, s_mid, -100, 200)
+    c2 = _lerp(t_rock, c1, a2, 0, 300)
 
-    # Snow threshold (altitude > 520m from CotaPlazaCm)
-    snow_threshold = new_material_expression_constant(-800, 400, 0.85)
+    # Snow by altitude
+    snow_thr = _constant(200, 0, 0.85)
+    a3 = _subtract(normal_z, snow_thr, 200, 100)
+    final = _lerp(c2, t_snow, a3, 0, 400)
 
+    mat.set_editor_property("BaseColor", final)
     mat.recompile()
-
-    unreal.log("[TerrainAutoTex] Material creado con auto-texture por pendiente")
+    unreal.log("[TerrainAutoTex] Material slope-based creado")
 
 
 def setup_terrain_material_instances():
@@ -102,18 +123,16 @@ def setup_terrain_material_instances():
     for section in sections:
         inst_name = f"MI_Terreno_{section}"
         pkg = f"/Game/Materials/{inst_name}"
-
         if compat.assets().does_asset_exist(pkg):
             continue
 
         asset_tools = unreal.AssetToolsHelpers.get_asset_tools()
-        mi_factory = unreal.MaterialInstanceConstantFactoryNew()
         mi = asset_tools.create_asset(inst_name, "/Game/Materials",
-                                      unreal.MaterialInstanceConstant, mi_factory)
-
+                                      unreal.MaterialInstanceConstant,
+                                      unreal.MaterialInstanceConstantFactoryNew())
         if mi:
             mi.set_editor_property("parent", base_mat)
-            unreal.log(f"[TerrainAutoTex] Instancia creada: {inst_name}")
+            unreal.log(f"[TerrainAutoTex] Instancia: {inst_name}")
 
 
 if __name__ == "__main__":
