@@ -33,6 +33,9 @@ public:
     UFUNCTION(BlueprintPure, Category="AAA|Dialog")
     float GetMemoryValue(FGameplayTag Tag) const;
 
+protected:
+    virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 private:
     UPROPERTY()
     TMap<FGameplayTag, FDialogMemoryEntry> MemoryBank;
