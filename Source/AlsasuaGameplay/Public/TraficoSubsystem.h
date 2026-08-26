@@ -26,11 +26,16 @@ public:
 	UPROPERTY(EditAnywhere, Category="Trafico") float PeriodoMantenimiento = 1.5f;
 
 	virtual void Tick(float DeltaTime) override;
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(UTraficoSubsystem, STATGROUP_Tickables); }
 	virtual bool IsTickable() const override { return !IsTemplate(); }
 
 private:
 	float Acum = 0.f;
 	UPROPERTY() TArray<AVehiculoAmbiente*> Vehiculos;
+	bool bPanicMode = false;
+
+	UFUNCTION()
+	void OnWantedChange(int32 Nivel);
 	void Mantener();
 };

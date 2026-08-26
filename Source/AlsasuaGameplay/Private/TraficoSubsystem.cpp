@@ -1,12 +1,26 @@
 // TraficoSubsystem.cpp
 #include "TraficoSubsystem.h"
 #include "VehiculoAmbiente.h"
-#include "CargadorCalles.h"     // ejes viarios (capa World)
+#include "CargadorCalles.h"
+#include "WantedSubsystem.h"
 #include "ArranqueMundo.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Pawn.h"
 #include "Engine/World.h"
 #include "Engine/GameInstance.h"
+
+void UTraficoSubsystem::Initialize(FSubsystemCollectionBase& Collection)
+{
+	Super::Initialize(Collection);
+	if (UGameInstance* GI = GetGameInstance())
+		if (UWantedSubsystem* Wn = GI->GetSubsystem<UWantedSubsystem>())
+			Wn->OnEstrellasCambia.AddDynamic(this, &UTraficoSubsystem::OnWantedChange);
+}
+
+void UTraficoSubsystem::OnWantedChange(int32 Nivel)
+{
+	bPanicMode = Nivel >= 3;
+}
 
 void UTraficoSubsystem::Tick(float DeltaTime)
 {
@@ -35,6 +49,9 @@ void UTraficoSubsystem::Mantener()
 			Vehiculos.RemoveAtSwap(i);
 		}
 	}
+
+	// Panic mode: don't spawn new traffic, existing vehicles speed up.
+	if (bPanicMode) return;
 
 	UCargadorCalles* Calles = W->GetSubsystem<UCargadorCalles>();
 	if (!Calles || Calles->EjesViarios.Num() == 0) return;
