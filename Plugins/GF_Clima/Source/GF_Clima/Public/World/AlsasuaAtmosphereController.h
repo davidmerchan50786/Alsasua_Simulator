@@ -13,6 +13,7 @@ class ADirectionalLight;
 class ASkyAtmosphere;
 class ASkyLight;
 class AExponentialHeightFog;
+class AVolumetricCloud;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTimeOfDayVisualChanged, float, SunAngle);
 
@@ -118,8 +119,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Sun")
 	float ShadowDistance = 30000.f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Sun", meta = (ClampMin = "1", ClampMax = "6"))
-	int32 ShadowCascades = 4;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Sun", meta = (ClampMin = "1", ClampMax = "10"))
+	int32 ShadowCascades = 6;
 
 	/** Contact shadows: asientan bordillos y mobiliario que las cascadas no ven. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Sun")
@@ -181,6 +182,36 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Clouds")
 	float NightCloudDensity = 0.3f;
+
+	// ── Volumetric Cloud Layer ───────────────────────────────────────────
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Clouds")
+	float CloudLayerBottom = 1.5f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Clouds")
+	float CloudLayerHeight = 5.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Clouds")
+	float CloudTracingMaxDistance = 200.f;
+
+	/** Quality: higher = more cloud samples, more GPU. 0.5-2.0 typical. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Clouds")
+	float CloudSampleCountScale = 1.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Clouds")
+	float CloudShadowSampleCountScale = 0.5f;
+
+	/** Cloud bottom occlusion from sky light — higher = darker undersides. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Clouds")
+	float CloudBottomOcclusion = 0.3f;
+
+	/** Transmittance threshold for cloud ray marching — lower = more opaque clouds. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Clouds")
+	float StopTracingTransmittanceThreshold = 0.01f;
+
+	/** Shadow tracing distance through cloud layer — deeper = darker shadows on ground. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Clouds")
+	float ShadowTracingDistance = 15.f;
 
 	// ── Sky ──────────────────────────────────────────────────────────────────
 
@@ -300,6 +331,7 @@ private:
 	void UpdateFogVisuals(float DeltaTime);
 	void UpdateSkyVisuals(float DeltaTime);
 	void UpdateCloudVisuals();
+	void UpdateCloudLayer(float DeltaTime);
 	void UpdateStarSky(float DeltaTime);
 
 	/**
@@ -325,6 +357,9 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<AExponentialHeightFog> HeightFog;
+
+	UPROPERTY()
+	AVolumetricCloud* VolumetricCloud = nullptr;
 
 	float TimeToUpdate = 0.f;
 

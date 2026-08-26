@@ -14,6 +14,7 @@
 #include "Engine/World.h"
 #include "AlsasuaServiceRegistry.h"
 #include "Engine/GameInstance.h"
+#include "Components/VolumetricCloudComponent.h"
 
 namespace
 {
@@ -97,6 +98,19 @@ void UAlsasuaAtmosphereController::FindOrCreateAtmosphereActors()
 		FActorSpawnParameters Params;
 		HeightFog = W->SpawnActor<AExponentialHeightFog>(AExponentialHeightFog::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
 		if (HeightFog) HeightFog->Rename(TEXT("Atmosphere_Fog"));
+	}
+
+	// Find or create volumetric cloud actor
+	for (TActorIterator<AVolumetricCloud> It(W); It; ++It)
+	{
+		VolumetricCloud = *It;
+		break;
+	}
+	if (!VolumetricCloud)
+	{
+		FActorSpawnParameters Params;
+		VolumetricCloud = W->SpawnActor<AVolumetricCloud>(AVolumetricCloud::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
+		if (VolumetricCloud) VolumetricCloud->Rename(TEXT("Atmosphere_Clouds"));
 	}
 }
 
@@ -336,6 +350,7 @@ void UAlsasuaAtmosphereController::UpdateAtmosphere(float Hour, float DeltaTime)
 	UpdateSkyAtmosphereVisuals(DeltaTime);
 	UpdateFogVisuals(DeltaTime);
 	UpdateCloudVisuals();
+	UpdateCloudLayer(DeltaTime);
 	UpdateStarSky(DeltaTime);
 
 	OnTimeOfDayVisualChanged.Broadcast(CurrentSunElevation);
@@ -509,6 +524,52 @@ void UAlsasuaAtmosphereController::UpdateCloudVisuals()
 	}
 
 	CurrentCloudDensity = CloudBase;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  UpdateCloudLayer
+//  Drives VolumetricCloudComponent: layer geometry, tracing quality, and
+//  cloud bottom occlusion — all reactive to weather and time of day.
+// ─────────────────────────────────────────────────────────────────────────────
+void UAlsasuaAtmosphereController::UpdateCloudLayer(float DeltaTime)
+{
+	if (!VolumetricCloud) return;
+
+	UVolumetricCloudComponent* CloudComp = VolumetricCloud->GetRootComponent()
+		? Cast<UVolumetricCloudComponent>(VolumetricCloud->GetRootComponent()) : nullptr;
+	if (!CloudComp) return;
+
+	const UWeatherSubsystem* Weather = GetWorld() ? GetWorld()->GetSubsystem<UWeatherSubsystem>() : nullptr;
+	const bool bRaining = Weather && (Weather->CurrentWeather == EWeatherSubsystemState::Rainy || Weather->CurrentWeather == EWeatherSubsystemState::Thunderstorm);
+
+	// ── Layer geometry: storms push clouds lower ─────────────────────────
+	const float TargetBottom = bRaining ? CloudLayerBottom * 0.7f : CloudLayerBottom;
+	const float TargetHeight = bRaining ? CloudLayerHeight * 1.3f : CloudLayerHeight;
+	CloudComp->SetLayerBottomAltitude(FMath::Lerp(CloudComp->LayerBottomAltitude, TargetBottom, DeltaTime * 0.5f));
+	CloudComp->SetLayerHeight(FMath::Lerp(CloudComp->LayerHeight, TargetHeight, DeltaTime * 0.5f));
+
+	// ── Tracing: more distance during clear sky, less during storms ──────
+	const float TargetTrace = bRaining ? CloudTracingMaxDistance * 0.6f : CloudTracingMaxDistance;
+	CloudComp->SetTracingMaxDistance(FMath::Lerp(CloudComp->TracingMaxDistance, TargetTrace, DeltaTime));
+
+	// ── Sample count: reduce during storms for performance ───────────────
+	const float TargetSamples = bRaining ? CloudSampleCountScale * 0.7f : CloudSampleCountScale;
+	CloudComp->SetViewSampleCountScale(FMath::Lerp(CloudComp->ViewSampleCountScale, TargetSamples, DeltaTime));
+
+	const float TargetShadowSamples = bRaining ? CloudShadowSampleCountScale * 0.5f : CloudShadowSampleCountScale;
+	CloudComp->SetShadowViewSampleCountScale(FMath::Lerp(CloudComp->ShadowViewSampleCountScale, TargetShadowSamples, DeltaTime));
+
+	// ── Bottom occlusion: storms darken cloud undersides ─────────────────
+	const float TargetOcclusion = bRaining ? CloudBottomOcclusion * 2.0f : CloudBottomOcclusion;
+	CloudComp->SetSkyLightCloudBottomOcclusion(FMath::Lerp(CloudComp->SkyLightCloudBottomOcclusion, TargetOcclusion, DeltaTime));
+
+	// ── Transmittance threshold: storms are more opaque ──────────────────
+	const float TargetThreshold = bRaining ? 0.01f : StopTracingTransmittanceThreshold;
+	CloudComp->SetStopTracingTransmittanceThreshold(FMath::Lerp(CloudComp->StopTracingTransmittanceThreshold, TargetThreshold, DeltaTime));
+
+	// ── Shadow tracing: storms have deeper cloud shadows ─────────────────
+	const float TargetShadowDist = bRaining ? ShadowTracingDistance * 1.5f : ShadowTracingDistance;
+	CloudComp->SetShadowTracingDistance(FMath::Lerp(CloudComp->ShadowTracingDistance, TargetShadowDist, DeltaTime));
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
