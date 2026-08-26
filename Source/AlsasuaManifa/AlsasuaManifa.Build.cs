@@ -56,7 +56,8 @@ public class AlsasuaManifa : ModuleRules
             "AudioMixer",
             "Json",
             "JsonUtilities",
-            "AssetRegistry"
+            "AssetRegistry",
+            "GF_Clima"
         });
     }
 }
