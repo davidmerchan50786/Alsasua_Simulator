@@ -51,4 +51,5 @@ private:
 	FVector SpawnLocation;
 	bool bHasTarget = false;
 	FVector CurrentTarget;
+	float AttackCooldown = 0.f;
 };

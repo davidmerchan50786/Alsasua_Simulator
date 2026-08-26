@@ -42,6 +42,12 @@ void ANPCGuardCharacter::Tick(float DeltaTime)
 
 	if (SuspicionLevel > 0.f)
 		SuspicionLevel = FMath::Max(0.f, SuspicionLevel - PassiveDeescalateRate * DeltaTime);
+	if (AttackCooldown > 0.f)
+		AttackCooldown -= DeltaTime;
+
+	if (UGuardDetectionComponent* Det = FindComponentByClass<UGuardDetectionComponent>())
+		if (Det->CurrentState == EGuardAlertState::Combat)
+			Attack();
 }
 
 void ANPCGuardCharacter::OnDetectionStateChanged(AActor* Guard, EGuardAlertState NewState, EGuardAlertState OldState)
@@ -96,6 +102,9 @@ void ANPCGuardCharacter::Chase(FVector Location)
 
 void ANPCGuardCharacter::Attack()
 {
+	if (AttackCooldown > 0.f) return;
+	AttackCooldown = 1.0f;
+
 	AActor* Player = UGameplayStatics::GetPlayerPawn(this, 0);
 	if (!Player) return;
 
