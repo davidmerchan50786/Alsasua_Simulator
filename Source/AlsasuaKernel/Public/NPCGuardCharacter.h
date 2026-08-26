@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "AbilitySystemInterface.h"
+#include "Character/Stealth/GuardDetectionComponent.h"
 #include "NPCGuardCharacter.generated.h"
 
 UCLASS()
@@ -12,37 +13,42 @@ public:
 	ANPCGuardCharacter();
 	virtual class UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
-	/** Nivel de sospecha/agresión (0-100). */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
-	float SuspicionLevel = 0.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AI")
+	float SuspicionLevel = 0.f;
 
-	/** Reducir agresión (ej: megáfono, disfraz). */
-	UFUNCTION(BlueprintCallable, Category = "AI|Guard")
+	UFUNCTION(BlueprintCallable, Category="AI|Guard")
 	void ReduceAggression(float Amount);
-
-	/** Aumentar agresión (ej: ser atacado). */
-	UFUNCTION(BlueprintCallable, Category = "AI|Guard")
+	UFUNCTION(BlueprintCallable, Category="AI|Guard")
 	void IncreaseAggression(float Amount);
-
-	/** ¿Está en modo combate? */
-	UFUNCTION(BlueprintPure, Category = "AI|Guard")
+	UFUNCTION(BlueprintPure, Category="AI|Guard")
 	bool IsAggro() const { return SuspicionLevel > 70.f; }
-
-	/** Intentar deescalar a un estado más bajo. */
-	UFUNCTION(BlueprintCallable, Category = "AI|Guard")
+	UFUNCTION(BlueprintCallable, Category="AI|Guard")
 	void TryDeescalate();
 
+	UPROPERTY(EditAnywhere, Category="AI|Patrol")
+	float PatrolRadius = 2000.f;
+
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "GAS")
-	class UAlsasuaAbilitySystemComponent* AbilitySystemComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="GAS")
+	TObjectPtr<class UAlsasuaAbilitySystemComponent> AbilitySystemComponent;
 
-	/** Agresión máxima. */
-	UPROPERTY(EditAnywhere, Category = "AI")
+	UPROPERTY(EditAnywhere, Category="AI")
 	float MaxAggression = 100.f;
-
-	/** Tasa de deescalamiento pasivo por segundo. */
-	UPROPERTY(EditAnywhere, Category = "AI")
+	UPROPERTY(EditAnywhere, Category="AI")
 	float PassiveDeescalateRate = 2.f;
 
+	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
+
+private:
+	UFUNCTION()
+	void OnDetectionStateChanged(AActor* Guard, EGuardAlertState NewState, EGuardAlertState OldState);
+	void Patrol();
+	void Investigate(FVector Location);
+	void Chase(FVector Location);
+	void Attack();
+
+	FVector SpawnLocation;
+	bool bHasTarget = false;
+	FVector CurrentTarget;
 };

@@ -23,6 +23,7 @@ public class AlsasuaKernel : ModuleRules
 			"AIModule",
 			"Niagara",
 			"MotionTrajectory",
+			"NavigationSystem",
 			// UI nativa del minimapa (NativePaint) y carga de datos JSON.
 			"Slate",
 			"SlateCore",
