@@ -9,6 +9,8 @@
 
 DEFINE_LOG_CATEGORY_STATIC(LogAlsasuaCrimen, Log, All);
 
+FOnCriminalActivity UEconomiaCriminalSubsystem::OnCriminalActivity;
+
 namespace
 {
 	template<typename T> T* Sub(const UGameInstanceSubsystem* S)
@@ -46,6 +48,7 @@ void UEconomiaCriminalSubsystem::Extorsionar(ANegocioActor* N)
 	if (UWantedSubsystem* W = Sub<UWantedSubsystem>(this))
 		W->AumentarBusqueda(FMath::Max(0, 1 - (Prog ? Prog->ReduccionCalor() : 0)));
 	UE_LOG(LogAlsasuaCrimen, Log, TEXT("Extorsion: %s (+%d, paga %d/min)"), *N->Nombre, Inicial, N->IngresoMin());
+	OnCriminalActivity.Broadcast(NAME_None, Inicial);
 }
 
 void UEconomiaCriminalSubsystem::Trapichear()
@@ -76,6 +79,7 @@ void UEconomiaCriminalSubsystem::Trapichear()
 	UDiaNocheSubsystem* Dn = Sub<UDiaNocheSubsystem>(this);
 	const int32 Ganancia = FMath::RoundToInt(FMath::RandRange(150, 400) * (Dn ? Dn->FactorTrapicheo() : 1.f));
 	Eco->GanarDinero(Ganancia);
+	OnCriminalActivity.Broadcast(FName("Trapicheo"), Ganancia);
 }
 
 void UEconomiaCriminalSubsystem::Tick(float DeltaTime)

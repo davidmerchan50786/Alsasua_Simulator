@@ -9,6 +9,8 @@
 
 class ANegocioActor;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnCriminalActivity, FName, ActivityType, int32, Severity);
+
 UCLASS()
 class ALSASUAGAMEPLAY_API UEconomiaCriminalSubsystem : public UGameInstanceSubsystem, public FTickableGameObject
 {
@@ -20,6 +22,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="Crimen") void Extorsionar(ANegocioActor* N);
 	UFUNCTION(BlueprintCallable, Category="Crimen") void Trapichear();
+
+	/** Static: fires on any criminal act. Other modules (GF_Social) subscribe. */
+	static FOnCriminalActivity OnCriminalActivity;
 
 	virtual void Tick(float DeltaTime) override;
 	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(UEconomiaCriminalSubsystem, STATGROUP_Tickables); }

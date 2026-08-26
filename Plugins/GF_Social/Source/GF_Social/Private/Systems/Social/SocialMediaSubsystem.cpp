@@ -1,5 +1,6 @@
 #include "Systems/Social/SocialMediaSubsystem.h"
 #include "ManifestacionSubsystem.h"
+#include "EconomiaCriminalSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 
 void USocialMediaSubsystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -9,6 +10,8 @@ void USocialMediaSubsystem::Initialize(FSubsystemCollectionBase& Collection)
     {
         if (UManifestacionSubsystem* Manifa = W->GetGameInstance()->GetSubsystem<UManifestacionSubsystem>())
             Manifa->OnEstado.AddDynamic(this, &USocialMediaSubsystem::OnManifestacionStateChange);
+
+        UEconomiaCriminalSubsystem::OnCriminalActivity.AddDynamic(this, &USocialMediaSubsystem::OnCriminalActivity);
     }
 }
 
@@ -30,6 +33,16 @@ void USocialMediaSubsystem::OnManifestacionStateChange(EEstadoManifestacion Esta
         Post.ViralPotential = 3.0f;
         PostToFeed(Post);
     }
+}
+
+void USocialMediaSubsystem::OnCriminalActivity(FName ActivityType, int32 Severity)
+{
+    FEvidencePost Post;
+    Post.Description = FString::Printf(TEXT("Actividad criminal detectada: %s"), *ActivityType.ToString());
+    Post.ImpactValue = (float)Severity * 0.5f;
+    Post.RiskValue = (float)Severity;
+    Post.ViralPotential = 1.0f + (float)Severity * 0.05f;
+    UploadEvidence(Post);
 }
 
 void USocialMediaSubsystem::PostToFeed(FEvidencePost Photo) {

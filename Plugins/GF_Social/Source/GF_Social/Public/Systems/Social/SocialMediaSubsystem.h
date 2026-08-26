@@ -62,4 +62,7 @@ protected:
 private:
     UFUNCTION()
     void OnManifestacionStateChange(EEstadoManifestacion Estado);
+
+    UFUNCTION()
+    void OnCriminalActivity(FName ActivityType, int32 Severity);
 };
