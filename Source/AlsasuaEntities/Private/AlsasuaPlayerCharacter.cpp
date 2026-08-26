@@ -144,6 +144,8 @@ void AAlsasuaPlayerCharacter::Tick(float DeltaTime)
 void AAlsasuaPlayerCharacter::ApuntarInicio() { bApuntando = true; }
 void AAlsasuaPlayerCharacter::ApuntarFin()    { bApuntando = false; }
 
+FOnPlayerDied AAlsasuaPlayerCharacter::OnPlayerDied;
+
 void AAlsasuaPlayerCharacter::RecibirDano(int32 Cantidad, FVector Origen, ETipoDano Tipo)
 {
 	Vida = FMath::Max(0, Vida - Cantidad);
@@ -152,9 +154,12 @@ void AAlsasuaPlayerCharacter::RecibirDano(int32 Cantidad, FVector Origen, ETipoD
 	if (APlayerController* PC = Cast<APlayerController>(GetController()))
 	{
 		const float k = FMath::Clamp(Cantidad / 15.f, 0.3f, 2.f);
-		PC->AddPitchInput(FMath::FRandRange(-0.9f, -0.2f) * k);   // cabezada hacia arriba
+		PC->AddPitchInput(FMath::FRandRange(-0.9f, -0.2f) * k);
 		PC->AddYawInput(FMath::FRandRange(-0.7f, 0.7f) * k);
 	}
+
+	if (Vida <= 0)
+		OnPlayerDied.Broadcast();
 }
 
 void AAlsasuaPlayerCharacter::BeginPlay()

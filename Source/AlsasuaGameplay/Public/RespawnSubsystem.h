@@ -13,13 +13,18 @@ class ALSASUAGAMEPLAY_API URespawnSubsystem : public UGameInstanceSubsystem
 	GENERATED_BODY()
 
 public:
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+
 	UPROPERTY(BlueprintReadOnly, Category="Respawn") bool bTienePunto = false;
 	UPROPERTY(BlueprintReadOnly, Category="Respawn") FVector Punto = FVector::ZeroVector;
 
 	UFUNCTION(BlueprintCallable, Category="Respawn")
 	void FijarPunto(FVector P) { Punto = P; bTienePunto = true; }
 
-	// Reaparece el pawn del jugador en el último punto (si hay).
 	UFUNCTION(BlueprintCallable, Category="Respawn")
 	bool Reaparecer(class APawn* Jugador) const;
+
+private:
+	UFUNCTION()
+	void HandlePlayerDeath();
 };

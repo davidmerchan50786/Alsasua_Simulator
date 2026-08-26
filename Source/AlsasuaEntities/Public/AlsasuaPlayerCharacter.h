@@ -10,6 +10,8 @@
 #include "AlsasuaTypes.h"
 #include "AlsasuaPlayerCharacter.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerDied);
+
 class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
@@ -57,7 +59,10 @@ public:
 	UPROPERTY(EditAnywhere, Category="Apuntado") float BrazoCorrer = 400.f;
 	bool bCorriendo = false;
 
-	bool EstaApuntando() const { return bApuntando; }   // lo lee el arma (mejor puntería)
+	bool EstaApuntando() const { return bApuntando; }
+
+	/** Static: fires when player dies. Gameplay layer subscribes for respawn. */
+	static FOnPlayerDied OnPlayerDied;
 
 protected:
 	virtual void BeginPlay() override;
