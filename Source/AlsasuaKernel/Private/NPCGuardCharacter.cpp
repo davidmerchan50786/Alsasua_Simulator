@@ -1,7 +1,9 @@
 #include "NPCGuardCharacter.h"
 #include "GAS/AlsasuaAbilitySystemComponent.h"
 #include "Character/Stealth/GuardDetectionComponent.h"
+#include "AlsasuaTypes.h"
 #include "NavigationSystem.h"
+#include "Kismet/GameplayStatics.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "AIController.h"
 #include "Engine/World.h"
@@ -94,8 +96,15 @@ void ANPCGuardCharacter::Chase(FVector Location)
 
 void ANPCGuardCharacter::Attack()
 {
-	// Placeholder: the actual attack would deal damage via IDamageable.
-	// For now, bIsChasing is enough to drive the animation and UI.
+	AActor* Player = UGameplayStatics::GetPlayerPawn(this, 0);
+	if (!Player) return;
+
+	if (IDamageable* Dmg = Cast<IDamageable>(Player))
+	{
+		const float Dist = FVector::Dist(GetActorLocation(), Player->GetActorLocation());
+		const int32 Damage = Dist < 300.f ? 15 : 5;
+		Dmg->RecibirDano(Damage, GetActorLocation(), ETipoDano::Impacto);
+	}
 }
 
 void ANPCGuardCharacter::ReduceAggression(float Amount)
