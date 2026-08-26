@@ -3,6 +3,7 @@
 #include "Subsystems/WorldSubsystem.h"
 #include "Delegates/Delegate.h"
 #include "Contratos/AlsasuaContratosUI.h"
+#include "ManifestacionSubsystem.h"
 #include "SocialMediaSubsystem.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnViralPost, FText, PostContent);
@@ -54,4 +55,11 @@ public:
 
     //~ IAlsasuaRedSocial
     virtual float SeguidoresGlobales() const override { return (float)GlobalFollowers; }
+
+protected:
+    virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+
+private:
+    UFUNCTION()
+    void OnManifestacionStateChange(EEstadoManifestacion Estado);
 };

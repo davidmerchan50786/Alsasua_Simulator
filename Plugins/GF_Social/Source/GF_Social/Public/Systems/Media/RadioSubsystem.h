@@ -23,4 +23,11 @@ public:
 
     UPROPERTY(BlueprintAssignable)
     FOnRadioBroadcast OnTelegramUpdate;
+
+protected:
+    virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+
+private:
+    UFUNCTION()
+    void OnWantedLevelChange(int32 Nivel);
 };

@@ -1,5 +1,36 @@
 #include "Systems/Social/SocialMediaSubsystem.h"
+#include "ManifestacionSubsystem.h"
 #include "Kismet/GameplayStatics.h"
+
+void USocialMediaSubsystem::Initialize(FSubsystemCollectionBase& Collection)
+{
+    Super::Initialize(Collection);
+    if (UWorld* W = GetWorld())
+    {
+        if (UManifestacionSubsystem* Manifa = W->GetGameInstance()->GetSubsystem<UManifestacionSubsystem>())
+            Manifa->OnEstado.AddDynamic(this, &USocialMediaSubsystem::OnManifestacionStateChange);
+    }
+}
+
+void USocialMediaSubsystem::OnManifestacionStateChange(EEstadoManifestacion Estado)
+{
+    if (Estado == EEstadoManifestacion::Marcha)
+    {
+        FEvidencePost Post;
+        Post.Description = TEXT("Manifestacion en marcha - livestream viral");
+        Post.ImpactValue = 10.f;
+        Post.ViralPotential = 2.0f;
+        PostToFeed(Post);
+    }
+    else if (Estado == EEstadoManifestacion::Dispersando)
+    {
+        FEvidencePost Post;
+        Post.Description = TEXT("Carga policial en manifestacion");
+        Post.ImpactValue = 20.f;
+        Post.ViralPotential = 3.0f;
+        PostToFeed(Post);
+    }
+}
 
 void USocialMediaSubsystem::PostToFeed(FEvidencePost Photo) {
     int32 NewFollowers = FMath::RoundToInt(Photo.ViralPotential * 5.f);
