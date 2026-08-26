@@ -5,6 +5,7 @@
 #include "ConsecuenciasSubsystem.h"
 #include "DisfrazSubsystem.h"
 #include "AlsasuaPlayerCharacter.h"
+#include "Character/Stealth/GuardDetectionComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraSystem.h"
 #include "Kismet/GameplayStatics.h"
@@ -257,8 +258,20 @@ void UArmasComponent::DispararFuego(int32 Dano, int32 Perdigones, float Dispersi
 	// Sonido de disparo.
 	if (SDisparo && GetOwner()) UGameplayStatics::PlaySoundAtLocation(W, SDisparo, GetOwner()->GetActorLocation());
 
-	// Notificar a guardias cercanos del sonido del disparo (loudness = 1.0).
-	// Se hace vía evento genérico — el guardia escucha el sonido.
+	// Notificar a guardias cercanos del sonido del disparo.
+	if (AActor* Owner = GetOwner())
+	{
+		TArray<FOverlapResult> Overlaps;
+		FCollisionShape Shape = FCollisionShape::MakeSphere(3000.f);
+		if (W->OverlapMultiByChannel(Overlaps, Owner->GetActorLocation(), FQuat::Identity, ECC_Pawn, Shape))
+		{
+			for (const FOverlapResult& Ov : Overlaps)
+			{
+				if (UGuardDetectionComponent* Det = Ov.GetActor()->FindComponentByClass<UGuardDetectionComponent>())
+					Det->ReportNoise(Owner->GetActorLocation(), 1.0f);
+			}
+		}
+	}
 
 	// Fogonazo en el cañón.
 	if (NSFogonazo)
