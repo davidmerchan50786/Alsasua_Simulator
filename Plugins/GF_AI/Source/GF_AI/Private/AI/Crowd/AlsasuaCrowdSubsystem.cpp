@@ -7,6 +7,7 @@
 #include "AI/Crowd/AlsasuaCrowdSubsystem.h"
 #include "AI/Crowd/SpatialHashGrid.h"
 #include "AI/Crowd/CrowdRagdollActor.h"
+#include "AI/AlsasuaTacticManager.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "AlsasuaCore.h"
 #include "Engine/World.h"
@@ -63,6 +64,10 @@ void UAlsasuaCrowdSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 				&UAlsasuaCrowdSubsystem::OnDeadAgentCleanupTick,
 				DeadAgentCleanupInterval, true);
 		}
+
+		// Wire TacticManager → crowd behavior.
+		if (UAlsasuaTacticManager* TacticMgr = World->GetSubsystem<UAlsasuaTacticManager>())
+			TacticMgr->OnTacticChanged.AddDynamic(this, &UAlsasuaCrowdSubsystem::HandleTacticChanged);
 	}
 }
 
@@ -71,11 +76,15 @@ void UAlsasuaCrowdSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 // ─────────────────────────────────────────────────────────────────────────────
 void UAlsasuaCrowdSubsystem::Deinitialize()
 {
-	// Limpiar timers antes de destruir.
-	if (UWorld* World = GetWorld())
+	// Unwire TacticManager.
+	if (UWorld* W = GetWorld())
 	{
-		World->GetTimerManager().ClearTimer(TickTimerHandle);
-		World->GetTimerManager().ClearTimer(DeadAgentCleanupTimerHandle);
+		if (UAlsasuaTacticManager* TacticMgr = W->GetSubsystem<UAlsasuaTacticManager>())
+			TacticMgr->OnTacticChanged.RemoveDynamic(this, &UAlsasuaCrowdSubsystem::HandleTacticChanged);
+
+		// Limpiar timers antes de destruir.
+		W->GetTimerManager().ClearTimer(TickTimerHandle);
+		W->GetTimerManager().ClearTimer(DeadAgentCleanupTimerHandle);
 	}
 
 	DespawnAllAgents();
@@ -790,4 +799,36 @@ void UAlsasuaCrowdSubsystem::OnDeadAgentCleanupTick()
 	{
 		CleanupDeadAgents();
 	}
+}
+
+void UAlsasuaCrowdSubsystem::HandleTacticChanged(EAlsasuaTactic NewTactic)
+{
+	FCrowdFlockingParams P = GlobalFlockingParams;
+	switch (NewTactic)
+	{
+	case EAlsasuaTactic::March:
+		P.RouteWeight = 3.0f;
+		P.SeparationWeight = 2.2f;
+		P.MarchSpeed = 130.f;
+		break;
+	case EAlsasuaTactic::Blockade:
+		P.RouteWeight = 0.0f;
+		P.MarchSpeed = 0.f;
+		P.SeparationWeight = 1.0f;
+		P.CohesionWeight = 1.5f;
+		break;
+	case EAlsasuaTactic::Scatter:
+		P.RouteWeight = 0.0f;
+		P.SeparationWeight = 5.0f;
+		P.CohesionWeight = 0.0f;
+		P.MarchSpeed = 200.f;
+		break;
+	case EAlsasuaTactic::SitIn:
+		P.RouteWeight = 0.0f;
+		P.MarchSpeed = 0.f;
+		P.AlignmentWeight = 0.5f;
+		P.CohesionWeight = 1.2f;
+		break;
+	}
+	SetGlobalFlockingParams(P);
 }

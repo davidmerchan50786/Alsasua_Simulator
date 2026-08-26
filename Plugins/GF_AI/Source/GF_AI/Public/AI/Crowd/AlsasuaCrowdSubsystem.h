@@ -351,4 +351,8 @@ private:
 
 	/** Callback del timer de limpieza de muertos. */
 	void OnDeadAgentCleanupTick();
+
+	/** Wiring: respond to tactic changes from TacticManager. */
+	UFUNCTION()
+	void HandleTacticChanged(EAlsasuaTactic NewTactic);
 };
