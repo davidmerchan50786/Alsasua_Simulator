@@ -5,10 +5,12 @@
 #include "ApoyoPopularSubsystem.h"
 #include "WantedSubsystem.h"
 #include "AI/AlsasuaCrowdSentiment.h"
+#include "Character/GameplayPostProcessComponent.h"
 #include "NavigationSystem.h"
 #include "EngineUtils.h"
 #include "Engine/World.h"
 #include "Engine/GameInstance.h"
+#include "Kismet/GameplayStatics.h"
 
 void UManifestacionSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -131,6 +133,21 @@ void UManifestacionSubsystem::Tick(float DeltaTime)
 	if (Estado == EEstadoManifestacion::Inactiva) return;
 	Tiempo += DeltaTime;
 	ActualizarObjetivos();
+
+	// Crowd dust on player when near manifestation.
+	if (UWorld* W = GetGameInstance() ? GetGameInstance()->GetWorld() : nullptr)
+	{
+		if (APawn* Jug = UGameplayStatics::GetPlayerPawn(W, 0))
+		{
+			if (UGameplayPostProcessComponent* PP = Jug->FindComponentByClass<UGameplayPostProcessComponent>())
+			{
+				const float Dist = FVector::Dist(Jug->GetActorLocation(), PuntoActual);
+				const float Intensity = FMath::Clamp(1.f - Dist / 3000.f, 0.f, 1.f);
+				if (Intensity > 0.1f)
+					PP->TriggerCrowdDust(Intensity);
+			}
+		}
+	}
 
 	// Presión policial en cualquier fase activa (salvo ya dispersando).
 	if (Estado != EEstadoManifestacion::Dispersando && PoliciasCerca() >= PoliciasParaCarga)
