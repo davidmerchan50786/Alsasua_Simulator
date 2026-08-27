@@ -63,6 +63,10 @@ private:
 	float Tiempo = 0.f;
 	float Tension = 0.f;  // 0-1, drives riot probability
 
+	/** Visual effects at manifestation center */
+	UPROPERTY() class UNiagaraComponent* ManifestacionVFX = nullptr;
+	UPROPERTY() class UAudioComponent* ManifestacionAudio = nullptr;
+
 	void FijarEstado(EEstadoManifestacion E);
 	int32 TamanoPorApoyo() const;
 	int32 PoliciasCerca() const;
@@ -70,6 +74,7 @@ private:
 	void DespawnTodos();
 	void AplicarApoyo(float Delta);
 	void SubirBusqueda(int32 N);
+	void SpawnManifestacionVFX(const FVector& Centro, int32 NumNPCs);
 
 	UFUNCTION()
 	void HandleConvocarDelegate(FVector Punto);

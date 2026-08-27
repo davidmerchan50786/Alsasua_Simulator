@@ -5,6 +5,12 @@
 #include "ApoyoPopularSubsystem.h"
 #include "WantedSubsystem.h"
 #include "AI/AlsasuaCrowdSentiment.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
+#include "Components/AudioComponent.h"
+#include "Sound/SoundBase.h"
+#include "Kismet/GameplayStatics.h"
+#include "Engine/StaticMeshActor.h"
 #include "NavigationSystem.h"
 #include "EngineUtils.h"
 #include "Engine/World.h"
@@ -80,6 +86,9 @@ bool UManifestacionSubsystem::Convocar(FVector Punto, const TArray<FVector>& Rut
 		if (M) { M->PuntoObjetivo = PuntoActual; Multitud.Add(M); }
 	}
 
+	// Spawn visual effects at manifestation center
+	SpawnManifestacionVFX(PuntoActual, Multitud.Num());
+
 	FijarEstado(EEstadoManifestacion::Concentracion);
 	UE_LOG(LogTemp, Log, TEXT("[Manifa] convocada: %d manifestantes"), Multitud.Num());
 	return Multitud.Num() > 0;
@@ -109,6 +118,9 @@ void UManifestacionSubsystem::DespawnTodos()
 {
 	for (AManifestanteActor* M : Multitud) if (IsValid(M)) M->Destroy();
 	Multitud.Empty();
+	// Cleanup VFX
+	if (ManifestacionVFX) { ManifestacionVFX->DeactivateImmediate(); ManifestacionVFX = nullptr; }
+	if (ManifestacionAudio) { ManifestacionAudio->Stop(); ManifestacionAudio = nullptr; }
 }
 
 void UManifestacionSubsystem::FijarEstado(EEstadoManifestacion E)
@@ -198,4 +210,65 @@ void UManifestacionSubsystem::HandleConvocarDelegate(FVector Punto)
 {
 	if (!Activa())
 		Convocar(Punto, TArray<FVector>());
+}
+
+void UManifestacionSubsystem::SpawnManifestacionVFX(const FVector& Centro, int32 NumNPCs)
+{
+	UWorld* W = GetGameInstance() ? GetGameInstance()->GetWorld() : nullptr;
+	if (!W) return;
+
+	const float CrowdFactor = FMath::Clamp(static_cast<float>(NumNPCs) / 200.f, 0.1f, 1.f);
+
+	// Dust cloud at crowd feet
+	UNiagaraSystem* DustNS = LoadObject<UNiagaraSystem>(nullptr,
+		TEXT("/Game/VFX/NS_DustCloud.NS_DustCloud"));
+	if (DustNS)
+	{
+		ManifestacionVFX = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+			W, DustNS, Centro, FRotator::ZeroRotator, FVector(1.f), true,
+			true, ENCPoolMethod::AutoRelease);
+		if (ManifestacionVFX)
+		{
+			ManifestacionVFX->SetFloatParameter(TEXT("Radius"), 800.f * CrowdFactor);
+			ManifestacionVFX->SetFloatParameter(TEXT("Intensity"), CrowdFactor * 0.5f);
+		}
+	}
+
+	// Crowd ambient sound
+	USoundBase* CrowdSound = LoadObject<USoundBase>(nullptr,
+		TEXT("/Game/Audio/SC_CrowdNoise.SC_CrowdNoise"));
+	if (CrowdSound)
+	{
+		ManifestacionAudio = UGameplayStatics::SpawnSoundAtLocation(
+			W, CrowdSound, Centro, FRotator::ZeroRotator,
+			CrowdFactor * 0.8f, 1.0f, 0.f);
+	}
+
+	// Spawn protest signs scattered around the crowd
+	static const FString SignMeshes[] = {
+		TEXT("/Game/Props/SM_Sign_01"),
+		TEXT("/Game/Props/SM_Sign_02"),
+		TEXT("/Game/Props/SM_Sign_03")
+	};
+	const int32 NumSigns = FMath::RandRange(3, FMath::Min(8, NumNPCs / 5));
+	for (int32 i = 0; i < NumSigns; ++i)
+	{
+		const float Ang = FMath::FRand() * 2.f * PI;
+		const float Dist = FMath::FRandRange(100.f, 600.f * CrowdFactor);
+		const FVector SignPos = Centro + FVector(
+			FMath::Cos(Ang) * Dist, FMath::Sin(Ang) * Dist,
+			FMath::RandRange(50.f, 120.f));
+
+		UStaticMesh* SignMesh = LoadObject<UStaticMesh>(nullptr, *SignMeshes[i % 3]);
+		if (!SignMesh) continue;
+
+		AStaticMeshActor* Sign = W->SpawnActor<AStaticMeshActor>(
+			AStaticMeshActor::StaticClass(), SignPos,
+			FRotator(0, FMath::FRand() * 360.f, 0));
+		if (Sign)
+		{
+			Sign->GetStaticMeshComponent()->SetStaticMesh(SignMesh);
+			Sign->SetActorScale3D(FVector(FMath::FRandRange(0.3f, 0.6f)));
+		}
+	}
 }
