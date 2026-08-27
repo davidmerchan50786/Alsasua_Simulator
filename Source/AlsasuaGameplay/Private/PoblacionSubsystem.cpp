@@ -1,12 +1,50 @@
 // PoblacionSubsystem.cpp
 #include "PoblacionSubsystem.h"
 #include "PeatonActor.h"
+#include "WantedSubsystem.h"
 #include "ArranqueMundo.h"
 #include "NavigationSystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Pawn.h"
 #include "Engine/World.h"
 #include "Engine/GameInstance.h"
+#include "AIController.h"
+
+FOnNoiseAtLocation UPoblacionSubsystem::OnLoudNoise;
+
+void UPoblacionSubsystem::Initialize(FSubsystemCollectionBase& Collection)
+{
+	Super::Initialize(Collection);
+	if (UGameInstance* GI = GetGameInstance())
+		if (UWantedSubsystem* Wn = GI->GetSubsystem<UWantedSubsystem>())
+			Wn->OnEstrellasCambia.AddDynamic(this, &UPoblacionSubsystem::OnWantedChange);
+
+	OnLoudNoise.AddDynamic(this, &UPoblacionSubsystem::HandleLoudNoise);
+}
+
+void UPoblacionSubsystem::HandleLoudNoise(FVector Location)
+{
+	const float Dist = GetWorld() ? FVector::Dist(GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation(), Location) : 0.f;
+	if (Dist < 2000.f)
+		HuirDe(Location);
+}
+
+void UPoblacionSubsystem::OnWantedChange(int32 Nivel)
+{
+	bPanicMode = Nivel >= 2;
+	if (bPanicMode) HuirDe(GetWorld() ? GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation() : FVector::ZeroVector);
+}
+
+void UPoblacionSubsystem::HuirDe(FVector Location)
+{
+	for (APeatonActor* Pe : Peatones)
+	{
+		if (!IsValid(Pe)) continue;
+		FVector Away = Pe->GetActorLocation() + (Pe->GetActorLocation() - Location).GetSafeNormal2D() * 3000.f;
+		if (AAIController* AIC = Cast<AAIController>(Pe->GetController()))
+			AIC->MoveToLocation(Away);
+	}
+}
 
 void UPoblacionSubsystem::Tick(float DeltaTime)
 {
@@ -51,6 +89,9 @@ void UPoblacionSubsystem::Mantener()
 			Peatones.RemoveAtSwap(i);
 		}
 	}
+
+	// Panic mode: stop spawning, existing peds flee.
+	if (bPanicMode) return;
 
 	// Rellena hasta el máximo, con presupuesto por tick.
 	int32 spawns = 0;

@@ -11,6 +11,8 @@
 
 class APeatonActor;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNoiseAtLocation, FVector, Location);
+
 UCLASS()
 class ALSASUAGAMEPLAY_API UPoblacionSubsystem : public UGameInstanceSubsystem, public FTickableGameObject
 {
@@ -25,13 +27,25 @@ public:
 	UPROPERTY(EditAnywhere, Category="Poblacion") float PeriodoMantenimiento = 1.f;
 
 	virtual void Tick(float DeltaTime) override;
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(UPoblacionSubsystem, STATGROUP_Tickables); }
 	virtual bool IsTickable() const override { return !IsTemplate(); }
 
+	UFUNCTION(BlueprintCallable, Category="Poblacion")
+	void HuirDe(FVector Location);
+
+	/** Static: fires on loud noise. Pedestrians flee. */
+	static FOnNoiseAtLocation OnLoudNoise;
+
 private:
 	float Acum = 0.f;
+	bool bPanicMode = false;
 	UPROPERTY() TArray<APeatonActor*> Peatones;
 
+	UFUNCTION()
+	void OnWantedChange(int32 Nivel);
+	UFUNCTION()
+	void HandleLoudNoise(FVector Location);
 	void Mantener();
 	bool PuntoEnAnillo(const FVector& Centro, FVector& OutPunto) const;
 };

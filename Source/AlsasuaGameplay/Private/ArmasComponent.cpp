@@ -6,6 +6,7 @@
 #include "DisfrazSubsystem.h"
 #include "AlsasuaPlayerCharacter.h"
 #include "Character/Stealth/GuardDetectionComponent.h"
+#include "PoblacionSubsystem.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraSystem.h"
 #include "Kismet/GameplayStatics.h"
@@ -93,6 +94,10 @@ void UArmasComponent::NotifyNearbyGuards(FVector Location, float Loudness)
 {
 	UWorld* W = GetWorld();
 	if (!W) return;
+
+	// Alert pedestrians to flee.
+	UPoblacionSubsystem::OnLoudNoise.Broadcast(Location);
+
 	TArray<FOverlapResult> Overlaps;
 	FCollisionShape Shape = FCollisionShape::MakeSphere(3000.f);
 	if (W->OverlapMultiByChannel(Overlaps, Location, FQuat::Identity, ECC_Pawn, Shape))
