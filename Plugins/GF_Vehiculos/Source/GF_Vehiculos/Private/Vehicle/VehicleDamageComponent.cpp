@@ -68,6 +68,7 @@ void UVehicleDamageComponent::TickDamageStages(float DeltaTime)
     {
         bOnFire = true;
         FireDamageTimer = 0.f;
+        FuelLeakTimer = 0.f;
         // TODO: attach Niagara fire system when VFX assets created.
     }
 
@@ -86,6 +87,17 @@ void UVehicleDamageComponent::TickDamageStages(float DeltaTime)
         {
             FireDamageTimer -= 1.f;
             ApplyVehicleDamage(FireDamagePerSec);
+        }
+
+        // Fuel leak warning — vehicle about to explode.
+        if (FireExplosionTimer > 0.f)
+        {
+            FuelLeakTimer += DeltaTime;
+            if (FuelLeakTimer >= FireExplosionTimer)
+            {
+                OnFuelLeakWarning.Broadcast();
+                FuelLeakTimer = 0.f; // Reset for repeated warnings.
+            }
         }
     }
 }

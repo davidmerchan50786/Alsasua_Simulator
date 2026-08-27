@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Camera/CameraShakeBase.h"
 #include "GameplayPostProcessComponent.generated.h"
 
 class UPostProcessComponent;
@@ -89,6 +90,10 @@ public:
     /** Duración del flash de daño (segundos). */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PostProcess|Damage", meta = (ClampMin = "0.05"))
     float DamageFlashDuration = 0.15f;
+
+    /** Camera shake class for explosions (set in BP or C++ constructor). */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PostProcess|Shake")
+    TSubclassOf<UCameraShakeBase> ExplosionShakeClass;
 
 protected:
     virtual void BeginPlay() override;

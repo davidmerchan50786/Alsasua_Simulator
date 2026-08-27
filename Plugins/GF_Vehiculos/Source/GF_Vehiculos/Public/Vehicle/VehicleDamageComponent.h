@@ -64,6 +64,14 @@ public:
     UFUNCTION(BlueprintPure, Category="AAA|DamageStages")
     bool IsEngineStalled() const { return bEngineStalled; }
 
+    /** Time before fire damage causes explosion (0 = no explosion). */
+    UPROPERTY(EditAnywhere, Category="AAA|DamageStages")
+    float FireExplosionTimer = 8.f;
+
+    /** Broadcast when fire timer reaches zero (vehicle about to explode). */
+    UPROPERTY(BlueprintAssignable)
+    FOnVehicleDestroyed OnFuelLeakWarning;
+
 private:
     void UpdateVehiclePerformance();
     void TickDamageStages(float DeltaTime);
@@ -74,4 +82,5 @@ private:
     bool bEngineStalled = false;
 
     float FireDamageTimer = 0.f;
+    float FuelLeakTimer = 0.f;
 };

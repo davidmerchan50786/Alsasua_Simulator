@@ -210,7 +210,18 @@ void UGameplayPostProcessComponent::TriggerExplosionReaction(float Distance)
 {
     const float Intensity = FMath::Clamp(1.f - Distance / 3000.f, 0.1f, 1.f);
     TriggerDamageFlash(Intensity);
-    // TODO: camera shake via PlayerCameraManager when shake assets are created.
+
+    // Camera shake via PlayerCameraManager — procedural, no asset needed.
+    if (APawn* Pawn = Cast<APawn>(GetOwner()))
+    {
+        if (APlayerController* PC = Cast<APlayerController>(Pawn->GetController()))
+        {
+            if (APlayerCameraManager* Cam = PC->PlayerCameraManager)
+            {
+                Cam->StartCameraShake(ExplosionShakeClass, Intensity);
+            }
+        }
+    }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
