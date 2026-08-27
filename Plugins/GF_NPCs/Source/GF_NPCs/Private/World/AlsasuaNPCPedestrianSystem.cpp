@@ -13,6 +13,8 @@
 #include "Misc/Paths.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
+#include "Sound/SoundWaveProcedural.h"
+#include "AudioDeviceManager.h"
 
 void UAlsasuaNPCPedestrianSystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -92,6 +94,10 @@ void UAlsasuaNPCPedestrianSystem::Tick(float DeltaTime)
     }
 
     TickIndex = (TickIndex + TicksThisFrame) % Total;
+
+    // ── Social interaction: NPC-NPC conversations ─────────────────────────
+    ProcesarSocial(DeltaTime);
+    TiempoLinea += DeltaTime;
 
     // ── NPC joining manifestation ──────────────────────────────────────────
     // Check every 0.5s (not every frame) for perf
@@ -353,6 +359,8 @@ void UAlsasuaNPCPedestrianSystem::GenerarNPCs()
             NPC.ActividadActual = ENPCActivity::Walk;
             NPC.DuracionActividad = FMath::RandRange(3.0f, 10.0f);
 
+            GenerarPersona(NPC);
+
             NPC.PosicionInicio = ObtenerPuntoCalle(B.Nombre);
             NPC.PosicionObjetivo = ObtenerPuntoCalleAleatorio();
             NPC.DireccionMovimiento = (NPC.PosicionObjetivo - NPC.PosicionInicio).GetSafeNormal();
@@ -364,6 +372,299 @@ void UAlsasuaNPCPedestrianSystem::GenerarNPCs()
     }
 
     UE_LOG(LogTemp, Log, TEXT("NPCPedestrians: %d peatones generados (LOD: Full/Proxy/Hidden)"), NPCs.Num());
+}
+
+// ── Persona y vida social ───────────────────────────────────────────────────
+
+void UAlsasuaNPCPedestrianSystem::GenerarPersona(FNPCPedestrian& NPC)
+{
+    // Cargar pool de nombres la primera vez
+    if (!bNombresCargados)
+    {
+        NombresHombre = {
+            TEXT("Mikel"), TEXT("Ander"), TEXT("Iker"), TEXT("Jon"), TEXT("Aitor"),
+            TEXT("Unai"), TEXT("Asier"), TEXT("Beñat"), TEXT("Gorka"), TEXT("Iñaki"),
+            TEXT("Xabi"), TEXT("Julen"), TEXT("Markel"), TEXT("Unax"), TEXT("Aimar"),
+            TEXT("Koldobika"), TEXT("Iñigo"), TEXT("Eneko"), TEXT("Mattin"), TEXT("Peio")
+        };
+        NombresMujer = {
+            TEXT("Ane"), TEXT("Maite"), TEXT("Nerea"), TEXT("Leire"), TEXT("Amaia"),
+            TEXT("Naroa"), TEXT("Olatz"), TEXT("Garazi"), TEXT("June"), TEXT("Iraia"),
+            TEXT("Eider"), TEXT("Nagore"), TEXT("Uxue"), TEXT("Ainhoa"), TEXT("Lide"),
+            TEXT("Maddi"), TEXT("Haizea"), TEXT("Itziar"), TEXT("Kattalin"), TEXT("Arrate")
+        };
+        bNombresCargados = true;
+    }
+
+    // Edad desde el grupo existente (3=jubilado, 0=joven)
+    const int32 Edad = (NPC.GrupoEdad == 0) ? FMath::RandRange(16, 30)
+        : (NPC.GrupoEdad == 1) ? FMath::RandRange(30, 50)
+        : (NPC.GrupoEdad == 2) ? FMath::RandRange(50, 70)
+        : FMath::RandRange(70, 90);
+
+    // Nombre y sexo
+    const bool bMujer = (FMath::RandRange(0, 1) == 0);
+    NPC.Persona.Nombre = bMujer ? NombresMujer[FMath::RandRange(0, NombresMujer.Num() - 1)]
+                                : NombresHombre[FMath::RandRange(0, NombresHombre.Num() - 1)];
+    NPC.Nombre = NPC.Persona.Nombre;  // reemplaza NPC_xxxx
+    NPC.Persona.Edad = Edad;
+
+    // Personalidad (7 tipos)
+    NPC.Persona.Personalidad = static_cast<ENPCPersonalidad>(FMath::RandRange(0, 6));
+
+    // Estilo según edad
+    if (Edad >= 70)
+        NPC.Persona.Estilo = ENPCEstilo::Jubilado;
+    else if (Edad <= 25 && FMath::RandRange(0, 1))
+        NPC.Persona.Estilo = ENPCEstilo::Estudiante;
+    else
+        NPC.Persona.Estilo = static_cast<ENPCEstilo>(FMath::RandRange(0, 6));
+
+    // Voz: pitch distinto por persona (0.75-1.3)
+    NPC.Persona.VozPitch = FMath::FRandRange(0.75f, 1.3f);
+
+    // Frase favorita según personalidad
+    NPC.Persona.FraseFavorita = FraseFavoritaPara(NPC.Persona.Personalidad);
+
+    // Generosidad: más probable en Amable/Sociable
+    NPC.Persona.bEsGeneroso = (NPC.Persona.Personalidad == ENPCPersonalidad::Amable ||
+                               NPC.Persona.Personalidad == ENPCPersonalidad::Sociable) &&
+                              (FMath::RandRange(0, 2) != 0);
+
+    // Velocidad según persona
+    if (NPC.Persona.Personalidad == ENPCPersonalidad::Nervioso) NPC.Velocidad *= 1.2f;
+    else if (NPC.Persona.Personalidad == ENPCPersonalidad::Serio) NPC.Velocidad *= 0.9f;
+}
+
+void UAlsasuaNPCPedestrianSystem::ProcesarSocial(float DeltaTime)
+{
+    if (NPCs.Num() < 2) return;
+    UWorld* W = GetWorld();
+    if (!W) return;
+    APawn* Player = UGameplayStatics::GetPlayerPawn(W, 0);
+    if (!Player) return;
+    const FVector PlayerPos = Player->GetActorLocation();
+
+    TimerSocial += DeltaTime;
+    if (TimerSocial < 1.0f) return;
+    TimerSocial = 0.f;
+
+    // Window: check a slice of NPCs each second for pair conversations
+    const int32 Total = NPCs.Num();
+    const int32 SliceSize = FMath::Min(40, Total);
+    for (int32 k = 0; k < SliceSize; ++k)
+    {
+        SocialIndex = (SocialIndex + 1) % Total;
+        FNPCPedestrian& A = NPCs[SocialIndex];
+        if (A.LodActual != ENPCLod::Full) continue;
+
+        // Only sociable/talkative NPCs initiate near player
+        const float PlayerDistSq = FVector::DistSquared(A.PosicionInicio, PlayerPos);
+        if (PlayerDistSq > FMath::Square(10000.f)) continue;  // 100m
+
+        // Find another full-LOD NPC nearby
+        for (int32 j = 0; j < Total; ++j)
+        {
+            FNPCPedestrian& B = NPCs[j];
+            if (&B == &A) continue;
+            if (B.LodActual != ENPCLod::Full) continue;
+
+            const float DistSq = FVector::DistSquared(A.PosicionInicio, B.PosicionInicio);
+            if (DistSq > FMath::Square(RadioConversacion)) continue;
+
+            const float Now = W->GetTimeSeconds();
+            // Cooldown per NPC to avoid dialog spam
+            if (Now - A.UltimaConversacion < 8.f) continue;
+            if (Now - B.UltimaConversacion < 8.f) continue;
+
+            TradeConversacion(A, B);
+            A.UltimaConversacion = Now;
+            B.UltimaConversacion = Now;
+            break;
+        }
+    }
+}
+
+void UAlsasuaNPCPedestrianSystem::TradeConversacion(FNPCPedestrian& A, FNPCPedestrian& B)
+{
+    // First NPC speaks based on its persona
+    const FString LineaA = LineaDeConversacion(A.Persona, A.Persona.Edad != B.Persona.Edad);
+    OnNPCHabla.Broadcast(A.Persona.Nombre, LineaA, A.Persona.VozPitch);
+    UltimoHablante = A.Persona.Nombre; UltimaLinea = LineaA; UltimoPitch = A.Persona.VozPitch; TiempoLinea = 0.f;
+    ReproducirVoz(A.PosicionInicio, A.Persona.VozPitch);
+
+    // Second NPC responds (different line, own persona)
+    const FString LineaB = LineaDeConversacion(B.Persona, A.Persona.Edad != B.Persona.Edad);
+    OnNPCHabla.Broadcast(B.Persona.Nombre, LineaB, B.Persona.VozPitch);
+    UltimoHablante = B.Persona.Nombre; UltimaLinea = LineaB; UltimoPitch = B.Persona.VozPitch; TiempoLinea = 0.f;
+    ReproducirVoz(B.PosicionInicio, B.Persona.VozPitch);
+}
+
+FString UAlsasuaNPCPedestrianSystem::LineaDeConversacion(const FNPCPersona& P, bool bRangoEdadDiferente) const
+{
+    static const TMap<ENPCPersonalidad, TArray<FString>> Lineas = {
+        { ENPCPersonalidad::Amable, {
+            TEXT("Egun on! ¿Cómo va el día?"),
+            TEXT("¡Vaya tiempo tan bueno hace hoy!"),
+            TEXT("¿Necesitas ayuda con algo?"),
+            TEXT("Hay que ser buena gente, ¿no crees?"),
+            TEXT("Todo irá bien, seguro."),
+        }},
+        { ENPCPersonalidad::Timido, {
+            TEXT("...hola."),
+            TEXT("Eh... sí... bueno..."),
+            TEXT("No sé, yo qué sé..."),
+            TEXT("Perdona, que tengo prisa..."),
+            TEXT("Uhm, no suelo hablar mucho..."),
+        }},
+        { ENPCPersonalidad::Grumpy, {
+            TEXT("Qué país este, todo carísimo."),
+            TEXT("Los jóvenes de hoy no tienen respeto."),
+            TEXT("Todo está peor que antes, ya os digo."),
+            TEXT("A mí nadie me cuenta nada."),
+            TEXT("Cuánto impuesto y para nada."),
+        }},
+        { ENPCPersonalidad::Sociable, {
+            TEXT("¡Egun on! ¿Habéis visto lo del pleno ayer?"),
+            TEXT("Oye oye, ¡qué ganas de fiesta este finde!"),
+            TEXT("Yo conozco a todo el mundo por aquí."),
+            TEXT("¡Un placer verte por el barrio!"),
+            TEXT("¿Has ido a la feria? ¡Está genial!"),
+        }},
+        { ENPCPersonalidad::Serio, {
+            TEXT("Buenos días. Sin novedad."),
+            TEXT("El trabajo es el trabajo."),
+            TEXT("Conviene ser prudente."),
+            TEXT("Cada uno a lo suyo."),
+            TEXT("No me gusta perder el tiempo."),
+        }},
+        { ENPCPersonalidad::Nervioso, {
+            TEXT("Oye, ¿has oído eso? Me ha parecido algo."),
+            TEXT("Tengo que ir ya, que llego tarde, siempre llego tarde."),
+            TEXT("¿Estamos seguros de que esto es seguro?"),
+            TEXT("Uf, uf, qué agobio de día."),
+            TEXT("¡Cuidado que viene un coche!"),
+        }},
+        { ENPCPersonalidad::Rebelde, {
+            TEXT("El pueblo manda, ¿eh? ¡Asamblea!"),
+            TEXT("Ni un paso atrás, compañero."),
+            TEXT("Los de arriba que tiemblen."),
+            TEXT("La voz del barrio no se silencia."),
+            TEXT("¡Pan, tierra y libertad!"),
+        }},
+    };
+
+    const TArray<FString>* Pool = Lineas.Find(P.Personalidad);
+    if (Pool && Pool->Num() > 0)
+        return (*Pool)[FMath::RandRange(0, Pool->Num() - 1)];
+
+    return TEXT("¿Qué tal?");
+}
+
+FString UAlsasuaNPCPedestrianSystem::FraseFavoritaPara(ENPCPersonalidad P) const
+{
+    switch (P)
+    {
+    case ENPCPersonalidad::Amable:    return TEXT("Un saludo no cuesta nada.");
+    case ENPCPersonalidad::Timido:    return TEXT("...");
+    case ENPCPersonalidad::Grumpy:    return TEXT("Tiempos pasados fueron mejores.");
+    case ENPCPersonalidad::Sociable:  return TEXT("Aquí todos nos conocemos.");
+    case ENPCPersonalidad::Serio:     return TEXT("El que calla, otorga.");
+    case ENPCPersonalidad::Nervioso:  return TEXT("Mira bien antes de cruzar.");
+    case ENPCPersonalidad::Rebelde:   return TEXT("El pueblo, unido, jamás será vencido.");
+    default:                          return TEXT("Egun on.");
+    }
+}
+
+int32 UAlsasuaNPCPedestrianSystem::GetNearestNPC(const FVector& Location, float MaxRadius) const
+{
+    int32 BestIdx = -1;
+    float BestDistSq = FMath::Square(MaxRadius);
+    for (int32 i = 0; i < NPCs.Num(); ++i)
+    {
+        if (NPCs[i].LodActual != ENPCLod::Full) continue;
+        const float DistSq = FVector::DistSquared(NPCs[i].PosicionInicio, Location);
+        if (DistSq < BestDistSq)
+        {
+            BestDistSq = DistSq;
+            BestIdx = i;
+        }
+    }
+    return BestIdx;
+}
+
+const FNPCPersona& UAlsasuaNPCPedestrianSystem::GetPersona(int32 Index) const
+{
+    static const FNPCPersona DefaultPersona;
+    if (NPCs.IsValidIndex(Index))
+        return NPCs[Index].Persona;
+    return DefaultPersona;
+}
+
+FString UAlsasuaNPCPedestrianSystem::HablarConNPC(int32 Index)
+{
+    if (!NPCs.IsValidIndex(Index)) return FString();
+    FNPCPedestrian& NPC = NPCs[Index];
+    if (NPC.LodActual != ENPCLod::Full) return FString();
+
+    // The NPC responds to the player based on persona, mood, and manifestation state
+    FString Linea;
+    if (NPC.bEsManifestante)
+    {
+        static const TArray<FString> ManifLines = {
+            TEXT("¡Únete a la asamblea, compañero!"),
+            TEXT("El pueblo está despertando!"),
+            TEXT("Ni un paso atrás!"),
+            TEXT("Esto va en serio: justicia y vivienda digna!"),
+        };
+        Linea = ManifLines[FMath::RandRange(0, ManifLines.Num() - 1)];
+    }
+    else
+    {
+        Linea = LineaDeConversacion(NPC.Persona, false);
+    }
+
+    UWorld* W = GetWorld();
+    if (W)
+    {
+        NPC.UltimaConversacion = W->GetTimeSeconds();
+        OnNPCHabla.Broadcast(NPC.Persona.Nombre, Linea, NPC.Persona.VozPitch);
+        UltimoHablante = NPC.Persona.Nombre; UltimaLinea = Linea; UltimoPitch = NPC.Persona.VozPitch; TiempoLinea = 0.f;
+        ReproducirVoz(NPC.PosicionInicio, NPC.Persona.VozPitch);
+    }
+    return Linea;
+}
+
+void UAlsasuaNPCPedestrianSystem::ReproducirVoz(const FVector& Posicion, float Pitch)
+{
+    UWorld* W = GetWorld();
+    if (!W) return;
+
+    // Sintetiza y reproduce un breve "murmullo" humano (voz) en memoria:
+    // 0.35s con formantes + vibrato, sin assets dependientes.
+    const int32 SampleRate = 22050;
+    const int32 NumSamples = (int32)(0.35f * SampleRate);
+
+    TArray<int16> Raw;
+    Raw.SetNumUninitialized(NumSamples);
+    for (int32 i = 0; i < NumSamples; ++i)
+    {
+        const float t = (float)i / SampleRate;
+        float f1 = 0.55f * FMath::Sin(2.f * PI * 120.f * t);      // formante bajo
+        float f2 = 0.30f * FMath::Sin(2.f * PI * 240.f * t);      // formante medio
+        float f3 = 0.15f * FMath::Sin(2.f * PI * 480.f * t);      // formante alto
+        float vib = 1.f + 0.06f * FMath::Sin(2.f * PI * 5.f * t); // vibrato
+        float env = FMath::Min(1.f, t * 40.f) * FMath::Min(1.f, (0.35f - t) * 60.f);
+        Raw[i] = (int16)((f1 + f2 + f3) * vib * env * 9000.f);
+    }
+
+    USoundWaveProcedural* Voz = NewObject<USoundWaveProcedural>(this);
+    Voz->SetSampleRate(SampleRate);
+    Voz->QueueAudio(reinterpret_cast<const uint8*>(Raw.GetData()), Raw.Num() * sizeof(int16));
+
+    // Reproduce con tono por persona (0.75-1.3): voz distinta y audible por NPC
+    UGameplayStatics::PlaySoundAtLocation(
+        W, Voz, Posicion, FRotator::ZeroRotator, 1.f, Pitch, 0.f);
 }
 
 void UAlsasuaNPCPedestrianSystem::CrearNPCEnPunto(FNPCPedestrian& NPC)

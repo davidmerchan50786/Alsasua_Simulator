@@ -21,6 +21,57 @@ enum class ENPCActivity : uint8
     AtBench
 };
 
+/** Personalidad del NPC: moldea decisiones, rutas, humor y diálogo */
+UENUM(BlueprintType)
+enum class ENPCPersonalidad : uint8
+{
+    Amable,     // saluda, sonríe, ayuda
+    Timido,     // evita conversación, habla bajo
+    Grumpy,     // quejumbroso, negativo
+    Sociable,   // inicia conversaciones, hablador
+    Serio,      // formal, lacónico
+    Nervioso,   // ansioso, salta a la conclusión
+    Rebelde     // anti-autoridad, reivindicativo
+};
+
+/** Modo de ser / estilo de vida del NPC */
+UENUM(BlueprintType)
+enum class ENPCEstilo : uint8
+{
+    Trabajador,     // trabaja, rutas al trabajo/taller
+    Jubilado,       // pasea, bancos, plazas
+    Estudiante,     // instituto, biblioteca, jóvenes
+    Comerciante,    // tienda, mercado
+    Deportista,     // corre, parque
+    Obrero,         // obra, industrial
+    Nocturno        // bares, sale de noche
+};
+
+UENUM(BlueprintType)
+enum class ENPCHumor : uint8
+{
+    Neutral,
+    Feliz,
+    Tenso,
+    Enfadado,
+    Asustado,
+    Entusiasmado
+};
+
+USTRUCT(BlueprintType)
+struct FNPCPersona
+{
+    GENERATED_BODY()
+
+    UPROPERTY(BlueprintReadOnly) FString Nombre;
+    UPROPERTY(BlueprintReadOnly) int32 Edad = 30;
+    UPROPERTY(BlueprintReadOnly) ENPCPersonalidad Personalidad = ENPCPersonalidad::Amable;
+    UPROPERTY(BlueprintReadOnly) ENPCEstilo Estilo = ENPCEstilo::Trabajador;
+    UPROPERTY(BlueprintReadOnly) float VozPitch = 1.0f;   // tono de voz (0.7-1.3)
+    UPROPERTY(BlueprintReadOnly) FString FraseFavorita;  // línea distintiva
+    UPROPERTY(BlueprintReadOnly) bool bEsGeneroso = false;  // propenso a ayudar al jugador
+};
+
 /** Distance-based LOD for NPC rendering */
 UENUM(BlueprintType)
 enum class ENPCLod : uint8
@@ -50,6 +101,15 @@ struct FNPCPedestrian
     TWeakObjectPtr<ASkeletalMeshActor> ActorAsociado;
     TWeakObjectPtr<AActor> ProxyActor;
     bool bEsManifestante = false;  // Joined a manifestation
+
+    /** Persona individual: vida, estilo, forma de ser, voz, diálogo */
+    FNPCPersona Persona;
+
+    /** Humor actual (cambia con contexto social/manifestación) */
+    ENPCHumor HumorActual = ENPCHumor::Neutral;
+
+    /** Última vez que participó en una conversación (evita spam) */
+    float UltimaConversacion = -999.f;
 };
 
 UCLASS()
@@ -86,6 +146,37 @@ public:
 
     /** Find nearby NPCs within radius */
     TArray<int32> GetNearbyNPCs(const FVector& Location, float Radius) const;
+
+    /** Nearest visible NPC to a location (for player interaction), -1 if none */
+    UFUNCTION(BlueprintCallable, Category = "Alsasua|NPCs|Social")
+    int32 GetNearestNPC(const FVector& Location, float MaxRadius = 300.f) const;
+
+    /** Get NPC persona by index */
+    UFUNCTION(BlueprintPure, Category = "Alsasua|NPCs|Social")
+    const FNPCPersona& GetPersona(int32 Index) const;
+
+    /** Player talks to nearest NPC — returns the spoken line (or empty) */
+    UFUNCTION(BlueprintCallable, Category = "Alsasua|NPCs|Social")
+    FString HablarConNPC(int32 Index);
+
+    /** NPC-NPC conversation radius */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|NPCs|Social")
+    float RadioConversacion = 350.0f;
+
+    /** Delegate: NPC spoke a line (SpeakerName, Line, VoicePitch) — for subtitles/voice */
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnNPCHabla, FString, Nombre, FString, Linea, float, Pitch);
+    UPROPERTY(BlueprintAssignable, Category = "Alsasua|NPCs|Social")
+    FOnNPCHabla OnNPCHabla;
+
+    // Pollable last-spoken state for HUD subtitles
+    UPROPERTY(BlueprintReadOnly, Category = "Alsasua|NPCs|Social")
+    FString UltimoHablante;
+    UPROPERTY(BlueprintReadOnly, Category = "Alsasua|NPCs|Social")
+    FString UltimaLinea;
+    UPROPERTY(BlueprintReadOnly, Category = "Alsasua|NPCs|Social")
+    float UltimoPitch = 1.0f;
+    UPROPERTY(BlueprintReadOnly, Category = "Alsasua|NPCs|Social")
+    float TiempoLinea = 0.f;   // seconds since last line, for fade
 
     /** Force NPC to join manifestation */
     void UnirAManifestacion(int32 Index);
@@ -130,4 +221,21 @@ private:
     FVector ObtenerPuntoCalle(const FString& Barrio);
     FVector ObtenerPuntoCalleAleatorio();
     void CambiarActividad(FNPCPedestrian& NPC);
+
+    void ProcesarSocial(float DeltaTime);
+    void GenerarPersona(FNPCPedestrian& NPC);
+    void TradeConversacion(FNPCPedestrian& A, FNPCPedestrian& B);
+    FString LineaDeConversacion(const FNPCPersona& Persona, bool bRangoEdadDiferente) const;
+    FString NombreAleatorio(bool bMujer) const;
+    FString FraseFavoritaPara(ENPCPersonalidad P) const;
+    void ReproducirVoz(const FVector& Posicion, float Pitch);
+
+    // Social tick state
+    int32 SocialIndex = 0;
+    float TimerSocial = 0.f;
+
+    // Persona name pools
+    TArray<FString> NombresHombre;
+    TArray<FString> NombresMujer;
+    bool bNombresCargados = false;
 };

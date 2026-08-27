@@ -16,6 +16,7 @@
 #include "RespawnSubsystem.h"
 #include "AlsasuaTypes.h"
 #include "ArranqueMundo.h"
+#include "World/AlsasuaNPCPedestrianSystem.h"
 #include "Kismet/GameplayStatics.h"
 
 static UDrogasSubsystem* DrogasDe(const APlayerController* PC)
@@ -126,6 +127,24 @@ void AAlsasuaLegacyPlayerController::OnInteractuar()
 	// En diálogo: E avanza la línea automática (o cierra si no hay opciones).
 	if (UDialogoSubsystem* D = DialogoDe(this))
 		if (D->EnCurso()) { D->Elegir(-1); return; }
+
+	// A pie: hablar con el NPC más cercano (persona/voz/diálogo).
+	APawn* Yo = GetPawn();
+	if (Yo)
+	{
+		UWorld* W = GetWorld();
+		UGameInstance* GI = W ? W->GetGameInstance() : nullptr;
+		if (GI)
+			if (UAlsasuaNPCPedestrianSystem* Peds = GI->GetSubsystem<UAlsasuaNPCPedestrianSystem>())
+			{
+				const int32 Idx = Peds->GetNearestNPC(Yo->GetActorLocation(), 400.f);
+				if (Idx >= 0)
+				{
+					Peds->HablarConNPC(Idx);
+					return;   // talked to NPC instead of entering vehicle
+				}
+			}
+	}
 
 	// A pie: subirme a un coche cercano.
 	EntrarVehiculoCercano();

@@ -17,6 +17,7 @@
 #include "VehiculoJugable.h"
 #include "PoliciaActor.h"
 #include "ManifestanteActor.h"
+#include "World/AlsasuaNPCPedestrianSystem.h"
 #include "GeoDataAlsasua.h"
 #include "ArranqueMundo.h"
 #include "EngineUtils.h"
@@ -203,11 +204,12 @@ void AAlsasuaHUD::DrawHUD()
 			Canvas->DrawItem(A);
 		}
 
-	DibujarMisiones();
-	DibujarRadar();
-	DibujarMarcador();
-	DibujarMira();
-	DibujarDialogo();
+    DibujarMisiones();
+    DibujarRadar();
+    DibujarMarcador();
+    DibujarMira();
+    DibujarDialogo();
+    DibujarSubtitulosNPC();
 }
 
 void AAlsasuaHUD::DibujarMira()
@@ -447,4 +449,34 @@ void AAlsasuaHUD::DibujarDialogo()
 		O.EnableShadow(FLinearColor::Black);
 		Canvas->DrawItem(O); y += 24.f;
 	}
+}
+
+void AAlsasuaHUD::DibujarSubtitulosNPC()
+{
+	const UGameInstance* GI = GetGameInstance();
+	if (!GI || !Canvas) return;
+	const UAlsasuaNPCPedestrianSystem* Peds = GI->GetSubsystem<UAlsasuaNPCPedestrianSystem>();
+	if (!Peds) return;
+
+	// No subtítulos de NPC mientras hay diálogo formal con conversación
+	const UDialogoSubsystem* Di = GI->GetSubsystem<UDialogoSubsystem>();
+	if (Di && Di->EnCurso()) return;
+
+	// Desvanecer a los 4 segundos
+	if (Peds->TiempoLinea > 4.f || Peds->UltimaLinea.IsEmpty()) return;
+	const float Alpha = (Peds->TiempoLinea > 3.f) ? (4.f - Peds->TiempoLinea) : 1.f;
+
+	const float W = Canvas->SizeX;
+	const float x = W * 0.18f;
+	const float by = Canvas->SizeY - 110.f;
+
+	FCanvasTextItem Nombre(FVector2D(x, by), FText::FromString(Peds->UltimoHablante + TEXT(":")),
+		GEngine->GetMediumFont(), FLinearColor(0.85f, 0.6f, 0.35f, Alpha));
+	Nombre.EnableShadow(FLinearColor::Black);
+	Canvas->DrawItem(Nombre);
+
+	FCanvasTextItem Texto(FVector2D(x, by + 22.f), FText::FromString(Peds->UltimaLinea),
+		GEngine->GetMediumFont(), FLinearColor(0.92f, 0.9f, 0.9f, Alpha));
+	Texto.EnableShadow(FLinearColor::Black);
+	Canvas->DrawItem(Texto);
 }
