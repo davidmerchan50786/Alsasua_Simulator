@@ -4,9 +4,11 @@
 #include "Camera/CameraComponent.h"
 #include "Components/AudioComponent.h"
 #include "Components/InputComponent.h"
+#include "Components/BoxComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "GameFramework/FloatingPawnMovement.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
 
@@ -36,6 +38,17 @@ APlayerVehicle::APlayerVehicle()
     HornAudio->bAutoActivate = false;
 }
 
+void APlayerVehicle::BeginPlay()
+{
+    Super::BeginPlay();
+
+    // Collision with pedestrians: knock them and deal damage.
+    if (CollisionBox)
+    {
+        CollisionBox->OnComponentHit.AddDynamic(this, &APlayerVehicle::OnVehicleHit);
+    }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  Input Setup
 // ─────────────────────────────────────────────────────────────────────────────
@@ -46,7 +59,9 @@ void APlayerVehicle::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
     PlayerInputComponent->BindAxis("MoveForward", this, &APlayerVehicle::OnGas);
     PlayerInputComponent->BindAxis("MoveRight", this, &APlayerVehicle::OnSteer);
 
-    // Bind brake to a separate axis if available, otherwise use negative forward.
+    // Separate brake axis (full brake + reverse activation).
+    PlayerInputComponent->BindAxis("Brake", this, &APlayerVehicle::OnBrake);
+
     PlayerInputComponent->BindAction("Handbrake", IE_Pressed, this, &APlayerVehicle::OnHandbrakePressed);
     PlayerInputComponent->BindAction("Handbrake", IE_Released, this, &APlayerVehicle::OnHandbrakeReleased);
 
@@ -74,6 +89,32 @@ void APlayerVehicle::OnGas(float Value)
     {
         GasInput = 0.f;
         BrakeInput = 0.f;
+    }
+}
+
+void APlayerVehicle::OnBrake(float Value)
+{
+    // Positive brake input: brake if moving forward, reverse if stopped.
+    if (Value > 0.f)
+    {
+        const float Speed = GetVelocity().Size();
+        if (Speed < 100.f && FVector::DotProduct(GetVelocity(), GetActorForwardVector()) < 0.f)
+        {
+            // Stopped or nearly stopped → reverse.
+            ReverseInput = FMath::Clamp(Value, 0.f, 1.f);
+            bIsReversing = true;
+        }
+        else
+        {
+            // Moving forward → brake.
+            BrakeInput = FMath::Max(BrakeInput, Value);
+            bIsReversing = false;
+        }
+    }
+    else
+    {
+        ReverseInput = 0.f;
+        if (BrakeInput <= 0.f) bIsReversing = false;
     }
 }
 
@@ -214,6 +255,8 @@ void APlayerVehicle::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
+    if (PedHitCooldown > 0.f) PedHitCooldown -= DeltaTime;
+
     if (!IsOccupied())
     {
         return;
@@ -252,10 +295,16 @@ void APlayerVehicle::UpdateDrivingPhysics(float DeltaTime)
         return;
     }
 
-    // ── Gas ────────────────────────────────────────────────────────────────
+    // ── Gas (aceleración exponencial) ─────────────────────────────────────
     if (GasInput > 0.f)
     {
-        AddMovementInput(GetActorForwardVector(), GasInput);
+        ApplyAcceleration(DeltaTime, 1.f);
+    }
+
+    // ── Reverse (marcha atrás) ────────────────────────────────────────────
+    if (ReverseInput > 0.f && GasInput <= 0.f)
+    {
+        ApplyAcceleration(DeltaTime, -1.f);
     }
 
     // ── Freno ──────────────────────────────────────────────────────────────
@@ -293,9 +342,13 @@ void APlayerVehicle::UpdateDrivingPhysics(float DeltaTime)
     const float SteerLerpSpeed = bHandbrakeActive ? 8.f : 4.f;
     CurrentSteerAngle = FMath::FInterpTo(CurrentSteerAngle, EffectiveSteer, DeltaTime, SteerLerpSpeed);
 
+    float ForwardVelocityComponent = FVector::DotProduct(GetVelocity(), GetActorForwardVector());
+    bool bMovingBackward = ForwardVelocityComponent < -50.f;
+
     if (FMath::Abs(CurrentSteerAngle) > 0.1f && Speed > 50.f)
     {
-        float TurnDirection = GasInput >= 0.f ? 1.f : -1.f;
+        // Reverse steering is inverted (like real vehicles).
+        float TurnDirection = (bIsReversing || bMovingBackward) ? -1.f : 1.f;
         AddActorLocalRotation(FRotator(0.f, CurrentSteerAngle * DeltaTime * TurnDirection, 0.f));
     }
 
@@ -307,6 +360,73 @@ void APlayerVehicle::UpdateDrivingPhysics(float DeltaTime)
     else
     {
         DriftAngularVelocity = 0.f;
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Acceleration model — exponential approach to cruise speed
+// ─────────────────────────────────────────────────────────────────────────────
+void APlayerVehicle::ApplyAcceleration(float DeltaTime, float Direction)
+{
+    const float CurrentSpeed = FVector::DotProduct(GetVelocity(), GetActorForwardVector());
+
+    // Target speed depends on direction (reverse has lower cap).
+    float MaxTarget = (Direction > 0.f) ? CruiseSpeedCm : MaxReverseSpeed;
+    float TargetSpeed = Direction * MaxTarget;
+
+    if (Direction < 0.f)
+    {
+        // Reversing.
+        AddMovementInput(-GetActorForwardVector(), ReverseInput);
+    }
+    else
+    {
+        AddMovementInput(GetActorForwardVector(), GasInput);
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Vehicle-Pedestrian collision
+// ─────────────────────────────────────────────────────────────────────────────
+void APlayerVehicle::OnVehicleHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+    if (PedHitCooldown > 0.f) return;
+    if (!OtherActor) return;
+
+    const float Speed = GetVelocity().Size();
+    if (Speed < 300.f) return; // Ignore slow roll-overs.
+
+    // Knock pedestrians (any non-vehicle pawn that takes damage).
+    if (IDamageable* DmgIf = Cast<IDamageable>(OtherActor))
+    {
+        // Skip the driver/player pawn.
+        if (OtherActor == DriverPawn) return;
+
+        if (UCharacterMovementComponent* CM = OtherActor->FindComponentByClass<UCharacterMovementComponent>())
+        {
+            const FVector PushDir = (OtherActor->GetActorLocation() - GetActorLocation()).GetSafeNormal2D();
+            CM->SetMovementMode(MOVE_Falling);
+            CM->Velocity = PushDir * (Speed * 0.05f) + FVector(0, 0, 400.f);
+        }
+
+        // Damage scales with impact speed.
+        const int32 Dmg = FMath::RoundToInt(PedHitDamage * (Speed / MaxSpeed));
+        if (Dmg > 0)
+        {
+            DmgIf->RecibirDano(Dmg, GetActorLocation(), ETipoDano::Impacto);
+        }
+
+        PedHitCooldown = 1.0f;
+    }
+
+    // Collision damage to vehicle (if we hit something hard).
+    if (DamageComponent && Speed > 2000.f)
+    {
+        const float ImpactDmg = (Speed / MaxSpeed) * 5.f; // Up to 5 damage per hard hit.
+        if (ImpactDmg >= 1.f)
+        {
+            DamageComponent->ApplyVehicleDamage(ImpactDmg);
+        }
     }
 }
 

@@ -88,29 +88,49 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Driving|Audio")
     float EngineMaxPitch = 2.5f;
 
+    /** Velocidad máxima marcha atrás (cm/s). */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Driving|Reverse", meta = (ClampMin = "100"))
+    float MaxReverseSpeed = 800.f;
+
+    /** Aceleración (cm/s²) usando modelo exponencial de motor. */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Driving|Acceleration", meta = (ClampMin = "1"))
+    float AccelerationForce = 1500.f;
+
+    /** Velocidad de crucero (km/h). */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Driving|Velocity")
+    float CruiseSpeedCm = 1500.f;
+
+    /** Daño al atropellar un peatón (escala por velocidad). */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Driving|Collision", meta = (ClampMin = "0"))
+    float PedHitDamage = 30.f;
+
+    /** ¿Marcha atrás activa? */
+    UPROPERTY(BlueprintReadWrite, Category = "Driving|Reverse")
+    bool bIsReversing = false;
+
 protected:
     virtual void Tick(float DeltaTime) override;
     virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+    virtual void BeginPlay() override;
 
 private:
     // ── Input handlers ─────────────────────────────────────────────────────
     void OnGas(float Value);
-    // Aquí había un OnBrake(float) que no definía nadie y que no enlaza
-    // ningún BindAxis: el freno lo hace OnGas con valor negativo, como dice
-    // el comentario de SetupPlayerInputComponent. Los otros siete On* sí
-    // están definidos; éste era el resto del eje separado que nunca se cableó.
+    void OnBrake(float Value);
     void OnSteer(float Value);
     void OnHandbrakePressed();
     void OnHandbrakeReleased();
     void OnHornPressed();
     void OnHornReleased();
     void OnToggleEngine();
+    void OnVehicleHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
     // ── Lógica interna ─────────────────────────────────────────────────────
     void UpdateDrivingPhysics(float DeltaTime);
     void UpdateCamera(float DeltaTime);
     void UpdateEngineAudio(float DeltaTime);
     void ApplyDriftPhysics(float DeltaTime);
+    void ApplyAcceleration(float DeltaTime, float Direction);
 
     /** Pawn que conduce este vehículo. */
     UPROPERTY()
@@ -119,6 +139,7 @@ private:
     /** Valores de input acumulados. */
     float GasInput = 0.f;
     float BrakeInput = 0.f;
+    float ReverseInput = 0.f;
     float SteerInput = 0.f;
     bool bHandbrakeActive = false;
 
@@ -133,4 +154,7 @@ private:
 
     /** Handle del timer de input para exit. */
     FTimerHandle ExitTimerHandle;
+
+    /** Tiempo desde último contacto con peatón (evita daño repetido). */
+    float PedHitCooldown = 0.f;
 };
