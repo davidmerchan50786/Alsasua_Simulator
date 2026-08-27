@@ -16,7 +16,8 @@
 #include "RespawnSubsystem.h"
 #include "AlsasuaTypes.h"
 #include "ArranqueMundo.h"
-#include "World/AlsasuaNPCPedestrianSystem.h"
+#include "AlsasuaServiceRegistry.h"
+#include "Services/INPCSocialService.h"
 #include "Kismet/GameplayStatics.h"
 
 static UDrogasSubsystem* DrogasDe(const APlayerController* PC)
@@ -134,26 +135,30 @@ void AAlsasuaLegacyPlayerController::OnInteractuar()
 	{
 		UWorld* W = GetWorld();
 		UGameInstance* GI = W ? W->GetGameInstance() : nullptr;
+		// Vía UAlsasuaServiceRegistry, no un #include directo de GF_NPCs: éste
+		// vive en AlsasuaGameplay, y GF_NPCs depende (transitivamente, vía
+		// GF_Social) de AlsasuaGameplay — un #include directo cerraría el ciclo.
 		if (GI)
-			if (UAlsasuaNPCPedestrianSystem* Peds = GI->GetSubsystem<UAlsasuaNPCPedestrianSystem>())
-			{
-				const int32 Idx = Peds->GetNearestNPC(Yo->GetActorLocation(), 400.f);
-				if (Idx >= 0)
+			if (UAlsasuaServiceRegistry* Reg = GI->GetSubsystem<UAlsasuaServiceRegistry>())
+				if (INPCSocialService* Peds = Reg->PedirComo<INPCSocialService>(FName("NPCPedestrians")))
 				{
-					// Preferir un diálogo ramificado completo si existe JSON para su nombre
-					const FString NombreNPC = Peds->GetPersona(Idx).Nombre;
-					bool bConversacionIniciada = false;
-					if (UDialogoSubsystem* Dialogo = DialogoDe(this))
-						if (!Dialogo->EnCurso())
-							bConversacionIniciada = Dialogo->IniciarConNPC(NombreNPC);
+					const int32 Idx = Peds->GetNearestNPC(Yo->GetActorLocation(), 400.f);
+					if (Idx >= 0)
+					{
+						// Preferir un diálogo ramificado completo si existe JSON para su nombre
+						const FString NombreNPC = Peds->GetPersonaNombre(Idx);
+						bool bConversacionIniciada = false;
+						if (UDialogoSubsystem* Dialogo = DialogoDe(this))
+							if (!Dialogo->EnCurso())
+								bConversacionIniciada = Dialogo->IniciarConNPC(NombreNPC);
 
-					// Sin conversación autorada: charla corta por persona + voz
-					if (!bConversacionIniciada)
-						Peds->HablarConNPC(Idx);
+						// Sin conversación autorada: charla corta por persona + voz
+						if (!bConversacionIniciada)
+							Peds->HablarConNPC(Idx);
 
-					return;   // talked to NPC instead of entering vehicle
+						return;   // talked to NPC instead of entering vehicle
+					}
 				}
-			}
 	}
 
 	// A pie: subirme a un coche cercano.

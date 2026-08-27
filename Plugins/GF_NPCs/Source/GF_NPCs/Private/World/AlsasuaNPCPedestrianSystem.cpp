@@ -21,6 +21,9 @@ void UAlsasuaNPCPedestrianSystem::Initialize(FSubsystemCollectionBase& Collectio
     Super::Initialize(Collection);
     bInitialized = true;
     CargarAssetsPersonaje();
+
+    if (UAlsasuaServiceRegistry* Reg = GetGameInstance() ? GetGameInstance()->GetSubsystem<UAlsasuaServiceRegistry>() : nullptr)
+        Reg->Publicar(FName("NPCPedestrians"), this);
 }
 
 void UAlsasuaNPCPedestrianSystem::ActualizarNPCs(float DeltaTime)

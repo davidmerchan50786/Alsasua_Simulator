@@ -3,6 +3,7 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "Contratos/AlsasuaContratosUI.h"
 #include "Arranque/AlsasuaPilarArranque.h"
+#include "Services/INPCSocialService.h"
 #include "AlsasuaNPCPedestrianSystem.generated.h"
 
 class ASkeletalMeshActor;
@@ -114,7 +115,7 @@ struct FNPCPedestrian
 };
 
 UCLASS()
-class GF_NPCS_API UAlsasuaNPCPedestrianSystem : public UGameInstanceSubsystem, public IAlsasuaPilarArranque, public IAlsasuaPilarTiquear
+class GF_NPCS_API UAlsasuaNPCPedestrianSystem : public UGameInstanceSubsystem, public IAlsasuaPilarArranque, public IAlsasuaPilarTiquear, public INPCSocialService
 {
     GENERATED_BODY()
 
@@ -155,15 +156,19 @@ public:
 
     /** Nearest visible NPC to a location (for player interaction), -1 if none */
     UFUNCTION(BlueprintCallable, Category = "Alsasua|NPCs|Social")
-    int32 GetNearestNPC(const FVector& Location, float MaxRadius = 300.f) const;
+    virtual int32 GetNearestNPC(const FVector& Location, float MaxRadius = 300.f) const override;
 
     /** Get NPC persona by index */
     UFUNCTION(BlueprintPure, Category = "Alsasua|NPCs|Social")
     const FNPCPersona& GetPersona(int32 Index) const;
 
+    // INPCSocialService: nombre de la persona por reflexion, sin exponer
+    // FNPCPersona (que vive solo en GF_NPCs) al otro lado del contrato.
+    virtual FString GetPersonaNombre(int32 Index) const override { return GetPersona(Index).Nombre; }
+
     /** Player talks to nearest NPC — returns the spoken line (or empty) */
     UFUNCTION(BlueprintCallable, Category = "Alsasua|NPCs|Social")
-    FString HablarConNPC(int32 Index);
+    virtual FString HablarConNPC(int32 Index) override;
 
     /** NPC-NPC conversation radius */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|NPCs|Social")

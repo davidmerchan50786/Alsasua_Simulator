@@ -4,8 +4,10 @@
 #include "Materials/MaterialInterface.h"
 #include "Engine/Engine.h"
 #include "Engine/World.h"
+#include "Engine/GameInstance.h"
 #include "UObject/ConstructorHelpers.h"
-#include "World/Weather/WeatherSubsystem.h"
+#include "AlsasuaServiceRegistry.h"
+#include "Services/IWeatherService.h"
 
 AAguaNivel::AAguaNivel()
 {
@@ -99,7 +101,11 @@ void AAguaNivel::ActualizarClima()
 	UWorld* W = GetWorld();
 	if (!W) return;
 
-	const UWeatherSubsystem* Weather = W->GetSubsystem<UWeatherSubsystem>();
+	// Vía UAlsasuaServiceRegistry, no un #include directo de GF_Clima: éste
+	// vive por encima de AlsasuaWorld en la jerarquía de módulos.
+	UGameInstance* GI = W->GetGameInstance();
+	UAlsasuaServiceRegistry* Reg = GI ? GI->GetSubsystem<UAlsasuaServiceRegistry>() : nullptr;
+	IWeatherService* Weather = Reg ? Reg->PedirComo<IWeatherService>(FName("Weather")) : nullptr;
 	if (!Weather) return;
 
 	const float Rain = Weather->GetRainIntensity();
@@ -128,7 +134,10 @@ void AAguaNivel::ActualizarClima()
 	WaterMatInst->SetScalarParameterValue(TEXT("SpecularPower"), CurSpecular);
 
 	// ── Foam: storm boost ───────────────────────────────────────────────
-	const float bStorm = (Weather->CurrentWeather == EWeatherSubsystemState::Thunderstorm) ? 1.f : 0.f;
+	// EWeatherSubsystemState::Thunderstorm es un tipo concreto de GF_Clima,
+	// fuera del contrato IWeatherService; la lluvia a maxima intensidad es
+	// el proxy visual (la tormenta es el unico estado que la alcanza).
+	const float bStorm = (Rain > 0.85f) ? 1.f : 0.f;
 	const float FoamIntensity = Rain * 0.2f + bStorm * StormFoamBoost;
 	WaterMatInst->SetScalarParameterValue(TEXT("FoamIntensity"), FoamIntensity);
 

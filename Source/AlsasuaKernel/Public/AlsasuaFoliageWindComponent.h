@@ -8,7 +8,7 @@
  * Reads from MPC_Wind_Control and applies phase-offset sway per instance.
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class ALSASUAMANIFA_API UAlsasuaFoliageWindComponent : public UActorComponent
+class ALSASUAKERNEL_API UAlsasuaFoliageWindComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
