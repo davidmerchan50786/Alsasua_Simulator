@@ -11,6 +11,18 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQTEWindow, float, WindowDuration)
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQTEResult, bool, bSuccess);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDetentionResult, bool, bEscaped);
 
+/** Tipo de tortura aplicada durante el interrogatorio. */
+UENUM(BlueprintType)
+enum class EInterrogationMethod : uint8
+{
+	None,
+	Electrodes,     // Choques eléctricos — daño directo + stress spike + flash pantalla
+	WaterBoarding,  // Bolsa/bañera — drenaje stamina + ahogo + visión borrosa
+	SleepDeprivation, // Privación del sueño — stress lento + visión doble + alucinaciones
+	Beating,        // Golpes — daño directo + flash rojo + stun periódico
+	Threats         // Amenazas — solo psicológico, sube stress + afecta apoyo
+};
+
 UENUM(BlueprintType)
 enum class EDetentionState : uint8 { Idle, Arrested, Interrogating, Resisting, Escaped, Surrendered };
 
@@ -29,7 +41,10 @@ public:
     UFUNCTION(BlueprintCallable, Category="AAA|Detention")
     void StopMinigame(bool bForceFail = false);
 
-    // Input from player (call this from PlayerController input mapping)
+    /** Aplica un método de tortura específico. Cambia el comportamiento del tick. */
+    UFUNCTION(BlueprintCallable, Category="AAA|Detention")
+    void ApplyTortureMethod(EInterrogationMethod Method);
+
     UFUNCTION(BlueprintCallable, Category="AAA|Detention")
     void RegisterInputPress();
 
@@ -37,44 +52,34 @@ public:
     void UseInventoryItemDuringMinigame(FName ItemID);
 
     // Delegates
-    UPROPERTY(BlueprintAssignable, Category="AAA|Detention")
-    FOnDetentionStarted OnDetentionStarted;
+    UPROPERTY(BlueprintAssignable, Category="AAA|Detention") FOnDetentionStarted OnDetentionStarted;
+    UPROPERTY(BlueprintAssignable, Category="AAA|Detention") FOnDetentionEnded OnDetentionEnded;
+    UPROPERTY(BlueprintAssignable, Category="AAA|Detention") FOnQTEWindow OnQTEWindow;
+    UPROPERTY(BlueprintAssignable, Category="AAA|Detention") FOnQTEResult OnQTEResult;
+    UPROPERTY(BlueprintAssignable, Category="AAA|Detention") FOnDetentionResult OnDetentionResult;
 
-    UPROPERTY(BlueprintAssignable, Category="AAA|Detention")
-    FOnDetentionEnded OnDetentionEnded;
+    UPROPERTY(BlueprintReadOnly, Category="AAA|Detention") EDetentionState CurrentState = EDetentionState::Idle;
 
-    UPROPERTY(BlueprintAssignable, Category="AAA|Detention")
-    FOnQTEWindow OnQTEWindow;
+    /** Método de tortura activo. None = interrogatorio genérico. */
+    UPROPERTY(BlueprintReadOnly, Category="AAA|Detention") EInterrogationMethod ActiveMethod = EInterrogationMethod::None;
 
-    UPROPERTY(BlueprintAssignable, Category="AAA|Detention")
-    FOnQTEResult OnQTEResult;
+    UPROPERTY(EditAnywhere, Category="AAA|Detention") float Duration = 30.f;
+    UPROPERTY(EditAnywhere, Category="AAA|Detention") float MashPowerPerPress = 1.f;
+    UPROPERTY(EditAnywhere, Category="AAA|Detention") FVector2D QTEIntervalRange = FVector2D(3.f, 7.f);
+    UPROPERTY(EditAnywhere, Category="AAA|Detention") float StressIncreaseRate = 1.f;
+    UPROPERTY(EditAnywhere, Category="AAA|Detention") float SuccessThreshold = 100.f;
 
-    UPROPERTY(BlueprintAssignable, Category="AAA|Detention")
-    FOnDetentionResult OnDetentionResult;
+    UPROPERTY(BlueprintReadOnly, Category="AAA|Detention") float CurrentResistance = 0.f;
+    UPROPERTY(BlueprintReadOnly, Category="AAA|Detention") float StressLevel = 0.f;
 
-    UPROPERTY(BlueprintReadOnly, Category="AAA|Detention")
-    EDetentionState CurrentState = EDetentionState::Idle;
-
-    UPROPERTY(EditAnywhere, Category="AAA|Detention")
-    float Duration = 30.f;
-
-    UPROPERTY(EditAnywhere, Category="AAA|Detention")
-    float MashPowerPerPress = 1.f;
-
-    UPROPERTY(EditAnywhere, Category="AAA|Detention")
-    FVector2D QTEIntervalRange = FVector2D(3.f, 7.f);
-
-    UPROPERTY(EditAnywhere, Category="AAA|Detention")
-    float StressIncreaseRate = 1.f; // per second
-
-    UPROPERTY(EditAnywhere, Category="AAA|Detention")
-    float SuccessThreshold = 100.f;
-
-    UPROPERTY(BlueprintReadOnly, Category="AAA|Detention")
-    float CurrentResistance = 0.f;
-
-    UPROPERTY(BlueprintReadOnly, Category="AAA|Detention")
-    float StressLevel = 0.f;
+    // Per-method tuning
+    UPROPERTY(EditAnywhere, Category="AAA|Detention|Electrodes") float ElectrodeDamagePerSec = 8.f;
+    UPROPERTY(EditAnywhere, Category="AAA|Detention|Electrodes") float ElectrodeStressSpike = 15.f;
+    UPROPERTY(EditAnywhere, Category="AAA|Detention|Water") float WaterStaminaDrain = 12.f;
+    UPROPERTY(EditAnywhere, Category="AAA|Detention|Sleep") float SleepStressPerSec = 2.f;
+    UPROPERTY(EditAnywhere, Category="AAA|Detention|Beating") int32 BeatingDamage = 5;
+    UPROPERTY(EditAnywhere, Category="AAA|Detention|Beating") float BeatingStunInterval = 4.f;
+    UPROPERTY(EditAnywhere, Category="AAA|Detention|Threats") float ThreatsStressPerSec = 3.f;
 
 protected:
     virtual void BeginPlay() override;
@@ -87,8 +92,22 @@ private:
     float Difficulty = 1.f;
     bool bQTEActive = false;
 
+    // Torture-specific timers
+    float BeatingTimer = 0.f;
+    bool bStunned = false;
+    float StunTimer = 0.f;
+    float SleepHallucinationTimer = 0.f;
+    float ElectrodeFlashTimer = 0.f;
+    float WaterDmgTimer = 0.f;
+
     void StartQTEWindow();
     void ResolveQTE(bool bSuccess);
     void ApplyStress(float Delta);
+    void TickElectrodes(float DeltaTime);
+    void TickWaterBoarding(float DeltaTime);
+    void TickSleepDeprivation(float DeltaTime);
+    void TickBeating(float DeltaTime);
+    void TickThreats(float DeltaTime);
+    void ApplyDamageToPlayer(int32 Amount);
     void FinishMinigame(bool bEscaped);
 };

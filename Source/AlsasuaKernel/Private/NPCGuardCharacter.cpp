@@ -1,5 +1,6 @@
 #include "NPCGuardCharacter.h"
 #include "GAS/AlsasuaAbilitySystemComponent.h"
+#include "AlsasuaAttributeSet.h"
 #include "Character/Stealth/GuardDetectionComponent.h"
 #include "AlsasuaTypes.h"
 #include "NavigationSystem.h"
@@ -7,6 +8,8 @@
 #include "Navigation/PathFollowingComponent.h"
 #include "AIController.h"
 #include "Engine/World.h"
+#include "Engine/GameInstance.h"
+#include "Gameplay/Detention/DetentionMinigameComponent.h"
 
 ANPCGuardCharacter::ANPCGuardCharacter()
 {
@@ -108,9 +111,41 @@ void ANPCGuardCharacter::Attack()
 	AActor* Player = UGameplayStatics::GetPlayerPawn(this, 0);
 	if (!Player) return;
 
+	const float Dist = FVector::Dist(GetActorLocation(), Player->GetActorLocation());
+
+	// At wanted 5+, guard arrests instead of killing (melee range only).
+	if (Dist < 300.f)
+	{
+		if (UAlsasuaAbilitySystemComponent* PlayerASC = Player->FindComponentByClass<UAlsasuaAbilitySystemComponent>())
+		{
+			if (const UAlsasuaAttributeSet* PlayerAttr = PlayerASC->GetSet<UAlsasuaAttributeSet>())
+			{
+				if (PlayerAttr->GetWantedLevel() >= 5.f)
+				{
+					if (UDetentionMinigameComponent* Det = Player->FindComponentByClass<UDetentionMinigameComponent>())
+					{
+						if (Det->CurrentState == EDetentionState::Idle)
+						{
+							const EInterrogationMethod Methods[] = {
+								EInterrogationMethod::Electrodes,
+								EInterrogationMethod::WaterBoarding,
+								EInterrogationMethod::Beating,
+								EInterrogationMethod::SleepDeprivation,
+								EInterrogationMethod::Threats
+							};
+							const EInterrogationMethod Chosen = Methods[FMath::RandRange(0, 4)];
+							Det->StartMinigame(30.f, 1.2f);
+							Det->ApplyTortureMethod(Chosen);
+							return;
+						}
+					}
+				}
+			}
+		}
+	}
+
 	if (IDamageable* Dmg = Cast<IDamageable>(Player))
 	{
-		const float Dist = FVector::Dist(GetActorLocation(), Player->GetActorLocation());
 		const int32 Damage = Dist < 300.f ? 18 : 10;
 		Dmg->RecibirDano(Damage, GetActorLocation(), ETipoDano::Impacto);
 	}
