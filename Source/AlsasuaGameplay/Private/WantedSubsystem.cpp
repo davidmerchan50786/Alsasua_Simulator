@@ -1,5 +1,6 @@
 // WantedSubsystem.cpp
 #include "WantedSubsystem.h"
+#include "DiaNocheSubsystem.h"
 
 void UWantedSubsystem::AumentarBusqueda(int32 Cantidad)
 {
@@ -12,7 +13,14 @@ void UWantedSubsystem::AumentarBusqueda(int32 Cantidad)
 void UWantedSubsystem::Tick(float DeltaTime)
 {
 	if (NivelBusqueda <= 0) return;
-	TimerBajar -= DeltaTime;
+
+	// Police are slower to deescalate at night (1.5x timer).
+	float TimeMult = 1.f;
+	if (UGameInstance* GI = GetGameInstance())
+		if (UDiaNocheSubsystem* DN = GI->GetSubsystem<UDiaNocheSubsystem>())
+			if (DN->EsNoche()) TimeMult = 1.5f;
+
+	TimerBajar -= DeltaTime / TimeMult;
 	if (TimerBajar <= 0.f)
 	{
 		NivelBusqueda = FMath::Max(0, NivelBusqueda - 1);
