@@ -37,6 +37,7 @@ void UDetentionMinigameComponent::StartMinigame(float InDuration, float Difficul
 
     NextQTETime = FMath::RandRange(QTEIntervalRange.X, QTEIntervalRange.Y);
     bQTEActive = false;
+    MethodEscalationTimer = MethodEscalationInterval;
     CurrentState = EDetentionState::Interrogating;
 
     OnDetentionStarted.Broadcast();
@@ -117,6 +118,14 @@ void UDetentionMinigameComponent::TickComponent(float DeltaTime, enum ELevelTick
     if (!bQTEActive && Elapsed >= NextQTETime && Elapsed <= Duration)
     {
         StartQTEWindow();
+    }
+
+    // Method escalation — guard cycles through methods to break resistance.
+    MethodEscalationTimer -= DeltaTime;
+    if (MethodEscalationTimer <= 0.f)
+    {
+        MethodEscalationTimer = MethodEscalationInterval;
+        EscalateTortureMethod();
     }
 
     if (bQTEActive)
@@ -301,6 +310,7 @@ void UDetentionMinigameComponent::FinishMinigame(bool bEscaped)
     bQTEActive = false;
     bStunned = false;
     ActiveMethod = EInterrogationMethod::None;
+    MethodEscalationTimer = MethodEscalationInterval;
 
     // Clean up post-process effects
     if (AActor* O = GetOwner())
@@ -309,6 +319,37 @@ void UDetentionMinigameComponent::FinishMinigame(bool bEscaped)
         {
             PP->SetSpeedLines(false);
             PP->SetDrugVision(false);
+            PP->SetDrowningVision(false, 0.f);
+            PP->SetSleepDeprivationVision(false, 0.f);
         }
     }
+}
+
+void UDetentionMinigameComponent::ApplySurrenderConsequences() {}
+void UDetentionMinigameComponent::ApplyEscapeConsequences() {}
+
+void UDetentionMinigameComponent::EscalateTortureMethod()
+{
+    // Cycle through methods in escalating severity.
+    const EInterrogationMethod Order[] = {
+        EInterrogationMethod::Threats,
+        EInterrogationMethod::Beating,
+        EInterrogationMethod::Electrodes,
+        EInterrogationMethod::WaterBoarding,
+        EInterrogationMethod::SleepDeprivation
+    };
+
+    int32 CurrentIdx = 0;
+    for (int32 i = 0; i < 5; ++i)
+    {
+        if (Order[i] == ActiveMethod)
+        {
+            CurrentIdx = i;
+            break;
+        }
+    }
+
+    // Escalate to next method (or stay at max).
+    const int32 NextIdx = FMath::Min(CurrentIdx + 1, 4);
+    ApplyTortureMethod(Order[NextIdx]);
 }

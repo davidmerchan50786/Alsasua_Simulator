@@ -27,12 +27,51 @@ public:
     UPROPERTY(BlueprintAssignable)
     FOnTirePopped OnTirePopped;
 
+    // ── Damage stages ──────────────────────────────────────────────────────
+    /** Sparks from undercarriage at this % health. */
+    UPROPERTY(EditAnywhere, Category="AAA|DamageStages")
+    float SparksHealthPercent = 0.75f;
+
+    /** Smoke VFX at this % health. */
+    UPROPERTY(EditAnywhere, Category="AAA|DamageStages")
+    float SmokeHealthPercent = 0.50f;
+
+    /** Fire VFX at this % health. */
+    UPROPERTY(EditAnywhere, Category="AAA|DamageStages")
+    float FireHealthPercent = 0.25f;
+
+    /** Engine stall (severe speed reduction) at this % health. */
+    UPROPERTY(EditAnywhere, Category="AAA|DamageStages")
+    float StallHealthPercent = 0.10f;
+
+    /** Max speed multiplier when engine is stalling. */
+    UPROPERTY(EditAnywhere, Category="AAA|DamageStages")
+    float StallSpeedMultiplier = 0.15f;
+
+    /** Damage per second from fire after fire threshold. */
+    UPROPERTY(EditAnywhere, Category="AAA|DamageStages")
+    float FireDamagePerSec = 2.f;
+
     UFUNCTION(BlueprintCallable, Category="AAA|Damage")
     void ApplyVehicleDamage(float Amount);
 
     UFUNCTION(BlueprintCallable, Category="AAA|Damage")
     void PopTire();
 
+    UFUNCTION(BlueprintPure, Category="AAA|DamageStages")
+    bool IsOnFire() const { return bOnFire; }
+
+    UFUNCTION(BlueprintPure, Category="AAA|DamageStages")
+    bool IsEngineStalled() const { return bEngineStalled; }
+
 private:
     void UpdateVehiclePerformance();
+    void TickDamageStages(float DeltaTime);
+
+    bool bSparksActive = false;
+    bool bSmokeActive = false;
+    bool bOnFire = false;
+    bool bEngineStalled = false;
+
+    float FireDamageTimer = 0.f;
 };

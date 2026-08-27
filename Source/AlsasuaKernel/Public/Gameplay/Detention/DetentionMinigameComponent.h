@@ -81,6 +81,40 @@ public:
     UPROPERTY(EditAnywhere, Category="AAA|Detention|Beating") float BeatingStunInterval = 4.f;
     UPROPERTY(EditAnywhere, Category="AAA|Detention|Threats") float ThreatsStressPerSec = 3.f;
 
+    // ── Surrender/Escape consequences ──────────────────────────────────────
+    /** % of player cash lost on surrender. */
+    UPROPERTY(EditAnywhere, Category="AAA|Detention|Consequences")
+    float SurrenderCashLossPercent = 0.25f;
+
+    /** Items lost on surrender (random from inventory). */
+    UPROPERTY(EditAnywhere, Category="AAA|Detention|Consequences")
+    int32 SurrenderItemsLost = 2;
+
+    /** Apoyo lost on surrender. */
+    UPROPERTY(EditAnywhere, Category="AAA|Detention|Consequences")
+    float SurrenderApoyoLoss = 15.f;
+
+    /** Paranoia gained on surrender. */
+    UPROPERTY(EditAnywhere, Category="AAA|Detention|Consequences")
+    float SurrenderParanoiaGain = 10.f;
+
+    /** Wanted reset on surrender (sets to this value). */
+    UPROPERTY(EditAnywhere, Category="AAA|Detention|Consequences")
+    float SurrenderWantedReset = 0.f;
+
+    /** Time guard stays near player after escape (seconds). */
+    UPROPERTY(EditAnywhere, Category="AAA|Detention|Consequences")
+    float EscapeGuardFollowTime = 25.f;
+
+    /** Apoyo lost on escape (they know you resisted). */
+    UPROPERTY(EditAnywhere, Category="AAA|Detention|Consequences")
+    float EscapeApoyoLoss = 5.f;
+
+    // ── Method escalation ──────────────────────────────────────────────────
+    /** Time before guard escalates to next torture method (seconds). */
+    UPROPERTY(EditAnywhere, Category="AAA|Detention|Escalation")
+    float MethodEscalationInterval = 12.f;
+
 protected:
     virtual void BeginPlay() override;
     virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
@@ -110,4 +144,9 @@ private:
     void TickThreats(float DeltaTime);
     void ApplyDamageToPlayer(int32 Amount);
     void FinishMinigame(bool bEscaped);
+    void ApplySurrenderConsequences();
+    void ApplyEscapeConsequences();
+    void EscalateTortureMethod();
+
+    float MethodEscalationTimer = 0.f;
 };

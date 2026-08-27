@@ -25,8 +25,25 @@ public:
 	UFUNCTION(BlueprintCallable, Category="AI|Guard")
 	void TryDeescalate();
 
-	UPROPERTY(EditAnywhere, Category="AI|Patrol")
+UPROPERTY(EditAnywhere, Category="AI|Patrol")
 	float PatrolRadius = 2000.f;
+
+	// ── Squad tactics ───────────────────────────────────────────────────────
+	/** Distance to call nearby guards for backup. */
+	UPROPERTY(EditAnywhere, Category="AI|Squad")
+	float BackupCallRadius = 1500.f;
+
+	/** Flanking offset angle from direct approach (degrees). */
+	UPROPERTY(EditAnywhere, Category="AI|Squad")
+	float FlankingAngle = 45.f;
+
+	/** Suppression fire interval when squad is engaging (seconds). */
+	UPROPERTY(EditAnywhere, Category="AI|Squad")
+	float SuppressionFireInterval = 0.4f;
+
+	/** Radius within which guards enter suppression mode. */
+	UPROPERTY(EditAnywhere, Category="AI|Squad")
+	float SuppressionRadius = 800.f;
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="GAS")
@@ -52,4 +69,11 @@ private:
 	bool bHasTarget = false;
 	FVector CurrentTarget;
 	float AttackCooldown = 0.f;
+	bool bIsFlanking = false;
+	float SuppressionTimer = 0.f;
+
+	void CallForBackup(FVector Location);
+	void FlankTarget(FVector TargetLocation);
+	void EnterSuppressionMode();
+	void TickSquadTactics(float DeltaTime);
 };

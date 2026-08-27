@@ -10,10 +10,11 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "Tickable.h"
 #include "ConsecuenciasSubsystem.generated.h"
 
 UCLASS()
-class ALSASUAGAMEPLAY_API UConsecuenciasSubsystem : public UGameInstanceSubsystem
+class ALSASUAGAMEPLAY_API UConsecuenciasSubsystem : public UGameInstanceSubsystem, public FTickableGameObject
 {
 	GENERATED_BODY()
 
@@ -26,6 +27,34 @@ public:
 	// penaliza apoyo popular; guardia -> paga recompensa. Una vez por víctima.
 	void RegistrarDano(AActor* Victima);
 
+	// ── Detention consequences ─────────────────────────────────────────────
+	/** % of cash lost on surrender. */
+	UPROPERTY(EditAnywhere, Category="Detencion") float SurrenderCashLossPercent = 0.25f;
+	/** Items lost on surrender. */
+	UPROPERTY(EditAnywhere, Category="Detencion") int32 SurrenderItemsLost = 2;
+	/** Apoyo lost on surrender. */
+	UPROPERTY(EditAnywhere, Category="Detencion") float SurrenderApoyoLoss = 15.f;
+	/** Paranoia gained on surrender. */
+	UPROPERTY(EditAnywhere, Category="Detencion") float SurrenderParanoiaGain = 10.f;
+	/** Wanted reset on surrender. */
+	UPROPERTY(EditAnywhere, Category="Detencion") float SurrenderWantedReset = 0.f;
+	/** Apoyo lost on escape. */
+	UPROPERTY(EditAnywhere, Category="Detencion") float EscapeApoyoLoss = 5.f;
+
+	/** Apply detention consequences when player escapes or surrenders. */
+	void AplicarConsecuenciasDetencion(AActor* Jugador, bool bEscaped);
+
+	// FTickableGameObject
+	virtual void Tick(float DeltaTime) override;
+	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(UConsecuenciasSubsystem, STATGROUP_Tickables); }
+	virtual bool IsTickable() const override { return !IsTemplate(); }
+
 private:
 	UPROPERTY() TSet<uint32> MuertesContadas;   // una consecuencia por víctima
+	UPROPERTY() bool bBoundToPlayer = false;
+
+	void BindToPlayerDetention(AActor* Player);
+
+	UFUNCTION()
+	void HandleDetentionResult(bool bEscaped);
 };

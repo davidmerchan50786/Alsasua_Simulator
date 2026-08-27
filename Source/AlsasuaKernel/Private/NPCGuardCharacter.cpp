@@ -49,8 +49,13 @@ void ANPCGuardCharacter::Tick(float DeltaTime)
 		AttackCooldown -= DeltaTime;
 
 	if (UGuardDetectionComponent* Det = FindComponentByClass<UGuardDetectionComponent>())
+	{
 		if (Det->CurrentState == EGuardAlertState::Combat)
+		{
 			Attack();
+			TickSquadTactics(DeltaTime);
+		}
+	}
 }
 
 void ANPCGuardCharacter::OnDetectionStateChanged(AActor* Guard, EGuardAlertState NewState, EGuardAlertState OldState)
@@ -110,6 +115,14 @@ void ANPCGuardCharacter::Attack()
 
 	AActor* Player = UGameplayStatics::GetPlayerPawn(this, 0);
 	if (!Player) return;
+
+	// Call backup on first attack.
+	if (!bHasTarget)
+	{
+		bHasTarget = true;
+		CurrentTarget = Player->GetActorLocation();
+		CallForBackup(CurrentTarget);
+	}
 
 	const float Dist = FVector::Dist(GetActorLocation(), Player->GetActorLocation());
 
@@ -178,4 +191,100 @@ void ANPCGuardCharacter::IncreaseAggression(float Amount)
 void ANPCGuardCharacter::TryDeescalate()
 {
 	ReduceAggression(20.f);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  Squad tactics — flanking, backup calls, suppression fire
+// ═══════════════════════════════════════════════════════════════════════════
+
+void ANPCGuardCharacter::TickSquadTactics(float DeltaTime)
+{
+	if (!bHasTarget) return;
+
+	// Suppression fire mode when close to other guards.
+	SuppressionTimer -= DeltaTime;
+	if (SuppressionTimer <= 0.f)
+	{
+		// Check if another guard is nearby (squad present).
+		bool bSquadPresent = false;
+		TArray<AActor*> NearbyGuards;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ANPCGuardCharacter::StaticClass(), NearbyGuards);
+		for (AActor* Other : NearbyGuards)
+		{
+			if (Other == this) continue;
+			if (FVector::Dist(GetActorLocation(), Other->GetActorLocation()) < SuppressionRadius)
+			{
+				bSquadPresent = true;
+				break;
+			}
+		}
+
+		if (bSquadPresent)
+		{
+			EnterSuppressionMode();
+			SuppressionTimer = SuppressionFireInterval;
+		}
+	}
+
+	// Flanking: 50% chance to approach from an angle instead of straight-on.
+	if (!bIsFlanking && FMath::FRand() < 0.005f) // rare random decision
+	{
+		FlankTarget(CurrentTarget);
+	}
+}
+
+void ANPCGuardCharacter::CallForBackup(FVector Location)
+{
+	TArray<AActor*> NearbyGuards;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ANPCGuardCharacter::StaticClass(), NearbyGuards);
+
+	for (AActor* Other : NearbyGuards)
+	{
+		if (Other == this) continue;
+		const float Dist = FVector::Dist(GetActorLocation(), Other->GetActorLocation());
+		if (Dist > BackupCallRadius) continue;
+
+		if (ANPCGuardCharacter* Guard = Cast<ANPCGuardCharacter>(Other))
+		{
+			Guard->IncreaseAggression(30.f);
+			if (UGuardDetectionComponent* Det = Guard->FindComponentByClass<UGuardDetectionComponent>())
+			{
+				Det->ForceAlertState(EGuardAlertState::Combat);
+				Guard->Chase(Location);
+			}
+		}
+	}
+}
+
+void ANPCGuardCharacter::FlankTarget(FVector TargetLocation)
+{
+	bIsFlanking = true;
+
+	// Calculate a position offset from direct approach angle.
+	const FVector ToTarget = TargetLocation - GetActorLocation();
+	const FVector Right = FVector::CrossProduct(ToTarget.GetSafeNormal(), FVector::UpVector);
+	const bool bLeftSide = FMath::FRand() > 0.5f;
+	const FVector FlankOffset = Right * (bLeftSide ? FlankingAngle : -FlankingAngle) * 10.f;
+	const FVector FlankPos = TargetLocation + FlankOffset;
+
+	if (AAIController* AIC = Cast<AAIController>(GetController()))
+		AIC->MoveToLocation(FlankPos);
+}
+
+void ANPCGuardCharacter::EnterSuppressionMode()
+{
+	// Fire at the target with less accuracy but higher volume.
+	AActor* Player = UGameplayStatics::GetPlayerPawn(this, 0);
+	if (!Player) return;
+
+	const float Dist = FVector::Dist(GetActorLocation(), Player->GetActorLocation());
+	if (Dist > 1500.f) return; // only suppress at medium range
+
+	// Deal reduced suppression damage (spread pattern).
+	if (IDamageable* Dmg = Cast<IDamageable>(Player))
+	{
+		const int32 SuppressionDmg = FMath::RandRange(3, 7); // less than focused fire
+		const FVector MuzzleOffset = GetActorForwardVector() * 50.f;
+		Dmg->RecibirDano(SuppressionDmg, GetActorLocation() + MuzzleOffset, ETipoDano::Bala);
+	}
 }
