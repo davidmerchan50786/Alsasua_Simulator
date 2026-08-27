@@ -24,9 +24,19 @@ void UPoblacionSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 void UPoblacionSubsystem::HandleLoudNoise(FVector Location)
 {
-	const float Dist = GetWorld() ? FVector::Dist(GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation(), Location) : 0.f;
+	if (!GetWorld()) return;
+	APawn* Jug = GetWorld()->GetFirstPlayerController() ? GetWorld()->GetFirstPlayerController()->GetPawn() : nullptr;
+	const float Dist = Jug ? FVector::Dist(Jug->GetActorLocation(), Location) : 0.f;
 	if (Dist < 2000.f)
 		HuirDe(Location);
+
+	// Witness: one nearby civilian calls the police (30% chance per loud noise).
+	if (Peatones.Num() > 0 && FMath::FRand() < 0.3f)
+	{
+		if (UGameInstance* GI = GetGameInstance())
+			if (UWantedSubsystem* W = GI->GetSubsystem<UWantedSubsystem>())
+				W->AumentarBusqueda(1);
+	}
 }
 
 void UPoblacionSubsystem::OnWantedChange(int32 Nivel)
