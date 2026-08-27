@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "Tickable.h"
+#include "Services/ITrafficService.h"
 #include "AlsasuaDynamicTrafficSystem.generated.h"
 
 class UAlsasuaRedViaria;
@@ -41,7 +42,7 @@ struct FVehiclePath
 };
 
 UCLASS()
-class GF_TRAFICO_API UAlsasuaDynamicTrafficSystem : public UGameInstanceSubsystem, public FTickableGameObject
+class GF_TRAFICO_API UAlsasuaDynamicTrafficSystem : public UGameInstanceSubsystem, public FTickableGameObject, public ITrafficService
 {
     GENERATED_BODY()
 public:
@@ -63,7 +64,14 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Traffic")
     int32 MaxRouteDistance = 50;
 
-    const TArray<FVehiclePath>& GetVehiculos() const { return Vehiculos; }
+	const TArray<FVehiclePath>& GetVehiculos() const { return Vehiculos; }
+
+	// ITrafficService
+	virtual float GetDensity() const override;
+	virtual void SetDensity(float NewDensity) override;
+	virtual int32 GetVehicleCount() const override;
+	virtual bool IsGreenLight(const FVector& Location) const override;
+	virtual float GetTrafficLightTimeRemaining(const FVector& Location) const override;
 
     /** La red viaria, construyéndola si hace falta. Idempotente. */
     UFUNCTION(BlueprintCallable, Category = "Alsasua|Traffic")
