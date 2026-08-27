@@ -13,7 +13,9 @@ public class GF_Carreteras : ModuleRules
             "Core",
             "CoreUObject",
             "Engine",
-            "AlsasuaCore"
+            "AlsasuaCore",
+            "AlsasuaKernel",
+            "AlsasuaContracts"
         });
 
         PrivateDependencyModuleNames.AddRange(new string[]

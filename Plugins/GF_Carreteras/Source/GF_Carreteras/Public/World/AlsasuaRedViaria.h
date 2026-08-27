@@ -5,6 +5,7 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
+#include "Services/IRoadQueryService.h"
 #include "AlsasuaRedViaria.generated.h"
 
 /** Un tramo dirigido entre dos nodos. */
@@ -41,7 +42,7 @@ struct FTramoViario
  * está filtrando distinto.
  */
 UCLASS()
-class GF_CARRETERAS_API UAlsasuaRedViaria : public UWorldSubsystem
+class GF_CARRETERAS_API UAlsasuaRedViaria : public UWorldSubsystem, public IRoadQueryService
 {
 	GENERATED_BODY()
 
@@ -114,6 +115,13 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Alsasua|Red")
 	TArray<FVector> PuntosDeRuta(const TArray<int32>& RutaTramos) const;
+
+	// IRoadQueryService
+	virtual bool IsRoadAt(const FVector& Location, float Radius = 200.f) const override;
+	virtual FVector GetNearestRoadPoint(const FVector& Location) const override;
+	virtual bool GetRoadDirection(const FVector& Location, FVector& OutDirection) const override;
+	virtual float GetSpeedLimitAt(const FVector& Location) const override;
+	virtual bool IsOneWayAt(const FVector& Location) const override;
 
 private:
 	/** Posiciones de nodo en coordenadas de mundo (cm). */

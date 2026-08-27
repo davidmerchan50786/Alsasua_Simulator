@@ -15,7 +15,9 @@ public class GF_Vegetacion : ModuleRules
 			"Engine",
 			"Landscape",
 			"ProceduralMeshComponent",
-			"AlsasuaCore"
+			"AlsasuaCore",
+			"AlsasuaKernel",
+			"AlsasuaContracts"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]

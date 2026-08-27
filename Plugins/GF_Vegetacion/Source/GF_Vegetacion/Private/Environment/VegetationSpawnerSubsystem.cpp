@@ -29,11 +29,16 @@
 #include "Engine/Engine.h"
 #include "Engine/Console.h"
 #include "TimerManager.h"
+#include "AlsasuaServiceRegistry.h"
 
 void UVegetationSpawnerSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 	PopulateVegetationTypesFromContent();
+
+	if (UWorld* W = GetWorld())
+		if (UAlsasuaServiceRegistry* Reg = UAlsasuaServiceRegistry::Get(W))
+			Reg->Publicar(FName("Vegetation"), this);
 }
 
 void UVegetationSpawnerSubsystem::OnWorldBeginPlay(UWorld& InWorld)
@@ -1119,4 +1124,48 @@ float UVegetationSpawnerSubsystem::GetOrientationMask(const FVector& WorldPos, b
 	}
 
 	return bNorthFacing || bSouthFacing ? 0.0f : 1.0f;
+}
+
+// ── IVegetationService ──────────────────────────────────────────────────────
+
+void UVegetationSpawnerSubsystem::SpawnAll()
+{
+	SpawnAllVegetation();
+}
+
+void UVegetationSpawnerSubsystem::ClearAll()
+{
+	ClearAllVegetation();
+}
+
+int32 UVegetationSpawnerSubsystem::GetInstanceCount() const
+{
+	int32 Total = 0;
+	for (const TObjectPtr<UVegetationType>& VT : VegetationTypes)
+	{
+		if (VT) Total += VT->InstanceCount;
+	}
+	return Total;
+}
+
+float UVegetationSpawnerSubsystem::GetDensityAt(const FVector& Location) const
+{
+	const float RadiusSq = FMath::Square(500.f);
+	int32 NearbyCount = 0;
+	int32 ActiveActors = 0;
+	for (const TWeakObjectPtr<AActor>& WeakAct : SpawnedVegetationActors)
+	{
+		AActor* Act = WeakAct.Get();
+		if (!Act) continue;
+		++ActiveActors;
+		TArray<UActorComponent*> Comps;
+		Act->GetComponents(UHierarchicalInstancedStaticMeshComponent::StaticClass(), Comps);
+		for (UActorComponent* C : Comps)
+		{
+			auto* HISM = Cast<UHierarchicalInstancedStaticMeshComponent>(C);
+			if (!HISM) continue;
+			NearbyCount += HISM->GetInstanceCount();
+		}
+	}
+	return static_cast<float>(NearbyCount) / FMath::Max(1, ActiveActors);
 }

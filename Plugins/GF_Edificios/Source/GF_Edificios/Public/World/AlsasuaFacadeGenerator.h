@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "Services/IBuildingQueryService.h"
 #include "AlsasuaFacadeGenerator.generated.h"
 
 USTRUCT(BlueprintType)
@@ -45,6 +46,7 @@ struct FBuildingFacadeEntry
     GENERATED_BODY()
     int32 BuildingId = 0;
     FString Barrio;
+    FVector Centro = FVector::ZeroVector;  // centroid from buildings_final.json vertices
     FString MaterialFachada;
     TArray<float> ColorFachada;
     FString Estilo;
@@ -62,7 +64,7 @@ struct FBuildingFacadeEntry
 
 
 UCLASS()
-class GF_EDIFICIOS_API UAlsasuaFacadeGenerator : public UGameInstanceSubsystem
+class GF_EDIFICIOS_API UAlsasuaFacadeGenerator : public UGameInstanceSubsystem, public IBuildingQueryService
 {
     GENERATED_BODY()
 public:
@@ -90,6 +92,12 @@ public:
      * inventadas a partir del tamaño.
      */
     const FBuildingFacadeEntry* De(int32 BuildingId) const;
+
+    // IBuildingQueryService
+    virtual int32 GetBuildingCount() const override;
+    virtual FName GetBarrioAt(const FVector& Location) const override;
+    virtual bool GetBuildingAt(const FVector& Location, float Radius, FVector& OutCenter, float& OutHeight) const override;
+    virtual bool IsInteriorAt(const FVector& Location) const override;
 
 private:
     TArray<FBuildingFacadeEntry> Fachadas;
