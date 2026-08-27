@@ -159,6 +159,20 @@ void UManifestacionSubsystem::Tick(float DeltaTime)
 	if (Estado != EEstadoManifestacion::Dispersando && PoliciasCerca() >= PoliciasParaCarga)
 	{ Disolver(true); return; }
 
+	// Tension builds from crowd size + police proximity, drives riot probability
+	if (Estado != EEstadoManifestacion::Dispersando && Estado != EEstadoManifestacion::Inactiva)
+	{
+		const float CrowdFactor = static_cast<float>(Multitud.Num()) / FMath::Max(1.f, static_cast<float>(TamMax));
+		const float PoliceNear = PoliciasCerca();
+		const float PoliceFactor = FMath::Clamp(PoliceNear / 5.f, 0.f, 1.f);
+		const float TensionTarget = FMath::Clamp(CrowdFactor * 0.4f + PoliceFactor * 0.6f, 0.f, 1.f);
+		Tension = FMath::FInterpConstantTo(Tension, TensionTarget, DeltaTime, 0.1f);
+	}
+	else
+	{
+		Tension = FMath::FInterpConstantTo(Tension, 0.f, DeltaTime, 0.3f);
+	}
+
 	switch (Estado)
 	{
 	case EEstadoManifestacion::Concentracion:

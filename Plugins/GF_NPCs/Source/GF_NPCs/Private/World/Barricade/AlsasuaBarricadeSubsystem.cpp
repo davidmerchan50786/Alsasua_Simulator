@@ -1,6 +1,7 @@
 #include "World/Barricade/AlsasuaBarricadeSubsystem.h"
 #include "World/Barricade/AlsasuaBarricadeActor.h"
 #include "World/AlsasuaRedViaria.h"
+#include "AlsasuaServiceRegistry.h"
 #include "Engine/World.h"
 #include "Engine/GameInstance.h"
 #include "Kismet/GameplayStatics.h"
@@ -14,6 +15,57 @@ void UAlsasuaBarricadeSubsystem::Tick(float DeltaTime)
 {
     LimpiarMuertas();
     SpawnCooldown = FMath::Max(0.f, SpawnCooldown - DeltaTime);
+
+    // Auto-place barricades when Blockade tactic is active
+    static float BlockadeCheckTimer = 0.f;
+    BlockadeCheckTimer += DeltaTime;
+    if (BlockadeCheckTimer < 3.f) return;  // Check every 3s
+    BlockadeCheckTimer = 0.f;
+
+    UWorld* W = GetWorld();
+    if (!W) return;
+    UGameInstance* GI = W->GetGameInstance();
+    if (!GI) return;
+
+    UAlsasuaServiceRegistry* Reg = GI->GetSubsystem<UAlsasuaServiceRegistry>();
+    if (!Reg) return;
+
+    // Read current tactic from TacticManager via reflection
+    UObject* TacticObj = Reg->Pedir(FName("Tactics"));
+    if (!TacticObj) return;
+
+    // Get CurrentTactic enum value
+    FProperty* TacticProp = TacticObj->GetClass()->FindPropertyByName(TEXT("CurrentTactic"));
+    if (!TacticProp) return;
+
+    uint8 TacticValue = 0;
+    TacticProp->CopyCompleteValue(&TacticValue, TacticProp->ContainerPtrToValuePtr<void>(TacticObj));
+
+    // EAlsasuaTactic::Blockade = 1 (check enum order)
+    if (TacticValue != 1) return;
+
+    // Blockade active — place barricades along nearby road segments
+    UAlsasuaRedViaria* Red = W->GetSubsystem<UAlsasuaRedViaria>();
+    if (!Red || !Red->EstaLista()) return;
+
+    // Find player position and block roads within 200m
+    APawn* Player = UGameplayStatics::GetPlayerPawn(W, 0);
+    if (!Player) return;
+    const FVector PlayerPos = Player->GetActorLocation();
+
+    for (int32 i = 0; i < Red->NumTramos(); ++i)
+    {
+        if (Barricadas.Num() >= MaxBarricadas) break;
+        const FTramoViario& T = Red->Tramo(i);
+        const FVector Mid = FMath::Lerp(
+            Red->PosicionNodo(T.NodoA), Red->PosicionNodo(T.NodoB), 0.5f);
+
+        if (FVector::Dist(Mid, PlayerPos) > 15000.f) continue;  // 150m
+        if (EstaBloqueado(Mid, 300.f)) continue;  // Already blocked
+
+        const EBarricadeType Tipo = static_cast<EBarricadeType>(FMath::RandRange(0, 3));
+        ColocarBarricada(Mid, Tipo, i);
+    }
 }
 
 AAlsasuaBarricadeActor* UAlsasuaBarricadeSubsystem::ColocarBarricada(
