@@ -6,6 +6,7 @@
 #include "ProgresionSubsystem.h"
 #include "WantedSubsystem.h"
 #include "DiaNocheSubsystem.h"
+#include "MisionesSubsystem.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogAlsasuaCrimen, Log, All);
 
@@ -49,6 +50,7 @@ void UEconomiaCriminalSubsystem::Extorsionar(ANegocioActor* N)
 		W->AumentarBusqueda(FMath::Max(0, 1 - (Prog ? Prog->ReduccionCalor() : 0)));
 	UE_LOG(LogAlsasuaCrimen, Log, TEXT("Extorsion: %s (+%d, paga %d/min)"), *N->Nombre, Inicial, N->IngresoMin());
 	OnCriminalActivity.Broadcast(NAME_None, Inicial);
+	if (UMisionesSubsystem* Mis = Sub<UMisionesSubsystem>(this)) Mis->AvanzarObjetivo(TEXT("extorsionar"));
 }
 
 void UEconomiaCriminalSubsystem::Trapichear()
@@ -80,6 +82,7 @@ void UEconomiaCriminalSubsystem::Trapichear()
 	const int32 Ganancia = FMath::RoundToInt(FMath::RandRange(150, 400) * (Dn ? Dn->FactorTrapicheo() : 1.f));
 	Eco->GanarDinero(Ganancia);
 	OnCriminalActivity.Broadcast(FName("Trapicheo"), Ganancia);
+	if (UMisionesSubsystem* Mis = Sub<UMisionesSubsystem>(this)) Mis->AvanzarObjetivo(TEXT("trapichear"));
 }
 
 void UEconomiaCriminalSubsystem::Tick(float DeltaTime)

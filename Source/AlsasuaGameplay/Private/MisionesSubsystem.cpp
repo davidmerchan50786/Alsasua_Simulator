@@ -252,6 +252,76 @@ void UMisionesSubsystem::ConstruirMisionesDemo()
 		M01->Objetivos.Add(o);
 	}
 	RegistrarMision(M01);
+
+	// --- M02 "Sabilitu" — extortion tutorial ---
+	UConversacionDialogo* ConvM02 = NewObject<UConversacionDialogo>(this);
+	ConvM02->Inicio = TEXT("n0");
+	{
+		FNodoDialogo n0; n0.Id = TEXT("n0"); n0.Hablante = TEXT("Kepa");
+		n0.Texto = TEXT("El pueblo necesita fondos. Los bares del centro estan pagando al Estado. Vamos a cambiar eso.");
+		n0.Auto = TEXT("n1");
+		FNodoDialogo n1; n1.Id = TEXT("n1"); n1.Hablante = TEXT("Kepa");
+		n1.Texto = TEXT("Acércate a un negocio y pide la cuota. Con cuidado, que no avise a la policía.");
+		FOpcionDialogo o; o.Texto = TEXT("Entendido"); o.Destino = NAME_None; o.DeltaApoyo = 1.f;
+		n1.Opciones.Add(o);
+		ConvM02->Nodos.Add(n0); ConvM02->Nodos.Add(n1);
+	}
+
+	UMisionDef* M02 = NewObject<UMisionDef>(this);
+	M02->Id = TEXT("M02");
+	M02->Titulo = TEXT("Sabilitu");
+	M02->Descripcion = TEXT("Extorsiona negocios locales para financiar el movimiento.");
+	M02->DialogoInicio = ConvM02;
+	M02->MisionesRequeridas.Add(TEXT("M01"));
+	M02->RecompensaApoyo = 5.f;
+	M02->RecompensaDinero = 200;
+	M02->RecompensaNivelBusqueda = 1.f;
+	M02->Siguiente = TEXT("M03");
+	{
+		FObjetivoMision o; o.Id = TEXT("extorsionar"); o.Descripcion = TEXT("Extorsiona 2 negocios"); o.Meta = 2;
+		M02->Objetivos.Add(o);
+	}
+	RegistrarMision(M02);
+
+	// --- M03 "Trapicheo nocturno" — night drug trade ---
+	UMisionDef* M03 = NewObject<UMisionDef>(this);
+	M03->Id = TEXT("M03");
+	M03->Titulo = TEXT("Trapicheo nocturno");
+	M03->Descripcion = TEXT("El mercado negro mueve dinero por la noche. Sal a trapichear y consigue fondos.");
+	M03->MisionesRequeridas.Add(TEXT("M02"));
+	M03->RecompensaApoyo = 3.f;
+	M03->RecompensaDinero = 300;
+	M03->RecompensaNivelBusqueda = 2.f;
+	M03->Siguiente = TEXT("M04");
+	{
+		FObjetivoMision o; o.Id = TEXT("trapichear"); o.Descripcion = TEXT("Realiza 3 sesiones de trapicheo"); o.Meta = 3;
+		M03->Objetivos.Add(o);
+	}
+	RegistrarMision(M03);
+
+	// --- M04 "La gran manifa" — big manifestation with march ---
+	UMisionDef* M04 = NewObject<UMisionDef>(this);
+	M04->Id = TEXT("M04");
+	M04->Titulo = TEXT("La gran manifa");
+	M04->Descripcion = TEXT("Es hora de la gran movilización. Lidera la marcha hasta el Ayuntamiento.");
+	M04->bConvocaManifestacion = true;
+	M04->MisionesRequeridas.Add(TEXT("M03"));
+	M04->RecompensaApoyo = 15.f;
+	M04->RecompensaDinero = 100;
+	M04->RecompensaNivelBusqueda = 1.f;
+	M04->Siguiente = NAME_None;
+	{
+		const FVector Plaza = UAlsasuaGeoData::HerrikoPlaza();
+		M04->RutaManifestacion = {
+			Plaza,
+			Plaza + FVector(10000.f, -5000.f, 0.f),
+			Plaza + FVector(18000.f, -3000.f, 0.f),
+			Plaza + FVector(25000.f, 0.f, 0.f)
+		};
+		FObjetivoMision o; o.Id = TEXT("manifestacion"); o.Descripcion = TEXT("Acompaña la marcha hasta el Ayuntamiento"); o.Meta = 1;
+		M04->Objetivos.Add(o);
+	}
+	RegistrarMision(M04);
 }
 
 TArray<FString> UMisionesSubsystem::IdsCompletadas() const
