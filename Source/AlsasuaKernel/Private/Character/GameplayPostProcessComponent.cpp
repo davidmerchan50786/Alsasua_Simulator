@@ -267,51 +267,83 @@ void UGameplayPostProcessComponent::SetParanoiaLevel(float Paranoia01)
 
 void UGameplayPostProcessComponent::UpdateParanoiaVision(float DeltaTime)
 {
-    if (!PostProcessComponent || ParanoiaLevel01 <= 0.01f)
+    if (!PostProcessComponent)
     {
-        // Fade out if paranoia dropped.
         ParanoiaDesaturation = FMath::FInterpTo(ParanoiaDesaturation, 0.f, DeltaTime, 3.f);
         ParanoiaChromatic = FMath::FInterpTo(ParanoiaChromatic, 0.f, DeltaTime, 3.f);
         ParanoiaVignetteAmount = FMath::FInterpTo(ParanoiaVignetteAmount, 0.f, DeltaTime, 3.f);
-        if (ParanoiaDesaturation < 0.01f) return;
+        return;
     }
 
-    const float P = ParanoiaLevel01;
+    if (ParanoiaLevel01 <= 0.01f && ParanoiaDesaturation < 0.01f) return;
 
-    // Desaturation: world goes grey. Reduces color gamma.
-    const float TargetDesat = FMath::Lerp(0.f, 0.65f, P);
+    const float P = FMath::Clamp(ParanoiaLevel01, 0.f, 1.f);
+    UWorld* W = GetWorld();
+    const float Time = W ? W->GetTimeSeconds() : 0.f;
+
+    // ── Desaturation: world goes grey ──────────────────────────────────────
+    const float TargetDesat = FMath::Lerp(0.f, 0.7f, P);
     ParanoiaDesaturation = FMath::FInterpTo(ParanoiaDesaturation, TargetDesat, DeltaTime, 2.f);
+    const float Gamma = FMath::Lerp(1.f, 0.35f, ParanoiaDesaturation);
+    PostProcessComponent->Settings.ColorGamma = FVector4(Gamma, Gamma, Gamma, 1.f);
 
-    // Apply desaturation via color gamma (lower = more grey).
-    const float Gamma = FMath::Lerp(1.f, 0.4f, ParanoiaDesaturation);
-    PostProcessComponent->Settings.ColorGamma = FLinearColor(Gamma, Gamma, Gamma, 1.f);
-
-    // Chromatic aberration: things look "wrong" at edges.
-    const float TargetCA = FMath::Lerp(0.f, 6.f, P);
-    ParanoiaChromatic = FMath::FInterpTo(ParanoiaChromatic, TargetCA, DeltaTime, 3.f);
+    // ── Chromatic aberration: things look "wrong" at edges ─────────────────
+    const float BaseCA = FMath::Lerp(0.f, 7.f, P);
+    // Subtle pulsing CA for living/unnerving feel.
+    const float CAPulse = FMath::Sin(Time * 2.f) * P * 1.5f;
+    ParanoiaChromatic = FMath::FInterpTo(ParanoiaChromatic, BaseCA + CAPulse, DeltaTime, 3.f);
     PostProcessComponent->Settings.SceneFringeIntensity = ParanoiaChromatic;
 
-    // Vignette: dark edges close in.
-    const float TargetVig = FMath::Lerp(0.f, 0.55f, P);
+    // ── Vignette: dark edges close in ──────────────────────────────────────
+    const float TargetVig = FMath::Lerp(0.f, 0.6f, P);
     ParanoiaVignetteAmount = FMath::FInterpTo(ParanoiaVignetteAmount, TargetVig, DeltaTime, 2.f);
-    PostProcessComponent->Settings.VignetteIntensity = ParanoiaVignetteAmount;
+    // Add breathing pulse to vignette.
+    const float VignettePulse = FMath::Sin(Time * 1.5f) * P * 0.08f;
+    PostProcessComponent->Settings.VignetteIntensity = ParanoiaVignetteAmount + VignettePulse;
 
-    // Screen tear flicker at extreme paranoia (>85%).
+    // ── Depth of Field: background blurs, world feels suffocating ──────────
+    PostProcessComponent->Settings.DepthOfFieldFocalDistance = FMath::FInterpTo(
+        PostProcessComponent->Settings.DepthOfFieldFocalDistance,
+        FMath::Lerp(1000.f, 200.f, P), DeltaTime, 1.5f);
+    PostProcessComponent->Settings.DepthOfFieldDepthBlurAmount = FMath::FInterpTo(
+        PostProcessComponent->Settings.DepthOfFieldDepthBlurAmount,
+        P * 0.4f, DeltaTime, 2.f);
+
+    // ── Exposure: world gets slightly darker ───────────────────────────────
+    PostProcessComponent->Settings.AutoExposureBias = FMath::FInterpTo(
+        PostProcessComponent->Settings.AutoExposureBias,
+        FMath::Lerp(0.f, -0.8f, P), DeltaTime, 2.f);
+
+    // ── Motion blur: world feels unstable ──────────────────────────────────
+    PostProcessComponent->Settings.MotionBlurAmount = FMath::FInterpTo(
+        PostProcessComponent->Settings.MotionBlurAmount,
+        P * 0.5f, DeltaTime, 2.f);
+
+    // ── Screen tear / flicker at extreme paranoia (>85%) ──────────────────
     if (P >= 0.85f)
     {
         ParanoiaTearTimer -= DeltaTime;
         if (ParanoiaTearTimer <= 0.f)
         {
-            // Random flicker: briefly spike chromatic aberration.
-            PostProcessComponent->Settings.SceneFringeIntensity = ParanoiaChromatic + FMath::FRandRange(0.f, 10.f);
-            ParanoiaTearTimer = FMath::FRandRange(0.1f, 0.5f);
+            // Random heavy flicker: spike everything.
+            PostProcessComponent->Settings.SceneFringeIntensity = ParanoiaChromatic + FMath::FRandRange(5.f, 15.f);
+            PostProcessComponent->Settings.AutoExposureBias = FMath::FRandRange(-2.f, 1.f);
+            PostProcessComponent->Settings.ColorGamma = FVector4(
+                FMath::FRandRange(0.2f, 0.5f), FMath::FRandRange(0.2f, 0.5f),
+                FMath::FRandRange(0.2f, 0.5f), 1.f);
+            ParanoiaTearTimer = FMath::FRandRange(0.05f, 0.3f);
         }
     }
 
-    // Motion blur increase: world feels unstable.
-    PostProcessComponent->Settings.MotionBlurAmount = FMath::FInterpTo(
-        PostProcessComponent->Settings.MotionBlurAmount,
-        P * 0.4f, DeltaTime, 2.f);
+    // ── Color tint: slight cold/blue shift at high paranoia ────────────────
+    if (P > 0.3f)
+    {
+        const float ColdShift = FMath::Lerp(0.f, 0.15f, (P - 0.3f) / 0.7f);
+        FVector4 CurrentGamma = PostProcessComponent->Settings.ColorGamma;
+        CurrentGamma.Z = FMath::Min(CurrentGamma.Z + ColdShift, 1.f);
+        CurrentGamma.X = FMath::Max(CurrentGamma.X - ColdShift * 0.5f, 0.2f);
+        PostProcessComponent->Settings.ColorGamma = CurrentGamma;
+    }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
