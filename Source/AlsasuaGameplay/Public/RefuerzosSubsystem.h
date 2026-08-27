@@ -19,6 +19,12 @@ public:
 	UPROPERTY(EditAnywhere, Category="Refuerzos") float Cooldown = 30.f;   // s entre oleadas
 	UPROPERTY(EditAnywhere, Category="Refuerzos") float RadioSpawn = 2500.f;
 
+	/** Spawn police vans at wanted level >= this threshold */
+	UPROPERTY(EditAnywhere, Category="Refuerzos") int32 NivelMinimoVan = 3;
+
+	/** Extra cops spawned per 0.1 tension above 0.5 */
+	UPROPERTY(EditAnywhere, Category="Refuerzos") float EscalacionTension = 2.f;
+
 private:
 	float UltimaOleada = -1000.f;
 
@@ -26,4 +32,5 @@ private:
 	void OnWanted(int32 Nivel);
 
 	void Despachar(int32 Cantidad);
+	void SpawnPoliceVan();
 };
