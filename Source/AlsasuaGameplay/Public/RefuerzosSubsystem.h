@@ -23,6 +23,14 @@ public:
 	 *  de GF_Vehiculos en compile-time. */
 	UPROPERTY(EditAnywhere, Category="Refuerzos") FSoftClassPath ClaseVehiculoPolicia;
 
+	/** Roadblock (spike strip) class — deployed at wanted 3+. SoftClassPath. */
+	UPROPERTY(EditAnywhere, Category="Refuerzos|Roadblock") FSoftClassPath ClaseSpikeStrip;
+	/** Number of spike strips per roadblock deployment. */
+	UPROPERTY(EditAnywhere, Category="Refuerzos|Roadblock") int32 SpikeStripsPerBlock = 3;
+
+	/** Helicopter class — deployed at wanted 4+. SoftClassPath. */
+	UPROPERTY(EditAnywhere, Category="Refuerzos|Helicopter") FSoftClassPath ClaseHelicoptero;
+
 	/** Set by external tension systems before wanted fires. Reset after each wave. */
 	UPROPERTY(BlueprintReadWrite, Category="Refuerzos|Zones") float SpawnCountMultiplier = 1.f;
 	UPROPERTY(BlueprintReadWrite, Category="Refuerzos|Zones") float SpawnRadiusMultiplier = 1.f;
@@ -38,4 +46,6 @@ private:
 
 	void Despachar(int32 Cantidad);
 	void SpawnVehiculoPolicia(FVector Centro, FRotator Rotacion);
+	void DesplegarReten(FVector Centro);
+	void DesplegarHelicoptero(FVector Centro);
 };

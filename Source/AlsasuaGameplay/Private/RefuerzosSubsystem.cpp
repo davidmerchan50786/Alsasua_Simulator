@@ -62,11 +62,80 @@ void URefuerzosSubsystem::Despachar(int32 Cantidad)
 		const float AngV = FMath::FRand() * 2.f * PI;
 		const FVector OffV(FMath::Cos(AngV) * (FinalRadius + 500.f), FMath::Sin(AngV) * (FinalRadius + 500.f), 0.f);
 		SpawnVehiculoPolicia(Centro + OffV, (Centro - (Centro + OffV)).Rotation());
+
+		// Roadblock at wanted 3+ — deploy spike strips ahead of the player.
+		DesplegarReten(Centro);
+	}
+
+	// Helicopter surveillance at wanted 4+.
+	if (Cantidad >= 4)
+	{
+		DesplegarHelicoptero(Centro);
 	}
 
 	// Reset after use.
 	SpawnCountMultiplier = 1.f;
 	SpawnRadiusMultiplier = 1.f;
+}
+
+void URefuerzosSubsystem::DesplegarReten(FVector Centro)
+{
+	if (ClaseSpikeStrip.IsNull()) return;
+	UWorld* W = GetWorld();
+	if (!W) return;
+
+	APawn* Jugador = UGameplayStatics::GetPlayerPawn(W, 0);
+	if (!Jugador) return;
+
+	// Deploy spike strips in a line ahead of the player's facing direction.
+	const FVector PlayerFwd = Jugador->GetActorForwardVector();
+	const float BlockDist = 2500.f;
+	const FVector BlockCenter = Jugador->GetActorLocation() + PlayerFwd * BlockDist;
+
+	FActorSpawnParameters P;
+	P.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+	// Line of strips perpendicular to travel direction.
+	for (int32 i = 0; i < SpikeStripsPerBlock; ++i)
+	{
+		const float Offset = (i - (SpikeStripsPerBlock - 1) * 0.5f) * 300.f;
+		const FVector Side = FVector(-PlayerFwd.Y, PlayerFwd.X, 0.f).GetSafeNormal();
+		const FVector Pos = BlockCenter + Side * Offset + FVector(0, 0, 20.f);
+		W->SpawnActor<AActor>(ClaseSpikeStrip.TryLoadClass<AActor>(), Pos, PlayerFwd.Rotation(), P);
+	}
+}
+
+void URefuerzosSubsystem::DesplegarHelicoptero(FVector Centro)
+{
+	if (ClaseHelicoptero.IsNull()) return;
+	UWorld* W = GetWorld();
+	if (!W) return;
+
+	UClass* Clase = ClaseHelicoptero.TryLoadClass<AActor>();
+	if (!Clase) return;
+
+	// Spawn helicopter above and behind the player, facing inward.
+	const FVector Dir = FMath::RandBool() ? FVector::ForwardVector : -FVector::ForwardVector;
+	const FVector Pos = Centro + Dir * 4000.f + FVector(0, 0, 5000.f);
+	FActorSpawnParameters P;
+	P.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+	if (AActor* Helo = W->SpawnActor<AActor>(Clase, Pos, (Centro - Pos).Rotation(), P))
+	{
+		// Set the helicopter's target to the player so it follows/searchlights.
+		AActor* Target = UGameplayStatics::GetPlayerPawn(W, 0);
+		// Generic target assignment via property — set by matching a common property name.
+		if (Target)
+		{
+			if (UClass* HeloClass = Helo->GetClass())
+			{
+				if (FObjectProperty* TargetProp = FindFProperty<FObjectProperty>(HeloClass, TEXT("Target")))
+				{
+					TargetProp->SetPropertyValue_InContainer(Helo, Target);
+				}
+			}
+		}
+	}
 }
 
 void URefuerzosSubsystem::SpawnVehiculoPolicia(FVector Centro, FRotator Rotacion)

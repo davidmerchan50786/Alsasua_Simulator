@@ -1,6 +1,7 @@
 // PoliciaController.cpp
 #include "PoliciaController.h"
 #include "AlsasuaTypes.h"
+#include "WantedSubsystem.h"
 #include "DiaNocheSubsystem.h"
 #include "DisfrazSubsystem.h"
 #include "ManifestacionSubsystem.h"
@@ -64,6 +65,11 @@ void AAlsasuaPoliciaController::Tick(float DeltaTime)
 
 	if (bVe && Jugador)
 	{
+		// Report sighting to wanted system (updates search zone to current pos).
+		if (UGameInstance* GI = GetWorld() ? GetWorld()->GetGameInstance() : nullptr)
+			if (UWantedSubsystem* Wn = GI->GetSubsystem<UWantedSubsystem>())
+				Wn->ReportSighting(Jugador->GetActorLocation());
+
 		UltimaPosVista = Jugador->GetActorLocation();
 		const float Dist = FVector::Dist(Yo->GetActorLocation(), Jugador->GetActorLocation());
 		if (Dist > RadioAtaque)
