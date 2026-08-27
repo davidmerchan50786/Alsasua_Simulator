@@ -1,6 +1,7 @@
 // DisfrazSubsystem.cpp
 #include "DisfrazSubsystem.h"
 #include "Character/Stealth/GuardDetectionComponent.h"
+#include "DiaNocheSubsystem.h"
 #include "EngineUtils.h"
 #include "Engine/World.h"
 
@@ -22,7 +23,14 @@ void UDisfrazSubsystem::Delatar()
 
 void UDisfrazSubsystem::UpdateGuardDetection()
 {
-	const float Mult = FactorReconocimiento();
+	float Mult = FactorReconocimiento();
+	// Night further reduces detection (stacks with disguise).
+	if (UWorld* W = GetWorld())
+	{
+		if (UGameInstance* GI = W->GetGameInstance())
+			if (UDiaNocheSubsystem* DN = GI->GetSubsystem<UDiaNocheSubsystem>())
+				Mult *= DN->DeteccionSigilo();
+	}
 	if (UWorld* W = GetWorld())
 	{
 		for (TActorIterator<AActor> It(W); It; ++It)
@@ -36,4 +44,12 @@ void UDisfrazSubsystem::UpdateGuardDetection()
 void UDisfrazSubsystem::Tick(float DeltaTime)
 {
 	if (Cooldown > 0.f) Cooldown -= DeltaTime;
+	// Refresh guard detection every tick to track day/night cycle changes.
+	static float RefreshTimer = 0.f;
+	RefreshTimer += DeltaTime;
+	if (RefreshTimer >= 2.f)
+	{
+		RefreshTimer = 0.f;
+		UpdateGuardDetection();
+	}
 }
