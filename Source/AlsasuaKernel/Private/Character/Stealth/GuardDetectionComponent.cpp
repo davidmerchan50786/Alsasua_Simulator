@@ -60,12 +60,12 @@ void UGuardDetectionComponent::TickVisionCheck(float DeltaTime)
         // Escalar estado según distancia.
         const float Distance = FVector::Dist(GetOwner()->GetActorLocation(), LastSeenLocation);
 
-        if (Distance < 500.f)
+        if (Distance < 900.f)
         {
             // Muy cerca → combate directo.
             TransitionToState(EGuardAlertState::Combat);
         }
-        else if (Distance < 1200.f)
+        else if (Distance < 1800.f)
         {
             // Cerca → alert.
             TransitionToState(EGuardAlertState::Alert);

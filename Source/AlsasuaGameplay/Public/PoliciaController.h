@@ -16,13 +16,13 @@ public:
 	AAlsasuaPoliciaController();
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(EditAnywhere, Category="IA") float RadioVision = 2200.f;   // cm (~22 m)
+	UPROPERTY(EditAnywhere, Category="IA") float RadioVision = 4500.f;   // cm (~45 m)
 	UPROPERTY(EditAnywhere, Category="IA") float AnguloVision = 90.f;
 	UPROPERTY(EditAnywhere, Category="IA") float RadioAtaque = 1500.f;
-	UPROPERTY(EditAnywhere, Category="IA") float Cadencia = 1.2f;
-	UPROPERTY(EditAnywhere, Category="IA") int32 Dano = 8;
+	UPROPERTY(EditAnywhere, Category="IA") float Cadencia = 1.0f;
+	UPROPERTY(EditAnywhere, Category="IA") int32 Dano = 10;
 
-	UPROPERTY(EditAnywhere, Category="IA") float TiempoBusqueda = 8.f;   // s buscando tras perder de vista
+	UPROPERTY(EditAnywhere, Category="IA") float TiempoBusqueda = 15.f;   // s buscando tras perder de vista
 
 private:
 	enum class EEstado : uint8 { Patrulla, Persigue, Ataca, Busca, Dispersion };

@@ -19,7 +19,7 @@ public:
 	float WalkSpeed = 400.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Sprint")
-	float StaminaDrainPerTick = 15.f;
+	float StaminaDrainPerTick = 8.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Sprint")
 	float DrainInterval = 0.25f;

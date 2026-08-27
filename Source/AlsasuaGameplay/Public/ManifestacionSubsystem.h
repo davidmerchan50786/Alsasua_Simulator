@@ -27,7 +27,7 @@ public:
 	UPROPERTY(BlueprintAssignable) FOnManifestacionEstado OnEstado;
 
 	UPROPERTY(EditAnywhere, Category="Manifestacion") int32 TamMin = 10;
-	UPROPERTY(EditAnywhere, Category="Manifestacion") int32 TamMax = 60;
+	UPROPERTY(EditAnywhere, Category="Manifestacion") int32 TamMax = 150;
 	UPROPERTY(EditAnywhere, Category="Manifestacion") float RadioConcentracion = 1200.f;
 	UPROPERTY(EditAnywhere, Category="Manifestacion") float TasaApoyoPorSeg = 0.4f;
 	UPROPERTY(EditAnywhere, Category="Manifestacion") float DuracionConcentracion = 20.f;

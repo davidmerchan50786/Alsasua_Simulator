@@ -35,7 +35,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category="AI")
 	float MaxAggression = 100.f;
 	UPROPERTY(EditAnywhere, Category="AI")
-	float PassiveDeescalateRate = 2.f;
+	float PassiveDeescalateRate = 1.2f;
 
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;

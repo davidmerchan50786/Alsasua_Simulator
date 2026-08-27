@@ -17,7 +17,7 @@ class ALSASUAGAMEPLAY_API UWantedSubsystem : public UGameInstanceSubsystem, publ
 
 public:
 	UPROPERTY(BlueprintReadOnly, Category="Wanted") int32 NivelBusqueda = 0;   // 0-5
-	UPROPERTY(EditAnywhere, Category="Wanted")      float TiempoBajarNivel = 20.f;
+	UPROPERTY(EditAnywhere, Category="Wanted")      float TiempoBajarNivel = 35.f;
 	UPROPERTY(BlueprintAssignable, Category="Wanted") FOnEstrellasCambia OnEstrellasCambia;
 
 	// cantidad negativa baja el nivel (clamp 0-5), como en Unity.

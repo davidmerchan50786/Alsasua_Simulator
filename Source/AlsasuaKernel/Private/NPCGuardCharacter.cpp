@@ -111,7 +111,7 @@ void ANPCGuardCharacter::Attack()
 	if (IDamageable* Dmg = Cast<IDamageable>(Player))
 	{
 		const float Dist = FVector::Dist(GetActorLocation(), Player->GetActorLocation());
-		const int32 Damage = Dist < 300.f ? 15 : 5;
+		const int32 Damage = Dist < 300.f ? 18 : 10;
 		Dmg->RecibirDano(Damage, GetActorLocation(), ETipoDano::Impacto);
 	}
 }

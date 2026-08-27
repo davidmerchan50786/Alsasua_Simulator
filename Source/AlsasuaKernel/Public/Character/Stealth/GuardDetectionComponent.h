@@ -86,7 +86,7 @@ public:
 
     /** Radio de visión del guardia (cm). */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vision", meta = (ClampMin = "100"))
-    float VisionRange = 2000.f;
+    float VisionRange = 4000.f;
 
     /** Ángulo del cono de visión (grados, total). 120 = 60 a cada lado. */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vision", meta = (ClampMin = "10", ClampMax = "360"))
