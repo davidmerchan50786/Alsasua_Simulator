@@ -2,6 +2,7 @@
 #include "PoblacionSubsystem.h"
 #include "PeatonActor.h"
 #include "WantedSubsystem.h"
+#include "DiaNocheSubsystem.h"
 #include "ArranqueMundo.h"
 #include "NavigationSystem.h"
 #include "Kismet/GameplayStatics.h"
@@ -30,12 +31,17 @@ void UPoblacionSubsystem::HandleLoudNoise(FVector Location)
 	if (Dist < 2000.f)
 		HuirDe(Location);
 
-	// Witness: one nearby civilian calls the police (30% chance per loud noise).
-	if (Peatones.Num() > 0 && FMath::FRand() < 0.3f)
+	// Witness: one nearby civilian calls the police (30% day / 15% night).
+	if (Peatones.Num() > 0)
 	{
+		float WitnessChance = 0.3f;
 		if (UGameInstance* GI = GetGameInstance())
-			if (UWantedSubsystem* W = GI->GetSubsystem<UWantedSubsystem>())
-				W->AumentarBusqueda(1);
+			if (UDiaNocheSubsystem* DN = GI->GetSubsystem<UDiaNocheSubsystem>())
+				if (DN->EsNoche()) WitnessChance = 0.15f;
+		if (FMath::FRand() < WitnessChance)
+			if (UGameInstance* GI = GetGameInstance())
+				if (UWantedSubsystem* W = GI->GetSubsystem<UWantedSubsystem>())
+					W->AumentarBusqueda(1);
 	}
 }
 
@@ -103,9 +109,15 @@ void UPoblacionSubsystem::Mantener()
 	// Panic mode: stop spawning, existing peds flee.
 	if (bPanicMode) return;
 
+	// Night: fewer civilians on the streets (60% of max).
+	int32 EffectiveMax = MaxPeatones;
+	if (UGameInstance* GI = GetGameInstance())
+		if (UDiaNocheSubsystem* DN = GI->GetSubsystem<UDiaNocheSubsystem>())
+			if (DN->EsNoche()) EffectiveMax = MaxPeatones * 60 / 100;
+
 	// Rellena hasta el máximo, con presupuesto por tick.
 	int32 spawns = 0;
-	while (Peatones.Num() < MaxPeatones && spawns < SpawnsPorTick)
+	while (Peatones.Num() < EffectiveMax && spawns < SpawnsPorTick)
 	{
 		FVector Punto;
 		if (!PuntoEnAnillo(P, Punto)) break;
