@@ -22,7 +22,8 @@ public:
 	// ── Vida ──
 	UPROPERTY(BlueprintReadOnly, Category="Vida") int32 Vida = 100;
 	UPROPERTY(EditAnywhere,      Category="Vida") int32 VidaMaxima = 100;
-	UPROPERTY(EditAnywhere,      Category="NPC")  bool  bEsPolicia = false;
+	UPROPERTY(EditAnywhere,      Category="NPC")  bool  bEsPolicia = false;   // civil vs autoridad
+	UPROPERTY(EditAnywhere,      Category="NPC")  bool  bEsManifestante = false;  // protest participant
 	UPROPERTY(BlueprintReadOnly, Category="Vida") bool  bMuerto = false;
 	UPROPERTY(EditAnywhere,      Category="NPC")  float DuracionCadaver = 30.f;
 	UPROPERTY(EditAnywhere,      Category="NPC")  float ImpulsoMuerte = 12000.f;
