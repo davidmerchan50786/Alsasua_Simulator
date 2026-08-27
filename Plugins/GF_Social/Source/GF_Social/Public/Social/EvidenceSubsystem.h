@@ -24,4 +24,11 @@ public:
 
     UPROPERTY(BlueprintReadOnly, Category="AAA|Social")
     TArray<FEvidenceItem> CollectedEvidence;
+
+protected:
+    virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+
+private:
+    UFUNCTION()
+    void OnCriminalActivity(FName ActivityType, int32 Severity);
 };

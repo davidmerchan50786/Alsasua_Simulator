@@ -1,5 +1,21 @@
 #include "Social/EvidenceSubsystem.h"
 #include "Politics/FactionSubsystem.h"
+#include "EconomiaCriminalSubsystem.h"
+
+void UEvidenceSubsystem::Initialize(FSubsystemCollectionBase& Collection)
+{
+    Super::Initialize(Collection);
+    UEconomiaCriminalSubsystem::OnCriminalActivity.AddDynamic(this, &UEvidenceSubsystem::OnCriminalActivity);
+}
+
+void UEvidenceSubsystem::OnCriminalActivity(FName ActivityType, int32 Severity)
+{
+    FEvidenceItem NewEvidence;
+    NewEvidence.EvidenceId = *FString::Printf(TEXT("Crime_%s_%d"), *ActivityType.ToString(), FMath::RandRange(0, 9999));
+    NewEvidence.Title = FString::Printf(TEXT("Criminal: %s (sev %d)"), *ActivityType.ToString(), Severity);
+    NewEvidence.ImpactPower = (float)Severity * 0.3f;
+    CollectEvidence(NewEvidence);
+}
 
 void UEvidenceSubsystem::CollectEvidence(FEvidenceItem NewEvidence)
 {
