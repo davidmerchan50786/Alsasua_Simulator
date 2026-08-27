@@ -90,6 +90,22 @@ public:
     /** Force NPC to join manifestation */
     void UnirAManifestacion(int32 Index);
 
+    /** How many NPCs joined this session */
+    UPROPERTY(BlueprintReadOnly, Category = "Alsasua|NPCs|Manifestacion")
+    int32 ManifestantesUnidos = 0;
+
+    /** Sound/shouting propagation radius (cm) */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|NPCs|Sonido")
+    float RadioGrito = 5000.0f;
+
+    /** Base probability per second for nearby NPC to join (scales with apoyo) */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|NPCs|Manifestacion")
+    float ProbabilidadUnirse = 0.15f;
+
+    /** Extra join probability per nearby manifestante (peer pressure) */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|NPCs|Manifestacion")
+    float PresionGrupo = 0.05f;
+
     // FTickableGameObject
     virtual void Tick(float DeltaTime) override;
     virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(UAlsasuaNPCPedestrianSystem, STATGROUP_Tickables); }

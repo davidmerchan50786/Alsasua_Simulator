@@ -9,13 +9,19 @@
 #include "EngineUtils.h"
 #include "Engine/World.h"
 #include "Engine/GameInstance.h"
+#include "AlsasuaServiceRegistry.h"
 
 void UManifestacionSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 	if (UWorld* W = GetGameInstance() ? GetGameInstance()->GetWorld() : nullptr)
+	{
 		if (UAlsasuaCrowdSentiment* Sent = W->GetSubsystem<UAlsasuaCrowdSentiment>())
 			Sent->OnConvocarManifestacion.AddDynamic(this, &UManifestacionSubsystem::HandleConvocarDelegate);
+
+		if (UAlsasuaServiceRegistry* Reg = GetGameInstance()->GetSubsystem<UAlsasuaServiceRegistry>())
+			Reg->Publicar(FName("Manifestacion"), this);
+	}
 }
 
 int32 UManifestacionSubsystem::TamanoPorApoyo() const

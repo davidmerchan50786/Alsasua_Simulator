@@ -1,5 +1,6 @@
 #include "World/AlsasuaNPCPedestrianSystem.h"
 #include "World/AlsasuaRedViaria.h"
+#include "AlsasuaServiceRegistry.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "Engine/StaticMeshActor.h"
@@ -91,6 +92,88 @@ void UAlsasuaNPCPedestrianSystem::Tick(float DeltaTime)
     }
 
     TickIndex = (TickIndex + TicksThisFrame) % Total;
+
+    // ── NPC joining manifestation ──────────────────────────────────────────
+    // Check every 0.5s (not every frame) for perf
+    static float JoinTimer = 0.f;
+    JoinTimer += DeltaTime;
+    if (JoinTimer < 0.5f) return;
+    JoinTimer = 0.f;
+
+    UGameInstance* GI = W ? W->GetGameInstance() : nullptr;
+    if (!GI) return;
+
+    UAlsasuaServiceRegistry* Reg = GI->GetSubsystem<UAlsasuaServiceRegistry>();
+    if (!Reg) return;
+
+    // Access ManifestacionSubsystem via service registry
+    UObject* ManifObj = Reg->Pedir(FName("Manifestacion"));
+    if (!ManifObj) return;
+
+    // Check if active via reflection (Activa() -> bool)
+    UFunction* ActivaFunc = ManifObj->FindFunction(TEXT("Activa"));
+    if (!ActivaFunc) return;
+    uint8 ActivaResult = 0;
+    ManifObj->ProcessEvent(ActivaFunc, &ActivaResult);
+    if (!ActivaResult) return;
+
+    // Get centro via GetCentroActual() -> FVector
+    FVector CentroManif = FVector::ZeroVector;
+    UFunction* CentroFunc = ManifObj->FindFunction(TEXT("GetCentroActual"));
+    if (CentroFunc)
+        ManifObj->ProcessEvent(CentroFunc, &CentroManif);
+
+    // Get crowd count via NumManifestantes() -> int32
+    int32 ManifCount = 0;
+    UFunction* NumFunc = ManifObj->FindFunction(TEXT("NumManifestantes"));
+    if (NumFunc)
+        ManifObj->ProcessEvent(NumFunc, &ManifCount);
+
+    // Access apoyo via service registry
+    UObject* ApoyoObj = Reg->Pedir(FName("ApoyoPopular"));
+    float ApoyoNorm = 0.5f;
+    if (ApoyoObj)
+    {
+        FProperty* ApoyoProp = ApoyoObj->GetClass()->FindPropertyByName(TEXT("Apoyo"));
+        if (ApoyoProp)
+        {
+            FFloatProperty* FApoyo = CastField<FFloatProperty>(ApoyoProp);
+            if (FApoyo)
+                ApoyoNorm = FMath::Clamp(FApoyo->GetPropertyValue_InContainer(ApoyoObj) / 100.f, 0.f, 1.f);
+        }
+    }
+
+    const float RadioJoinSq = FMath::Square(RadioGrito);
+
+    for (FNPCPedestrian& NPC : NPCs)
+    {
+        if (NPC.bEsManifestante) continue;
+        if (NPC.LodActual == ENPCLod::Hidden) continue;
+
+        const float DistSq = FVector::DistSquared(NPC.PosicionInicio, CentroManif);
+        if (DistSq > RadioJoinSq) continue;
+
+        // Probability: base * apoyo * (1 + peer_pressure * crowd_size) * distance_falloff
+        const float DistFactor = 1.f - FMath::Sqrt(DistSq) / RadioGrito;
+        const float PeerPressure = 1.f + PresionGrupo * FMath::Min(ManifCount, 50);
+        const float Prob = ProbabilidadUnirse * ApoyoNorm * PeerPressure * DistFactor * JoinTimer;
+
+        if (FMath::FRand() < Prob)
+        {
+            UnirAManifestacion(&NPC - &NPCs[0]);
+            ++ManifestantesUnidos;
+
+            // Switch NPC to walk toward manifestation
+            NPC.PosicionObjetivo = CentroManif + FMath::VRand() * FMath::Sqrt(DistSq) * 0.5f;
+            NPC.DireccionMovimiento = (NPC.PosicionObjetivo - NPC.PosicionInicio).GetSafeNormal();
+            NPC.Velocidad = FMath::RandRange(60.f, 120.f);
+            NPC.DuracionActividad = 999.f;
+
+            // Show full actor for joining NPCs
+            if (NPC.ActorAsociado.IsValid())
+                NPC.ActorAsociado->SetActorHiddenInGame(false);
+        }
+    }
 }
 
 void UAlsasuaNPCPedestrianSystem::ActualizarLOD(FNPCPedestrian& NPC, const FVector& PlayerPos)
