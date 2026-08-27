@@ -96,6 +96,22 @@ public:
     /** Force NPC to join manifestation */
     void UnirAManifestacion(int32 Index);
 
+    /** How many NPCs joined this session */
+    UPROPERTY(BlueprintReadOnly, Category = "Alsasua|NPCs|Manifestacion")
+    int32 ManifestantesUnidos = 0;
+
+    /** Sound/shouting propagation radius (cm) */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|NPCs|Sonido")
+    float RadioGrito = 5000.0f;
+
+    /** Base probability per second for nearby NPC to join (scales with apoyo) */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|NPCs|Manifestacion")
+    float ProbabilidadUnirse = 0.15f;
+
+    /** Extra join probability per nearby manifestante (peer pressure) */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|NPCs|Manifestacion")
+    float PresionGrupo = 0.05f;
+
     // El tiqueo real llega por IAlsasuaPilarTiquear::TiquearPilar, que el
     // DirectorArranque llama una vez por frame; Tick() es un metodo normal,
     // no FTickableGameObject (evitaria un doble tiqueo).

@@ -17,6 +17,8 @@ class ALSASUAGAMEPLAY_API UApoyoPopularSubsystem : public UGameInstanceSubsystem
 	GENERATED_BODY()
 
 public:
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+
 	UPROPERTY(BlueprintReadOnly, Category="Apoyo") float Apoyo = 50.f;     // 0-100
 	UPROPERTY(BlueprintReadOnly, Category="Apoyo") float Paranoia = 0.f;   // 0-100
 	UPROPERTY(EditAnywhere, Category="Apoyo")      float DecayApoyo = 0.5f;
