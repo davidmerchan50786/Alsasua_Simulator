@@ -7,6 +7,7 @@
 #include "AlsasuaPlayerCharacter.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraSystem.h"
+#include "Components/DecalComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundBase.h"
 #include "GameFramework/Pawn.h"
@@ -373,7 +374,7 @@ void UArmasComponent::Consecuencias(AActor* Victima) const
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  Spray (graffiti tagging — reduces suspicion in area)
+//  Spray (graffiti tagging — places decal on wall + reduces suspicion)
 // ─────────────────────────────────────────────────────────────────────────────
 void UArmasComponent::LanzarSpray()
 {
@@ -393,7 +394,32 @@ void UArmasComponent::LanzarSpray()
 
 		if (IDamageable* D = Cast<IDamageable>(Hit.GetActor()))
 			if (!D->EstaMuerto())
-				D->RecibirDano(0, Hit.ImpactPoint, ETipoDano::Impacto); // Tagging, no real damage.
+				D->RecibirDano(0, Hit.ImpactPoint, ETipoDano::Impacto);
+
+		// Place graffiti decal on vertical surfaces (walls)
+		const bool bEsPared = FMath::Abs(Hit.ImpactNormal.Z) < 0.3f;
+		if (bEsPared)
+		{
+			UMaterialInterface* GrafitiMat = LoadObject<UMaterialInterface>(nullptr,
+				TEXT("/Game/Materiales/M_Grafiti.M_Grafiti"));
+			if (!GrafitiMat) return;
+
+			UDecalComponent* Decal = UGameplayStatics::SpawnDecalAtLocation(
+				W, GrafitiMat,
+				FVector(FMath::RandRange(60.f, 120.f)),  // size
+				Hit.ImpactPoint,
+				(-Hit.ImpactNormal).Rotation(),
+				FMath::RandRange(30.f, 120.f));  // random Yaw
+
+			if (Decal)
+			{
+				Decal->SetFadeScreenSize(0.001f);
+				Decal->SetDecalColor(FLinearColor(
+					FMath::FRandRange(0.7f, 1.0f),
+					FMath::FRandRange(0.1f, 0.5f),
+					FMath::FRandRange(0.1f, 0.5f)));
+			}
+		}
 	}
 }
 
