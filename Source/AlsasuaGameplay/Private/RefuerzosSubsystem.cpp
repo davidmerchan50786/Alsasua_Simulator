@@ -3,6 +3,8 @@
 #include "WantedSubsystem.h"
 #include "PoliciaActor.h"
 #include "Character/Stealth/GuardDetectionComponent.h"
+#include "ManifestacionSubsystem.h"
+#include "Vehicles/AlsasuaPoliceVan.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Pawn.h"
 #include "Engine/World.h"
@@ -31,7 +33,17 @@ void URefuerzosSubsystem::OnWanted(int32 Nivel)
 	const float Ahora = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.f;
 	if (Ahora - UltimaOleada < Cooldown) return;
 	UltimaOleada = Ahora;
-	Despachar(Nivel);
+	// Scale count with manifestation tension
+	int32 ExtraCops = 0;
+	if (UGameInstance* GI = GetWorld()->GetGameInstance())
+		if (UManifestacionSubsystem* Mf = GI->GetSubsystem<UManifestacionSubsystem>())
+		{
+			const float Tension = Mf->GetTension();
+			if (Tension > 0.5f)
+				ExtraCops = FMath::RoundToInt((Tension - 0.5f) * 2.f * EscalacionTension);
+		}
+
+	Despachar(Nivel + ExtraCops);
 }
 
 void URefuerzosSubsystem::Despachar(int32 Cantidad)
@@ -57,13 +69,13 @@ void URefuerzosSubsystem::Despachar(int32 Cantidad)
 		W->SpawnActor<APoliciaActor>(APoliciaActor::StaticClass(), Pos, (Off * -1).Rotation(), P);
 	}
 
-	if (Cantidad >= 3)
+	if (Cantidad >= NivelMinimoVan)
 	{
 		const float AngV = FMath::FRand() * 2.f * PI;
 		const FVector OffV(FMath::Cos(AngV) * (FinalRadius + 500.f), FMath::Sin(AngV) * (FinalRadius + 500.f), 0.f);
 		SpawnVehiculoPolicia(Centro + OffV, (Centro - (Centro + OffV)).Rotation());
 
-		// Roadblock at wanted 3+ — deploy spike strips ahead of the player.
+		// Roadblock — deploy spike strips ahead of the player.
 		DesplegarReten(Centro);
 	}
 
@@ -140,14 +152,43 @@ void URefuerzosSubsystem::DesplegarHelicoptero(FVector Centro)
 
 void URefuerzosSubsystem::SpawnVehiculoPolicia(FVector Centro, FRotator Rotacion)
 {
-	if (ClaseVehiculoPolicia.IsNull()) return;
 	UWorld* W = GetWorld();
 	if (!W) return;
 
-	UClass* Clase = ClaseVehiculoPolicia.TryLoadClass<APawn>();
-	if (!Clase) return;
+	// BP override si hay una asignada; si no, el AAlsasuaPoliceVan concreto
+	// (malla y comportamiento táctico ya resueltos, sin depender de contenido).
+	UClass* Clase = ClaseVehiculoPolicia.IsNull() ? nullptr : ClaseVehiculoPolicia.TryLoadClass<APawn>();
+	if (!Clase)
+	{
+		SpawnPoliceVan();
+		return;
+	}
 
 	FActorSpawnParameters P;
 	P.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 	W->SpawnActor<APawn>(Clase, Centro, Rotacion, P);
+}
+
+void URefuerzosSubsystem::SpawnPoliceVan()
+{
+	UWorld* W = GetWorld();
+	if (!W) return;
+	APawn* Jugador = UGameplayStatics::GetPlayerPawn(W, 0);
+	if (!Jugador) return;
+
+	const FVector Centro = Jugador->GetActorLocation();
+	// Spawn van 40m away, facing the player
+	const float Ang = FMath::FRand() * 2.f * PI;
+	const FVector Off(FMath::Cos(Ang) * 4000.f, FMath::Sin(Ang) * 4000.f, 0.f);
+	const FVector Pos = Centro + Off;
+
+	FActorSpawnParameters P;
+	P.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+	AAlsasuaPoliceVan* Van = W->SpawnActor<AAlsasuaPoliceVan>(
+		AAlsasuaPoliceVan::StaticClass(), Pos, (-Off).Rotation(), P);
+	if (Van)
+	{
+		Van->MoveToLocationTactic(Centro);
+	}
 }
