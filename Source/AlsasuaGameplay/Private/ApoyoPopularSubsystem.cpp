@@ -22,13 +22,23 @@ void UApoyoPopularSubsystem::RestarApoyo(float Cantidad, const FString& Razon)
 		UE_LOG(LogAlsasua, Log, TEXT("Apoyo -%.0f (%s) -> %.0f%%"), Cantidad, *Razon, Apoyo);
 }
 
-void UApoyoPopularSubsystem::SumarParanoia(float Cantidad)  { Paranoia = FMath::Clamp(Paranoia + Cantidad, 0.f, 100.f); }
-void UApoyoPopularSubsystem::RestarParanoia(float Cantidad) { Paranoia = FMath::Clamp(Paranoia - Cantidad, 0.f, 100.f); }
+void UApoyoPopularSubsystem::SumarParanoia(float Cantidad)
+{
+	Paranoia = FMath::Clamp(Paranoia + Cantidad, 0.f, 100.f);
+	OnParanoiaCambia.Broadcast(Paranoia);
+}
+void UApoyoPopularSubsystem::RestarParanoia(float Cantidad)
+{
+	Paranoia = FMath::Clamp(Paranoia - Cantidad, 0.f, 100.f);
+	OnParanoiaCambia.Broadcast(Paranoia);
+}
 
 void UApoyoPopularSubsystem::Tick(float DeltaTime)
 {
-	const float Antes = Apoyo;
+	const float ApoyoAntes = Apoyo;
 	Apoyo = FMath::FInterpConstantTo(Apoyo, 50.f, DeltaTime, DecayApoyo);
+
+	const float ParanoiaAntes = Paranoia;
 	Paranoia = FMath::Max(0.f, Paranoia - DeltaTime);
 
 	// Aggregate per-NPC paranoia into global level every tick (cheap — NPCs are nearby).
@@ -55,6 +65,8 @@ void UApoyoPopularSubsystem::Tick(float DeltaTime)
 		}
 	}
 
-	if (!FMath::IsNearlyEqual(Antes, Apoyo, 0.01f))
+	if (!FMath::IsNearlyEqual(ApoyoAntes, Apoyo, 0.01f))
 		OnApoyoCambia.Broadcast(Apoyo);
+	if (!FMath::IsNearlyEqual(ParanoiaAntes, Paranoia, 0.01f))
+		OnParanoiaCambia.Broadcast(Paranoia);
 }

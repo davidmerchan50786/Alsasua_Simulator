@@ -48,6 +48,34 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Alsasua|PostProcess")
     void SetDrugVision(bool bActive, float Intensity = 1.0f);
 
+    /** Explosión cercana: slow-mo + screen shake + flash. */
+    UFUNCTION(BlueprintCallable, Category = "Alsasua|PostProcess")
+    void TriggerExplosionReaction(float Distance);
+
+    /** Tortura: pulso rojo periódico que escala con el método. */
+    UFUNCTION(BlueprintCallable, Category = "Alsasua|PostProcess")
+    void TriggerTorturePulse(float Intensity);
+
+    /** Electrodo: flash blanco rápido. */
+    UFUNCTION(BlueprintCallable, Category = "Alsasua|PostProcess")
+    void TriggerElectrodeFlash();
+
+    /** Ahogo: visión borrosa progresiva. */
+    UFUNCTION(BlueprintCallable, Category = "Alsasua|PostProcess")
+    void SetDrowningVision(bool bActive, float Intensity);
+
+    /** Golpe: flash rojo + screen shake corto. */
+    UFUNCTION(BlueprintCallable, Category = "Alsasua|PostProcess")
+    void TriggerBeatingImpact();
+
+    /** Sueño: visión borrosa + doble imagen. */
+    UFUNCTION(BlueprintCallable, Category = "Alsasua|PostProcess")
+    void SetSleepDeprivationVision(bool bActive, float Intensity);
+
+    /** Nivel de paranoia global: desaturación + aberración + viñeta oscura. */
+    UFUNCTION(BlueprintCallable, Category = "Alsasua|PostProcess")
+    void SetParanoiaLevel(float Paranoia01);
+
     // ── Configuración ──────────────────────────────────────────────────────
 
     /** Intensidad máxima de la viñeta de bajo vida. */
@@ -96,6 +124,14 @@ private:
     bool bDrugVisionActive = false;
     float DrugVisionIntensity = 0.f;
     float DrugVisionTargetIntensity = 0.f;
+
+    // ── Paranoia Vision ────────────────────────────────────────────────────
+    void UpdateParanoiaVision(float DeltaTime);
+    float ParanoiaLevel01 = 0.f;   // 0-1 normalized
+    float ParanoiaDesaturation = 0.f;
+    float ParanoiaChromatic = 0.f;
+    float ParanoiaVignetteAmount = 0.f;
+    float ParanoiaTearTimer = 0.f;
 
     // ── Weight actual (blend total) ────────────────────────────────────────
     float CurrentWeight = 0.f;

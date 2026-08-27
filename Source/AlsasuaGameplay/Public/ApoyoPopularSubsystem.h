@@ -9,6 +9,7 @@
 #include "ApoyoPopularSubsystem.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnApoyoCambia, float, NuevoApoyo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnParanoiaCambia, float, NuevaParanoia);
 
 UCLASS()
 class ALSASUAGAMEPLAY_API UApoyoPopularSubsystem : public UGameInstanceSubsystem, public FTickableGameObject
@@ -21,6 +22,7 @@ public:
 	UPROPERTY(EditAnywhere, Category="Apoyo")      float DecayApoyo = 0.5f;
 
 	UPROPERTY(BlueprintAssignable, Category="Apoyo") FOnApoyoCambia OnApoyoCambia;
+	UPROPERTY(BlueprintAssignable, Category="Paranoia") FOnParanoiaCambia OnParanoiaCambia;
 
 	UFUNCTION(BlueprintCallable, Category="Apoyo") void SumarApoyo(float Cantidad, const FString& Razon = TEXT(""));
 	UFUNCTION(BlueprintCallable, Category="Apoyo") void RestarApoyo(float Cantidad, const FString& Razon = TEXT(""));
