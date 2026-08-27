@@ -1,6 +1,33 @@
 // DrogasSubsystem.cpp
 #include "DrogasSubsystem.h"
 #include "ApoyoPopularSubsystem.h"
+#include "Character/GameplayPostProcessComponent.h"
+#include "AlsasuaCharacter.h"
+#include "Kismet/GameplayStatics.h"
+
+namespace
+{
+	float DrugIntensity(ESustancia S)
+	{
+		switch (S)
+		{
+		case ESustancia::Porro:  return 0.4f;
+		case ESustancia::Speed:  return 0.3f;
+		case ESustancia::Chute:  return 0.5f;
+		case ESustancia::Tripi:  return 0.9f;
+		default: return 0.f;
+		}
+	}
+
+	UGameplayPostProcessComponent* GetPP(UGameInstance* GI)
+	{
+		if (!GI) return nullptr;
+		UWorld* W = GI->GetWorld();
+		if (!W) return nullptr;
+		AActor* P = UGameplayStatics::GetPlayerPawn(W, 0);
+		return P ? P->FindComponentByClass<UGameplayPostProcessComponent>() : nullptr;
+	}
+}
 
 void UDrogasSubsystem::Tomar(ESustancia S)
 {
@@ -14,15 +41,19 @@ void UDrogasSubsystem::Tomar(ESustancia S)
 	case ESustancia::Tripi: TiempoRestante = 60.f; MultDisp = 1.9f; ReduDano = 1.f;  MultVel = 0.85f; break;
 	default: break;
 	}
+	if (UGameplayPostProcessComponent* PP = GetPP(GetGameInstance()))
+		PP->SetDrugVision(true, DrugIntensity(S));
 }
 
 void UDrogasSubsystem::Bajada()
 {
 	if (Activa == ESustancia::Speed)
 		if (UApoyoPopularSubsystem* Ap = GetGameInstance() ? GetGameInstance()->GetSubsystem<UApoyoPopularSubsystem>() : nullptr)
-			Ap->SumarParanoia(18.f);   // el bajón del speed deja paranoia
+			Ap->SumarParanoia(18.f);
 	Activa = ESustancia::Ninguna;
 	MultDisp = 1.f; ReduDano = 1.f; MultVel = 1.f;
+	if (UGameplayPostProcessComponent* PP = GetPP(GetGameInstance()))
+		PP->SetDrugVision(false, 0.f);
 }
 
 void UDrogasSubsystem::Tick(float DeltaTime)
