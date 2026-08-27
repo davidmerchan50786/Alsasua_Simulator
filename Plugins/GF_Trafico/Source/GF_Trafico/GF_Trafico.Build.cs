@@ -15,8 +15,7 @@ public class GF_Trafico : ModuleRules
 			"Engine",
 			"AlsasuaCore",
 			"AlsasuaKernel",
-			// La red viaria (RedViaria) y las direcciones de fachada
-			// (AlsasuaDirecciones) viven en estos dos plugins.
+			"AlsasuaContracts",
 			"GF_Carreteras",
 			"GF_World"
 		});
