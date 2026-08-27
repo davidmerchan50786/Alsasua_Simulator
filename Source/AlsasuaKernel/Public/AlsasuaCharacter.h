@@ -187,4 +187,6 @@ private:
 	FVector TrepaFin = FVector::ZeroVector;
 	float TrepaT = 0.f;
 	float TrepaDur = 0.4f;
+
+	float TiempoSinDano = 0.f;
 };

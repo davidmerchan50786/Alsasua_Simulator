@@ -112,12 +112,23 @@ void AAlsasuaCharacter::Tick(float DeltaTime)
 	// Passive stamina regen (30/sec when not sprinting).
 	if (AttributeSet)
 	{
-		const float Current = AttributeSet->GetStamina();
-		const float Max = AttributeSet->GetMaxStamina();
+		const float CurrentStam = AttributeSet->GetStamina();
+		const float MaxStam = AttributeSet->GetMaxStamina();
 		const bool bSprinting = GetCharacterMovement() && GetCharacterMovement()->MaxWalkSpeed > VelCaminar + 10.f;
-		if (!bSprinting && Current < Max)
+		if (!bSprinting && CurrentStam < MaxStam)
 			AbilitySystemComponent->ApplyModToAttribute(AttributeSet->GetStaminaAttribute(),
-				EGameplayModOp::Additive, FMath::Min(30.f * DeltaTime, Max - Current));
+				EGameplayModOp::Additive, FMath::Min(30.f * DeltaTime, MaxStam - CurrentStam));
+
+		// Out-of-combat health regen: 5/sec after 5s without damage.
+		TiempoSinDano += DeltaTime;
+		if (TiempoSinDano > 5.f)
+		{
+			const float CurrentHp = AttributeSet->GetHealth();
+			const float MaxHp = AttributeSet->GetMaxHealth();
+			if (CurrentHp < MaxHp)
+				AbilitySystemComponent->ApplyModToAttribute(AttributeSet->GetHealthAttribute(),
+					EGameplayModOp::Additive, FMath::Min(5.f * DeltaTime, MaxHp - CurrentHp));
+		}
 	}
 
 	if (bTrepando)
@@ -242,6 +253,8 @@ bool AAlsasuaCharacter::EstaMuerto() const
 void AAlsasuaCharacter::RecibirDano(int32 Cantidad, FVector Origen, ETipoDano Tipo)
 {
 	if (!AbilitySystemComponent || !AttributeSet) return;
+
+	TiempoSinDano = 0.f;
 
 	float DanoReal = static_cast<float>(Cantidad);
 
