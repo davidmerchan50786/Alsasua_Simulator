@@ -2,8 +2,10 @@
 #include "World/AlsasuaRedViaria.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
+#include "Engine/StaticMeshActor.h"
 #include "Animation/SkeletalMeshActor.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "GeoDataAlsasua.h"
 #include "Misc/FileHelper.h"
@@ -16,9 +18,108 @@ void UAlsasuaNPCPedestrianSystem::Initialize(FSubsystemCollectionBase& Collectio
     Super::Initialize(Collection);
     bInitialized = true;
     CargarAssetsPersonaje();
-    // El callejero se carga al usarlo, no aquí: en Initialize de un
-    // subsistema de GameInstance todavía no hay terreno, y los puntos de
-    // ruta se quedarían todos a la cota de la plaza en vez de sobre su calle.
+}
+
+void UAlsasuaNPCPedestrianSystem::ActualizarNPCs(float DeltaTime)
+{
+    Tick(DeltaTime);
+}
+
+void UAlsasuaNPCPedestrianSystem::Tick(float DeltaTime)
+{
+    if (CallesCache.Num() == 0) CargarCallejero();
+    if (NPCs.Num() == 0) return;
+
+    // Get player position for LOD
+    UWorld* W = GetWorld();
+    FVector PlayerPos = FVector::ZeroVector;
+    if (W)
+    {
+        if (APawn* P = UGameplayStatics::GetPlayerPawn(W, 0))
+            PlayerPos = P->GetActorLocation();
+    }
+
+    // Round-robin: tick MaxTicksPerFrame NPCs per frame for amortized cost
+    const int32 Total = NPCs.Num();
+    const int32 TicksThisFrame = FMath::Min(MaxTicksPerFrame, Total);
+
+    for (int32 i = 0; i < TicksThisFrame; ++i)
+    {
+        int32 Idx = (TickIndex + i) % Total;
+        FNPCPedestrian& NPC = NPCs[Idx];
+
+        ActualizarLOD(NPC, PlayerPos);
+
+        // Skip hidden NPCs entirely
+        if (NPC.LodActual == ENPCLod::Hidden) continue;
+
+        NPC.TiempoEnActividad += DeltaTime;
+        if (NPC.TiempoEnActividad >= NPC.DuracionActividad)
+            CambiarActividad(NPC);
+
+        // Full LOD: move and animate. Proxy: just update position.
+        if (NPC.ActividadActual == ENPCActivity::Walk)
+        {
+            FVector NuevaPos = NPC.PosicionInicio + NPC.DireccionMovimiento * NPC.Velocidad * DeltaTime;
+
+            float DistObj = FVector::Distance(NuevaPos, NPC.PosicionObjetivo);
+            if (DistObj < 200.0f)
+            {
+                NPC.PosicionObjetivo = ObtenerPuntoCalleAleatorio();
+                NPC.DireccionMovimiento = (NPC.PosicionObjetivo - NuevaPos).GetSafeNormal();
+            }
+
+            NPC.PosicionInicio = NuevaPos;
+
+            // Update full actor
+            if (NPC.LodActual == ENPCLod::Full && NPC.ActorAsociado.IsValid())
+            {
+                ASkeletalMeshActor* SkelActor = Cast<ASkeletalMeshActor>(NPC.ActorAsociado.Get());
+                if (SkelActor)
+                {
+                    SkelActor->SetActorLocation(NuevaPos);
+                    SkelActor->SetActorRotation(NPC.DireccionMovimiento.Rotation());
+                }
+            }
+
+            // Update proxy actor
+            if (NPC.ProxyActor.IsValid())
+            {
+                NPC.ProxyActor->SetActorLocation(NuevaPos);
+            }
+        }
+    }
+
+    TickIndex = (TickIndex + TicksThisFrame) % Total;
+}
+
+void UAlsasuaNPCPedestrianSystem::ActualizarLOD(FNPCPedestrian& NPC, const FVector& PlayerPos)
+{
+    const float DistSq = FVector::DistSquared(NPC.PosicionInicio, PlayerPos);
+    const ENPCLod NuevoLod = (DistSq < LodFullDistance * LodFullDistance) ? ENPCLod::Full
+        : (DistSq < LodProxyDistance * LodProxyDistance) ? ENPCLod::Proxy
+        : ENPCLod::Hidden;
+
+    if (NuevoLod == NPC.LodActual) return;
+
+    // Transition: show/hide actors based on new LOD
+    if (NuevoLod == ENPCLod::Full)
+    {
+        if (NPC.ActorAsociado.IsValid()) NPC.ActorAsociado->SetActorHiddenInGame(false);
+        if (NPC.ProxyActor.IsValid()) NPC.ProxyActor->SetActorHiddenInGame(true);
+    }
+    else if (NuevoLod == ENPCLod::Proxy)
+    {
+        if (NPC.ActorAsociado.IsValid()) NPC.ActorAsociado->SetActorHiddenInGame(true);
+        if (NPC.ProxyActor.IsValid()) NPC.ProxyActor->SetActorHiddenInGame(false);
+    }
+    else // Hidden
+    {
+        if (NPC.ActorAsociado.IsValid()) NPC.ActorAsociado->SetActorHiddenInGame(true);
+        if (NPC.ProxyActor.IsValid()) NPC.ProxyActor->SetActorHiddenInGame(true);
+    }
+
+    NPC.LodActual = NuevoLod;
 }
 
 void UAlsasuaNPCPedestrianSystem::CargarAssetsPersonaje()
@@ -69,12 +170,6 @@ void UAlsasuaNPCPedestrianSystem::CargarCallejero()
         const TSharedPtr<FJsonObject>& Road = RoadVal->AsObject();
         if (!Road) continue;
 
-        // Se anda por casi todo menos por la autovía. Antes no se filtraba nada
-        // y las 489 vías entraban en el caché, así que había peatones cruzando
-        // la A-10 y sus 50 enlaces. El criterio vive en UAlsasuaRedViaria, con
-        // el de los coches al lado, para que no vuelvan a divergir: éste no
-        // filtraba de menos y el del tráfico filtraba de más, cada uno por su
-        // cuenta.
         FString Tipo;
         Road->TryGetStringField(TEXT("type"), Tipo);
         if (!UAlsasuaRedViaria::EsTransitableAPie(Tipo)) { ++Descartadas; continue; }
@@ -97,7 +192,7 @@ void UAlsasuaNPCPedestrianSystem::CargarCallejero()
     }
 
     UE_LOG(LogTemp, Log,
-        TEXT("NPCPedestrians: %d calles transitables a pie cacheadas (%d descartadas por ser autovía)"),
+        TEXT("NPCPedestrians: %d calles transitables a pie cacheadas (%d descartadas)"),
         CallesCache.Num(), Descartadas);
 }
 
@@ -166,7 +261,7 @@ void UAlsasuaNPCPedestrianSystem::GenerarNPCs()
         for (int32 i = 0; i < N && NPCCount < MaxNPCs; ++i, ++NPCCount)
         {
             FNPCPedestrian NPC;
-            NPC.Nombre = FString::Printf(TEXT("Peaton_%03d"), NPCCount);
+            NPC.Nombre = FString::Printf(TEXT("NPC_%04d"), NPCCount);
             NPC.Barrio = B.Nombre;
             NPC.GrupoEdad = FMath::RandRange(0, 3);
             NPC.Velocidad = FMath::RandRange(80.0f, 180.0f);
@@ -180,84 +275,12 @@ void UAlsasuaNPCPedestrianSystem::GenerarNPCs()
             NPC.DireccionMovimiento = (NPC.PosicionObjetivo - NPC.PosicionInicio).GetSafeNormal();
 
             CrearNPCEnPunto(NPC);
+            CrearProxyNPC(NPC);
             NPCs.Add(NPC);
         }
     }
 
-    UE_LOG(LogTemp, Log, TEXT("NPCPedestrians: %d peatones generados distribuidos por densidad"), NPCs.Num());
-}
-
-void UAlsasuaNPCPedestrianSystem::ActualizarNPCs(float DeltaTime)
-{
-    for (FNPCPedestrian& NPC : NPCs)
-    {
-        NPC.TiempoEnActividad += DeltaTime;
-
-        if (NPC.TiempoEnActividad >= NPC.DuracionActividad)
-        {
-            CambiarActividad(NPC);
-        }
-
-        if (NPC.ActividadActual == ENPCActivity::Walk)
-        {
-            FVector NuevaPos = NPC.PosicionInicio + NPC.DireccionMovimiento * NPC.Velocidad * DeltaTime;
-            float DistObj = FVector::Distance(NuevaPos, NPC.PosicionObjetivo);
-
-            if (DistObj < 200.0f)
-            {
-                NPC.PosicionObjetivo = ObtenerPuntoCalleAleatorio();
-                NPC.DireccionMovimiento = (NPC.PosicionObjetivo - NuevaPos).GetSafeNormal();
-            }
-
-            NPC.PosicionInicio = NuevaPos;
-
-            if (NPC.ActorAsociado.IsValid())
-            {
-                ASkeletalMeshActor* SkelActor = Cast<ASkeletalMeshActor>(NPC.ActorAsociado.Get());
-                if (SkelActor)
-                {
-                    SkelActor->SetActorLocation(NuevaPos);
-                    FRotator LookAt = NPC.DireccionMovimiento.Rotation();
-                    SkelActor->SetActorRotation(LookAt);
-                }
-            }
-        }
-    }
-}
-
-void UAlsasuaNPCPedestrianSystem::CambiarActividad(FNPCPedestrian& NPC)
-{
-    NPC.TiempoEnActividad = 0.0f;
-    NPC.DuracionActividad = FMath::RandRange(3.0f, 15.0f);
-
-    const int32 ActividadIdx = FMath::RandRange(0, 5);
-    NPC.ActividadActual = static_cast<ENPCActivity>(ActividadIdx);
-
-    if (NPC.ActividadActual != ENPCActivity::Walk)
-    {
-        if (NPC.ActorAsociado.IsValid())
-        {
-            ASkeletalMeshActor* SkelActor = Cast<ASkeletalMeshActor>(NPC.ActorAsociado.Get());
-            if (SkelActor && AnimIdle)
-            {
-                SkelActor->GetSkeletalMeshComponent()->PlayAnimation(AnimIdle, true);
-            }
-        }
-    }
-    else
-    {
-        NPC.PosicionObjetivo = ObtenerPuntoCalleAleatorio();
-        NPC.DireccionMovimiento = (NPC.PosicionObjetivo - NPC.PosicionInicio).GetSafeNormal();
-
-        if (NPC.ActorAsociado.IsValid())
-        {
-            ASkeletalMeshActor* SkelActor = Cast<ASkeletalMeshActor>(NPC.ActorAsociado.Get());
-            if (SkelActor && AnimCaminar)
-            {
-                SkelActor->GetSkeletalMeshComponent()->PlayAnimation(AnimCaminar, true);
-            }
-        }
-    }
+    UE_LOG(LogTemp, Log, TEXT("NPCPedestrians: %d peatones generados (LOD: Full/Proxy/Hidden)"), NPCs.Num());
 }
 
 void UAlsasuaNPCPedestrianSystem::CrearNPCEnPunto(FNPCPedestrian& NPC)
@@ -298,10 +321,47 @@ void UAlsasuaNPCPedestrianSystem::CrearNPCEnPunto(FNPCPedestrian& NPC)
     }
 
 #if WITH_EDITOR
-    NPCActor->SetActorLabel(*FString::Printf(TEXT("Peaton_%s_%s"), *NPC.Nombre, *NPC.Barrio));
+    NPCActor->SetActorLabel(*FString::Printf(TEXT("NPC_%s_%s"), *NPC.Nombre, *NPC.Barrio));
 #endif
 
     NPC.ActorAsociado = NPCActor;
+    // Start hidden — LOD system will show the right one
+    NPCActor->SetActorHiddenInGame(true);
+}
+
+void UAlsasuaNPCPedestrianSystem::CrearProxyNPC(FNPCPedestrian& NPC)
+{
+    UWorld* World = GetWorld();
+    if (!World) return;
+
+    // Simple static mesh capsule proxy for mid-range NPCs
+    AStaticMeshActor* Proxy = World->SpawnActor<AStaticMeshActor>(
+        AStaticMeshActor::StaticClass(), NPC.PosicionInicio, FRotator::ZeroRotator);
+    if (!Proxy) return;
+
+    Proxy->GetRootComponent()->SetMobility(EComponentMobility::Movable);
+    Proxy->GetStaticMeshComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+    // Use a simple capsule shape as proxy
+    UStaticMesh* CapsuleMesh = LoadObject<UStaticMesh>(nullptr,
+        TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
+    if (CapsuleMesh)
+        Proxy->GetStaticMeshComponent()->SetStaticMesh(CapsuleMesh);
+
+    // Color by barrio for visual distinction
+    FLinearColor ProxyColor = FLinearColor::Gray;
+    if (NPC.Barrio == TEXT("Herriko")) ProxyColor = FLinearColor(0.8f, 0.2f, 0.2f);
+    else if (NPC.Barrio == TEXT("Zelai")) ProxyColor = FLinearColor(0.2f, 0.8f, 0.2f);
+    else if (NPC.Barrio == TEXT("Intxostia")) ProxyColor = FLinearColor(0.2f, 0.2f, 0.8f);
+    else if (NPC.Barrio == TEXT("Harrobieta")) ProxyColor = FLinearColor(0.8f, 0.6f, 0.1f);
+
+    Proxy->GetStaticMeshComponent()->SetVectorParameterValueOnMaterials(
+        TEXT("Color"), FVector(ProxyColor.R, ProxyColor.G, ProxyColor.B));
+
+    Proxy->SetActorScale3D(FVector(0.3f, 0.3f, 1.8f));
+    Proxy->SetActorHiddenInGame(true);  // LOD will show
+
+    NPC.ProxyActor = Proxy;
 }
 
 FVector UAlsasuaNPCPedestrianSystem::ObtenerPuntoCalleAleatorio()
@@ -345,4 +405,58 @@ int32 UAlsasuaNPCPedestrianSystem::OrdenArranque() const
 void UAlsasuaNPCPedestrianSystem::TiquearPilar(float DeltaTime)
 {
 	ActualizarNPCs(DeltaTime);
+}
+
+void UAlsasuaNPCPedestrianSystem::CambiarActividad(FNPCPedestrian& NPC)
+{
+    NPC.TiempoEnActividad = 0.0f;
+    NPC.DuracionActividad = FMath::RandRange(3.0f, 15.0f);
+
+    const int32 ActividadIdx = FMath::RandRange(0, 5);
+    NPC.ActividadActual = static_cast<ENPCActivity>(ActividadIdx);
+
+    if (NPC.LodActual != ENPCLod::Full) return;
+
+    if (NPC.ActividadActual != ENPCActivity::Walk)
+    {
+        if (NPC.ActorAsociado.IsValid())
+        {
+            ASkeletalMeshActor* SkelActor = Cast<ASkeletalMeshActor>(NPC.ActorAsociado.Get());
+            if (SkelActor && AnimIdle)
+                SkelActor->GetSkeletalMeshComponent()->PlayAnimation(AnimIdle, true);
+        }
+    }
+    else
+    {
+        NPC.PosicionObjetivo = ObtenerPuntoCalleAleatorio();
+        NPC.DireccionMovimiento = (NPC.PosicionObjetivo - NPC.PosicionInicio).GetSafeNormal();
+
+        if (NPC.ActorAsociado.IsValid())
+        {
+            ASkeletalMeshActor* SkelActor = Cast<ASkeletalMeshActor>(NPC.ActorAsociado.Get());
+            if (SkelActor && AnimCaminar)
+                SkelActor->GetSkeletalMeshComponent()->PlayAnimation(AnimCaminar, true);
+        }
+    }
+}
+
+TArray<int32> UAlsasuaNPCPedestrianSystem::GetNearbyNPCs(const FVector& Location, float Radius) const
+{
+    TArray<int32> Result;
+    const float RadiusSq = FMath::Square(Radius);
+    for (int32 i = 0; i < NPCs.Num(); ++i)
+    {
+        if (FVector::DistSquared(NPCs[i].PosicionInicio, Location) < RadiusSq)
+            Result.Add(i);
+    }
+    return Result;
+}
+
+void UAlsasuaNPCPedestrianSystem::UnirAManifestacion(int32 Index)
+{
+    if (!NPCs.IsValidIndex(Index)) return;
+    FNPCPedestrian& NPC = NPCs[Index];
+    NPC.bEsManifestante = true;
+    NPC.Velocidad = FMath::RandRange(60.0f, 120.0f);  // Slower in crowd
+    NPC.DuracionActividad = 999.0f;  // Don't change activity while manifesting
 }

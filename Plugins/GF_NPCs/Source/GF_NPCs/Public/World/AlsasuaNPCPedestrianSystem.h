@@ -6,6 +6,7 @@
 #include "AlsasuaNPCPedestrianSystem.generated.h"
 
 class ASkeletalMeshActor;
+class UStaticMeshComponent;
 class USkeletalMesh;
 class UAnimSequence;
 
@@ -21,6 +22,15 @@ enum class ENPCActivity : uint8
     AtBench
 };
 
+/** Distance-based LOD for NPC rendering */
+UENUM(BlueprintType)
+enum class ENPCLod : uint8
+{
+    Full,       // < 100m: skeletal mesh, full AI, animations
+    Proxy,      // 100-300m: static mesh, no AI, simpler
+    Hidden      // > 300m: invisible, no tick
+};
+
 USTRUCT(BlueprintType)
 struct FNPCPedestrian
 {
@@ -28,6 +38,7 @@ struct FNPCPedestrian
     FString Nombre;
     FString Barrio;
     ENPCActivity ActividadActual = ENPCActivity::Walk;
+    ENPCLod LodActual = ENPCLod::Full;
     FVector PosicionInicio = FVector::ZeroVector;
     FVector PosicionObjetivo = FVector::ZeroVector;
     FVector DireccionMovimiento = FVector::ForwardVector;
@@ -38,6 +49,8 @@ struct FNPCPedestrian
     float TiempoEnActividad = 0.0f;
     float DuracionActividad = 5.0f;
     TWeakObjectPtr<ASkeletalMeshActor> ActorAsociado;
+    TWeakObjectPtr<AActor> ProxyActor;
+    bool bEsManifestante = false;  // Joined a manifestation
 };
 
 UCLASS()
@@ -59,17 +72,40 @@ public:
     void ActualizarNPCs(float DeltaTime);
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|NPCs")
-    int32 MaxNPCs = 50;
+    int32 MaxNPCs = 600;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|NPCs")
     float SpawnRadius = 2000.0f;
 
+    /** LOD distance thresholds */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|NPCs|LOD")
+    float LodProxyDistance = 30000.0f;  // 300m
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|NPCs|LOD")
+    float LodFullDistance = 10000.0f;   // 100m
+
+    /** NPCs per frame budget (full AI tick) */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|NPCs|Perf")
+    int32 MaxTicksPerFrame = 80;
+
     const TArray<FNPCPedestrian>& GetNPCs() const { return NPCs; }
+
+    /** Find nearby NPCs within radius */
+    TArray<int32> GetNearbyNPCs(const FVector& Location, float Radius) const;
+
+    /** Force NPC to join manifestation */
+    void UnirAManifestacion(int32 Index);
+
+    // El tiqueo real llega por IAlsasuaPilarTiquear::TiquearPilar, que el
+    // DirectorArranque llama una vez por frame; Tick() es un metodo normal,
+    // no FTickableGameObject (evitaria un doble tiqueo).
+    void Tick(float DeltaTime);
 
 private:
     TArray<FNPCPedestrian> NPCs;
     bool bInitialized = false;
     TArray<TArray<FVector>> CallesCache;
+    int32 TickIndex = 0;  // Round-robin tick index
 
     UPROPERTY() USkeletalMesh* MeshHombre = nullptr;
     UPROPERTY() USkeletalMesh* MeshMujer = nullptr;
@@ -79,6 +115,8 @@ private:
     void CargarAssetsPersonaje();
     void CargarCallejero();
     void CrearNPCEnPunto(FNPCPedestrian& NPC);
+    void CrearProxyNPC(FNPCPedestrian& NPC);
+    void ActualizarLOD(FNPCPedestrian& NPC, const FVector& PlayerPos);
     FVector ObtenerPuntoCalle(const FString& Barrio);
     FVector ObtenerPuntoCalleAleatorio();
     void CambiarActividad(FNPCPedestrian& NPC);
