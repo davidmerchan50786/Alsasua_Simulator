@@ -13,6 +13,8 @@
 #include "Sound/SoundBase.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/Controller.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "Engine/World.h"
 #include "Engine/GameInstance.h"
@@ -657,6 +659,41 @@ void UArmasComponent::CocheBombaDetonar()
 		if (IDamageable* Dmg = Cast<IDamageable>(NearestVehicle))
 			if (!Dmg->EstaMuerto())
 				Dmg->RecibirDano(200, BoomLocation, ETipoDano::Explosion);
+
+		// Carrero Blanco: enable physics + launch vehicle into the air.
+		if (UStaticMeshComponent* Mesh = NearestVehicle->FindComponentByClass<UStaticMeshComponent>())
+		{
+			Mesh->SetSimulatePhysics(true);
+			Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+			const FVector UpImpulse = FVector(0, 0, 180000) + NearestVehicle->GetActorForwardVector() * 30000.f;
+			Mesh->AddImpulse(UpImpulse, NAME_None, true);
+			Mesh->AddAngularImpulseInDegrees(
+				FVector(FMath::RandRange(-200.f, 200.f), FMath::RandRange(-200.f, 200.f), FMath::RandRange(400.f, 800.f)),
+				NAME_None, true);
+		}
+	}
+
+	// Radial impulse: launch nearby pawns.
+	TArray<FOverlapResult> LaunchOverlaps;
+	FCollisionShape LaunchShape = FCollisionShape::MakeSphere(1200.f);
+	if (W->OverlapMultiByChannel(LaunchOverlaps, BoomLocation, FQuat::Identity, ECC_Pawn, LaunchShape))
+	{
+		for (const FOverlapResult& Ov : LaunchOverlaps)
+		{
+			AActor* Target = Ov.GetActor();
+			if (!Target || Target == Owner) continue;
+			const FVector Dir = (Target->GetActorLocation() - BoomLocation).GetSafeNormal();
+			const float Dist = FVector::Dist(BoomLocation, Target->GetActorLocation());
+			const float Force = FMath::Max(0.f, 100000.f * (1.f - Dist / 1200.f));
+			if (APawn* P = Cast<APawn>(Target))
+			{
+				if (UCharacterMovementComponent* CM = P->FindComponentByClass<UCharacterMovementComponent>())
+				{
+					CM->SetMovementMode(MOVE_Falling);
+					CM->Velocity = Dir * Force * 0.01f + FVector(0, 0, 900.f);
+				}
+			}
+		}
 	}
 
 	SubirBusqueda(6);
