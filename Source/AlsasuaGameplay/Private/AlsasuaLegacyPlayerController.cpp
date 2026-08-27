@@ -140,7 +140,17 @@ void AAlsasuaLegacyPlayerController::OnInteractuar()
 				const int32 Idx = Peds->GetNearestNPC(Yo->GetActorLocation(), 400.f);
 				if (Idx >= 0)
 				{
-					Peds->HablarConNPC(Idx);
+					// Preferir un diálogo ramificado completo si existe JSON para su nombre
+					const FString NombreNPC = Peds->GetPersona(Idx).Nombre;
+					bool bConversacionIniciada = false;
+					if (UDialogoSubsystem* Dialogo = DialogoDe(this))
+						if (!Dialogo->EnCurso())
+							bConversacionIniciada = Dialogo->IniciarConNPC(NombreNPC);
+
+					// Sin conversación autorada: charla corta por persona + voz
+					if (!bConversacionIniciada)
+						Peds->HablarConNPC(Idx);
+
 					return;   // talked to NPC instead of entering vehicle
 				}
 			}
