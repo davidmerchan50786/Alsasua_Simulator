@@ -3,6 +3,7 @@
 #include "PeatonActor.h"
 #include "WantedSubsystem.h"
 #include "DiaNocheSubsystem.h"
+#include "ApoyoPopularSubsystem.h"
 #include "ArranqueMundo.h"
 #include "NavigationSystem.h"
 #include "Kismet/GameplayStatics.h"
@@ -31,14 +32,23 @@ void UPoblacionSubsystem::HandleLoudNoise(FVector Location)
 	if (Dist < 2000.f)
 		HuirDe(Location);
 
-	// Witness: one nearby civilian calls the police (30% day / 15% night).
+	// Witness: nearby civilian calls police. Chance scales with apoyo.
+	// Low apoyo (0) = 60% chance. High apoyo (100) = 5% chance.
 	if (Peatones.Num() > 0)
 	{
-		float WitnessChance = 0.3f;
+		float BaseWitnessChance = 0.3f;
 		if (UGameInstance* GI = GetGameInstance())
 			if (UDiaNocheSubsystem* DN = GI->GetSubsystem<UDiaNocheSubsystem>())
-				if (DN->EsNoche()) WitnessChance = 0.15f;
-		if (FMath::FRand() < WitnessChance)
+				if (DN->EsNoche()) BaseWitnessChance = 0.15f;
+
+		// Scale with apoyo: at 0 apoyo, double the chance; at 100, halve it.
+		float ApoyoMultiplier = 1.f;
+		if (UGameInstance* GI = GetGameInstance())
+			if (UApoyoPopularSubsystem* Apoyo = GI->GetSubsystem<UApoyoPopularSubsystem>())
+				ApoyoMultiplier = FMath::Lerp(2.0f, 0.25f, Apoyo->Apoyo / 100.f);
+
+		const float FinalChance = BaseWitnessChance * ApoyoMultiplier;
+		if (FMath::FRand() < FinalChance)
 			if (UGameInstance* GI = GetGameInstance())
 				if (UWantedSubsystem* W = GI->GetSubsystem<UWantedSubsystem>())
 					W->AumentarBusqueda(1);
@@ -49,6 +59,15 @@ void UPoblacionSubsystem::OnWantedChange(int32 Nivel)
 {
 	bPanicMode = Nivel >= 2;
 	if (bPanicMode) HuirDe(GetWorld() ? GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation() : FVector::ZeroVector);
+
+	// High apoyo: civilians DON'T flee at wanted 2 (they stand with you).
+	if (Nivel >= 2 && !bPanicMode)
+	{
+		if (UGameInstance* GI = GetGameInstance())
+			if (UApoyoPopularSubsystem* Apoyo = GI->GetSubsystem<UApoyoPopularSubsystem>())
+				if (Apoyo->Apoyo >= 70.f)
+					bPanicMode = false; // Override flee at high support.
+	}
 }
 
 void UPoblacionSubsystem::HuirDe(FVector Location)
@@ -56,6 +75,13 @@ void UPoblacionSubsystem::HuirDe(FVector Location)
 	for (APeatonActor* Pe : Peatones)
 	{
 		if (!IsValid(Pe)) continue;
+
+		// High apoyo: some civilians stay to help (don't flee).
+		if (UGameInstance* GI = GetGameInstance())
+			if (UApoyoPopularSubsystem* Apoyo = GI->GetSubsystem<UApoyoPopularSubsystem>())
+				if (Apoyo->Apoyo >= 70.f && FMath::FRand() < 0.4f)
+					continue; // 40% of civilians stay at high support.
+
 		FVector Away = Pe->GetActorLocation() + (Pe->GetActorLocation() - Location).GetSafeNormal2D() * 3000.f;
 		if (AAIController* AIC = Cast<AAIController>(Pe->GetController()))
 			AIC->MoveToLocation(Away);

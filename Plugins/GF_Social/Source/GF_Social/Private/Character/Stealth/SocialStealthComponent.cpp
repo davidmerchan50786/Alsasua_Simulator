@@ -1,5 +1,6 @@
 #include "Character/Stealth/SocialStealthComponent.h"
-// forward-declared
+#include "ApoyoPopularSubsystem.h"
+#include "Engine/GameInstance.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 USocialStealthComponent::USocialStealthComponent()
@@ -21,6 +22,32 @@ void USocialStealthComponent::UpdateStealthStatus()
         return;
     }
 
+    // Scale crowd requirements with popular support.
+    // High apoyo (70+): NPCs actively help hide you (fewer needed, wider radius).
+    // Low apoyo (<30): NPCs avoid helping (more needed, tighter radius).
+    float EffectiveRadius = CrowdDetectionRadius;
+    int32 EffectiveMinCrowd = MinCrowdSizeToHide;
+
+    if (UGameInstance* GI = Owner->GetWorld() ? Owner->GetWorld()->GetGameInstance() : nullptr)
+    {
+        if (UApoyoPopularSubsystem* Apoyo = GI->GetSubsystem<UApoyoPopularSubsystem>())
+        {
+            const float A = Apoyo->Apoyo;
+            if (A >= 70.f)
+            {
+                // High support: radius +50%, crowd needed reduced by 1.
+                EffectiveRadius *= 1.5f;
+                EffectiveMinCrowd = FMath::Max(1, MinCrowdSizeToHide - 1);
+            }
+            else if (A < 30.f)
+            {
+                // Low support: radius -30%, crowd needed +1.
+                EffectiveRadius *= 0.7f;
+                EffectiveMinCrowd = MinCrowdSizeToHide + 1;
+            }
+        }
+    }
+
     TArray<AActor*> OverlappingActors;
     TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
     ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn));
@@ -31,7 +58,7 @@ void USocialStealthComponent::UpdateStealthStatus()
     UKismetSystemLibrary::SphereOverlapActors(
         GetWorld(),
         Owner->GetActorLocation(),
-        CrowdDetectionRadius,
+        EffectiveRadius,
         ObjectTypes,
         nullptr,
         IgnoreActors,
@@ -47,7 +74,7 @@ void USocialStealthComponent::UpdateStealthStatus()
         }
     }
 
-    bool bNowHidden = (ValidNPCsNearby >= MinCrowdSizeToHide);
+    bool bNowHidden = (ValidNPCsNearby >= EffectiveMinCrowd);
     if (bNowHidden != bIsHiddenInCrowd)
     {
         bIsHiddenInCrowd = bNowHidden;
