@@ -305,11 +305,25 @@ void UArmasComponent::DispararFuego(int32 Dano, int32 Perdigones, float Dispersi
 		FHitResult Hit;
 		if (W->LineTraceSingleByChannel(Hit, Origen, Origen + D * 30000.f, ECC_Visibility, Q))
 		{
+			// Headshot: hit bone at or under "head". Damage falloff by distance.
+			const float Dist = Hit.Distance;
+			float FinalDano = (float)Dano;
+			if (Dist > DamageFalloffStart)
+				FinalDano *= FMath::Clamp(1.f - (Dist - DamageFalloffStart) / DamageFalloffRange, 0.25f, 1.f);
+
+			bool bHeadshot = false;
+			const FString BoneStr = Hit.BoneName.ToString();
+			bHeadshot = BoneStr.Contains(TEXT("head"), ESearchCase::IgnoreCase)
+				|| BoneStr.Contains(TEXT("cabeza"), ESearchCase::IgnoreCase)
+				|| BoneStr.Contains(TEXT("neck"), ESearchCase::IgnoreCase);
+			if (bHeadshot) FinalDano *= HeadshotMultiplier;
+
 			if (IDamageable* Dmg = Cast<IDamageable>(Hit.GetActor()))
 				if (!Dmg->EstaMuerto())
 				{
-					Dmg->RecibirDano(Dano, Hit.ImpactPoint, ETipoDano::Bala);
+					Dmg->RecibirDano((int32)FinalDano, Hit.ImpactPoint, ETipoDano::Bala);
 				Consecuencias(Hit.GetActor());
+				OnHitMark.Broadcast(bHeadshot);
 				if (NSSangre) UNiagaraFunctionLibrary::SpawnSystemAtLocation(W, NSSangre, Hit.ImpactPoint, (-D).Rotation());
 				}
 

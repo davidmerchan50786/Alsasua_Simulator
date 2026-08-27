@@ -12,6 +12,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAmmoChanged, int32, CurrentAmmo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnReloadStarted);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnReloadFinished);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHitMark, bool, bIsHeadshot);
 
 UCLASS(ClassGroup=(Alsasua), meta=(BlueprintSpawnableComponent))
 class ALSASUAGAMEPLAY_API UArmasComponent : public UActorComponent
@@ -42,6 +43,15 @@ public:
 	UPROPERTY(BlueprintAssignable, Category="Armas") FOnAmmoChanged OnAmmoChanged;
 	UPROPERTY(BlueprintAssignable, Category="Armas") FOnReloadStarted OnReloadStarted;
 	UPROPERTY(BlueprintAssignable, Category="Armas") FOnReloadFinished OnReloadFinished;
+	UPROPERTY(BlueprintAssignable, Category="Armas") FOnHitMark OnHitMark;
+
+	/** Headshot damage multiplier (bone = head/trajedia). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Armas") float HeadshotMultiplier = 2.5f;
+
+	/** Distance (cm) beyond which damage starts falling off. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Armas") float DamageFalloffStart = 3000.f;
+	/** Damage scales linearly to 0 over this range past DamageFalloffStart. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Armas") float DamageFalloffRange = 20000.f;
 
 	UFUNCTION(BlueprintCallable, Category="Armas") void CambiarArma(ETipoArma Arma);
 	UFUNCTION(BlueprintCallable, Category="Armas") void RecogerArma(ETipoArma Arma, int32 Cantidad);
