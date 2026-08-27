@@ -148,6 +148,33 @@ private:
     /** Última posición desde la que se vio al jugador. */
     FVector LastSeenLocation = FVector::ZeroVector;
 
+    // ── NPC Memory ────────────────────────────────────────────────────────
+    /** Time guard remembers player encounter (seconds). */
+    UPROPERTY(EditAnywhere, Category="Memory", meta=(ClampMin="5"))
+    float MemoryDuration = 30.f;
+
+    /** Current memory timer (counts up from last encounter). */
+    float MemoryTimer = 0.f;
+
+    /** Is guard currently remembering an encounter? */
+    bool bHasMemory = false;
+
+    /** Location of last remembered encounter. */
+    FVector MemoryLocation = FVector::ZeroVector;
+
+    /** How many times this guard has encountered the player. */
+    int32 EncounterCount = 0;
+
+    /** Time of last encounter. */
+    float LastEncounterTime = -1000.f;
+
+    /** Memory aggression bonus (higher = more aggressive on re-encounter). */
+    float MemoryAggressionBonus = 0.f;
+
+    void UpdateMemory(float DeltaTime);
+    void RecordEncounter(FVector Location);
+    bool HasRecentMemory() const;
+
 public:
     /** Multiplier for vision range (0-1). Set by disguise system. */
     UPROPERTY(BlueprintReadWrite, Category = "Alsasua|Guard")

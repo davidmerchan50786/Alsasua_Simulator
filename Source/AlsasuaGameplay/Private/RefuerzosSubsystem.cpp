@@ -15,7 +15,6 @@ void URefuerzosSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 		if (UWantedSubsystem* Wn = GI->GetSubsystem<UWantedSubsystem>())
 			Wn->OnEstrellasCambia.AddDynamic(this, &URefuerzosSubsystem::OnWanted);
 
-	// When any guard enters combat, bump wanted +1.
 	UGuardDetectionComponent::OnAnyGuardEnterCombat.AddDynamic(this, &URefuerzosSubsystem::OnGuardCombat);
 }
 
@@ -32,7 +31,7 @@ void URefuerzosSubsystem::OnWanted(int32 Nivel)
 	const float Ahora = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.f;
 	if (Ahora - UltimaOleada < Cooldown) return;
 	UltimaOleada = Ahora;
-	Despachar(Nivel);   // tamaño = nivel de búsqueda
+	Despachar(Nivel);
 }
 
 void URefuerzosSubsystem::Despachar(int32 Cantidad)
@@ -46,22 +45,28 @@ void URefuerzosSubsystem::Despachar(int32 Cantidad)
 	FActorSpawnParameters P;
 	P.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
-	// Foot police (all wanted levels).
-	for (int32 i = 0; i < Cantidad; ++i)
+	// Apply multipliers (set externally by tension systems before wanted fires).
+	const int32 FinalCount = FMath::CeilToInt(Cantidad * SpawnCountMultiplier);
+	const float FinalRadius = RadioSpawn * SpawnRadiusMultiplier;
+
+	for (int32 i = 0; i < FinalCount; ++i)
 	{
-		const float Ang = (2.f * PI / Cantidad) * i;
-		const FVector Off(FMath::Cos(Ang) * RadioSpawn, FMath::Sin(Ang) * RadioSpawn, 0.f);
+		const float Ang = (2.f * PI / FinalCount) * i;
+		const FVector Off(FMath::Cos(Ang) * FinalRadius, FMath::Sin(Ang) * FinalRadius, 0.f);
 		const FVector Pos = Centro + Off + FVector(0, 0, 120.f);
 		W->SpawnActor<APoliciaActor>(APoliciaActor::StaticClass(), Pos, (Off * -1).Rotation(), P);
 	}
 
-	// Vehicle reinforcements at wanted 3+.
 	if (Cantidad >= 3)
 	{
 		const float AngV = FMath::FRand() * 2.f * PI;
-		const FVector OffV(FMath::Cos(AngV) * (RadioSpawn + 500.f), FMath::Sin(AngV) * (RadioSpawn + 500.f), 0.f);
+		const FVector OffV(FMath::Cos(AngV) * (FinalRadius + 500.f), FMath::Sin(AngV) * (FinalRadius + 500.f), 0.f);
 		SpawnVehiculoPolicia(Centro + OffV, (Centro - (Centro + OffV)).Rotation());
 	}
+
+	// Reset after use.
+	SpawnCountMultiplier = 1.f;
+	SpawnRadiusMultiplier = 1.f;
 }
 
 void URefuerzosSubsystem::SpawnVehiculoPolicia(FVector Centro, FRotator Rotacion)

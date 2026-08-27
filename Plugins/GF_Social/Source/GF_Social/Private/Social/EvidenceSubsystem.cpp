@@ -1,6 +1,9 @@
 #include "Social/EvidenceSubsystem.h"
 #include "Politics/FactionSubsystem.h"
 #include "EconomiaCriminalSubsystem.h"
+#include "Systems/Media/RadioSubsystem.h"
+#include "Kismet/GameplayStatics.h"
+#include "Engine/World.h"
 
 void UEvidenceSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -20,7 +23,33 @@ void UEvidenceSubsystem::OnCriminalActivity(FName ActivityType, int32 Severity)
 void UEvidenceSubsystem::CollectEvidence(FEvidenceItem NewEvidence)
 {
     CollectedEvidence.Add(NewEvidence);
+    TotalEvidenceCollected++;
     UE_LOG(LogTemp, Log, TEXT("Evidencia recogida: %s"), *NewEvidence.Title);
+    CheckEvidenceThresholds();
+}
+
+void UEvidenceSubsystem::CheckEvidenceThresholds()
+{
+    for (int32 Threshold : EvidenceThresholds)
+    {
+        if (TotalEvidenceCollected == Threshold)
+        {
+            OnEvidenceThresholdReached.Broadcast(Threshold);
+
+            // Broadcast news about evidence accumulation.
+            if (UWorld* W = GetWorld())
+            {
+                if (URadioSubsystem* Radio = W->GetSubsystem<URadioSubsystem>())
+                {
+                    FText Headline = FText::Format(
+                        NSLOCTEXT("Radio", "EvidenceThreshold", "Se acumulan pruebas contundentes contra las autoridades. {0} evidencias recopiladas."),
+                        FText::AsNumber(Threshold));
+                    Radio->TriggerUrgentNews(Headline, FText::GetEmpty());
+                }
+            }
+            break; // Only fire the first matching threshold.
+        }
+    }
 }
 
 void UEvidenceSubsystem::PublishToPress(FName EvidenceId)

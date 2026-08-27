@@ -35,6 +35,7 @@ void UGuardDetectionComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
     TickVisionCheck(DeltaTime);
     TickHearingCheck(DeltaTime);
     TickStateTimer(DeltaTime);
+    UpdateMemory(DeltaTime);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -57,15 +58,22 @@ void UGuardDetectionComponent::TickVisionCheck(float DeltaTime)
         LastSeenLocation = CachedPlayerTarget->GetActorLocation();
         LastKnownPlayerLocation = LastSeenLocation;
 
+        // Record encounter in guard memory.
+        RecordEncounter(LastSeenLocation);
+
         // Escalar estado según distancia.
         const float Distance = FVector::Dist(GetOwner()->GetActorLocation(), LastSeenLocation);
 
-        if (Distance < 900.f)
+        // Apply memory aggression bonus — more encounters = lower thresholds.
+        const float CombatThreshold = 900.f + MemoryAggressionBonus * 5.f;
+        const float AlertThreshold = 1800.f + MemoryAggressionBonus * 10.f;
+
+        if (Distance < CombatThreshold)
         {
             // Muy cerca → combate directo.
             TransitionToState(EGuardAlertState::Combat);
         }
-        else if (Distance < 1800.f)
+        else if (Distance < AlertThreshold)
         {
             // Cerca → alert.
             TransitionToState(EGuardAlertState::Alert);
@@ -77,6 +85,13 @@ void UGuardDetectionComponent::TickVisionCheck(float DeltaTime)
         }
 
         OnDetectedPlayer.Broadcast(GetOwner(), LastSeenLocation);
+    }
+    // Check for remembered encounter location.
+    else if (HasRecentMemory() && CurrentState == EGuardAlertState::Idle)
+    {
+        // Guard remembers seeing player here recently → investigate.
+        LastKnownPlayerLocation = MemoryLocation;
+        TransitionToState(EGuardAlertState::Suspicious);
     }
 }
 
@@ -277,6 +292,13 @@ void UGuardDetectionComponent::ResetToIdle()
     LastKnownPlayerLocation = FVector::ZeroVector;
     LastSeenLocation = FVector::ZeroVector;
     StateTimer = 0.f;
+
+    // Clear memory on full reset (e.g., player respawn).
+    bHasMemory = false;
+    MemoryTimer = 0.f;
+    EncounterCount = 0;
+    MemoryAggressionBonus = 0.f;
+
     TransitionToState(EGuardAlertState::Idle);
 }
 
@@ -290,4 +312,43 @@ AActor* UGuardDetectionComponent::FindPlayerPawn() const
 
     APlayerController* PC = UGameplayStatics::GetPlayerController(World, 0);
     return PC ? Cast<AActor>(PC->GetPawn()) : nullptr;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  NPC Memory — guards remember previous encounters
+// ─────────────────────────────────────────────────────────────────────────────
+void UGuardDetectionComponent::UpdateMemory(float DeltaTime)
+{
+    if (!bHasMemory) return;
+
+    MemoryTimer += DeltaTime;
+
+    // Memory fades over time.
+    if (MemoryTimer >= MemoryDuration)
+    {
+        bHasMemory = false;
+        MemoryAggressionBonus = FMath::Max(0.f, MemoryAggressionBonus - 0.2f); // Gradual fade.
+    }
+}
+
+void UGuardDetectionComponent::RecordEncounter(FVector Location)
+{
+    const float Now = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.f;
+
+    // First encounter or fresh memory.
+    if (!bHasMemory || (Now - LastEncounterTime) > MemoryDuration * 0.5f)
+    {
+        EncounterCount++;
+        MemoryAggressionBonus = FMath::Min(30.f, MemoryAggressionBonus + 10.f); // Up to +30 suspicion.
+    }
+
+    bHasMemory = true;
+    MemoryTimer = 0.f;
+    MemoryLocation = Location;
+    LastEncounterTime = Now;
+}
+
+bool UGuardDetectionComponent::HasRecentMemory() const
+{
+    return bHasMemory && MemoryTimer < MemoryDuration;
 }

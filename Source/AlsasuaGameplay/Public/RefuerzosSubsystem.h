@@ -23,6 +23,10 @@ public:
 	 *  de GF_Vehiculos en compile-time. */
 	UPROPERTY(EditAnywhere, Category="Refuerzos") FSoftClassPath ClaseVehiculoPolicia;
 
+	/** Set by external tension systems before wanted fires. Reset after each wave. */
+	UPROPERTY(BlueprintReadWrite, Category="Refuerzos|Zones") float SpawnCountMultiplier = 1.f;
+	UPROPERTY(BlueprintReadWrite, Category="Refuerzos|Zones") float SpawnRadiusMultiplier = 1.f;
+
 private:
 	float UltimaOleada = -1000.f;
 
