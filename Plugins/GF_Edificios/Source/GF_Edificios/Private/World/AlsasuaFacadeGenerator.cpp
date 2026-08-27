@@ -11,11 +11,20 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "GeoDataAlsasua.h"
+#include "AlsasuaServiceRegistry.h"
 
 void UAlsasuaFacadeGenerator::Initialize(FSubsystemCollectionBase& Collection)
 {
     Super::Initialize(Collection);
     CargarFachadas();
+
+    // Publish as IBuildingQueryService
+    UWorld* W = GetWorld();
+    if (W)
+    {
+        UAlsasuaServiceRegistry* Reg = UAlsasuaServiceRegistry::Get(W);
+        if (Reg) Reg->Publicar(FName("Buildings"), this);
+    }
 }
 
 const FBuildingFacadeEntry* UAlsasuaFacadeGenerator::De(int32 BuildingId) const
@@ -143,6 +152,44 @@ bool UAlsasuaFacadeGenerator::CargarFachadas()
         }
 
         Fachadas.Add(Entry);
+    }
+
+    // Cross-reference centroids from buildings_final.json
+    const FString BldPath = FPaths::ProjectContentDir() + TEXT("Datos/buildings_final.json");
+    TArray<FString> BldLines;
+    if (FFileHelper::LoadFileToStringArray(BldLines, *BldPath))
+    {
+        FString BldStr;
+        for (const FString& L : BldLines) BldStr += L;
+        TArray<TSharedPtr<FJsonValue>> BldRoot;
+        TSharedRef<TJsonReader<>> BldReader = TJsonReaderFactory<>::Create(BldStr);
+        if (FJsonSerializer::Deserialize(BldReader, BldRoot))
+        {
+            for (const auto& BVal : BldRoot)
+            {
+                const TSharedPtr<FJsonObject>& BObj = BVal->AsObject();
+                if (!BObj) continue;
+                const int32 BId = BObj->GetIntegerField(TEXT("id"));
+                const TArray<TSharedPtr<FJsonValue>>* Vs;
+                if (!BObj->TryGetArrayField(TEXT("vertices"), Vs) || Vs->Num() < 3) continue;
+
+                FVector Centroid = FVector::ZeroVector;
+                for (const auto& Pv : *Vs)
+                {
+                    const TSharedPtr<FJsonObject>& Po = Pv->AsObject();
+                    if (!Po) continue;
+                    const FVector Loc = UAlsasuaGeoData::RelLocalToUE5(FVector(
+                        Po->GetNumberField(TEXT("x")), 0.0, Po->GetNumberField(TEXT("z"))));
+                    Centroid += FVector(Loc.X, Loc.Y, 0.f);
+                }
+                Centroid /= Vs->Num();
+
+                for (FBuildingFacadeEntry& E : Fachadas)
+                {
+                    if (E.BuildingId == BId) { E.Centro = Centroid; break; }
+                }
+            }
+        }
     }
 
     bCargado = true;
@@ -363,4 +410,50 @@ int32 UAlsasuaFacadeGenerator::ColocarParadasTransporte()
         TEXT("Transport: %d paradas colocadas; %d fuera del terreno (cabeceras interurbanas), %d repetidas, %d sin lat/lon"),
         Placed, Lejos, Repetidas, SinCoords);
     return Placed;
+}
+
+// ── IBuildingQueryService ───────────────────────────────────────────────────
+
+int32 UAlsasuaFacadeGenerator::GetBuildingCount() const
+{
+    return Fachadas.Num();
+}
+
+FName UAlsasuaFacadeGenerator::GetBarrioAt(const FVector& Location) const
+{
+    float BestDistSq = MAX_FLT;
+    FName BestBarrio;
+    for (const FBuildingFacadeEntry& E : Fachadas)
+    {
+        const float D = FVector::DistSquared(Location, E.Centro);
+        if (D < BestDistSq) { BestDistSq = D; BestBarrio = *E.Barrio; }
+    }
+    return BestBarrio;
+}
+
+bool UAlsasuaFacadeGenerator::GetBuildingAt(const FVector& Location, float Radius, FVector& OutCenter, float& OutHeight) const
+{
+    const float RadiusSq = FMath::Square(Radius);
+    float BestDistSq = MAX_FLT;
+    const FBuildingFacadeEntry* Best = nullptr;
+    for (const FBuildingFacadeEntry& E : Fachadas)
+    {
+        const float D = FVector::DistSquared(Location, E.Centro);
+        if (D < RadiusSq && D < BestDistSq) { BestDistSq = D; Best = &E; }
+    }
+    if (!Best) return false;
+    OutCenter = Best->Centro;
+    OutHeight = Best->AlturaTotal;
+    return true;
+}
+
+bool UAlsasuaFacadeGenerator::IsInteriorAt(const FVector& Location) const
+{
+    // Approximate: if within 200cm of any building centroid, consider interior
+    const float ThresholdSq = FMath::Square(200.f);
+    for (const FBuildingFacadeEntry& E : Fachadas)
+    {
+        if (FVector::DistSquared(Location, E.Centro) < ThresholdSq) return true;
+    }
+    return false;
 }

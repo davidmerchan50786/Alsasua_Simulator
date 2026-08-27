@@ -4,6 +4,7 @@
 #include "Subsystems/WorldSubsystem.h"
 #include "Engine/DataTable.h"
 #include "VegetationType.h"
+#include "Services/IVegetationService.h"
 #include "VegetationSpawnerSubsystem.generated.h"
 
 class UHierarchicalInstancedStaticMeshComponent;
@@ -23,7 +24,7 @@ struct GF_VEGETACION_API FCellCollisionData
 };
 
 UCLASS()
-class GF_VEGETACION_API UVegetationSpawnerSubsystem : public UWorldSubsystem
+class GF_VEGETACION_API UVegetationSpawnerSubsystem : public UWorldSubsystem, public IVegetationService
 {
 	GENERATED_BODY()
 
@@ -70,6 +71,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Vegetation Spawner")
 	TArray<FTransform> GetSpawnTransforms(UVegetationType* Vegetation, const FBox& RegionBounds);
+
+	// IVegetationService
+	virtual void SpawnAll() override;
+	virtual void ClearAll() override;
+	virtual int32 GetInstanceCount() const override;
+	virtual float GetDensityAt(const FVector& Location) const override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vegetation Spawner")
 	TArray<TObjectPtr<UVegetationType>> VegetationTypes;
