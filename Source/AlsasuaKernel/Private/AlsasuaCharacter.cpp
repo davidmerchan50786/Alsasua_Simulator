@@ -109,6 +109,17 @@ void AAlsasuaCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	// Passive stamina regen (30/sec when not sprinting).
+	if (AttributeSet)
+	{
+		const float Current = AttributeSet->GetStamina();
+		const float Max = AttributeSet->GetMaxStamina();
+		const bool bSprinting = GetCharacterMovement() && GetCharacterMovement()->MaxWalkSpeed > VelCaminar + 10.f;
+		if (!bSprinting && Current < Max)
+			AbilitySystemComponent->ApplyModToAttribute(AttributeSet->GetStaminaAttribute(),
+				EGameplayModOp::Additive, FMath::Min(30.f * DeltaTime, Max - Current));
+	}
+
 	if (bTrepando)
 	{
 		TrepaT += DeltaTime;
