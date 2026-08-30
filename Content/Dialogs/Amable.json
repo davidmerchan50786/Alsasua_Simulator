@@ -1,0 +1,61 @@
+{
+    "StartNodeID": 0,
+    "Nodes": [
+        {
+            "ID": 0,
+            "Type": "NPC_Statement",
+            "DialogueText": "¡Epa! Nunca había hablado con este proyecto antes. ¿Qué necesitas?",
+            "Options": [
+                {
+                    "OptionText": "Solo paso. ¿Cómo va todo?",
+                    "TargetNodeID": 1,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                },
+                {
+                    "OptionText": "[PERSUASIÓN] Se te ve buena gente. ¿Te unes a la asamblea?",
+                    "TargetNodeID": 2,
+                    "bRequiresSkillCheck": true,
+                    "DifficultyClass": 12
+                },
+                {
+                    "OptionText": "Adiós.",
+                    "TargetNodeID": 4,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                }
+            ]
+        },
+        {
+            "ID": 1,
+            "Type": "NPC_Statement",
+            "DialogueText": "Tirando. El pan está caro, pero uno se apaña. Siempre hay quien tiene menos que yo.",
+            "Options": [
+                {
+                    "OptionText": "Eso es buena actitud. Hasta luego.",
+                    "TargetNodeID": 4,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                }
+            ]
+        },
+        {
+            "ID": 2,
+            "Type": "NPC_Statement",
+            "DialogueText": "Pues... a mi manera, sí. No soy de gritar, pero de ayudar no me gana nadie. Si hace falta, ahí estaré.",
+            "Options": [
+                {
+                    "OptionText": "Se agradece, de verdad.",
+                    "TargetNodeID": 4,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                }
+            ]
+        },
+        {
+            "ID": 4,
+            "Type": "End_Conversation",
+            "DialogueText": "La conversación ha terminado."
+        }
+    ]
+}

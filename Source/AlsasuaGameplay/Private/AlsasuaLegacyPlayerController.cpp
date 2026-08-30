@@ -145,12 +145,13 @@ void AAlsasuaLegacyPlayerController::OnInteractuar()
 					const int32 Idx = Peds->GetNearestNPC(Yo->GetActorLocation(), 400.f);
 					if (Idx >= 0)
 					{
-						// Preferir un diálogo ramificado completo si existe JSON para su nombre
-						const FString NombreNPC = Peds->GetPersonaNombre(Idx);
+						// Preferir un diálogo ramificado completo: un JSON compartido
+						// por personalidad (Amable, Rebelde...) si existe para ella.
+						const FString ClavePersona = Peds->GetPersonaClave(Idx);
 						bool bConversacionIniciada = false;
 						if (UDialogoSubsystem* Dialogo = DialogoDe(this))
 							if (!Dialogo->EnCurso())
-								bConversacionIniciada = Dialogo->IniciarConNPC(NombreNPC);
+								bConversacionIniciada = Dialogo->IniciarConNPC(ClavePersona);
 
 						// Sin conversación autorada: charla corta por persona + voz
 						if (!bConversacionIniciada)

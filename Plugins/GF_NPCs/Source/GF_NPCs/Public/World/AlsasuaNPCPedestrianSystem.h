@@ -166,6 +166,24 @@ public:
     // FNPCPersona (que vive solo en GF_NPCs) al otro lado del contrato.
     virtual FString GetPersonaNombre(int32 Index) const override { return GetPersona(Index).Nombre; }
 
+    // INPCSocialService: clave de diálogo por personalidad (Amable, Rebelde...),
+    // denota el fichero Content/Dialogs/<clave>.json compartido por todos los
+    // NPC de esa forma de ser. El nombre real es único por NPC, la personalidad no.
+    virtual FString GetPersonaClave(int32 Index) const override
+    {
+        static const TMap<ENPCPersonalidad, FString> Claves = {
+            { ENPCPersonalidad::Amable,   TEXT("Amable") },
+            { ENPCPersonalidad::Timido,   TEXT("Timido") },
+            { ENPCPersonalidad::Grumpy,   TEXT("Grumpy") },
+            { ENPCPersonalidad::Sociable, TEXT("Sociable") },
+            { ENPCPersonalidad::Serio,    TEXT("Serio") },
+            { ENPCPersonalidad::Nervioso, TEXT("Nervioso") },
+            { ENPCPersonalidad::Rebelde,  TEXT("Rebelde") },
+        };
+        const FString* K = Claves.Find(GetPersona(Index).Personalidad);
+        return K ? *K : FString();
+    }
+
     /** Player talks to nearest NPC — returns the spoken line (or empty) */
     UFUNCTION(BlueprintCallable, Category = "Alsasua|NPCs|Social")
     virtual FString HablarConNPC(int32 Index) override;

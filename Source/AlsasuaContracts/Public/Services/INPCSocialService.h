@@ -20,6 +20,10 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Alsasua|Contracts|NPCSocial")
     virtual FString GetPersonaNombre(int32 Index) const = 0;
 
+    /** Clave de fichero de diálogo por personalidad (Amable, Rebelde...). */
+    UFUNCTION(BlueprintCallable, Category = "Alsasua|Contracts|NPCSocial")
+    virtual FString GetPersonaClave(int32 Index) const = 0;
+
     UFUNCTION(BlueprintCallable, Category = "Alsasua|Contracts|NPCSocial")
     virtual FString HablarConNPC(int32 Index) = 0;
 };

@@ -1,0 +1,61 @@
+{
+    "StartNodeID": 0,
+    "Nodes": [
+        {
+            "ID": 0,
+            "Type": "NPC_Statement",
+            "DialogueText": "¡Ay! Me has dado un susto. Perdona, estoy un poco nervioso con tanto jaleo en la calle.",
+            "Options": [
+                {
+                    "OptionText": "Tranquilo, soy de los buenos.",
+                    "TargetNodeID": 1,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                },
+                {
+                    "OptionText": "[PERSUASIÓN] Mejor con gente preocupada como tú dirá todo el mundo.",
+                    "TargetNodeID": 2,
+                    "bRequiresSkillCheck": true,
+                    "DifficultyClass": 12
+                },
+                {
+                    "OptionText": "Lo siento, se acabó.",
+                    "TargetNodeID": 4,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                }
+            ]
+        },
+        {
+            "ID": 1,
+            "Type": "NPC_Statement",
+            "DialogueText": "¿Seguro? Es que con esto de la policía no sabe uno de quién fiarse. Pero tú cara de mala persona no tienes.",
+            "Options": [
+                {
+                    "OptionText": "Descuida, de verdad. Ánimo.",
+                    "TargetNodeID": 4,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                }
+            ]
+        },
+        {
+            "ID": 2,
+            "Type": "NPC_Statement",
+            "DialogueText": "Pues... sí, a lo mejor es hora de dejar de mirar para otro lado. Uno ya no aguanta más. Quizás me anime.",
+            "Options": [
+                {
+                    "OptionText": "Eso está bien. Nos vemos.",
+                    "TargetNodeID": 4,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                }
+            ]
+        },
+        {
+            "ID": 4,
+            "Type": "End_Conversation",
+            "DialogueText": "La conversación ha terminado."
+        }
+    ]
+}

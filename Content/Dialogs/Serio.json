@@ -1,0 +1,61 @@
+{
+    "StartNodeID": 0,
+    "Nodes": [
+        {
+            "ID": 0,
+            "Type": "NPC_Statement",
+            "DialogueText": "Buenas. No mucho tiempo, que tengo la jornada empezada. Dime.",
+            "Options": [
+                {
+                    "OptionText": "Entendido. ¿Qué tal el trabajo?",
+                    "TargetNodeID": 1,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                },
+                {
+                    "OptionText": "¿La cosa cómo está en el pueblo?",
+                    "TargetNodeID": 2,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                },
+                {
+                    "OptionText": "Adiós.",
+                    "TargetNodeID": 4,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                }
+            ]
+        },
+        {
+            "ID": 1,
+            "Type": "NPC_Statement",
+            "DialogueText": "Mucho y poco a la vez. El oficio no se para, y mal que bien se saca el día.",
+            "Options": [
+                {
+                    "OptionText": "Eso hay que respetarlo.",
+                    "TargetNodeID": 4,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                }
+            ]
+        },
+        {
+            "ID": 2,
+            "Type": "NPC_Statement",
+            "DialogueText": "Tensa. La gente está al límite con esto de los precios y los recortes. No sé hasta cuándo aguantarán en silencio.",
+            "Options": [
+                {
+                    "OptionText": "Lo sé. Gracias por la sinceridad.",
+                    "TargetNodeID": 4,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                }
+            ]
+        },
+        {
+            "ID": 4,
+            "Type": "End_Conversation",
+            "DialogueText": "La conversación ha terminado."
+        }
+    ]
+}

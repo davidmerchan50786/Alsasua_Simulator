@@ -1,0 +1,61 @@
+{
+    "StartNodeID": 0,
+    "Nodes": [
+        {
+            "ID": 0,
+            "Type": "NPC_Statement",
+            "DialogueText": "U-uh... ¿me hablas a mí? No sabía que... bueno, hola.",
+            "Options": [
+                {
+                    "OptionText": "Hola, no pasa nada. ¿Cómo te llamas?",
+                    "TargetNodeID": 1,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                },
+                {
+                    "OptionText": "Perdona, me he equivocado.",
+                    "TargetNodeID": 4,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                }
+            ]
+        },
+        {
+            "ID": 1,
+            "Type": "NPC_Statement",
+            "DialogueText": "Soy... bueno, tú ya me ves. No acostumbro a hablar mucho. Me da corte.",
+            "Options": [
+                {
+                    "OptionText": "Tranquilo, aquí no se muerde a nadie.",
+                    "TargetNodeID": 2,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                },
+                {
+                    "OptionText": "Está bien. Hasta luego.",
+                    "TargetNodeID": 4,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                }
+            ]
+        },
+        {
+            "ID": 2,
+            "Type": "NPC_Statement",
+            "DialogueText": "Je... gracias. Poca gente se toma la molestia. Nos vemos, supongo.",
+            "Options": [
+                {
+                    "OptionText": "Claro. Cuídate.",
+                    "TargetNodeID": 4,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                }
+            ]
+        },
+        {
+            "ID": 4,
+            "Type": "End_Conversation",
+            "DialogueText": "La conversación ha terminado."
+        }
+    ]
+}

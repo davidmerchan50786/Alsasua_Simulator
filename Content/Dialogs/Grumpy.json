@@ -1,0 +1,61 @@
+{
+    "StartNodeID": 0,
+    "Nodes": [
+        {
+            "ID": 0,
+            "Type": "NPC_Statement",
+            "DialogueText": "¿Qué quieres? No tengo todo el día para perder el tiempo con turistas.",
+            "Options": [
+                {
+                    "OptionText": "Vaya genio. Solo saludaba.",
+                    "TargetNodeID": 1,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                },
+                {
+                    "OptionText": "[INTIMIDACIÓN] Baja ese tono conmigo.",
+                    "TargetNodeID": 2,
+                    "bRequiresSkillCheck": true,
+                    "DifficultyClass": 15
+                },
+                {
+                    "OptionText": "Adiós.",
+                    "TargetNodeID": 4,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                }
+            ]
+        },
+        {
+            "ID": 1,
+            "Type": "NPC_Statement",
+            "DialogueText": "Genio tengo donde me hace falta. Con el pan a este precio, cualquiera está de buenas.",
+            "Options": [
+                {
+                    "OptionText": "Tienes razón en eso. Suerte.",
+                    "TargetNodeID": 4,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                }
+            ]
+        },
+        {
+            "ID": 2,
+            "Type": "NPC_Statement",
+            "DialogueText": "Tch... Vale, vale. Estoy de mal humor, no te lo tomes a pecho. Cosas de la vida.",
+            "Options": [
+                {
+                    "OptionText": "Así se habla. Hasta luego.",
+                    "TargetNodeID": 4,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                }
+            ]
+        },
+        {
+            "ID": 4,
+            "Type": "End_Conversation",
+            "DialogueText": "La conversación ha terminado."
+        }
+    ]
+}
