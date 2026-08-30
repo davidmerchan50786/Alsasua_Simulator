@@ -82,6 +82,9 @@ void UArmasComponent::TickComponent(float DeltaTime, ELevelTick, FActorComponent
 {
 	if (Cooldown > 0.f) Cooldown -= DeltaTime;
 
+	// Recoil recovers when not firing.
+	if (RecoilStack > 0.f) RecoilStack = FMath::Max(0.f, RecoilStack - RecoilDecay * DeltaTime);
+
 	if (bReloading)
 	{
 		ReloadTimer -= DeltaTime;
@@ -334,11 +337,12 @@ void UArmasComponent::DispararFuego(int32 Dano, int32 Perdigones, float Dispersi
 	}
 }
 
-	// Retroceso.
+	// Retroceso (progressive recoil pattern: climbs with continuous fire).
 	if (APawn* P = Cast<APawn>(GetOwner()))
 		if (APlayerController* PC = Cast<APlayerController>(P->GetController()))
 		{
-			float Kick = 0.6f + DispersionGrados * 0.15f;
+			RecoilStack = FMath::Min(RecoilStack + RecoilPerShot, RecoilMax);
+			float Kick = (0.6f + DispersionGrados * 0.15f) * (1.f + RecoilStack);
 			if (const AAlsasuaPlayerCharacter* Ch = Cast<AAlsasuaPlayerCharacter>(P)) if (Ch->EstaApuntando()) Kick *= 0.5f;
 			PC->AddPitchInput(-Kick);
 			PC->AddYawInput(FMath::FRandRange(-Kick, Kick) * 0.3f);

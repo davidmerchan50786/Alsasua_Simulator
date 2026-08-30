@@ -53,6 +53,13 @@ public:
 	/** Damage scales linearly to 0 over this range past DamageFalloffStart. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Armas") float DamageFalloffRange = 20000.f;
 
+	/** Recoil pattern: extra kick per consecutive shot (climbs while firing). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Armas") float RecoilPerShot = 0.08f;
+	/** Recoil climbs toward this cap while firing continuously. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Armas") float RecoilMax = 0.8f;
+	/** Recoil decays this fast per second when not firing. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Armas") float RecoilDecay = 1.5f;
+
 	UFUNCTION(BlueprintCallable, Category="Armas") void CambiarArma(ETipoArma Arma);
 	UFUNCTION(BlueprintCallable, Category="Armas") void RecogerArma(ETipoArma Arma, int32 Cantidad);
 	UFUNCTION(BlueprintCallable, Category="Armas") void RecogerMunicion(ETipoArma Arma, int32 Cantidad);
@@ -78,6 +85,7 @@ protected:
 private:
 	float Cooldown = 0.f;
 	float ReloadTimer = 0.f;
+	float RecoilStack = 0.f;
 	bool bBombaLapaActive = false;
 	FVector BombaLapaLocation;
 
