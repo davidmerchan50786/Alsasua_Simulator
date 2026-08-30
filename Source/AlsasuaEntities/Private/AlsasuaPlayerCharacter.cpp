@@ -4,6 +4,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
 #include "Engine/LocalPlayer.h"
 #include "Engine/World.h"
@@ -148,6 +149,29 @@ FOnPlayerDied AAlsasuaPlayerCharacter::OnPlayerDied;
 
 void AAlsasuaPlayerCharacter::RecibirDano(int32 Cantidad, FVector Origen, ETipoDano Tipo)
 {
+	// Cover system: bullets (Bala) that must cross solid geometry to reach the
+	// torso are caught by the geometry — the player behind a wall/car absorbs
+	// near-zero damage. Trace attacker→torso; if something solid blocks before
+	// reaching the capsule, the wall took the bullet.
+	if (Tipo == ETipoDano::Bala && Cantidad > 0 && !Origen.IsNearlyZero() && GetWorld())
+	{
+		const FVector Torso = GetActorLocation() + FVector(0, 0, GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 0.55f);
+		FHitResult CoverHit;
+		FCollisionQueryParams Q;
+		Q.AddIgnoredActor(this);
+		if (GetWorld()->LineTraceSingleByChannel(CoverHit, Origen, Torso, ECC_Visibility, Q))
+		{
+			// Blocking actor is world geometry (not the player or another pawn),
+			// and sits in the player's half of the attacker→player line: a wall
+			// the player is hugging, between them and the shooter.
+			if (CoverHit.GetActor() && Cast<APawn>(CoverHit.GetActor()) == nullptr
+				&& CoverHit.Distance > (Origen - Torso).Size() * 0.5f)
+			{
+				Cantidad = FMath::Max(1, Cantidad / 10);   // graze/ricochet
+			}
+		}
+	}
+
 	Vida = FMath::Max(0, Vida - Cantidad);
 
 	// Flinch: sacudida de cámara al encajar el golpe (más fuerte cuanto más daño).
