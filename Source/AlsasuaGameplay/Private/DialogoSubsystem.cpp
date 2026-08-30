@@ -146,6 +146,7 @@ void UDialogoSubsystem::Iniciar(UConversacionDialogo* Conv)
 	TiradasFalladas.Reset();
 
 	Conversacion = Conv;
+	HablanteOverride.Reset();
 	IrA(Conv->Inicio.IsNone() ? Conv->Nodos[0].Id : Conv->Inicio);
 }
 
@@ -267,6 +268,7 @@ void UDialogoSubsystem::Terminar()
 	{
 		Actual = nullptr;
 		Conversacion = nullptr;
+		HablanteOverride.Reset();
 		TiradasFalladas.Reset();
 		OnDialogoFin.Broadcast();
 	}

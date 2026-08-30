@@ -151,7 +151,13 @@ void AAlsasuaLegacyPlayerController::OnInteractuar()
 						bool bConversacionIniciada = false;
 						if (UDialogoSubsystem* Dialogo = DialogoDe(this))
 							if (!Dialogo->EnCurso())
+							{
 								bConversacionIniciada = Dialogo->IniciarConNPC(ClavePersona);
+								// El hablante del fichero es la clave ("Rebelde"); el
+								// HUD debe mostrar el nombre real del NPC.
+								if (bConversacionIniciada)
+									Dialogo->SetHablanteActual(Peds->GetPersonaNombre(Idx));
+							}
 
 						// Sin conversación autorada: charla corta por persona + voz
 						if (!bConversacionIniciada)
