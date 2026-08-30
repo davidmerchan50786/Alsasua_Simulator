@@ -16,6 +16,23 @@
 #include "Sound/SoundWaveProcedural.h"
 #include "AudioDeviceManager.h"
 
+// Proclividad a sumarse a la protesta según la forma de ser: el Rebelde se
+// apunta, el Tímido se echa atrás. Multiplica la probabilidad base de unirse.
+static float ProbabilidadProtesta(ENPCPersonalidad P)
+{
+	switch (P)
+	{
+	case ENPCPersonalidad::Rebelde:   return 2.0f;
+	case ENPCPersonalidad::Amable:    return 1.4f;
+	case ENPCPersonalidad::Sociable:  return 1.4f;
+	case ENPCPersonalidad::Serio:     return 1.0f;
+	case ENPCPersonalidad::Nervioso:  return 0.7f;
+	case ENPCPersonalidad::Grumpy:    return 0.7f;
+	case ENPCPersonalidad::Timido:    return 0.5f;
+	default:                          return 1.0f;
+	}
+}
+
 void UAlsasuaNPCPedestrianSystem::Initialize(FSubsystemCollectionBase& Collection)
 {
     Super::Initialize(Collection);
@@ -165,7 +182,10 @@ void UAlsasuaNPCPedestrianSystem::Tick(float DeltaTime)
         // Probability: base * apoyo * (1 + peer_pressure * crowd_size) * distance_falloff
         const float DistFactor = 1.f - FMath::Sqrt(DistSq) / RadioGrito;
         const float PeerPressure = 1.f + PresionGrupo * FMath::Min(ManifCount, 50);
-        const float Prob = ProbabilidadUnirse * ApoyoNorm * PeerPressure * DistFactor * JoinTimer;
+        // Cada persona reacciona según su forma de ser: el Rebelde se apunta, el
+        // Tímido se echa atrás. Cierra el bucle persona -> protesta.
+        const float Prob = ProbabilidadUnirse * ApoyoNorm * PeerPressure * DistFactor * JoinTimer
+            * ProbabilidadProtesta(NPC.Persona.Personalidad);
 
         if (FMath::FRand() < Prob)
         {
