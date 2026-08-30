@@ -4,6 +4,8 @@
 #include "AI/AlsasuaCrowdSentiment.h"
 #include "ManifestacionSubsystem.h"
 #include "WantedSubsystem.h"
+#include "AlsasuaServiceRegistry.h"
+#include "Services/INPCSocialService.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 #include "Engine/World.h"
@@ -137,7 +139,16 @@ void UAutonomousCommandsSubsystem::IniciarSecuestro()
 	APawn* Player = UGameplayStatics::GetPlayerPawn(W, 0);
 	const FVector Centro = Player ? Player->GetActorLocation() : TargetPos;
 
-	for (int32 i = 0; i < NpcSecuestro; ++i)
+	// Reclutar primero los peatones reales con forma de protesta (Rebelde/
+	// Sociable/Amable) que haya cerca; espawnea clones solo por lo que falte.
+	int32 Reclutados = 0;
+	if (UGameInstance* GI = W->GetGameInstance())
+		if (UAlsasuaServiceRegistry* Reg = GI->GetSubsystem<UAlsasuaServiceRegistry>())
+			if (INPCSocialService* Peds = Reg->PedirComo<INPCSocialService>(FName("NPCPedestrians")))
+				Reclutados = Peds->ReclutarPropensos(TargetPos, 600.f, NpcSecuestro);
+
+	const int32 AEspawnear = FMath::Max(0, NpcSecuestro - Reclutados);
+	for (int32 i = 0; i < AEspawnear; ++i)
 	{
 		const float Ang = (2.f * PI / NpcSecuestro) * i;
 		const FVector Off(FMath::Cos(Ang) * 300.f, FMath::Sin(Ang) * 300.f, 0.f);
@@ -158,7 +169,7 @@ void UAutonomousCommandsSubsystem::IniciarSecuestro()
 		if (UWantedSubsystem* Wn = GI->GetSubsystem<UWantedSubsystem>())
 			Wn->AumentarBusqueda(2);
 
-	UE_LOG(LogTemp, Warning, TEXT("[Autonomia] SECUESTRO: Banquero capturado por %d NPCs"), NpcSecuestro);
+	UE_LOG(LogTemp, Warning, TEXT("[Autonomia] SECUESTRO: Banquero capturado por %d/ %d NPCs (reclutados %d)"), NpcSecuestro, NpcSecuestro, Reclutados);
 
 	// Auto-finish after 20s
 	FTimerHandle Handle;

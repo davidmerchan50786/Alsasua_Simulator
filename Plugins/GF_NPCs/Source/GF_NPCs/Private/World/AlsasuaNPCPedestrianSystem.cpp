@@ -616,6 +616,47 @@ int32 UAlsasuaNPCPedestrianSystem::GetNearestNPC(const FVector& Location, float 
     return BestIdx;
 }
 
+int32 UAlsasuaNPCPedestrianSystem::ReclutarPropensos(const FVector& Punto, float Radio, int32 MaxN)
+{
+    if (MaxN <= 0) return 0;
+    const float RadioSq = FMath::Square(Radio);
+
+    // Indices Full-LOD, manifestantes o propensos a protestar (factor >= 1.0
+    // en ProbabilidadProtesta), ordenados por distancia al punto.
+    TArray<int32> Candidatos;
+    for (int32 i = 0; i < NPCs.Num(); ++i)
+    {
+        const FNPCPedestrian& NPC = NPCs[i];
+        if (NPC.LodActual != ENPCLod::Full) continue;
+        if (NPC.bEsManifestante) continue;
+        if (ProbabilidadProtesta(NPC.Persona.Personalidad) < 1.0f) continue;
+        if (FVector::DistSquared(NPC.PosicionInicio, Punto) > RadioSq) continue;
+        Candidatos.Add(i);
+    }
+    Candidatos.Sort([&](int32 A, int32 B)
+    {
+        return FVector::DistSquared(NPCs[A].PosicionInicio, Punto)
+             < FVector::DistSquared(NPCs[B].PosicionInicio, Punto);
+    });
+
+    int32 Reclutados = 0;
+    for (const int32 i : Candidatos)
+    {
+        if (Reclutados >= MaxN) break;
+        FNPCPedestrian& NPC = NPCs[i];
+        NPC.bEsManifestante = true;
+        NPC.PosicionObjetivo = Punto + FMath::VRand() * FMath::Min(Radio, 400.f) * 0.4f;
+        NPC.DireccionMovimiento = (NPC.PosicionObjetivo - NPC.PosicionInicio).GetSafeNormal();
+        NPC.Velocidad = FMath::RandRange(80.f, 140.f);
+        NPC.DuracionActividad = 999.f;
+        if (NPC.ActorAsociado.IsValid()) NPC.ActorAsociado->SetActorHiddenInGame(false);
+        ReproducirVoz(NPC.PosicionInicio, NPC.Persona.VozPitch);
+        OnNPCHabla.Broadcast(NPC.Persona.Nombre, NPC.Persona.FraseFavorita, NPC.Persona.VozPitch);
+        ++Reclutados;
+    }
+    return Reclutados;
+}
+
 const FNPCPersona& UAlsasuaNPCPedestrianSystem::GetPersona(int32 Index) const
 {
     static const FNPCPersona DefaultPersona;

@@ -188,6 +188,10 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Alsasua|NPCs|Social")
     virtual FString HablarConNPC(int32 Index) override;
 
+    /** Moviliza peatones propensos a protestar que estén cerca del punto. */
+    UFUNCTION(BlueprintCallable, Category = "Alsasua|NPCs|Social")
+    virtual int32 ReclutarPropensos(const FVector& Punto, float Radio, int32 MaxN) override;
+
     /** NPC-NPC conversation radius */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|NPCs|Social")
     float RadioConversacion = 350.0f;
