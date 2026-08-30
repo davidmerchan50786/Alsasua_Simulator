@@ -65,6 +65,13 @@ public:
 	/** Stop the bullet on the first damageable target (no over-penetration). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Armas") bool bStopOnFirstHit = true;
 
+	/** Aim assist (controller): soft lock-on when aiming a firearm. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Armas|AimAssist") bool bAimAssistEnabled = true;
+	/** Max deviation from the view ray a target can be and still snap (degrees). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Armas|AimAssist") float AimAssistCone = 8.f;
+	/** Max range of aim assist target acquisition. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Armas|AimAssist") float AimAssistRadius = 25000.f;
+
 	UFUNCTION(BlueprintCallable, Category="Armas") void CambiarArma(ETipoArma Arma);
 	UFUNCTION(BlueprintCallable, Category="Armas") void RecogerArma(ETipoArma Arma, int32 Cantidad);
 	UFUNCTION(BlueprintCallable, Category="Armas") void RecogerMunicion(ETipoArma Arma, int32 Cantidad);
@@ -123,6 +130,7 @@ private:
 	void FinishReload();
 
 	bool ObtenerMira(FVector& OutOrigen, FVector& OutDir) const;
+	bool ApplyAimAssist(FVector& OutDir, const FVector& Origen) const;
 	float MultDispersionActual() const;
 	void SubirBusqueda(int32 Cantidad) const;
 	void Consecuencias(AActor* Victima) const;

@@ -385,8 +385,66 @@ bool UArmasComponent::ObtenerMira(FVector& OutOrigen, FVector& OutDir) const
 		{
 			FRotator R; C->GetPlayerViewPoint(OutOrigen, R);
 			OutDir = R.Vector();
+
+			// GTA controller aim assist: soft lock-on only when aiming a firearm.
+			const bool bIsWeaponLinear = (ArmaActual == ETipoArma::Pistola || ArmaActual == ETipoArma::Escopeta || ArmaActual == ETipoArma::Fusil || ArmaActual == ETipoArma::Tirachinas);
+			if (bAimAssistEnabled && bIsWeaponLinear)
+				ApplyAimAssist(OutDir, OutOrigen);
+
 			return true;
 		}
+	return false;
+}
+
+bool UArmasComponent::ApplyAimAssist(FVector& OutDir, const FVector& Origen) const
+{
+	const UWorld* W = GetWorld();
+	if (!W) return false;
+
+	// Only when the player is actually ADS'ing.
+	const AAlsasuaPlayerCharacter* Ch = Cast<AAlsasuaPlayerCharacter>(GetOwner());
+	if (!Ch || !Ch->EstaApuntando()) return false;
+
+	// Find the nearest hostile/relevant damageable pawn inside the cone.
+	AActor* Best = nullptr;
+	float BestDot = FMath::Cos(FMath::DegreesToRadians(AimAssistCone));
+	float BestDist = AimAssistRadius;
+	const FVector ViewDir = OutDir;
+
+	TArray<FOverlapResult> Overlaps;
+	FCollisionShape Shape = FCollisionShape::MakeSphere(AimAssistRadius);
+	FCollisionQueryParams Q; Q.AddIgnoredActor(GetOwner());
+	if (!W->OverlapMultiByChannel(Overlaps, Origen, FQuat::Identity, ECC_Pawn, Shape, Q))
+		return false;
+
+	for (const FOverlapResult& Ov : Overlaps)
+	{
+		AActor* A = Ov.GetActor();
+		if (!IsValid(A) || A == GetOwner()) continue;
+		// Prefer last known enemies — cops, guards, any pawn. Skip the player and peds via IGameplay? 
+		// Lazy proxy: any IDamageable that isn't the player is a valid lock target.
+		IDamageable* Dmg = Cast<IDamageable>(A);
+		if (!Dmg || Dmg->EstaMuerto()) continue;
+		if (A->ActorHasTag(FName("Player"))) continue;
+
+		const FVector To = (A->GetActorLocation() - Origen).GetSafeNormal();
+		const float Dot = FVector::DotProduct(ViewDir, To);
+		if (Dot < BestDot) continue;   // outside cone
+		const float Dist = FVector::Dist(Origen, A->GetActorLocation());
+		if (Dist > BestDist) continue;
+
+		Best = A;
+		BestDot = Dot;
+		BestDist = Dist;
+	}
+
+	if (Best)
+	{
+		// Blend the view direction toward the target (snap, capped by cone).
+		const FVector ToTarget = (Best->GetActorLocation() - Origen).GetSafeNormal();
+		OutDir = (ViewDir + ToTarget).GetSafeNormal();
+		return true;
+	}
 	return false;
 }
 
