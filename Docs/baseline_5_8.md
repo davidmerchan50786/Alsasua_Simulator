@@ -257,12 +257,80 @@ módulo, 0 crashes, `Log file closed`.
    juego (13,27). Apagar Lumen o VSM no arreglaría nada — §8.4 de `CLAUDE.md` ya
    lo decía.
 
-3. **6657 draw calls: 8,1 veces los ~819 de referencia.** Es el número a batir,
-   y confirma la FASE 5.1 del plan: quedan `SpawnActor` en bucle sin convertir a
-   instanciado.
+3. **6657 draw calls: 8,1 veces los ~819 de referencia.** Es el número a batir.
+   ~~Confirma la FASE 5.1: quedan `SpawnActor` en bucle~~ — **esto era falso y se
+   comprobó después**: no queda ni un `SpawnActor` dentro de un bucle en todo el
+   repo, y las marcas viales (932) y los cables (887) ya usan ISM/HISM. Los draw
+   calls son estructurales, no un bug. Ver la sección siguiente.
 
 4. **969 ticks encolados frente a 215**: los plugins multiplican por 4,5 lo que
    tica. Candidato directo para `UAlsasuaOptimizerSubsystem` (§8.3).
 
 5. Los p95 ya son sanos (177 ms) frente a los 523 de la primera pasada: la DDC
    ya estaba caliente. Los máximos de 47 s siguen siendo el arranque.
+
+---
+
+## Tercera pasada — de dónde salen los draw calls, y el culling que no cullaba
+
+### Tres hipótesis falsas antes de acertar
+
+Medir cada una evitó "optimizar" código que ya estaba bien:
+
+| hipótesis | resultado |
+|---|---|
+| Quedan `SpawnActor` en bucle sin convertir | **falsa** — cero en todo el repo |
+| Marcas viales (932) y cables (887) son actor-por-pieza | **falsa** — ya usan ISM/HISM |
+| Las 1030 fachadas son el exceso | **falsa** — "una sección por edificio" es el estado correcto de §8.1 |
+
+**Los 6657 draw calls son estructurales**, no un defecto: 1024 chunks de terreno
+(cada uno su propio `UProceduralMeshComponent`, y por eso se cullean bien) + 1030
+fachadas + 1030 edificios + 278 suelos poligonales + calles + las capas
+instanciadas. Bajarlos de verdad exige hornear a `StaticMesh` y montar HLOD — la
+opción B de la fase 7.2 del plan, que es un proyecto en sí mismo, no un ajuste.
+
+### El bug que sí había: `SetActorTickEnabled` no apaga los componentes
+
+`UAlsasuaOptimizerSubsystem` hacía, más allá de `AICullDistance`:
+
+```cpp
+NPC->SetActorTickEnabled(false);
+if (NPC->GetController()) NPC->GetController()->SetActorTickEnabled(false);
+```
+
+Eso apaga la función `Tick` del **actor** y del controller. No toca los
+componentes, que tienen su propia función de tick. El caro es
+`UCharacterMovementComponent`: simula gravedad, rozamiento y navegación cada
+frame por cada peatón, esté a 5 m o a 3 km.
+
+Con 600 peatones, `Exclusive/GameThread/CharacterMovement` salía a **4,96 ms** de
+mediana — más que `TickActors` (2,63) y `Animation` (0,69) juntos. El culling de
+§8.3 llevaba corriendo desde siempre sin tocar lo único que importaba.
+
+La malla esquelética se deja a propósito fuera del apagado: la animación son
+0,69 ms, y de ella ya se ocupa `ApplyLOD` con `VisibilityBasedAnimTickOption`,
+que es la vía del motor. Apagarle el tick pisaría esa decisión y congelaría los
+montajes.
+
+### Resultado medido
+
+| métrica | antes | después | |
+|---|---:|---:|---:|
+| `FrameTime` | 33,75 ms | **24,88 ms** | −26,3% (29,6 → 40,2 FPS) |
+| `RenderThreadTime` | 21,63 | 15,56 | −28,0% |
+| `GameThreadTime` | 13,27 | 11,38 | −14,2% |
+| `GT/CharacterMovement` | 4,96 | **3,73** | −24,8% |
+| `GT/TickActors` | 2,63 | 1,84 | −30,0% |
+| `RHI/DrawCalls` | 6657 | 5569 | −16,3% |
+| `GPUTime` | 11,50 | 13,96 | **+21,3%** |
+
+**Cómo leer esto con cuidado.** La corrida nueva tiene 885 muestras y la vieja
+229, y la cámara no está fijada entre sesiones: la dirección es sólida, la
+magnitud exacta no es rigurosa. Para un A/B de verdad hace falta una cámara
+guionizada; sin ella, cualquier comparación futura arrastra el mismo margen.
+
+Los draw calls bajan un 16% sin que el cambio los toque directamente, porque los
+NPC lejanos ya no se mueven y su malla se queda en el LOD grueso.
+
+Y `GPUTime` **sube**: al ir el frame más rápido, la GPU pasa a ser la restricción
+que crece. El siguiente techo ya no es el hilo de juego.
