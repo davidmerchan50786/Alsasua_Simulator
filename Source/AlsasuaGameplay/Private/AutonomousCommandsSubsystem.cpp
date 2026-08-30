@@ -108,6 +108,13 @@ void UAutonomousCommandsSubsystem::IniciarAsamblea()
 			NC->SetAutoDestroy(true);
 		}
 	}
+
+	// Convocar a los peatones reales con forma de protesta para que vengan
+	// a asamblea; no es solo un marcador, la gente se reune a decidir.
+	if (UGameInstance* GI = W->GetGameInstance())
+		if (UAlsasuaServiceRegistry* Reg = GI->GetSubsystem<UAlsasuaServiceRegistry>())
+			if (INPCSocialService* Peds = Reg->PedirComo<INPCSocialService>(FName("NPCPedestrians")))
+				Peds->ReclutarPropensos(Centro, 800.f, NPCsAsamblea);
 }
 
 void UAutonomousCommandsSubsystem::DetenerAsamblea()
