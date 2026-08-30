@@ -1,6 +1,8 @@
 // PoliciaController.cpp
 #include "PoliciaController.h"
 #include "AlsasuaTypes.h"
+#include "PoliciaActor.h"
+#include "AlsasuaNPC.h"
 #include "WantedSubsystem.h"
 #include "DiaNocheSubsystem.h"
 #include "DisfrazSubsystem.h"
@@ -87,6 +89,8 @@ void AAlsasuaPoliciaController::Tick(float DeltaTime)
 			if (!Dir.IsNearlyZero()) Yo->SetActorRotation(Dir.Rotation());
 			TimerAtaque -= DeltaTime;
 			if (TimerAtaque <= 0.f) { TimerAtaque = Cadencia; Disparar(Jugador); }
+			// GTA-style: wounded officers strafe to a new firing position.
+			MaybeTakeCover(Jugador, DeltaTime);
 		}
 	}
 	else if (Estado == EEstado::Persigue || Estado == EEstado::Ataca)
@@ -161,4 +165,38 @@ bool AAlsasuaPoliciaController::DetectarManifestacion(FVector& OutCentro) const
 
 	OutCentro = Mf->GetCentroActual();
 	return true;
+}
+
+void AAlsasuaPoliciaController::MaybeTakeCover(APawn* Jugador, float DeltaTime)
+{
+	APawn* Yo = GetPawn();
+	if (!Yo || !Jugador) return;
+
+	// Officers take cover (strafe) once wounded, moving on a timer so they
+	// don't stand still in the open and eat fire.
+	const AAlsasuaNPC* Npc = Cast<AAlsasuaNPC>(Yo);
+	if (!Npc || Npc->EstaMuerto()) { LastHealth = -1; return; }
+
+	if (Npc->GetVida() != LastHealth || LastHealth < 0)
+	{
+		LastHealth = Npc->GetVida();
+
+		const float Pct = (float)Npc->GetVida() / (float)FMath::Max(1, Npc->GetVidaMax());
+		// Reset the timer whenever wounded so it repositions promptly.
+		if (Pct < CoverHealthPct) TimerStrafe = FMath::Max(TimerStrafe, StrafeInterval * 0.4f);
+	}
+
+	if (LastHealth < 0) return;
+	const float Pct = (float)LastHealth / (float)FMath::Max(1, Npc->GetVidaMax());
+	if (Pct >= CoverHealthPct) return;
+
+	TimerStrafe -= DeltaTime;
+	if (TimerStrafe > 0.f) return;
+	TimerStrafe = StrafeInterval;
+
+	// Sidestep to a flank angle around the player (fresh firing position).
+	const float Ang = FMath::FRandRange(0.f, 2.f * PI);
+	const FVector Off(FMath::Cos(Ang), FMath::Sin(Ang), 0.f);
+	const FVector Rel = Jugador->GetActorLocation() + Off * (RadioAtaque * 0.6f);
+	MoveToLocation(Rel, 80.f);
 }
