@@ -77,6 +77,10 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Alsasua|PostProcess")
     void SetParanoiaLevel(float Paranoia01);
 
+    /** Lluvia de heces: tinte sepia/marrón + desaturación (modo atmosférico). */
+    UFUNCTION(BlueprintCallable, Category = "Alsasua|PostProcess")
+    void SetFecesVision(bool bActive, float Intensity = 1.0f);
+
     // ── Configuración ──────────────────────────────────────────────────────
 
     /** Intensidad máxima de la viñeta de bajo vida. */

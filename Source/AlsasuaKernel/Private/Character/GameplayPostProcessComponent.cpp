@@ -276,6 +276,27 @@ void UGameplayPostProcessComponent::SetParanoiaLevel(float Paranoia01)
     ParanoiaLevel01 = FMath::Clamp(Paranoia01, 0.f, 1.f);
 }
 
+void UGameplayPostProcessComponent::SetFecesVision(bool bActive, float Intensity)
+{
+    if (!PostProcessComponent) return;
+    const float I = FMath::Clamp(Intensity, 0.f, 1.f);
+    if (bActive)
+    {
+        // Sepia/marrón: tinte cálido + desaturación. El mundo huele mal.
+        PostProcessComponent->Settings.SceneColorTint = FLinearColor(1.15f, 0.78f, 0.42f).CopyWithNewOpacity(1.f);
+        PostProcessComponent->Settings.ColorSaturation = FVector4(
+            1.f - 0.45f * I,
+            1.f - 0.45f * I,
+            1.f - 0.35f * I,
+            1.f);
+    }
+    else
+    {
+        PostProcessComponent->Settings.SceneColorTint = FLinearColor::White;
+        PostProcessComponent->Settings.ColorSaturation = FVector4(1.f, 1.f, 1.f, 1.f);
+    }
+}
+
 void UGameplayPostProcessComponent::UpdateParanoiaVision(float DeltaTime)
 {
     if (!PostProcessComponent)
