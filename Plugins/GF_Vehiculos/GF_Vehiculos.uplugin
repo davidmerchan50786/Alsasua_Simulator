@@ -21,6 +21,5 @@
       "Name": "Niagara"
     }
   ],
-  "BuiltInInitialFeatureState": "Installed",
-  "ExplicitlyLoaded": true
+  "BuiltInInitialFeatureState": "Installed"
 }

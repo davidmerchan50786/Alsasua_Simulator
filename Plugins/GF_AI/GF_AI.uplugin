@@ -33,6 +33,5 @@
     "GF_NPCs",
     "GF_Social"
   ],
-  "BuiltInInitialFeatureState": "Installed",
-  "ExplicitlyLoaded": true
+  "BuiltInInitialFeatureState": "Installed"
 }

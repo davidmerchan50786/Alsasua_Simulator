@@ -24,6 +24,5 @@
   "Dependencies": [
     "GF_Politica"
   ],
-  "BuiltInInitialFeatureState": "Installed",
-  "ExplicitlyLoaded": true
+  "BuiltInInitialFeatureState": "Installed"
 }

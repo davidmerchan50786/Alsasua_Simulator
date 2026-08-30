@@ -205,3 +205,64 @@ alcance propio (escribir ~24 entradas de material en un generador, no hay bug
 que arreglar). Mismo patrón con `/Game/LUTs/LUT_Neutral`
 (`AlsasuaBarrioStyleSystem.h:142`): LUT de color grading por barrio, sin
 generador, cae en silencio sin aplicar nada.
+
+---
+
+## Corrección: la medida anterior estaba hecha con los plugins apagados
+
+La tabla de arriba (mediana 15,5 ms, ~64 FPS, 4256 draw calls) se tomó cuando
+**ninguno de los 21 plugins `GF_*` se estaba cargando**. No era el pueblo
+completo: era el esqueleto sin la mitad de los sistemas.
+
+Salieron tres fallos de arranque más, todos de configuración y todos invisibles
+al compilar:
+
+| # | qué | dónde |
+|---|---|---|
+| 2 | los 21 `GF_*` con `"Enabled": false` | `AlsasuaSimulator.uproject` |
+| 3 | los 21 `.uplugin` con `"ExplicitlyLoaded": true` mientras 14 están enlazados en duro | `Plugins/*/*.uplugin` |
+| 4 | `USocialMediaSubsystem::Initialize` desreferencia un GameInstance nulo | `GF_Social` |
+
+El 3 es una contradicción de raíz: `ExplicitlyLoaded` le dice al motor "no
+cargues este DLL al arrancar", pero `PublicDependencyModuleNames` genera una
+importación estática que el loader de Windows exige antes de ejecutar una sola
+línea. Da `GetLastError=126` y el motor culpa al módulo que importa, no al
+descriptor que lo causa.
+
+El 4 es la trampa de `CLAUDE.md` §11 al pie de la letra: `Initialize` de un
+`UWorldSubsystem` lo llama el motor en todos los mundos —el del editor, los
+transitorios, cada PIE y la cocción— y en varios no hay GameInstance.
+
+## Línea base real (2026-08-30, sesión completa de 240 s, cierre limpio)
+
+`Profile(20260830_220923).csv`, 229 filas, 21/21 plugins cargados, 0 fallos de
+módulo, 0 crashes, `Log file closed`.
+
+| | sin plugins (medida vieja) | **con los 21 (real)** |
+|---|---:|---:|
+| `FrameTime` | 15,47 ms (~65 FPS) | **33,75 ms (~30 FPS)** |
+| `GameThreadTime` | 9,33 | 13,27 |
+| `RenderThreadTime` | 15,31 | 21,63 |
+| `GPUTime` | 10,85 | **11,50** |
+| `RHI/DrawCalls` | 4256 | **6657** |
+| `RHI/PrimitivesDrawn` | 1 521 325 | 1 788 047 |
+| `Basic/TicksQueued` | 215 | **969** |
+
+### Lectura
+
+1. **El pueblo va a ~30 FPS, no a 65.** El 65 medía un build lisiado.
+
+2. **Limitado por CPU, no por GPU.** La GPU casi no se mueve (10,85 → 11,50)
+   mientras el frame se duplica. El coste entra por hilo de render (21,63) y de
+   juego (13,27). Apagar Lumen o VSM no arreglaría nada — §8.4 de `CLAUDE.md` ya
+   lo decía.
+
+3. **6657 draw calls: 8,1 veces los ~819 de referencia.** Es el número a batir,
+   y confirma la FASE 5.1 del plan: quedan `SpawnActor` en bucle sin convertir a
+   instanciado.
+
+4. **969 ticks encolados frente a 215**: los plugins multiplican por 4,5 lo que
+   tica. Candidato directo para `UAlsasuaOptimizerSubsystem` (§8.3).
+
+5. Los p95 ya son sanos (177 ms) frente a los 523 de la primera pasada: la DDC
+   ya estaba caliente. Los máximos de 47 s siguen siendo el arranque.

@@ -49,6 +49,5 @@
     "GF_Social",
     "GF_Vehiculos"
   ],
-  "BuiltInInitialFeatureState": "Installed",
-  "ExplicitlyLoaded": true
+  "BuiltInInitialFeatureState": "Installed"
 }

@@ -6,13 +6,25 @@
 void USocialMediaSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
     Super::Initialize(Collection);
-    if (UWorld* W = GetWorld())
-    {
-        if (UManifestacionSubsystem* Manifa = W->GetGameInstance()->GetSubsystem<UManifestacionSubsystem>())
-            Manifa->OnEstado.AddDynamic(this, &USocialMediaSubsystem::OnManifestacionStateChange);
 
-        UEconomiaCriminalSubsystem::OnCriminalActivity.AddDynamic(this, &USocialMediaSubsystem::OnCriminalActivity);
+    // El mundo puede existir sin GameInstance. Initialize de un UWorldSubsystem
+    // lo llama el motor en TODOS los mundos —el del editor, los transitorios de
+    // previsualización, cada sesión de PIE y la cocción (CLAUDE.md §11)—, y en
+    // varios de ellos GetGameInstance() es nulo. Aquí se desreferenciaba a pelo
+    // y el arranque moría con un EXCEPTION_ACCESS_VIOLATION leyendo 0x158,
+    // antes de que el director construyera una sola fase.
+    UGameInstance* Instancia = GetWorld() ? GetWorld()->GetGameInstance() : nullptr;
+    if (!Instancia)
+    {
+        return;
     }
+
+    if (UManifestacionSubsystem* Manifa = Instancia->GetSubsystem<UManifestacionSubsystem>())
+    {
+        Manifa->OnEstado.AddDynamic(this, &USocialMediaSubsystem::OnManifestacionStateChange);
+    }
+
+    UEconomiaCriminalSubsystem::OnCriminalActivity.AddDynamic(this, &USocialMediaSubsystem::OnCriminalActivity);
 }
 
 void USocialMediaSubsystem::OnManifestacionStateChange(EEstadoManifestacion Estado)

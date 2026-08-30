@@ -39,6 +39,5 @@
     "GF_NPCs",
     "GF_Optimization"
   ],
-  "BuiltInInitialFeatureState": "Installed",
-  "ExplicitlyLoaded": true
+  "BuiltInInitialFeatureState": "Installed"
 }
