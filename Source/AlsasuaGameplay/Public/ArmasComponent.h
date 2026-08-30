@@ -60,6 +60,11 @@ public:
 	/** Recoil decays this fast per second when not firing. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Armas") float RecoilDecay = 1.5f;
 
+	/** How many non-damageable obstacles a bullet passes through (penetration). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Armas") int32 MaxPenetration = 1;
+	/** Stop the bullet on the first damageable target (no over-penetration). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Armas") bool bStopOnFirstHit = true;
+
 	UFUNCTION(BlueprintCallable, Category="Armas") void CambiarArma(ETipoArma Arma);
 	UFUNCTION(BlueprintCallable, Category="Armas") void RecogerArma(ETipoArma Arma, int32 Cantidad);
 	UFUNCTION(BlueprintCallable, Category="Armas") void RecogerMunicion(ETipoArma Arma, int32 Cantidad);

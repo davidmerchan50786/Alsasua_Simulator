@@ -305,24 +305,41 @@ void UArmasComponent::DispararFuego(int32 Dano, int32 Perdigones, float Dispersi
 		if (Disp > 0.f)
 			D = FRotator(FMath::FRandRange(-Disp, Disp), FMath::FRandRange(-Disp, Disp), 0.f).RotateVector(Dir);
 
+		// Bullet penetration: trace along the full path and process every hit.
+		// Pass through up to MaxPenetration non-damageable obstacles (thin walls),
+		// stop on the first damageable target like a real bullet.
 		FHitResult Hit;
-		if (W->LineTraceSingleByChannel(Hit, Origen, Origen + D * 30000.f, ECC_Visibility, Q))
+		FVector TraceStart = Origen;
+		int32 Penetrated = 0;
+		bool bHitSomething = false;
+
+		while (true)
 		{
-			// Headshot: hit bone at or under "head". Damage falloff by distance.
-			const float Dist = Hit.Distance;
-			float FinalDano = (float)Dano;
-			if (Dist > DamageFalloffStart)
-				FinalDano *= FMath::Clamp(1.f - (Dist - DamageFalloffStart) / DamageFalloffRange, 0.25f, 1.f);
+			if (!W->LineTraceSingleByChannel(Hit, TraceStart, Origen + D * 30000.f, ECC_Visibility, Q))
+				break;
 
-			bool bHeadshot = false;
-			const FString BoneStr = Hit.BoneName.ToString();
-			bHeadshot = BoneStr.Contains(TEXT("head"), ESearchCase::IgnoreCase)
-				|| BoneStr.Contains(TEXT("cabeza"), ESearchCase::IgnoreCase)
-				|| BoneStr.Contains(TEXT("neck"), ESearchCase::IgnoreCase);
-			if (bHeadshot) FinalDano *= HeadshotMultiplier;
+			bHitSomething = true;
+			TraceStart = Hit.ImpactPoint + D * 2.f;
 
-			if (IDamageable* Dmg = Cast<IDamageable>(Hit.GetActor()))
-				if (!Dmg->EstaMuerto())
+			IDamageable* Dmg = Cast<IDamageable>(Hit.GetActor());
+			const bool bIsDamageable = Dmg && !Dmg->EstaMuerto();
+
+			if (bIsDamageable || !bStopOnFirstHit)
+			{
+				// Headshot: hit bone at or under "head". Damage falloff by distance.
+				const float Dist = Hit.Distance;
+				float FinalDano = (float)Dano;
+				if (Dist > DamageFalloffStart)
+					FinalDano *= FMath::Clamp(1.f - (Dist - DamageFalloffStart) / DamageFalloffRange, 0.25f, 1.f);
+
+				bool bHeadshot = false;
+				const FString BoneStr = Hit.BoneName.ToString();
+				bHeadshot = BoneStr.Contains(TEXT("head"), ESearchCase::IgnoreCase)
+					|| BoneStr.Contains(TEXT("cabeza"), ESearchCase::IgnoreCase)
+					|| BoneStr.Contains(TEXT("neck"), ESearchCase::IgnoreCase);
+				if (bHeadshot) FinalDano *= HeadshotMultiplier;
+
+				if (bIsDamageable)
 				{
 					Dmg->RecibirDano((int32)FinalDano, Hit.ImpactPoint, ETipoDano::Bala);
 				Consecuencias(Hit.GetActor());
@@ -330,12 +347,19 @@ void UArmasComponent::DispararFuego(int32 Dano, int32 Perdigones, float Dispersi
 				if (NSSangre) UNiagaraFunctionLibrary::SpawnSystemAtLocation(W, NSSangre, Hit.ImpactPoint, (-D).Rotation());
 				}
 
-		if (NSImpacto)
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(W, NSImpacto, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
-		if (SImpacto)
-			UGameplayStatics::PlaySoundAtLocation(W, SImpacto, Hit.ImpactPoint);
+			if (NSImpacto)
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(W, NSImpacto, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
+			if (SImpacto)
+				UGameplayStatics::PlaySoundAtLocation(W, SImpacto, Hit.ImpactPoint);
+			}
+
+			// Stop conditions: hit a damageable target, or exhausted penetration.
+			if (bStopOnFirstHit && bIsDamageable)
+				break;
+			if (++Penetrated >= MaxPenetration)
+				break;
+		}
 	}
-}
 
 	// Retroceso (progressive recoil pattern: climbs with continuous fire).
 	if (APawn* P = Cast<APawn>(GetOwner()))
