@@ -7,6 +7,7 @@
 #include "Animation/SkeletalMeshActor.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "Kismet/GameplayStatics.h"
 #include "GeoDataAlsasua.h"
 #include "Misc/FileHelper.h"
@@ -15,6 +16,23 @@
 #include "Serialization/JsonSerializer.h"
 #include "Sound/SoundWaveProcedural.h"
 #include "AudioDeviceManager.h"
+
+// Paleta de ropa realista por estilo (colores sobrios, típicos del pueblo).
+static FLinearColor ColorRopaPara(ENPCEstilo Estilo, bool bMujer)
+{
+    // Trabajador: azul/marrón trabajo. Jubilado: tonos tierra. Estudiante: vivos.
+    switch (Estilo)
+    {
+    case ENPCEstilo::Trabajador: return bMujer ? FLinearColor(0.18f, 0.27f, 0.42f) : FLinearColor(0.22f, 0.32f, 0.42f);
+    case ENPCEstilo::Jubilado:   return bMujer ? FLinearColor(0.62f, 0.52f, 0.36f) : FLinearColor(0.45f, 0.42f, 0.38f);
+    case ENPCEstilo::Estudiante: return bMujer ? FLinearColor(0.55f, 0.28f, 0.30f) : FLinearColor(0.20f, 0.40f, 0.48f);
+    case ENPCEstilo::Comerciante:return bMujer ? FLinearColor(0.35f, 0.42f, 0.30f) : FLinearColor(0.30f, 0.34f, 0.46f);
+    case ENPCEstilo::Deportista: return bMujer ? FLinearColor(0.40f, 0.10f, 0.30f) : FLinearColor(0.10f, 0.35f, 0.25f);
+    case ENPCEstilo::Obrero:     return bMujer ? FLinearColor(0.60f, 0.55f, 0.35f) : FLinearColor(0.55f, 0.48f, 0.24f);
+    case ENPCEstilo::Nocturno:   return bMujer ? FLinearColor(0.16f, 0.16f, 0.18f) : FLinearColor(0.12f, 0.12f, 0.16f);
+    default:                     return bMujer ? FLinearColor(0.4f, 0.3f, 0.3f) : FLinearColor(0.3f, 0.3f, 0.4f);
+    }
+}
 
 // Proclividad a sumarse a la protesta según la forma de ser: el Rebelde se
 // apunta, el Tímido se echa atrás. Multiplica la probabilidad base de unirse.
@@ -775,7 +793,23 @@ void UAlsasuaNPCPedestrianSystem::CrearNPCEnPunto(FNPCPedestrian& NPC)
             NPCActor->GetSkeletalMeshComponent()->PlayAnimation(AnimCaminar, true);
         }
 
-        float Escala = (NPC.GrupoEdad == 3) ? 0.85f : 1.0f;
+        // Variación visual: tinte de ropa por estilo + género sobre el mannequin.
+        // Ropa física distinta se añadirá cuando haya meshes de NPC; hasta entonces
+        // el color rompe la uniformidad de los 600 clonados.
+        {
+            const FLinearColor Ropa = ColorRopaPara(NPC.Persona.Estilo, NPC.GrupoEdad >= 2);
+            const FLinearColor Piel = FLinearColor::LerpUsingHSV(
+                FLinearColor(0.85f, 0.69f, 0.55f), FLinearColor(0.42f, 0.28f, 0.2f),
+                FMath::FRand());
+            UMaterialInstanceDynamic* MID = NPCActor->GetSkeletalMeshComponent()->CreateAndSetMaterialInstanceDynamic(0);
+            if (MID)
+            {
+                MID->SetVectorParameterValue(TEXT("BODY_COLOR"), Ropa);
+                MID->SetVectorParameterValue(TEXT("SKIN_COLOR"), Piel);
+            }
+        }
+
+        float Escala = (NPC.GrupoEdad == 3) ? 0.85f : (NPC.GrupoEdad == 0 ? 0.92f : (NPC.GrupoEdad == 2 ? 0.97f : 1.0f));
         NPCActor->SetActorScale3D(FVector(Escala));
     }
     else
@@ -811,12 +845,8 @@ void UAlsasuaNPCPedestrianSystem::CrearProxyNPC(FNPCPedestrian& NPC)
     if (CapsuleMesh)
         Proxy->GetStaticMeshComponent()->SetStaticMesh(CapsuleMesh);
 
-    // Color by barrio for visual distinction
-    FLinearColor ProxyColor = FLinearColor::Gray;
-    if (NPC.Barrio == TEXT("Herriko")) ProxyColor = FLinearColor(0.8f, 0.2f, 0.2f);
-    else if (NPC.Barrio == TEXT("Zelai")) ProxyColor = FLinearColor(0.2f, 0.8f, 0.2f);
-    else if (NPC.Barrio == TEXT("Intxostia")) ProxyColor = FLinearColor(0.2f, 0.2f, 0.8f);
-    else if (NPC.Barrio == TEXT("Harrobieta")) ProxyColor = FLinearColor(0.8f, 0.6f, 0.1f);
+    // Color por estilo para coherencia con el full-LOD (antes por barrio).
+    const FLinearColor ProxyColor = ColorRopaPara(NPC.Persona.Estilo, NPC.GrupoEdad >= 2);
 
     Proxy->GetStaticMeshComponent()->SetVectorParameterValueOnMaterials(
         TEXT("Color"), FVector(ProxyColor.R, ProxyColor.G, ProxyColor.B));
