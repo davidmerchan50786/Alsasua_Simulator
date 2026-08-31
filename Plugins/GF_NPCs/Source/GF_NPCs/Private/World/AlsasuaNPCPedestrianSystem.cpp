@@ -236,25 +236,26 @@ void UAlsasuaNPCPedestrianSystem::ActualizarLOD(FNPCPedestrian& NPC, const FVect
 
 void UAlsasuaNPCPedestrianSystem::CargarAssetsPersonaje()
 {
+    // Mannequin standard (UE) ya importado con sus animaciones de caminar/
+    // idle bajo el mismo esqueleto: funciona sin importar FBX externos.
+    // SKM_Manny_Simple es el que resuelve su skeleton; SK_Mannequin no, así
+    // que ambos géneros usan Manny (el mannequin es andrógino de todos modos:
+    // la distinción real hombre/mujer va por nombre/persona/voz/pitch).
     MeshHombre = LoadObject<USkeletalMesh>(nullptr,
-        TEXT("/Game/AssetsImportados/Characters/MeshyConfidence/Meshy_AI_Casual_Confidence_0421161928_texture_fbx/Meshy_AI_Casual_Confidence_0421161928_texture"));
-
+        TEXT("/Game/FreeAnimationLibrary/Demo/Characters/Mannequins/Meshes/SKM_Manny_Simple"));
     MeshMujer = LoadObject<USkeletalMesh>(nullptr,
-        TEXT("/Game/AssetsImportados/Characters/MeshyOveralls/Meshy_AI_Casual_Denim_Overalls_0421162223_texture_fbx/Meshy_AI_Casual_Denim_Overalls_0421162223_texture"));
+        TEXT("/Game/FreeAnimationLibrary/Demo/Characters/Mannequins/Meshes/SKM_Manny_Simple"));
 
     AnimCaminar = LoadObject<UAnimSequence>(nullptr,
-        TEXT("/Game/AssetsImportados/Characters/Meshy_AI_Animation_Walking_withSkin"));
+        TEXT("/Game/FreeAnimationLibrary/Animations/Walk/anim_Walk_Fwd_Loop_R"));
+    AnimIdle = LoadObject<UAnimSequence>(nullptr,
+        TEXT("/Game/FreeAnimationLibrary/Animations/Idle/anim_Idle"));
 
-    if (!AnimCaminar)
-    {
-        AnimCaminar = LoadObject<UAnimSequence>(nullptr,
-            TEXT("/Game/AssetsImportados/Characters/X Bot@Walking"));
-    }
-
-    UE_LOG(LogTemp, Log, TEXT("NPCPedestrians: Mesh hombre=%s, mujer=%s, anim=%s"),
+    UE_LOG(LogTemp, Log, TEXT("NPCPedestrians: Mesh hombre=%s, mujer=%s, anim=%s, idle=%s"),
         MeshHombre ? TEXT("OK") : TEXT("NULL"),
         MeshMujer ? TEXT("OK") : TEXT("NULL"),
-        AnimCaminar ? TEXT("OK") : TEXT("NULL"));
+        AnimCaminar ? TEXT("OK") : TEXT("NULL"),
+        AnimIdle ? TEXT("OK") : TEXT("NULL"));
 }
 
 void UAlsasuaNPCPedestrianSystem::CargarCallejero()
