@@ -10,6 +10,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/Pawn.h"
+#include "GameFramework/PlayerStart.h"
 
 AAlsasuaGameplayGameMode::AAlsasuaGameplayGameMode()
 {
@@ -88,6 +89,24 @@ void AAlsasuaGameplayGameMode::Tick(float DeltaSeconds)
     APawn* Pawn = PC ? PC->GetPawn() : nullptr;
     if (!Pawn)
     {
+        // Sin PlayerStart en el mapa el pawn nunca spawnea (-game/servidor).
+        // Garantizarlo: spawnear un start en Herriko Plaza y restartear.
+        const double T = World->GetTimeSeconds();
+        if (T > 3.0f && T < 3.5f)
+        {
+            const FVector Plaza(191800.f, 857000.f, 260.f);
+            if (APlayerStart* PS = World->SpawnActor<APlayerStart>(APlayerStart::StaticClass(), Plaza, FRotator::ZeroRotator))
+            {
+                UE_LOG(LogTemp, Log, TEXT("AlsasuaGameplayGameMode: PlayerStart de respaldo en Herriko Plaza."));
+            }
+        }
+        if (World->GetTimeSeconds() > 4.0f)
+        {
+            if (APlayerController* C = UGameplayStatics::GetPlayerController(World, 0))
+            {
+                RestartPlayer(C);
+            }
+        }
         return;
     }
 
