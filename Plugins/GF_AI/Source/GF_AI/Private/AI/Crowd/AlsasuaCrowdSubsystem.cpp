@@ -9,6 +9,9 @@
 #include "AI/Crowd/CrowdRagdollActor.h"
 #include "AI/AlsasuaTacticManager.h"
 #include "Components/InstancedStaticMeshComponent.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "MeshDescriptionBuilder.h"
+#include "MeshDescription.h"
 #include "AlsasuaCore.h"
 #include "Engine/World.h"
 #include "Engine/StaticMesh.h"
@@ -121,9 +124,12 @@ void UAlsasuaCrowdSubsystem::Deinitialize()
 
 	DespawnAllAgents();
 
-	if (InstancedMeshComponent != nullptr)
+	for (UInstancedStaticMeshComponent* ISMC : ColorISMCs)
 	{
-		InstancedMeshComponent->ClearInstances();
+		if (ISMC != nullptr)
+		{
+			ISMC->ClearInstances();
+		}
 	}
 
 	Super::Deinitialize();
@@ -140,37 +146,51 @@ void UAlsasuaCrowdSubsystem::SetupInstancedRendering()
 		return;
 	}
 
-	if (InstancedMeshComponent == nullptr)
+	if (!ColorISMCs.IsEmpty())
 	{
-		// Sin actor owner: RegisterComponent() haría ensure (MyOwnerWorld null) y no
-		// registraría nada. RegisterComponentWithWorld registra el ISMC standalone.
-		InstancedMeshComponent = NewObject<UInstancedStaticMeshComponent>(World);
-		InstancedMeshComponent->RegisterComponentWithWorld(World);
-		InstancedMeshComponent->SetMobility(EComponentMobility::Movable);
-		InstancedMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		InstancedMeshComponent->CastShadow = true;
-		InstancedMeshComponent->SetCanEverAffectNavigation(false);
+		return;
 	}
 
-	// Asignar malla.
-	if (AgentMesh != nullptr)
+	// Asignar malla (humanoid procedural por defecto).
+	UStaticMesh* Mesh = AgentMesh;
+	if (Mesh == nullptr)
 	{
-		InstancedMeshComponent->SetStaticMesh(AgentMesh);
-	}
-	else
-	{
-		UStaticMesh* DefaultMesh = CreateDefaultCapsuleMesh();
-		if (DefaultMesh != nullptr)
+		Mesh = CreateDefaultHumanoidMesh();
+		if (Mesh != nullptr)
 		{
-			InstancedMeshComponent->SetStaticMesh(DefaultMesh);
-			AgentMesh = DefaultMesh;
+			AgentMesh = Mesh;
 		}
 	}
-
-	// Asignar material.
-	if (AgentMaterial != nullptr)
+	if (Mesh == nullptr)
 	{
-		InstancedMeshComponent->SetMaterial(0, AgentMaterial);
+		return;
+	}
+
+	// Un ISMC por color de la paleta; cada uno con una MID teñida de su color.
+	// Cada agente se instancia en el ISMC de su AgentColorIdx. Esto convierte la
+	// multitud de un único color (cilindros grises) en una variada (8 colores).
+	ColorISMCs.SetNum(ColorPalette.Num());
+	for (int32 C = 0; C < ColorPalette.Num(); ++C)
+	{
+		UInstancedStaticMeshComponent* ISMC = NewObject<UInstancedStaticMeshComponent>(World);
+		ISMC->RegisterComponentWithWorld(World);
+		ISMC->SetMobility(EComponentMobility::Movable);
+		ISMC->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		ISMC->CastShadow = true;
+		ISMC->SetCanEverAffectNavigation(false);
+		ISMC->SetStaticMesh(Mesh);
+		ColorISMCs[C] = ISMC;
+
+		if (AgentMaterial != nullptr)
+		{
+			UMaterialInstanceDynamic* MID = UMaterialInstanceDynamic::Create(AgentMaterial, this);
+			// Los materiales con parámetro "BaseColor" o "Tint" se tiñen; si no existe,
+			// el parámetro simplemente se ignora y el MID mantiene el color del material.
+			const FLinearColor& Tint = ColorPalette[C];
+			MID->SetVectorParameterValue(TEXT("BaseColor"), Tint);
+			MID->SetVectorParameterValue(FName("Tint"), Tint);
+			ISMC->SetMaterial(0, MID);
+		}
 	}
 }
 
@@ -178,26 +198,91 @@ void UAlsasuaCrowdSubsystem::SetupInstancedRendering()
 //  CreateDefaultCapsuleMesh: crea una cápsula procedural como malla estática.
 //  Port de ObtenerMeshCapsula del Unity script.
 // ─────────────────────────────────────────────────────────────────────────────
-UStaticMesh* UAlsasuaCrowdSubsystem::CreateDefaultCapsuleMesh() const
+UStaticMesh* UAlsasuaCrowdSubsystem::CreateDefaultHumanoidMesh() const
 {
-	// Intentar cargar la cápsula por defecto de Engine.
-	UStaticMesh* CapsuleMesh = LoadObject<UStaticMesh>(
-		nullptr,
-		TEXT("/Engine/BasicShapes/Cylinder"),
-		nullptr,
-		LOAD_None);
+	// Humanoid procedural (sin assets): torso + cabeza + brazos + piernas de cajas,
+	// con origen en el centro (suelo en Z=-87.5, coronilla en Z=+87.5 → ~175cm).
+	// Reemplaza el cilindro por defecto para que la multitud lea como gente.
+	FMeshDescription MeshDesc;
+	FMeshDescriptionBuilder Builder;
+	Builder.SetMeshDescription(&MeshDesc);
+	Builder.SetNumUVLayers(1);
 
-	if (CapsuleMesh == nullptr)
+	const FPolygonGroupID Group = Builder.AppendPolygonGroup();
+
+	auto AppendVertexInstance = [&](FVertexID Vid, const FVector& Normal, const FVector2D& UV)
 	{
-		// Fallback: buscar en la ruta de Shapes.
-		CapsuleMesh = LoadObject<UStaticMesh>(
-			nullptr,
-			TEXT("/Engine/BasicShapes/Cube"),
-			nullptr,
-			LOAD_None);
-	}
+		const FVertexInstanceID Iid = Builder.AppendInstance(Vid);
+		Builder.SetInstanceNormal(Iid, Normal);
+		Builder.SetInstanceUV(Iid, UV, 0);
+		return Iid;
+	};
 
-	return CapsuleMesh;
+	auto AppendBox = [&](const FVector& Center, const FVector& Half)
+	{
+		const FVector C0 = Center + FVector(-Half.X, -Half.Y, -Half.Z);
+		const FVector C1 = Center + FVector(+Half.X, -Half.Y, -Half.Z);
+		const FVector C2 = Center + FVector(+Half.X, +Half.Y, -Half.Z);
+		const FVector C3 = Center + FVector(-Half.X, +Half.Y, -Half.Z);
+		const FVector C4 = Center + FVector(-Half.X, -Half.Y, +Half.Z);
+		const FVector C5 = Center + FVector(+Half.X, -Half.Y, +Half.Z);
+		const FVector C6 = Center + FVector(+Half.X, +Half.Y, +Half.Z);
+		const FVector C7 = Center + FVector(-Half.X, +Half.Y, +Half.Z);
+		const FVertexID V[8] = {
+			Builder.AppendVertex(C0), Builder.AppendVertex(C1), Builder.AppendVertex(C2), Builder.AppendVertex(C3),
+			Builder.AppendVertex(C4), Builder.AppendVertex(C5), Builder.AppendVertex(C6), Builder.AppendVertex(C7),
+		};
+		// Caras (normal hacia fuera, 4 esquinas en orden CCW visto desde fuera).
+		const int32 Faces[6][4] = {
+			{ 3, 2, 6, 7 },   // +Y
+			{ 0, 4, 5, 1 },   // -Y
+			{ 0, 3, 7, 4 },   // -X
+			{ 1, 5, 6, 2 },   // +X
+			{ 0, 1, 2, 3 },   // -Z
+			{ 4, 7, 6, 5 },   // +Z
+		};
+		const FVector Normals[6] = {
+			FVector(0, 1, 0), FVector(0, -1, 0),
+			FVector(-1, 0, 0), FVector(1, 0, 0),
+			FVector(0, 0, -1), FVector(0, 0, 1),
+		};
+		for (int32 F = 0; F < 6; ++F)
+		{
+			FVertexInstanceID Tri[4];
+			const FVector2D UVs[4] = { FVector2D(0, 0), FVector2D(1, 0), FVector2D(1, 1), FVector2D(0, 1) };
+			for (int32 K = 0; K < 4; ++K)
+			{
+				Tri[K] = AppendVertexInstance(V[Faces[F][K]], Normals[F], UVs[K]);
+			}
+			Builder.AppendTriangle(Tri[0], Tri[1], Tri[2], Group);
+			Builder.AppendTriangle(Tri[0], Tri[2], Tri[3], Group);
+		}
+	};
+
+	// Piernas (Z 0..45).
+	AppendBox(FVector(-8.f, 0.f, 22.5f), FVector(7.f, 7.f, 22.5f));
+	AppendBox(FVector( 8.f, 0.f, 22.5f), FVector(7.f, 7.f, 22.5f));
+	// Torso (Z 40..130).
+	AppendBox(FVector(0.f, 0.f, 85.f), FVector(17.f, 10.f, 45.f));
+	// Brazos (Z 42..125).
+	AppendBox(FVector(-25.f, 0.f, 83.5f), FVector(6.f, 8.f, 41.5f));
+	AppendBox(FVector( 25.f, 0.f, 83.5f), FVector(6.f, 8.f, 41.5f));
+	// Cabeza (Z 130..175).
+	AppendBox(FVector(0.f, 0.f, 152.5f), FVector(8.f, 8.f, 22.5f));
+
+	const TArray<const FMeshDescription*> Descs = { &MeshDesc };
+	UStaticMesh::FBuildMeshDescriptionsParams Params;
+	Params.bFastBuild = true;
+	Params.bBuildSimpleCollision = false;
+	Params.bCommitMeshDescription = false;
+
+	UStaticMesh* Mesh = NewObject<UStaticMesh>(const_cast<UAlsasuaCrowdSubsystem*>(this));
+	if (!Mesh->BuildFromMeshDescriptions(Descs, Params))
+	{
+		// Fallback: cilindro del motor si falla la construcción.
+		return LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cylinder"), nullptr, LOAD_None);
+	}
+	return Mesh;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -275,6 +360,7 @@ void UAlsasuaCrowdSubsystem::InitializeAgentsInFormation(int32 StartIndex, int32
 		// Color aleatorio de la paleta.
 		const int32 ColorIdx = FMath::RandRange(0, ColorPalette.Num() - 1);
 		AgentColors.Add(ColorPalette[ColorIdx]);
+		AgentColorIdx.Add(ColorIdx);
 	}
 }
 
@@ -285,12 +371,16 @@ void UAlsasuaCrowdSubsystem::DespawnAllAgents()
 {
 	Agents.Empty();
 	AgentColors.Empty();
+	AgentColorIdx.Empty();
 	RouteWaypoints.Empty();
 	SpatialGrid.Clear();
 
-	if (InstancedMeshComponent != nullptr)
+	for (UInstancedStaticMeshComponent* ISMC : ColorISMCs)
 	{
-		InstancedMeshComponent->ClearInstances();
+		if (ISMC != nullptr)
+		{
+			ISMC->ClearInstances();
+		}
 	}
 
 	OnAgentCountChanged.Broadcast(0);
@@ -495,68 +585,95 @@ void UAlsasuaCrowdSubsystem::SampleGroundHeight(int32 AgentIndex)
 // ─────────────────────────────────────────────────────────────────────────────
 void UAlsasuaCrowdSubsystem::SyncInstancedTransforms()
 {
-	if (InstancedMeshComponent == nullptr)
+	if (Agents.Num() == 0 || ColorISMCs.IsEmpty())
 	{
 		return;
 	}
 
-	// Solo re-sincronizar si el número de instancias cambió.
-	const int32 CurrentCount = InstancedMeshComponent->GetInstanceCount();
-	const int32 TargetCount = Agents.Num();
-
-	if (CurrentCount != TargetCount)
+	// Reconstruir si el número de agentes cambió (cada agente va a su ISMC de color).
+	if (AgentInstanceIndex.Num() != Agents.Num())
 	{
-		InstancedMeshComponent->ClearInstances();
+		RebuildAllInstances();
+		return;
+	}
 
-		for (int32 i = 0; i < TargetCount; ++i)
+	// Actualización incremental: mover cada agente dentro de su ISMC de color.
+	for (int32 i = 0; i < Agents.Num(); ++i)
+	{
+		const FAcrowdAgentData& Ag = Agents[i];
+		const int32 ColorIdx = AgentColorIdx.IsValidIndex(i) ? AgentColorIdx[i] : 0;
+		UInstancedStaticMeshComponent* ISMC =
+			ColorISMCs.IsValidIndex(ColorIdx) ? ColorISMCs[ColorIdx] : nullptr;
+		if (ISMC == nullptr)
 		{
-			const FAcrowdAgentData& Ag = Agents[i];
+			continue;
+		}
 
-			// Agentes muertos: transform cero y escala cero (oculto).
-			if (!Ag.bAlive)
-			{
-				const FTransform HiddenTransform(FRotator::ZeroRotator, FVector(0, 0, -10000), FVector::ZeroVector);
-				InstancedMeshComponent->AddInstance(HiddenTransform, true);
-				continue;
-			}
+		if (!Ag.bAlive)
+		{
+			const FTransform HiddenTransform(FRotator::ZeroRotator, FVector(0, 0, -10000), FVector::ZeroVector);
+			ISMC->UpdateInstanceTransform(AgentInstanceIndex[i], HiddenTransform, true, true, true);
+			continue;
+		}
 
-			FRotator Rotation = FRotator::ZeroRotator;
-			if (Ag.Velocity.SizeSquared() > 0.01f)
-			{
-				Rotation = Ag.Velocity.ToOrientationRotator();
-			}
+		FRotator Rotation = FRotator::ZeroRotator;
+		if (Ag.Velocity.SizeSquared() > 0.01f)
+		{
+			Rotation = Ag.Velocity.ToOrientationRotator();
+		}
 
-			const FVector Location = Ag.Position + FVector(0.f, 0.f, VisualOffsetZ);
-			const FTransform Transform(Rotation, Location, AgentScale);
+		const FVector Location = Ag.Position + FVector(0.f, 0.f, VisualOffsetZ);
+		const FTransform Transform(Rotation, Location, AgentScale);
 
-			InstancedMeshComponent->AddInstance(Transform, true);
+		ISMC->UpdateInstanceTransform(AgentInstanceIndex[i], Transform, true, true, true);
+	}
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  RebuildAllInstances: reconstruye los ISMCs de color (clear + re-add).
+//  Cada agente se instancia en el ISMC de su color con su índice de color.
+// ─────────────────────────────────────────────────────────────────────────────
+void UAlsasuaCrowdSubsystem::RebuildAllInstances()
+{
+	for (UInstancedStaticMeshComponent* ISMC : ColorISMCs)
+	{
+		if (ISMC != nullptr)
+		{
+			ISMC->ClearInstances();
 		}
 	}
-	else
+
+	AgentInstanceIndex.SetNum(Agents.Num());
+
+	for (int32 i = 0; i < Agents.Num(); ++i)
 	{
-		// Actualizar transformaciones existentes.
-		for (int32 i = 0; i < TargetCount; ++i)
+		const FAcrowdAgentData& Ag = Agents[i];
+		const int32 ColorIdx = AgentColorIdx.IsValidIndex(i) ? AgentColorIdx[i] : 0;
+		UInstancedStaticMeshComponent* ISMC =
+			ColorISMCs.IsValidIndex(ColorIdx) ? ColorISMCs[ColorIdx] : nullptr;
+		if (ISMC == nullptr)
 		{
-			const FAcrowdAgentData& Ag = Agents[i];
+			AgentInstanceIndex[i] = INDEX_NONE;
+			continue;
+		}
 
-			if (!Ag.bAlive)
-			{
-				const FTransform HiddenTransform(FRotator::ZeroRotator, FVector(0, 0, -10000), FVector::ZeroVector);
-				InstancedMeshComponent->UpdateInstanceTransform(i, HiddenTransform, true, true, true);
-				continue;
-			}
-
+		FTransform Transform;
+		if (!Ag.bAlive)
+		{
+			Transform = FTransform(FRotator::ZeroRotator, FVector(0, 0, -10000), FVector::ZeroVector);
+		}
+		else
+		{
 			FRotator Rotation = FRotator::ZeroRotator;
 			if (Ag.Velocity.SizeSquared() > 0.01f)
 			{
 				Rotation = Ag.Velocity.ToOrientationRotator();
 			}
-
 			const FVector Location = Ag.Position + FVector(0.f, 0.f, VisualOffsetZ);
-			const FTransform Transform(Rotation, Location, AgentScale);
-
-			InstancedMeshComponent->UpdateInstanceTransform(i, Transform, true, true, true);
+			Transform = FTransform(Rotation, Location, AgentScale);
 		}
+
+		AgentInstanceIndex[i] = ISMC->AddInstance(Transform, true);
 	}
 }
 
@@ -568,10 +685,12 @@ void UAlsasuaCrowdSubsystem::AssignAgentColors()
 	// Los colores ya se asignan en InitializeAgentsInFormation.
 	// Este método existe para re-asignar si es necesario (ej. al cambio de escenario).
 	AgentColors.SetNum(Agents.Num());
+	AgentColorIdx.SetNum(Agents.Num());
 	for (int32 i = 0; i < AgentColors.Num(); ++i)
 	{
 		const int32 ColorIdx = FMath::RandRange(0, ColorPalette.Num() - 1);
 		AgentColors[i] = ColorPalette[ColorIdx];
+		AgentColorIdx[i] = ColorIdx;
 	}
 }
 
@@ -705,10 +824,17 @@ void UAlsasuaCrowdSubsystem::KillAgent(int32 AgentIndex, FVector DeathImpulse)
 	}
 
 	// ── Ocultar ISMC inmediatamente ─────────────────────────────────────────
-	if (InstancedMeshComponent != nullptr && InstancedMeshComponent->GetInstanceCount() > AgentIndex)
 	{
-		const FTransform HiddenTransform(FRotator::ZeroRotator, FVector(0, 0, -10000), FVector::ZeroVector);
-		InstancedMeshComponent->UpdateInstanceTransform(AgentIndex, HiddenTransform, true, true, true);
+		const int32 ColorIdx = AgentColorIdx.IsValidIndex(AgentIndex) ? AgentColorIdx[AgentIndex] : 0;
+		const int32 InstanceIdx = AgentInstanceIndex.IsValidIndex(AgentIndex) ? AgentInstanceIndex[AgentIndex] : INDEX_NONE;
+		UInstancedStaticMeshComponent* ISMC =
+			ColorISMCs.IsValidIndex(ColorIdx) ? ColorISMCs[ColorIdx] : nullptr;
+		if (ISMC != nullptr && InstanceIdx != INDEX_NONE && ISMC->GetInstanceCount() > InstanceIdx)
+		{
+			ISMC->UpdateInstanceTransform(InstanceIdx,
+				FTransform(FRotator::ZeroRotator, FVector(0, 0, -10000), FVector::ZeroVector),
+				true, true, true);
+		}
 	}
 
 	OnAgentKilled.Broadcast(AgentIndex, Ag.Position);
@@ -728,10 +854,17 @@ void UAlsasuaCrowdSubsystem::DespawnAgent(int32 AgentIndex)
 	Agents[AgentIndex].bAlive = false;
 	Agents[AgentIndex].Velocity = FVector::ZeroVector;
 
-	if (InstancedMeshComponent != nullptr && InstancedMeshComponent->GetInstanceCount() > AgentIndex)
 	{
-		const FTransform HiddenTransform(FRotator::ZeroRotator, FVector(0, 0, -10000), FVector::ZeroVector);
-		InstancedMeshComponent->UpdateInstanceTransform(AgentIndex, HiddenTransform, true, true, true);
+		const int32 ColorIdx = AgentColorIdx.IsValidIndex(AgentIndex) ? AgentColorIdx[AgentIndex] : 0;
+		const int32 InstanceIdx = AgentInstanceIndex.IsValidIndex(AgentIndex) ? AgentInstanceIndex[AgentIndex] : INDEX_NONE;
+		UInstancedStaticMeshComponent* ISMC =
+			ColorISMCs.IsValidIndex(ColorIdx) ? ColorISMCs[ColorIdx] : nullptr;
+		if (ISMC != nullptr && InstanceIdx != INDEX_NONE && ISMC->GetInstanceCount() > InstanceIdx)
+		{
+			ISMC->UpdateInstanceTransform(InstanceIdx,
+				FTransform(FRotator::ZeroRotator, FVector(0, 0, -10000), FVector::ZeroVector),
+				true, true, true);
+		}
 	}
 
 	OnAgentCountChanged.Broadcast(GetAliveAgentCount());
@@ -773,6 +906,10 @@ void UAlsasuaCrowdSubsystem::CleanupDeadAgents()
 				{
 					AgentColors[WriteIdx] = AgentColors[ReadIdx];
 				}
+				if (AgentColorIdx.IsValidIndex(ReadIdx))
+				{
+					AgentColorIdx[WriteIdx] = AgentColorIdx[ReadIdx];
+				}
 			}
 			++WriteIdx;
 		}
@@ -783,28 +920,13 @@ void UAlsasuaCrowdSubsystem::CleanupDeadAgents()
 	{
 		Agents.SetNum(WriteIdx);
 		AgentColors.SetNum(WriteIdx);
+		AgentColorIdx.SetNum(WriteIdx);
 
 		// Reconstruir spatial grid con los agentes restantes.
 		RebuildSpatialGrid();
 
-		// Reconstruir ISMC completo con los agentes compactados.
-		if (InstancedMeshComponent != nullptr)
-		{
-			InstancedMeshComponent->ClearInstances();
-
-			for (int32 i = 0; i < Agents.Num(); ++i)
-			{
-				const FAcrowdAgentData& Ag = Agents[i];
-				FRotator Rotation = FRotator::ZeroRotator;
-				if (Ag.Velocity.SizeSquared() > 0.01f)
-				{
-					Rotation = Ag.Velocity.ToOrientationRotator();
-				}
-				const FVector Location = Ag.Position + FVector(0.f, 0.f, VisualOffsetZ);
-				const FTransform Transform(Rotation, Location, AgentScale);
-				InstancedMeshComponent->AddInstance(Transform, true);
-			}
-		}
+		// Reconstruir ISMCs de color con los agentes compactados.
+		RebuildAllInstances();
 
 		OnAgentCountChanged.Broadcast(Agents.Num());
 	}
