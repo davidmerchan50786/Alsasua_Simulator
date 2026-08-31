@@ -75,6 +75,11 @@ public:
 private:
     void UpdateVehiclePerformance();
     void TickDamageStages(float DeltaTime);
+    /** Asegura y devuelve el componente Niágara de un estado (los assets son
+     *  placeholder de Tools/create_niagara_vfx.py). Null si el asset no está. */
+    class UNiagaraComponent* EnsureStageVFX(TObjectPtr<class UNiagaraSystem>& Cache,
+                                            class UNiagaraComponent*& Holder,
+                                            const TCHAR* Ruta, FVector Offset);
 
     bool bSparksActive = false;
     bool bSmokeActive = false;
@@ -83,4 +88,11 @@ private:
 
     float FireDamageTimer = 0.f;
     float FuelLeakTimer = 0.f;
+
+    UPROPERTY() TObjectPtr<class UNiagaraSystem> SparkSystem = nullptr;
+    UPROPERTY() TObjectPtr<class UNiagaraSystem> SmokeSystem = nullptr;
+    UPROPERTY() TObjectPtr<class UNiagaraSystem> FireSystem = nullptr;
+    UPROPERTY() class UNiagaraComponent* SparksVFX = nullptr;
+    UPROPERTY() class UNiagaraComponent* SmokeVFX = nullptr;
+    UPROPERTY() class UNiagaraComponent* FireVFX = nullptr;
 };

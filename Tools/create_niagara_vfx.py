@@ -273,6 +273,67 @@ def create_mist_system():
     unreal.log("[VFX] NS_RainMist created")
     return system
 
+def create_fire_system():
+    """NS_Fuego: Fuego sostenido de vehículo dañado."""
+    path = "/Game/VFX/NS_Fuego"
+    system = crear_limpio("NS_Fuego", "/Game/VFX")
+    if not system:
+        return None
+
+    emitter = system.add_emitter()
+    emitter.set_editor_property("name", "Fire")
+
+    spawn = emitter.find_or_add_module("SpawnRate")
+    spawn.set_editor_property("spawn_rate", 300.0)
+
+    init = emitter.find_or_add_module("Initialize Particle")
+    init.set_editor_property("lifetime_min", 0.4)
+    init.set_editor_property("lifetime_max", 0.8)
+
+    vel = emitter.find_or_add_module("Add Velocity")
+    vel.set_editor_property("velocity_min", unreal.Vector(-30, -30, 100))
+    vel.set_editor_property("velocity_max", unreal.Vector(30, 30, 260))
+
+    size = emitter.find_or_add_module("Scale Sprite Size")
+    size.set_editor_property("scale_factor", unreal.Vector2D(60, 60))
+
+    renderer = emitter.find_or_add_module("Sprite Renderer")
+
+    system = compat.assets().save_asset(path)
+    unreal.log("[VFX] NS_Fuego created")
+    return system
+
+def create_spark_car_system():
+    """NS_SparkCar: Chispas de debajo del vehículo dañado."""
+    path = "/Game/VFX/NS_SparkCar"
+    system = crear_limpio("NS_SparkCar", "/Game/VFX")
+    if not system:
+        return None
+
+    emitter = system.add_emitter()
+    emitter.set_editor_property("name", "Sparks")
+
+    spawn = emitter.find_or_add_module("SpawnRate")
+    spawn.set_editor_property("spawn_rate", 200.0)
+
+    init = emitter.find_or_add_module("Initialize Particle")
+    init.set_editor_property("lifetime_min", 0.2)
+    init.set_editor_property("lifetime_max", 0.6)
+
+    vel = emitter.find_or_add_module("Add Velocity")
+    vel.set_editor_property("velocity_min", unreal.Vector(-120, -120, -80))
+    vel.set_editor_property("velocity_max", unreal.Vector(120, 120, 60))
+
+    size = emitter.find_or_add_module("Scale Sprite Size")
+    size.set_editor_property("scale_factor", unreal.Vector2D(12, 12))
+
+    renderer = emitter.find_or_add_module("Sprite Renderer")
+
+    system = compat.assets().save_asset(path)
+    unreal.log("[VFX] NS_SparkCar created")
+    return system
+
+
 # --- Weapon VFX (simpler placeholders) ---
 
 def create_weapon_vfx(name, folder="/Game/VFX", color=unreal.LinearColor(1, 0.5, 0.2)):
@@ -316,6 +377,8 @@ if __name__ == "__main__":
     create_pollen_system()
     create_firefly_system()
     create_mist_system()
+    create_fire_system()
+    create_spark_car_system()
     
     # Weapon VFX
     weapon_vfx = [
