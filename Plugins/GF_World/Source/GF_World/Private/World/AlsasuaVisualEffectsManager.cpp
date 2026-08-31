@@ -1,4 +1,5 @@
 #include "World/AlsasuaVisualEffectsManager.h"
+#include "World/AlsasuaVFXManager.h"
 #include "CargarMaterialComun.h"
 #include "World/Time/TimeOfDayManager.h"
 #include "Services/IWeatherService.h"
@@ -18,6 +19,14 @@ void UAlsasuaVisualEffectsManager::Initialize(FSubsystemCollectionBase& Collecti
 	// MPC del paquete DZ_Assets para el viento de árboles (MF_SimpleTreeWind).
 	MPCWind = LoadObject<UMaterialParameterCollection>(
 		nullptr, TEXT("/Game/DZ_Assets/DZ_Common/MPC/MPC_Wind_Control.MPC_Wind_Control"));
+}
+
+UAlsasuaVFXManager* UAlsasuaVisualEffectsManager::GetVFXManager() const
+{
+	UWorld* W = GetWorld();
+	return W && W->GetGameInstance()
+		? W->GetGameInstance()->GetSubsystem<UAlsasuaVFXManager>()
+		: nullptr;
 }
 
 void UAlsasuaVisualEffectsManager::Tick(float DeltaTime)
@@ -72,6 +81,11 @@ void UAlsasuaVisualEffectsManager::UpdateWetness(float DeltaTime)
 		: FMath::FInterpTo(PuddleAmount, 0.f, DeltaTime, 0.3f);
 
 	RoadWearAmount = FMath::FInterpTo(RoadWearAmount, GlobalWetness * 0.3f, DeltaTime, 0.2f);
+
+	// Partículas de lluvia en torno al jugador (GameInstanceSubsystem).
+	// El threshold interno de 0.05 apaga la pieza cuando escampa.
+	if (UAlsasuaVFXManager* VFX = GetVFXManager())
+		VFX->SpawnRainParticles(RainInt);
 }
 
 void UAlsasuaVisualEffectsManager::UpdateTimeOfDay()
@@ -118,6 +132,11 @@ void UAlsasuaVisualEffectsManager::UpdateWind(float DeltaTime)
 	{
 		WindIntensity = FMath::Max(WindIntensity, 0.8f);
 	}
+
+	// Hojas arrastradas por el viento en torno al jugador. WeatherWindSpd en km/h:
+	// el threshold interno (5.0) deja quietas las hojas con viento flojo.
+	if (UAlsasuaVFXManager* VFX = GetVFXManager())
+		VFX->SpawnLeafParticles(WeatherWindSpd);
 }
 
 void UAlsasuaVisualEffectsManager::UpdateNightEmissive()

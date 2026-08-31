@@ -96,6 +96,9 @@ private:
 	void UpdateWind(float DeltaTime);
 	void UpdateNightEmissive();
 
+	/** El GameInstanceSubsystem de partículas (lluvia/hojas), o null si no está. */
+	class UAlsasuaVFXManager* GetVFXManager() const;
+
 	UPROPERTY()
 	TObjectPtr<UMaterialParameterCollection> CachedMPC;
 
