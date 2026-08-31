@@ -52,66 +52,35 @@ void UAlsasuaAtmosphereController::FindOrCreateAtmosphereActors()
 	UWorld* W = GetWorld();
 	if (!W) return;
 
-	for (TActorIterator<ADirectionalLight> It(W); It; ++It)
-	{
-		SunLight = *It;
-		break;
-	}
-	if (!SunLight)
-	{
-		FActorSpawnParameters Params;
-		SunLight = W->SpawnActor<ADirectionalLight>(ADirectionalLight::StaticClass(), FVector::ZeroVector, FRotator(-60, 0, 0), Params);
-		if (SunLight) SunLight->Rename(TEXT("Atmosphere_Sun"));
-	}
+	// Reutiliza el actor por nombre fijo antes de crear otro: en PIE el mundo se
+	// duplica y un Rename a "Atmosphere_Sun" que ya existe crashea (renombrar un
+	// objeto encima de otro no está permitido). Buscar por nombre primero evita
+	// ese create-and-rename; si el nombre está libre, el spawn usa un nombre
+	// único automático y el actor se renombra a posteriori sin colisión.
+#define ENCUENTRA_O_CREA(Tipo, Miembro, Nombre, Rot)                                     \
+	do {                                                                                \
+		for (TActorIterator<Tipo> It(W); It; ++It)                                      \
+		{                                                                               \
+			if (It->GetFName() == FName(TEXT(Nombre))) { Miembro = *It; break; }        \
+		}                                                                               \
+		if (!Miembro)                                                                   \
+		{                                                                               \
+			for (TActorIterator<Tipo> It(W); It; ++It) { Miembro = *It; break; }        \
+		}                                                                               \
+		if (!Miembro)                                                                   \
+		{                                                                               \
+			FActorSpawnParameters Params;                                               \
+			Miembro = W->SpawnActor<Tipo>(Tipo::StaticClass(), FVector::ZeroVector, Rot, Params); \
+		}                                                                               \
+	} while (false)
 
-	for (TActorIterator<ASkyAtmosphere> It(W); It; ++It)
-	{
-		SkyAtmosphere = *It;
-		break;
-	}
-	if (!SkyAtmosphere)
-	{
-		FActorSpawnParameters Params;
-		SkyAtmosphere = W->SpawnActor<ASkyAtmosphere>(ASkyAtmosphere::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
-		if (SkyAtmosphere) SkyAtmosphere->Rename(TEXT("Atmosphere_SkyAtmosphere"));
-	}
+	ENCUENTRA_O_CREA(ADirectionalLight,     SunLight,        "Atmosphere_Sun",           FRotator(-60, 0, 0));
+	ENCUENTRA_O_CREA(ASkyAtmosphere,        SkyAtmosphere,   "Atmosphere_SkyAtmosphere", FRotator::ZeroRotator);
+	ENCUENTRA_O_CREA(ASkyLight,             SkyLight,        "Atmosphere_SkyLight",      FRotator::ZeroRotator);
+	ENCUENTRA_O_CREA(AExponentialHeightFog, HeightFog,       "Atmosphere_Fog",           FRotator::ZeroRotator);
+	ENCUENTRA_O_CREA(AVolumetricCloud,      VolumetricCloud, "Atmosphere_Clouds",        FRotator::ZeroRotator);
 
-	for (TActorIterator<ASkyLight> It(W); It; ++It)
-	{
-		SkyLight = *It;
-		break;
-	}
-	if (!SkyLight)
-	{
-		FActorSpawnParameters Params;
-		SkyLight = W->SpawnActor<ASkyLight>(ASkyLight::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
-		if (SkyLight) SkyLight->Rename(TEXT("Atmosphere_SkyLight"));
-	}
-
-	for (TActorIterator<AExponentialHeightFog> It(W); It; ++It)
-	{
-		HeightFog = *It;
-		break;
-	}
-	if (!HeightFog)
-	{
-		FActorSpawnParameters Params;
-		HeightFog = W->SpawnActor<AExponentialHeightFog>(AExponentialHeightFog::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
-		if (HeightFog) HeightFog->Rename(TEXT("Atmosphere_Fog"));
-	}
-
-	// Find or create volumetric cloud actor
-	for (TActorIterator<AVolumetricCloud> It(W); It; ++It)
-	{
-		VolumetricCloud = *It;
-		break;
-	}
-	if (!VolumetricCloud)
-	{
-		FActorSpawnParameters Params;
-		VolumetricCloud = W->SpawnActor<AVolumetricCloud>(AVolumetricCloud::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
-		if (VolumetricCloud) VolumetricCloud->Rename(TEXT("Atmosphere_Clouds"));
-	}
+#undef ENCUENTRA_O_CREA
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
