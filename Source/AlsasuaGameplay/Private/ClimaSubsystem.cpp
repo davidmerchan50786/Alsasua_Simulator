@@ -190,7 +190,19 @@ void UClimaSubsystem::GestionarTormenta(float DeltaTime)
 
 	// ¿Hay tormenta? (lluvia fuerte + muy nublado)
 	const bool bTormenta = Cur.Lluvia > 0.7f && Cur.Nubosidad > 0.75f;
-	if (!bTormenta) return;
+	if (!bTormenta)
+	{
+		// Sin esto Relampago se queda para siempre como segunda luz
+		// direccional (apagada pero activa), y el renderer se pone a avisar
+		// de "Multiple directional lights are competing..." el resto de la
+		// partida aunque no vuelva a tronar.
+		if (Relampago && FlashTimer <= 0.f)
+		{
+			Relampago->Destroy();
+			Relampago = nullptr;
+		}
+		return;
+	}
 
 	ProxRayo -= DeltaTime;
 	if (ProxRayo > 0.f) return;

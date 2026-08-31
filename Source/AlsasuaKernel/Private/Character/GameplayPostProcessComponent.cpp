@@ -55,6 +55,25 @@ void UGameplayPostProcessComponent::TickComponent(float DeltaTime, ELevelTick Ti
     UpdateCrowdDust(DeltaTime);
     UpdateParanoiaVision(DeltaTime);
 
+    // TEMP debug: dump PP state every 2s
+    if (GetWorld())
+    {
+        static double UltLog = 0.0;
+        const double T = GetWorld()->GetTimeSeconds();
+        if (T - UltLog > 2.0)
+        {
+            UltLog = T;
+            UE_LOG(LogTemp, Warning, TEXT("[PPDBG] drug=%d(%.2f) paranoia=%.2f vig=%.2f fringe=%.2f exposure=%.2f speed=%d motblur=%.2f gamma=%s"),
+                (int)bDrugVisionActive, DrugVisionIntensity, ParanoiaLevel01,
+                PostProcessComponent ? PostProcessComponent->Settings.VignetteIntensity : -1.f,
+                PostProcessComponent ? PostProcessComponent->Settings.SceneFringeIntensity : -1.f,
+                PostProcessComponent ? PostProcessComponent->Settings.AutoExposureBias : -1.f,
+                (int)bSpeedLinesActive,
+                PostProcessComponent ? PostProcessComponent->Settings.MotionBlurAmount : -1.f,
+                *PostProcessComponent->Settings.ColorGamma.ToString());
+        }
+    }
+
     // Actualizar vision de drogas.
     if (bDrugVisionActive)
     {

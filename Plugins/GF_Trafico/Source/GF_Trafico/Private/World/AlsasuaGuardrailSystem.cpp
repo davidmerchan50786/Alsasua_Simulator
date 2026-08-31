@@ -89,7 +89,23 @@ int32 UAlsasuaGuardrailSystem::ColocarBarandillas()
                     RailingMesh = LoadObject<UStaticMesh>(nullptr,
                         TEXT("/Engine/BasicShapes/Cube.Cube"));
                 if (RailingMesh)
+                {
                     GuardrailActor->GetStaticMeshComponent()->SetStaticMesh(RailingMesh);
+
+                    // El material que trae la malla (MS_DefaultMaterial, del
+                    // pack UnrealDrive_CitySample) depende de
+                    // /Game/Textures/DefaultWhiteGrid_VT, que no está en el
+                    // repo — no es el gate genérico de Megascans, es esta
+                    // textura concreta la que falta, así que no vale pasar
+                    // por el gate de MaterialesAAADisponibles(): compilaría
+                    // igualmente a Default Material gris. Material propio
+                    // directo.
+                    if (UMaterialInterface* Mat = LoadObject<UMaterialInterface>(nullptr,
+                        TEXT("/Game/Materiales/M_Metal_Guardia.M_Metal_Guardia")))
+                    {
+                        GuardrailActor->GetStaticMeshComponent()->SetMaterial(0, Mat);
+                    }
+                }
 
 #if WITH_EDITOR
                 GuardrailActor->SetActorLabel(*FString::Printf(TEXT("Barandilla_%s_%d"),

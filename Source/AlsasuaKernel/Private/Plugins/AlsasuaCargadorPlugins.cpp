@@ -353,6 +353,18 @@ void UAlsasuaCargadorPlugins::ActivarSiguiente()
 
 void UAlsasuaCargadorPlugins::DesactivarTodos()
 {
+	// Deinitialize() de un GameInstanceSubsystem puede llegar durante el
+	// cierre del editor, después de que el motor ya haya empezado a destruir
+	// sus subsistemas de Engine (GameFeatures es uno). UGameFeaturesSubsystem::Get()
+	// no comprueba null: sobre un puntero de motor ya destruido, cualquier
+	// llamada revienta con access violation. Sin nada que desactivar tampoco
+	// hace falta arriesgarse.
+	if (IsEngineExitRequested() || !GEngine || ActivadosAqui.IsEmpty())
+	{
+		ActivadosAqui.Reset();
+		return;
+	}
+
 	UGameFeaturesSubsystem& GFS = UGameFeaturesSubsystem::Get();
 
 	int32 Descargadas = 0;

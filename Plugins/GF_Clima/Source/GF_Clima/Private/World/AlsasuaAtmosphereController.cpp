@@ -52,10 +52,16 @@ void UAlsasuaAtmosphereController::FindOrCreateAtmosphereActors()
 	UWorld* W = GetWorld();
 	if (!W) return;
 
+	// Puede haber más de una ADirectionalLight ya en el mundo (mapa de arranque
+	// previo al travel a este nivel, un relampago de tormenta que no se limpió,
+	// etc.). El renderer sólo soporta una para forward shading/niebla
+	// volumétrica y avisa en pantalla ("Multiple directional lights are
+	// competing...") si hay más — nos quedamos con la primera y destruimos el
+	// resto en vez de dejar que compitan.
 	for (TActorIterator<ADirectionalLight> It(W); It; ++It)
 	{
-		SunLight = *It;
-		break;
+		if (!SunLight) SunLight = *It;
+		else (*It)->Destroy();
 	}
 	if (!SunLight)
 	{
@@ -199,6 +205,19 @@ void UAlsasuaAtmosphereController::Tick(float DeltaTime)
 
 	const float Elapsed = FMath::Max(UpdateInterval, DeltaTime);
 	TimeToUpdate = UpdateInterval;
+
+	// FindOrCreateAtmosphereActors sólo se ejecuta una vez, al arrancar el
+	// mundo; una luz direccional creada más tarde por otro sistema (rayo de
+	// tormenta que no se limpió, un actor colocado a mano, etc.) no la ve. Al
+	// ritmo de UpdateInterval (mismo throttle que el resto de este Tick, ver
+	// §8.2 de CLAUDE.md) volvemos a comprobar y a destruir cualquier extra.
+	if (SunLight)
+	{
+		for (TActorIterator<ADirectionalLight> It(GetWorld()); It; ++It)
+		{
+			if (*It != SunLight) It->Destroy();
+		}
+	}
 
 	UpdateAtmosphere(TimeMgr->CurrentTime, Elapsed);
 }

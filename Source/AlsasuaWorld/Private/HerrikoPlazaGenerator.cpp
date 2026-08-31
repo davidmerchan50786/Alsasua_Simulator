@@ -20,9 +20,9 @@ void AHerrikoPlazaGenerator::BeginPlay()
 
 void AHerrikoPlazaGenerator::Generar()
 {
-	// Herriko Plaza está en el origen (0,0) en coordenadas de mundo.
-	// Elevación: ~531.94m (CotaPlaza).
-	SetActorLocation(FVector(0, 0, UAlsasuaGeoData::CotaPlazaCm));
+	// Herriko Plaza está en el origen (0,0) de las coordenadas LOCALES, no
+	// del mundo UE5 — HerrikoPlaza() ya hace la conversión (suma OX/OZ).
+	SetActorLocation(UAlsasuaGeoData::HerrikoPlaza());
 
 	GenerarPavimento(MallaPlaza);
 	GenerarFuente(MallaPlaza);

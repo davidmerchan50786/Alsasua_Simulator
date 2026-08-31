@@ -271,14 +271,17 @@ void UAlsasuaNPCPedestrianSystem::CargarAssetsPersonaje()
 
     AnimCaminar = LoadObject<UAnimSequence>(nullptr,
         TEXT("/Game/FreeAnimationLibrary/Animations/Walk/anim_Walk_Fwd_Loop_R"));
+    AnimCaminar2 = LoadObject<UAnimSequence>(nullptr,
+        TEXT("/Game/FreeAnimationLibrary/Animations/Walk/anim_Walk_Fwd_Loop_L"));
     AnimIdle = LoadObject<UAnimSequence>(nullptr,
         TEXT("/Game/FreeAnimationLibrary/Animations/Idle/anim_Idle"));
 
-    UE_LOG(LogTemp, Log, TEXT("NPCPedestrians: Mesh hombre=%s, mujer=%s, fab=%s, anim=%s, idle=%s"),
+    UE_LOG(LogTemp, Log, TEXT("NPCPedestrians: Mesh hombre=%s, mujer=%s, fab=%s, anim=%s/%s, idle=%s"),
         MeshHombre ? TEXT("OK") : TEXT("NULL"),
         MeshMujer ? TEXT("OK") : TEXT("NULL"),
         MeshFab ? TEXT("OK") : TEXT("NULL"),
         AnimCaminar ? TEXT("OK") : TEXT("NULL"),
+        AnimCaminar2 ? TEXT("OK") : TEXT("NULL"),
         AnimIdle ? TEXT("OK") : TEXT("NULL"));
 }
 
@@ -798,9 +801,14 @@ void UAlsasuaNPCPedestrianSystem::CrearNPCEnPunto(FNPCPedestrian& NPC)
     {
         NPCActor->GetSkeletalMeshComponent()->SetSkeletalMesh(MeshAUsar);
 
-        if (NPC.ActividadActual == ENPCActivity::Walk && AnimCaminar)
+        if (NPC.ActividadActual == ENPCActivity::Walk)
         {
-            NPCActor->GetSkeletalMeshComponent()->PlayAnimation(AnimCaminar, true);
+            // Alterna entre las 2 variantes de caminar (izq/dcha) por NPC para
+            // romper la sincronía de los clones sin assets extra.
+            UAnimSequence* Ani = (AnimCaminar2 && (GetTypeHash(NPC.Nombre) % 2))
+                ? AnimCaminar2 : AnimCaminar;
+            if (Ani)
+                NPCActor->GetSkeletalMeshComponent()->PlayAnimation(Ani, true);
         }
 
         // Variación visual: tinte de ropa por estilo + género sobre el mannequin.
