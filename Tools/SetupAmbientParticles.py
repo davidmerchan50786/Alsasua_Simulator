@@ -15,7 +15,7 @@ import ue5_compat as compat
 def add_ambient_particles():
     """Añade UAlsasuaAmbientParticles al jugador."""
     ambient_class = unreal.load_class(
-        "/Script/AlsasuaManifa.AlsasuaAmbientParticles")
+        "/Script/GF_World.AlsasuaAmbientParticles")
     if not ambient_class:
         unreal.log_error("[AmbientParticles] No se pudo cargar UAlsasuaAmbientParticles")
         return

@@ -13,6 +13,7 @@ class ADirectionalLight;
 class ASkyAtmosphere;
 class ASkyLight;
 class AExponentialHeightFog;
+class AVolumetricCloud;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTimeOfDayVisualChanged, float, SunAngle);
 
@@ -118,8 +119,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Sun")
 	float ShadowDistance = 30000.f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Sun", meta = (ClampMin = "1", ClampMax = "6"))
-	int32 ShadowCascades = 4;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Sun", meta = (ClampMin = "1", ClampMax = "10"))
+	int32 ShadowCascades = 6;
 
 	/** Contact shadows: asientan bordillos y mobiliario que las cascadas no ven. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Sun")
@@ -128,6 +129,10 @@ public:
 	/** Intensidad del sol dentro de la niebla volumétrica (rayos de luz). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Sun")
 	float SunVolumetricScattering = 1.f;
+
+	/** Light shaft override direction for god rays through foliage. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Sun")
+	FVector LightShaftDirection = FVector(-1.f, 0.f, -1.f);
 
 	// ── Fog ──────────────────────────────────────────────────────────────────
 
@@ -177,6 +182,36 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Clouds")
 	float NightCloudDensity = 0.3f;
+
+	// ── Volumetric Cloud Layer ───────────────────────────────────────────
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Clouds")
+	float CloudLayerBottom = 1.5f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Clouds")
+	float CloudLayerHeight = 5.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Clouds")
+	float CloudTracingMaxDistance = 200.f;
+
+	/** Quality: higher = more cloud samples, more GPU. 0.5-2.0 typical. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Clouds")
+	float CloudSampleCountScale = 1.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Clouds")
+	float CloudShadowSampleCountScale = 0.5f;
+
+	/** Cloud bottom occlusion from sky light — higher = darker undersides. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Clouds")
+	float CloudBottomOcclusion = 0.3f;
+
+	/** Transmittance threshold for cloud ray marching — lower = more opaque clouds. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Clouds")
+	float StopTracingTransmittanceThreshold = 0.01f;
+
+	/** Shadow tracing distance through cloud layer — deeper = darker shadows on ground. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Clouds")
+	float ShadowTracingDistance = 15.f;
 
 	// ── Sky ──────────────────────────────────────────────────────────────────
 
@@ -265,6 +300,28 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|SkyAtmo")
 	float NightMultiScattering = 0.5f;
 
+	// ── Night Sky (Stars + Moon Corona) ───────────────────────────────────
+
+	/** Star visibility: 0 = invisible, 1 = full. Fades with daylight + clouds. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Stars")
+	float StarIntensity = 1.0f;
+
+	/** Star brightness scales with moon phase (full moon washes out dim stars). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Stars")
+	float MoonWashoutFactor = 0.3f;
+
+	/** Milky Way band visibility (extra diffuse glow on the sky dome). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Stars")
+	float MilkyWayIntensity = 0.15f;
+
+	/** Moon corona glow radius in degrees. Larger = more atmospheric scattering. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Moon")
+	float MoonCoronaRadius = 15.f;
+
+	/** Moon corona brightness (emissive halo). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Moon")
+	float MoonCoronaIntensity = 0.5f;
+
 private:
 	void FindOrCreateAtmosphereActors();
 	void ApplyLightSetup();
@@ -274,6 +331,9 @@ private:
 	void UpdateFogVisuals(float DeltaTime);
 	void UpdateSkyVisuals(float DeltaTime);
 	void UpdateCloudVisuals();
+	void UpdateCloudLayer(float DeltaTime);
+	void UpdateRainShadows(float DeltaTime);
+	void UpdateStarSky(float DeltaTime);
 
 	/**
 	 * Posición del sol (o del punto antisolar, donde va la luna llena) para la
@@ -299,6 +359,9 @@ private:
 	UPROPERTY()
 	TObjectPtr<AExponentialHeightFog> HeightFog;
 
+	UPROPERTY()
+	AVolumetricCloud* VolumetricCloud = nullptr;
+
 	float TimeToUpdate = 0.f;
 
 	FLinearColor CurrentSunColor = FLinearColor::White;
@@ -318,4 +381,5 @@ private:
 	FLinearColor CurrentMieColor = FLinearColor(0.005f, 0.005f, 0.005f);
 	float CurrentMieAnisotropy = 0.9f;
 	float CurrentMultiScattering = 2.0f;
+	float CurrentRainIntensity = 0.f;
 };

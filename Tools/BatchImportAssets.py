@@ -5,7 +5,12 @@ Run in UE5 Output Log: exec(open(r'H:\Temp\opencode\AlsasuaUE5Clean\Tools\BatchI
 import os
 import unreal
 
-# Source directories (real FBX files)
+# Bibliotecas externas al repo (fuera de Content/, no se versionan). Son rutas
+# de ESTA máquina, no del proyecto — igual que CitySample/Blender en
+# SetupAlsasuaProject.ps1 (CLAUDE.md §7). Si no existen en tu máquina, se
+# saltan solas (find_fbx comprueba os.path.isdir antes de recorrerlas):
+# ajusta esta lista a donde tengas tu propia biblioteca, no hace falta que
+# existan estas rutas exactas.
 SOURCE_DIRS = [
     r'H:\UnrealProjects\AlsasuaSimulator\Content\AssetsImportados',
     r'J:\assets',
@@ -13,47 +18,47 @@ SOURCE_DIRS = [
 
 # Destination mapping — where each category lives in-game
 DEST_MAP = {
-    'Characters':    '/Game/ImportedAssets/Characters',
-    'MeshyAI':       '/Game/ImportedAssets/Buildings',  # Navarra-specific buildings/props
-    'Casas':         '/Game/ImportedAssets/Buildings',
-    'ExtractedUnity': '/Game/ImportedAssets/Buildings',
-    'Naturaleza':    '/Game/ImportedAssets/Vegetation',
-    'Animals':       '/Game/ImportedAssets/Vegetation',
-    'Bushes':        '/Game/ImportedAssets/Vegetation',
-    'ForestPack':    '/Game/ImportedAssets/Vegetation',
-    'Hedges':        '/Game/ImportedAssets/Vegetation',
-    'Mundo':         '/Game/ImportedAssets/Vegetation',
-    'SmallArms':     '/Game/ImportedAssets/Props',
-    'Farolas':       '/Game/ImportedAssets/Props',
-    'Fleurs':        '/Game/ImportedAssets/Props',
-    'Pavimentos':    '/Game/ImportedAssets/Props',
-    'Containers':    '/Game/ImportedAssets/Props',
-    'Locomotive':    '/Game/ImportedAssets/Props',
-    'Shrooms':       '/Game/ImportedAssets/Props',
-    'DestroyedWalls':'/Game/ImportedAssets/Props',
-    'Cypress':       '/Game/ImportedAssets/Vegetation',
-    'Bamboo':        '/Game/ImportedAssets/Vegetation',
-    'FPSWeapons':    '/Game/ImportedAssets/Props',
-    'VillagePack':   '/Game/ImportedAssets/Buildings',
-    'VillageHouses': '/Game/ImportedAssets/Buildings',
-    'HousePack':     '/Game/ImportedAssets/Buildings',
-    'Standard Assets': '/Game/ImportedAssets/Props',
-    'SpaceZeta_StreetLamps2': '/Game/ImportedAssets/Props',
-    'YughuesFreeBushes2018': '/Game/ImportedAssets/Vegetation',
-    'Pure Poly':     '/Game/ImportedAssets/Vegetation',
-    'Animals':       '/Game/ImportedAssets/Vegetation',
-    'Arboles':       '/Game/ImportedAssets/Vegetation',
-    'ArbolesExtracted': '/Game/ImportedAssets/Vegetation',
-    'CharactersExtracted': '/Game/ImportedAssets/Characters',
-    'CasasExtracted': '/Game/ImportedAssets/Buildings',
-    'PropsExtracted': '/Game/ImportedAssets/Props',
-    'TerrainExtracted': '/Game/ImportedAssets/Props',
-    'TownsExtracted': '/Game/ImportedAssets/Buildings',
-    'VehiclesExtracted': '/Game/ImportedAssets/Props',
-    'WeaponsExtracted': '/Game/ImportedAssets/Props',
+    'Characters':    '/Game/AssetsImportados/Characters',
+    'MeshyAI':       '/Game/AssetsImportados/Buildings',  # Navarra-specific buildings/props
+    'Casas':         '/Game/AssetsImportados/Buildings',
+    'ExtractedUnity': '/Game/AssetsImportados/Buildings',
+    'Naturaleza':    '/Game/AssetsImportados/Vegetation',
+    'Animals':       '/Game/AssetsImportados/Vegetation',
+    'Bushes':        '/Game/AssetsImportados/Vegetation',
+    'ForestPack':    '/Game/AssetsImportados/Vegetation',
+    'Hedges':        '/Game/AssetsImportados/Vegetation',
+    'Mundo':         '/Game/AssetsImportados/Vegetation',
+    'SmallArms':     '/Game/AssetsImportados/Props',
+    'Farolas':       '/Game/AssetsImportados/Props',
+    'Fleurs':        '/Game/AssetsImportados/Props',
+    'Pavimentos':    '/Game/AssetsImportados/Props',
+    'Containers':    '/Game/AssetsImportados/Props',
+    'Locomotive':    '/Game/AssetsImportados/Props',
+    'Shrooms':       '/Game/AssetsImportados/Props',
+    'DestroyedWalls':'/Game/AssetsImportados/Props',
+    'Cypress':       '/Game/AssetsImportados/Vegetation',
+    'Bamboo':        '/Game/AssetsImportados/Vegetation',
+    'FPSWeapons':    '/Game/AssetsImportados/Props',
+    'VillagePack':   '/Game/AssetsImportados/Buildings',
+    'VillageHouses': '/Game/AssetsImportados/Buildings',
+    'HousePack':     '/Game/AssetsImportados/Buildings',
+    'Standard Assets': '/Game/AssetsImportados/Props',
+    'SpaceZeta_StreetLamps2': '/Game/AssetsImportados/Props',
+    'YughuesFreeBushes2018': '/Game/AssetsImportados/Vegetation',
+    'Pure Poly':     '/Game/AssetsImportados/Vegetation',
+    'Animals':       '/Game/AssetsImportados/Vegetation',
+    'Arboles':       '/Game/AssetsImportados/Vegetation',
+    'ArbolesExtracted': '/Game/AssetsImportados/Vegetation',
+    'CharactersExtracted': '/Game/AssetsImportados/Characters',
+    'CasasExtracted': '/Game/AssetsImportados/Buildings',
+    'PropsExtracted': '/Game/AssetsImportados/Props',
+    'TerrainExtracted': '/Game/AssetsImportados/Props',
+    'TownsExtracted': '/Game/AssetsImportados/Buildings',
+    'VehiclesExtracted': '/Game/AssetsImportados/Props',
+    'WeaponsExtracted': '/Game/AssetsImportados/Props',
 }
 
-DEFAULT_DEST = '/Game/ImportedAssets/Misc'
+DEFAULT_DEST = '/Game/AssetsImportados/Misc'
 
 def find_fbx(directories):
     results = []

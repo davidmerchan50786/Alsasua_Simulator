@@ -1,0 +1,61 @@
+{
+    "StartNodeID": 0,
+    "Nodes": [
+        {
+            "ID": 0,
+            "Type": "NPC_Statement",
+            "DialogueText": "¡Eso! Alguien que no se queda mirando. ¿Qué, vienes a la trinchera o a mirar desde el balcón?",
+            "Options": [
+                {
+                    "OptionText": "A la trinchera. ¿Qué se prepara?",
+                    "TargetNodeID": 1,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                },
+                {
+                    "OptionText": "[PERSUASIÓN] Con tu empuje, la gente se te sumaría en masa.",
+                    "TargetNodeID": 2,
+                    "bRequiresSkillCheck": true,
+                    "DifficultyClass": 13
+                },
+                {
+                    "OptionText": "Todavía no, tranquilo.",
+                    "TargetNodeID": 4,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                }
+            ]
+        },
+        {
+            "ID": 1,
+            "Type": "NPC_Statement",
+            "DialogueText": "Nada escrito, pero ya sabes de qué va la cosa: bancos, símbolos del poder, y el pueblo unido. No se dice más.",
+            "Options": [
+                {
+                    "OptionText": "Cada cual sabrá lo suyo. Cuenta conmigo.",
+                    "TargetNodeID": 4,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                }
+            ]
+        },
+        {
+            "ID": 2,
+            "Type": "NPC_Statement",
+            "DialogueText": "Eso lo digo yo. Cuando se mueve la base, no hay recorte que aguante. Tú tira de la gente y el resto es cuestión de tiempo.",
+            "Options": [
+                {
+                    "OptionText": "Así se habla. Arriba esa gente.",
+                    "TargetNodeID": 4,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                }
+            ]
+        },
+        {
+            "ID": 4,
+            "Type": "End_Conversation",
+            "DialogueText": "La conversación ha terminado."
+        }
+    ]
+}

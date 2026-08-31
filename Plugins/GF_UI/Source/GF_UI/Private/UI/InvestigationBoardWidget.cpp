@@ -6,4 +6,6 @@ void UInvestigationBoardWidget::RequestStartMission(FName NodeId)
     {
         return;
     }
+
+    OnMissionRequested.Broadcast(NodeId);
 }

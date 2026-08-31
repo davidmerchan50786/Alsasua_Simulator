@@ -16,6 +16,8 @@
 #include "RespawnSubsystem.h"
 #include "AlsasuaTypes.h"
 #include "ArranqueMundo.h"
+#include "AlsasuaServiceRegistry.h"
+#include "Services/INPCSocialService.h"
 #include "Kismet/GameplayStatics.h"
 
 static UDrogasSubsystem* DrogasDe(const APlayerController* PC)
@@ -126,6 +128,45 @@ void AAlsasuaLegacyPlayerController::OnInteractuar()
 	// En diálogo: E avanza la línea automática (o cierra si no hay opciones).
 	if (UDialogoSubsystem* D = DialogoDe(this))
 		if (D->EnCurso()) { D->Elegir(-1); return; }
+
+	// A pie: hablar con el NPC más cercano (persona/voz/diálogo).
+	APawn* Yo = GetPawn();
+	if (Yo)
+	{
+		UWorld* W = GetWorld();
+		UGameInstance* GI = W ? W->GetGameInstance() : nullptr;
+		// Vía UAlsasuaServiceRegistry, no un #include directo de GF_NPCs: éste
+		// vive en AlsasuaGameplay, y GF_NPCs depende (transitivamente, vía
+		// GF_Social) de AlsasuaGameplay — un #include directo cerraría el ciclo.
+		if (GI)
+			if (UAlsasuaServiceRegistry* Reg = GI->GetSubsystem<UAlsasuaServiceRegistry>())
+				if (INPCSocialService* Peds = Reg->PedirComo<INPCSocialService>(FName("NPCPedestrians")))
+				{
+					const int32 Idx = Peds->GetNearestNPC(Yo->GetActorLocation(), 400.f);
+					if (Idx >= 0)
+					{
+						// Preferir un diálogo ramificado completo: un JSON compartido
+						// por personalidad (Amable, Rebelde...) si existe para ella.
+						const FString ClavePersona = Peds->GetPersonaClave(Idx);
+						bool bConversacionIniciada = false;
+						if (UDialogoSubsystem* Dialogo = DialogoDe(this))
+							if (!Dialogo->EnCurso())
+							{
+								bConversacionIniciada = Dialogo->IniciarConNPC(ClavePersona);
+								// El hablante del fichero es la clave ("Rebelde"); el
+								// HUD debe mostrar el nombre real del NPC.
+								if (bConversacionIniciada)
+									Dialogo->SetHablanteActual(Peds->GetPersonaNombre(Idx));
+							}
+
+						// Sin conversación autorada: charla corta por persona + voz
+						if (!bConversacionIniciada)
+							Peds->HablarConNPC(Idx);
+
+						return;   // talked to NPC instead of entering vehicle
+					}
+				}
+	}
 
 	// A pie: subirme a un coche cercano.
 	EntrarVehiculoCercano();

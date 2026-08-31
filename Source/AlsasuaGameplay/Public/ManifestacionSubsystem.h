@@ -46,6 +46,10 @@ public:
 	UFUNCTION(BlueprintPure, Category="Manifestacion") FVector GetCentroActual() const { return PuntoActual; }
 	UFUNCTION(BlueprintPure, Category="Manifestacion") const TArray<FVector>& GetRuta() const { return Ruta; }
 
+	/** Tension 0-1, builds from crowd size + police proximity, drives riot */
+	UFUNCTION(BlueprintPure, Category="Manifestacion") float GetTension() const { return Tension; }
+	UFUNCTION(BlueprintPure, Category="Manifestacion") float GetCrowdSizeNormalized() const { return Multitud.Num() / (float)TamMax; }
+
 	virtual void Tick(float DeltaTime) override;
 	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(UManifestacionSubsystem, STATGROUP_Tickables); }
 	virtual bool IsTickable() const override { return !IsTemplate(); }
@@ -57,6 +61,11 @@ private:
 	TArray<FVector> Ruta;
 	int32 RutaIdx = 0;
 	float Tiempo = 0.f;
+	float Tension = 0.f;  // 0-1, drives riot probability
+
+	/** Visual effects at manifestation center */
+	UPROPERTY() class UNiagaraComponent* ManifestacionVFX = nullptr;
+	UPROPERTY() class UAudioComponent* ManifestacionAudio = nullptr;
 
 	void FijarEstado(EEstadoManifestacion E);
 	int32 TamanoPorApoyo() const;
@@ -65,6 +74,7 @@ private:
 	void DespawnTodos();
 	void AplicarApoyo(float Delta);
 	void SubirBusqueda(int32 N);
+	void SpawnManifestacionVFX(const FVector& Centro, int32 NumNPCs);
 
 	UFUNCTION()
 	void HandleConvocarDelegate(FVector Punto);

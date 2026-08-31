@@ -29,7 +29,7 @@ import ue5_compat as compat
 def add_rain_to_player():
     """Añade UAlsasuaRainParticleComponent al jugador."""
     wind_class = unreal.load_class(
-        "/Script/AlsasuaManifa.AlsasuaRainParticleComponent")
+        "/Script/GF_World.AlsasuaRainParticleComponent")
     if not wind_class:
         unreal.log_error("[RainParticles] No se pudo cargar UAlsasuaRainParticleComponent")
         return
@@ -47,7 +47,7 @@ def add_rain_to_player():
 def add_rain_to_player_controller():
     """También intenta añadir al PlayerController por si el pawn no existe."""
     wind_class = unreal.load_class(
-        "/Script/AlsasuaManifa.AlsasuaRainParticleComponent")
+        "/Script/GF_World.AlsasuaRainParticleComponent")
     if not wind_class:
         return
 

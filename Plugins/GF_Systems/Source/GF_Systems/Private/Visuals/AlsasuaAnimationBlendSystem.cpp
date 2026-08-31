@@ -13,6 +13,11 @@ void UAlsasuaAnimationBlendSystem::TickComponent(float DeltaTime, ELevelTick Tic
     FActorComponentTickFunction* ThisTickFunction)
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+    if (DeltaTime <= 0.f) return;
+
+    // Run FootIK every frame — result is cached for animation blueprint to read.
+    LastFootIK = CalculateFootIK(DeltaTime);
 }
 
 FFootIKResult UAlsasuaAnimationBlendSystem::CalculateFootIK(float DeltaTime)

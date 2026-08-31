@@ -5,6 +5,16 @@
 #include "Components/AlsasuaParanoiaComponent.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
+#include "AlsasuaServiceRegistry.h"
+#include "Engine/GameInstance.h"
+
+void UApoyoPopularSubsystem::Initialize(FSubsystemCollectionBase& Collection)
+{
+	Super::Initialize(Collection);
+	if (UGameInstance* GI = GetGameInstance())
+		if (UAlsasuaServiceRegistry* Reg = GI->GetSubsystem<UAlsasuaServiceRegistry>())
+			Reg->Publicar(FName("ApoyoPopular"), this);
+}
 
 void UApoyoPopularSubsystem::SumarApoyo(float Cantidad, const FString& Razon)
 {

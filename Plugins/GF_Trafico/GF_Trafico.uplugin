@@ -31,6 +31,5 @@
     "GF_Carreteras",
     "GF_World"
   ],
-  "BuiltInInitialFeatureState": "Installed",
-  "ExplicitlyLoaded": true
+  "BuiltInInitialFeatureState": "Installed"
 }

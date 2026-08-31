@@ -32,8 +32,27 @@ public:
 	UPROPERTY(EditAnywhere, Category="Terreno") int32 SizeChunkPx = 128;
 	UPROPERTY(EditAnywhere, Category="Terreno") int32 ResolucionRAW = 4033;
 	UPROPERTY(EditAnywhere, Category="Terreno") double EscalaXY = 178.5714;
-	UPROPERTY(EditAnywhere, Category="Terreno") double EscalaZ = 200.0;
-	UPROPERTY(EditAnywhere, Category="Terreno") double LocZ = 49567.0;
+	/**
+	 * Vertical del heightmap. worldZ_cm = q/64 * EscalaZ + LocZ.
+	 *
+	 * Estos dos valian 200 y 49567, que son los que calcula
+	 * Tools/PrepararLandscape.py... pero para un ACTOR LANDSCAPE, cuyo mapeo
+	 * interno es otro. Desarrollando el del Landscape sale
+	 * worldZ_cm = 100*alt_m - 51133, que es el convenio del mundo (CLAUDE.md
+	 * 5b) y el que usa ATerrenoLejano. Aqui no hay Landscape —esto es malla
+	 * procedural— y meter esos numeros en ESTA formula daba
+	 * 200*alt_m - 49433: el doble de escala vertical y otro origen.
+	 *
+	 * El pueblo salia al doble de relieve y separado del anillo: 549 m en la
+	 * plaza, 1509 m a la altura de San Donato. La costura los pega en el borde,
+	 * asi que el error no se veia ahi sino segun te alejabas — los montes
+	 * quedaban donde no tocaba respecto al suelo que pisas.
+	 *
+	 * Con 100 y -1633, terreno y anillo dan el mismo cm en todo el rango
+	 * (495 m -> -1633 cm; 531,94 -> 2061; 1491,6 -> 98027).
+	 */
+	UPROPERTY(EditAnywhere, Category="Terreno") double EscalaZ = 100.0;
+	UPROPERTY(EditAnywhere, Category="Terreno") double LocZ = -1633.0;
 	UPROPERTY(EditAnywhere, Category="Terreno") FString RutaRAW = TEXT("Terreno/alsasua_landscape_4033.r16");
 
 	/** LIDAR 0.5m real (Alsasua centro urbano) — mayor precisión, se funde con el DTM ancho en los bordes. */

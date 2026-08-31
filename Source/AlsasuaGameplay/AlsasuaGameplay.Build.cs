@@ -7,7 +7,7 @@ public class AlsasuaGameplay : ModuleRules
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         PublicDependencyModuleNames.AddRange(new string[] {
             "Core", "CoreUObject", "Engine", "InputCore", "Json", "JsonUtilities",
-            "AlsasuaCore", "AlsasuaWorld", "AlsasuaEntities", "AlsasuaKernel", "AlsasuaSimulator", "Niagara",
+            "AlsasuaCore", "AlsasuaWorld", "AlsasuaEntities", "AlsasuaKernel", "AlsasuaSimulator", "AlsasuaContracts", "GF_Clima", "GF_Vehiculos", "Niagara",
             "AIModule", "NavigationSystem"
         });
     }

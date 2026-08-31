@@ -208,6 +208,28 @@ void UCargadorEdificios::ConstruirUno(const TSharedPtr<FJsonObject>& O)
 	O->TryGetStringField(TEXT("barrio"), E->Barrio);
 	E->Plantas       = PlantasJson;   // ya lleva la medida LiDAR si la había
 
+	// Parse building type from JSON
+	if (O->HasField(TEXT("type")))
+	{
+		const FString Tipo = O->GetStringField(TEXT("type"));
+		if (Tipo == TEXT("house") || Tipo == TEXT("apartments") || Tipo == TEXT("detached"))
+			E->TipoEdificio = ETipoEdificio::Residencial;
+		else if (Tipo == TEXT("retail") || Tipo == TEXT("commercial"))
+			E->TipoEdificio = ETipoEdificio::Comercial;
+		else if (Tipo == TEXT("industrial") || Tipo == TEXT("construction"))
+			E->TipoEdificio = ETipoEdificio::Industrial;
+		else if (Tipo == TEXT("public") || Tipo == TEXT("school") || Tipo == TEXT("college") || Tipo == TEXT("sports_hall"))
+			E->TipoEdificio = ETipoEdificio::Publico;
+		else if (Tipo == TEXT("church") || Tipo == TEXT("chapel"))
+			E->TipoEdificio = ETipoEdificio::Religioso;
+		else if (Tipo == TEXT("farm_auxiliary") || Tipo == TEXT("greenhouse"))
+			E->TipoEdificio = ETipoEdificio::Agricultura;
+		else if (Tipo == TEXT("train_station"))
+			E->TipoEdificio = ETipoEdificio::Transporte;
+		else
+			E->TipoEdificio = ETipoEdificio::Otro;
+	}
+
 	// Eje real del caballete (Unity dx,dz) -> dirección en el plano XY de Unreal (X=Z, Y=X).
 	FVector2D Eje(1, 0);
 	if (O->HasField(TEXT("lidar_eje_x")) && O->HasField(TEXT("lidar_eje_z")))
@@ -297,21 +319,22 @@ void UCargadorEdificios::ConstruirUno(const TSharedPtr<FJsonObject>& O)
 		if (MatTejado) E->Malla->SetMaterial(1, MatTejado);
 		else if (MatMuro) E->Malla->SetMaterial(1, MatMuro);
 
-		// Barrio-specific material override
-		const FString Barrio = O->HasField(TEXT("barrio")) ? O->GetStringField(TEXT("barrio")) : FString();
-		const FString MatType = O->HasField(TEXT("material_type")) ? O->GetStringField(TEXT("material_type")) : FString();
-
-		if (!Barrio.IsEmpty() && !MatType.IsEmpty())
-		{
-			FString MatPath = FString::Printf(TEXT("/Game/Materiales/M_%s_%s"), *MatType, *Barrio);
-			UMaterialInterface* MatBarrio = LoadObject<UMaterialInterface>(nullptr, *MatPath);
-			if (!MatBarrio)
-			{
-				MatPath = FString::Printf(TEXT("/Game/Materiales/M_%s"), *MatType);
-				MatBarrio = LoadObject<UMaterialInterface>(nullptr, *MatPath);
-			}
-			if (MatBarrio) E->Malla->SetMaterial(0, MatBarrio);
-		}
+		// Aquí había un override que buscaba /Game/Materiales/M_{tipo}_{barrio}
+		// y, si fallaba, M_{tipo}. Se ha retirado por dos razones.
+		//
+		// La primera: no existía ninguno de esos materiales y no los crea nadie,
+		// así que eran 2060 LoadObject fallidos por arranque —553 de M_ladrillo,
+		// 379 de M_piedra_hormigon, y el resto variantes por barrio— que siempre
+		// acababan dejando el material que ya estaba puesto.
+		//
+		// La segunda es la que importa: si esos materiales llegaran a existir,
+		// el override EMPEORARÍA el resultado. M_Edificio ya es PBR de ladrillo
+		// con textura, junta, relieve, AO y respuesta a la lluvia por MPC_Clima,
+		// y se tiñe por VertexColor. Y el color de vértice ya sale del dato real
+		// de cada edificio (mat_r/g/b, ver MuroReal más arriba), así que la
+		// variedad por barrio YA está resuelta, y por edificio en vez de por
+		// barrio. Sustituir eso por un material plano de nombre M_ladrillo sería
+		// cambiar fachadas con material por fachadas con color.
 	}
 	++Construidos;
 }

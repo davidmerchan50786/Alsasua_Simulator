@@ -44,10 +44,10 @@ public:
 
 	// --- Exposure ---
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PP|Exposure")
-	float ExposureMinBrightness = 0.3f;
+	float ExposureMinBrightness = 0.02f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PP|Exposure")
-	float ExposureMaxBrightness = 3.f;
+	float ExposureMaxBrightness = 8.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PP|Exposure")
 	float ExposureSpeed = 2.f;

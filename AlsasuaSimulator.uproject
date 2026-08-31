@@ -105,87 +105,87 @@
     },
     {
       "Name": "GF_AI",
-      "Enabled": false
+      "Enabled": true
     },
     {
       "Name": "GF_Abilities",
-      "Enabled": false
+      "Enabled": true
     },
     {
       "Name": "GF_Audio",
-      "Enabled": false
+      "Enabled": true
     },
     {
       "Name": "GF_Carreteras",
-      "Enabled": false
+      "Enabled": true
     },
     {
       "Name": "GF_Clima",
-      "Enabled": false
+      "Enabled": true
     },
     {
       "Name": "GF_Core",
-      "Enabled": false
+      "Enabled": true
     },
     {
       "Name": "GF_Debug",
-      "Enabled": false
+      "Enabled": true
     },
     {
       "Name": "GF_Dialogos",
-      "Enabled": false
+      "Enabled": true
     },
     {
       "Name": "GF_Edificios",
-      "Enabled": false
+      "Enabled": true
     },
     {
       "Name": "GF_Ferrocarril",
-      "Enabled": false
+      "Enabled": true
     },
     {
       "Name": "GF_Misiones",
-      "Enabled": false
+      "Enabled": true
     },
     {
       "Name": "GF_NPCs",
-      "Enabled": false
+      "Enabled": true
     },
     {
       "Name": "GF_Optimization",
-      "Enabled": false
+      "Enabled": true
     },
     {
       "Name": "GF_Politica",
-      "Enabled": false
+      "Enabled": true
     },
     {
       "Name": "GF_Social",
-      "Enabled": false
+      "Enabled": true
     },
     {
       "Name": "GF_Systems",
-      "Enabled": false
+      "Enabled": true
     },
     {
       "Name": "GF_Trafico",
-      "Enabled": false
+      "Enabled": true
     },
     {
       "Name": "GF_UI",
-      "Enabled": false
+      "Enabled": true
     },
     {
       "Name": "GF_Vegetacion",
-      "Enabled": false
+      "Enabled": true
     },
     {
       "Name": "GF_Vehiculos",
-      "Enabled": false
+      "Enabled": true
     },
     {
       "Name": "GF_World",
-      "Enabled": false
+      "Enabled": true
     }
   ]
 }

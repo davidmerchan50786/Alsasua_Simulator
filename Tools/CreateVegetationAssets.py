@@ -15,8 +15,8 @@ import unreal
 def resolve_vegetation_asset_class():
     """Resuelve la clase UVegetationType del módulo del proyecto."""
     for class_path in [
-        "/Script/AlsasuaManifa.VegetationType",
-        "/Script/AlsasuaManifa.UVegetationType",
+        "/Script/GF_Vegetacion.VegetationType",
+        "/Script/GF_Vegetacion.UVegetationType",
         "/Script/Engine.DataAsset",
     ]:
         asset_class = unreal.load_class(class_path)

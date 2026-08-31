@@ -17,6 +17,5 @@
       "LoadingPhase": "PreDefault"
     }
   ],
-  "BuiltInInitialFeatureState": "Installed",
-  "ExplicitlyLoaded": true
+  "BuiltInInitialFeatureState": "Installed"
 }

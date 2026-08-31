@@ -1,0 +1,61 @@
+{
+    "StartNodeID": 0,
+    "Nodes": [
+        {
+            "ID": 0,
+            "Type": "NPC_Statement",
+            "DialogueText": "¡Epa! ¡Al fin alguien con quien echar unas risas! ¿Qué me cuentas?",
+            "Options": [
+                {
+                    "OptionText": "Anda que estás animado. ¿A qué te dedicas?",
+                    "TargetNodeID": 1,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                },
+                {
+                    "OptionText": "[PERSUASIÓN] Con tu labia, en la asamblea harías bailar a las piedras.",
+                    "TargetNodeID": 2,
+                    "bRequiresSkillCheck": true,
+                    "DifficultyClass": 11
+                },
+                {
+                    "OptionText": "Me piro, que tengo prisa.",
+                    "TargetNodeID": 4,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                }
+            ]
+        },
+        {
+            "ID": 1,
+            "Type": "NPC_Statement",
+            "DialogueText": "De todo un poco: charlar, contar chismes, echar una mano al vecino si hace falta. Aquí se está tan a gusto...",
+            "Options": [
+                {
+                    "OptionText": "Se te ve a gusto, sí.",
+                    "TargetNodeID": 4,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                }
+            ]
+        },
+        {
+            "ID": 2,
+            "Type": "NPC_Statement",
+            "DialogueText": "¡Ja! Me estás tentando. Pues hazte un hueco, que a mí de hablar no me gana nadie. Allí estaré.",
+            "Options": [
+                {
+                    "OptionText": "Ahí te espero.",
+                    "TargetNodeID": 4,
+                    "bRequiresSkillCheck": false,
+                    "DifficultyClass": 10
+                }
+            ]
+        },
+        {
+            "ID": 4,
+            "Type": "End_Conversation",
+            "DialogueText": "La conversación ha terminado."
+        }
+    ]
+}

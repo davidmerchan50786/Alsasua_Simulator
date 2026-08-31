@@ -24,6 +24,5 @@
   "Dependencies": [
     "GF_NPCs"
   ],
-  "BuiltInInitialFeatureState": "Installed",
-  "ExplicitlyLoaded": true
+  "BuiltInInitialFeatureState": "Installed"
 }

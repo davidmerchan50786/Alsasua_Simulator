@@ -4,6 +4,7 @@
 #include "GeoDataAlsasua.h"
 #include "Engine/World.h"
 #include "Algo/Reverse.h"
+#include "AlsasuaServiceRegistry.h"
 
 namespace
 {
@@ -146,6 +147,11 @@ int32 UAlsasuaRedViaria::Construir()
 		Nodos.Num(), Tramos.Num(), Cruces, Fondos, LargoTotal / 100000.0,
 		Descartadas, Unicas);
 
+	// Publish as IRoadQueryService
+	if (UGameInstance* GI = W->GetGameInstance())
+		if (UAlsasuaServiceRegistry* Reg = GI->GetSubsystem<UAlsasuaServiceRegistry>())
+			Reg->Publicar(FName("Roads"), this);
+
 	return Tramos.Num();
 }
 
@@ -274,4 +280,67 @@ TArray<FVector> UAlsasuaRedViaria::PuntosDeRuta(const TArray<int32>& RutaTramos)
 		Puntos.Add(B + Carril);
 	}
 	return Puntos;
+}
+
+// ── IRoadQueryService ───────────────────────────────────────────────────────
+
+bool UAlsasuaRedViaria::IsRoadAt(const FVector& Location, float Radius) const
+{
+	const int32 Nearest = NodoMasCercano(Location);
+	if (Nearest < 0) return false;
+	return FVector::DistSquared(Location, Nodos[Nearest]) < FMath::Square(Radius);
+}
+
+FVector UAlsasuaRedViaria::GetNearestRoadPoint(const FVector& Location) const
+{
+	const int32 Nearest = NodoMasCercano(Location);
+	return Nearest >= 0 ? Nodos[Nearest] : Location;
+}
+
+bool UAlsasuaRedViaria::GetRoadDirection(const FVector& Location, FVector& OutDirection) const
+{
+	const int32 Nearest = NodoMasCercano(Location);
+	if (Nearest < 0 || !Salidas.IsValidIndex(Nearest) || Salidas[Nearest].Num() == 0) return false;
+
+	const int32 FirstTramo = Salidas[Nearest][0];
+	if (!Tramos.IsValidIndex(FirstTramo)) return false;
+	const FTramoViario& T = Tramos[FirstTramo];
+	OutDirection = (Nodos[T.NodoB] - Nodos[T.NodoA]).GetSafeNormal();
+	return true;
+}
+
+float UAlsasuaRedViaria::GetSpeedLimitAt(const FVector& Location) const
+{
+	// All roads are 50 km/h urban limit unless marked as highway
+	const int32 Nearest = NodoMasCercano(Location);
+	if (Nearest < 0) return 50.f;
+
+	for (const int32 Ti : Salidas[Nearest])
+	{
+		if (Tramos.IsValidIndex(Ti))
+		{
+			const FString& Tipo = Tramos[Ti].Tipo;
+			if (Tipo.Contains(TEXT("motorway")) || Tipo.Contains(TEXT("trunk"))) return 120.f;
+			if (Tipo.Contains(TEXT("primary")))   return 90.f;
+			if (Tipo.Contains(TEXT("secondary")))  return 70.f;
+		}
+	}
+	return 50.f;
+}
+
+bool UAlsasuaRedViaria::IsOneWayAt(const FVector& Location) const
+{
+	const int32 Nearest = NodoMasCercano(Location);
+	if (Nearest < 0) return false;
+
+	// Check if any outgoing tramo from this node is oneway=yes
+	for (const int32 Ti : Salidas[Nearest])
+	{
+		if (Tramos.IsValidIndex(Ti))
+		{
+			const FString& Tipo = Tramos[Ti].Tipo;
+			if (Tipo.Contains(TEXT("oneway"))) return true;
+		}
+	}
+	return false;
 }

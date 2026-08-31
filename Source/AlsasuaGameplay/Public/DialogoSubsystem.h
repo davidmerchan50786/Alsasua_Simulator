@@ -46,9 +46,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Dialogo") bool EnCurso() const { return Actual != nullptr; }
 
 	// Texto/opciones del nodo actual.
-	UFUNCTION(BlueprintCallable, Category="Dialogo") FString HablanteActual() const { return Actual ? Actual->Hablante : FString(); }
+	UFUNCTION(BlueprintCallable, Category="Dialogo")
+	FString HablanteActual() const { return HablanteOverride.IsEmpty() ? (Actual ? Actual->Hablante : FString()) : HablanteOverride; }
 	UFUNCTION(BlueprintCallable, Category="Dialogo") FString TextoActual() const { return Actual ? Actual->Texto : FString(); }
 	UFUNCTION(BlueprintCallable, Category="Dialogo") TArray<FString> OpcionesActuales() const;
+
+	/** Muestra el nombre real del NPC en vez de la clave del fichero de diálogo
+	 *  (p.ej. "Mikel" en lugar de "Rebelde"). Se resetea al cambiar de conversación. */
+	UFUNCTION(BlueprintCallable, Category="Dialogo")
+	void SetHablanteActual(const FString& NombreReal) { HablanteOverride = NombreReal; }
 
 	/**
 	 * Lo mismo, pero diciendo cuáles son tirada, contra qué y con qué
@@ -78,6 +84,9 @@ private:
 
 	UPROPERTY() UConversacionDialogo* Conversacion = nullptr;
 	const FNodoDialogo* Actual = nullptr;
+	/** Nombre real del interlocutor mostrado en el HUD, si es distinto de la
+	 *  clave del fichero de diálogo. Vacío = usar el hablante del nodo. */
+	UPROPERTY() FString HablanteOverride;
 	void IrA(FName Id);
 
 	/** Tiradas ya falladas en esta conversación, "<nodo>:<índice>". Una tirada

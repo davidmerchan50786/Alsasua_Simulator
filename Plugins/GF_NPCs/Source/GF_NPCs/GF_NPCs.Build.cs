@@ -8,7 +8,7 @@ public class GF_NPCs : ModuleRules
         CppStandard = CppStandardVersion.Cpp20;
         bEnableExceptions = true;
         PublicDependencyModuleNames.AddRange(new string[] {
-			"AlsasuaKernel", "Core", "CoreUObject", "Engine", "AlsasuaCore", "NavigationSystem", "AIModule", "GF_Social", "GF_Politica", "GF_Carreteras" });
+			"AlsasuaKernel", "Core", "CoreUObject", "Engine", "AlsasuaCore", "AlsasuaContracts", "NavigationSystem", "AIModule", "GF_Social", "GF_Politica", "GF_Carreteras", "Niagara" });
         PrivateDependencyModuleNames.AddRange(new string[] { "Json", "JsonUtilities" });
     }
 }

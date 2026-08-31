@@ -50,6 +50,5 @@
     "GF_Social",
     "GF_Systems"
   ],
-  "BuiltInInitialFeatureState": "Installed",
-  "ExplicitlyLoaded": true
+  "BuiltInInitialFeatureState": "Installed"
 }

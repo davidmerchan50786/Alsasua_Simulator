@@ -24,6 +24,5 @@
   "Dependencies": [
     "GF_Dialogos"
   ],
-  "BuiltInInitialFeatureState": "Installed",
-  "ExplicitlyLoaded": true
+  "BuiltInInitialFeatureState": "Installed"
 }

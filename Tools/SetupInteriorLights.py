@@ -15,7 +15,7 @@ import ue5_compat as compat
 def add_interior_lights_to_buildings():
     """Añade UAlsasuaInteriorLightComponent a edificios."""
     light_class = unreal.load_class(
-        "/Script/AlsasuaManifa.AlsasuaInteriorLightComponent")
+        "/Script/GF_World.AlsasuaInteriorLightComponent")
     if not light_class:
         unreal.log_error("[InteriorLights] No se pudo cargar UAlsasuaInteriorLightComponent")
         return

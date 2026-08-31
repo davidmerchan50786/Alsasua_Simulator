@@ -38,4 +38,7 @@ private:
 	UPROPERTY() TArray<TObjectPtr<ACharacter>> CachedNPCs;
 
 	void ApplyLOD(ACharacter* NPC, int32 LODLevel);
+
+	/** Enciende/apaga el tick del actor, su controller, el movimiento y la malla. */
+	void FijarTick(ACharacter* NPC, bool bActivo);
 };

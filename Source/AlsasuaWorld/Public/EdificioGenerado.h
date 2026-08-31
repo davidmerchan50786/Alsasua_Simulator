@@ -13,6 +13,18 @@ class UProceduralMeshComponent;
 UENUM()
 enum class EFormaTejado : uint8 { Plano, Cuatro_Aguas, Dos_Aguas };
 
+UENUM(BlueprintType)
+enum class ETipoEdificio : uint8 {
+	Residencial,    // house, apartments, detached
+	Comercial,      // retail, commercial
+	Industrial,     // industrial, construction
+	Publico,        // public, school, college, sports_hall
+	Religioso,      // church, chapel
+	Agricultura,    // farm, greenhouse
+	Transporte,     // train_station
+	Otro            // roof, terrace, unknown
+};
+
 /** Alto del faldón y cota del alero de un tejado. */
 struct FMetricasTejado
 {
@@ -153,6 +165,7 @@ public:
 	UPROPERTY(EditAnywhere, Category="Edificio") FString Barrio;
 
 	UPROPERTY(EditAnywhere, Category="Edificio") int32 Plantas = 1;
+	UPROPERTY(EditAnywhere, Category="Edificio") ETipoEdificio TipoEdificio = ETipoEdificio::Otro;
 	UPROPERTY(EditAnywhere, Category="Edificio") bool bDetalleActivo = false;
 
 	/** Ficha del tejado construido, para UAlsasuaTejadoModular. */

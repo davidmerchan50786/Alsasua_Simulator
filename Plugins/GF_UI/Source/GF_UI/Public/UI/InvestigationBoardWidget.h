@@ -14,6 +14,8 @@ struct FNodoInvestigacion {
     UPROPERTY(BlueprintReadOnly) bool bSaboteado = false;
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMissionRequested, FName, NodeId);
+
 UCLASS()
 class GF_UI_API UInvestigationBoardWidget : public UUserWidget
 {
@@ -25,4 +27,8 @@ public:
 
     UFUNCTION(BlueprintCallable, Category="AAA|Investigacion")
     void RequestStartMission(FName NodeId);
+
+    /** Broadcast when a mission node is clicked. Listeners (e.g., MissionsSubsystem) handle the actual launch. */
+    UPROPERTY(BlueprintAssignable, Category="AAA|Investigacion")
+    FOnMissionRequested OnMissionRequested;
 };

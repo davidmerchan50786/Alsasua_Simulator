@@ -205,3 +205,132 @@ alcance propio (escribir ~24 entradas de material en un generador, no hay bug
 que arreglar). Mismo patrón con `/Game/LUTs/LUT_Neutral`
 (`AlsasuaBarrioStyleSystem.h:142`): LUT de color grading por barrio, sin
 generador, cae en silencio sin aplicar nada.
+
+---
+
+## Corrección: la medida anterior estaba hecha con los plugins apagados
+
+La tabla de arriba (mediana 15,5 ms, ~64 FPS, 4256 draw calls) se tomó cuando
+**ninguno de los 21 plugins `GF_*` se estaba cargando**. No era el pueblo
+completo: era el esqueleto sin la mitad de los sistemas.
+
+Salieron tres fallos de arranque más, todos de configuración y todos invisibles
+al compilar:
+
+| # | qué | dónde |
+|---|---|---|
+| 2 | los 21 `GF_*` con `"Enabled": false` | `AlsasuaSimulator.uproject` |
+| 3 | los 21 `.uplugin` con `"ExplicitlyLoaded": true` mientras 14 están enlazados en duro | `Plugins/*/*.uplugin` |
+| 4 | `USocialMediaSubsystem::Initialize` desreferencia un GameInstance nulo | `GF_Social` |
+
+El 3 es una contradicción de raíz: `ExplicitlyLoaded` le dice al motor "no
+cargues este DLL al arrancar", pero `PublicDependencyModuleNames` genera una
+importación estática que el loader de Windows exige antes de ejecutar una sola
+línea. Da `GetLastError=126` y el motor culpa al módulo que importa, no al
+descriptor que lo causa.
+
+El 4 es la trampa de `CLAUDE.md` §11 al pie de la letra: `Initialize` de un
+`UWorldSubsystem` lo llama el motor en todos los mundos —el del editor, los
+transitorios, cada PIE y la cocción— y en varios no hay GameInstance.
+
+## Línea base real (2026-08-30, sesión completa de 240 s, cierre limpio)
+
+`Profile(20260830_220923).csv`, 229 filas, 21/21 plugins cargados, 0 fallos de
+módulo, 0 crashes, `Log file closed`.
+
+| | sin plugins (medida vieja) | **con los 21 (real)** |
+|---|---:|---:|
+| `FrameTime` | 15,47 ms (~65 FPS) | **33,75 ms (~30 FPS)** |
+| `GameThreadTime` | 9,33 | 13,27 |
+| `RenderThreadTime` | 15,31 | 21,63 |
+| `GPUTime` | 10,85 | **11,50** |
+| `RHI/DrawCalls` | 4256 | **6657** |
+| `RHI/PrimitivesDrawn` | 1 521 325 | 1 788 047 |
+| `Basic/TicksQueued` | 215 | **969** |
+
+### Lectura
+
+1. **El pueblo va a ~30 FPS, no a 65.** El 65 medía un build lisiado.
+
+2. **Limitado por CPU, no por GPU.** La GPU casi no se mueve (10,85 → 11,50)
+   mientras el frame se duplica. El coste entra por hilo de render (21,63) y de
+   juego (13,27). Apagar Lumen o VSM no arreglaría nada — §8.4 de `CLAUDE.md` ya
+   lo decía.
+
+3. **6657 draw calls: 8,1 veces los ~819 de referencia.** Es el número a batir.
+   ~~Confirma la FASE 5.1: quedan `SpawnActor` en bucle~~ — **esto era falso y se
+   comprobó después**: no queda ni un `SpawnActor` dentro de un bucle en todo el
+   repo, y las marcas viales (932) y los cables (887) ya usan ISM/HISM. Los draw
+   calls son estructurales, no un bug. Ver la sección siguiente.
+
+4. **969 ticks encolados frente a 215**: los plugins multiplican por 4,5 lo que
+   tica. Candidato directo para `UAlsasuaOptimizerSubsystem` (§8.3).
+
+5. Los p95 ya son sanos (177 ms) frente a los 523 de la primera pasada: la DDC
+   ya estaba caliente. Los máximos de 47 s siguen siendo el arranque.
+
+---
+
+## Tercera pasada — de dónde salen los draw calls, y el culling que no cullaba
+
+### Tres hipótesis falsas antes de acertar
+
+Medir cada una evitó "optimizar" código que ya estaba bien:
+
+| hipótesis | resultado |
+|---|---|
+| Quedan `SpawnActor` en bucle sin convertir | **falsa** — cero en todo el repo |
+| Marcas viales (932) y cables (887) son actor-por-pieza | **falsa** — ya usan ISM/HISM |
+| Las 1030 fachadas son el exceso | **falsa** — "una sección por edificio" es el estado correcto de §8.1 |
+
+**Los 6657 draw calls son estructurales**, no un defecto: 1024 chunks de terreno
+(cada uno su propio `UProceduralMeshComponent`, y por eso se cullean bien) + 1030
+fachadas + 1030 edificios + 278 suelos poligonales + calles + las capas
+instanciadas. Bajarlos de verdad exige hornear a `StaticMesh` y montar HLOD — la
+opción B de la fase 7.2 del plan, que es un proyecto en sí mismo, no un ajuste.
+
+### El bug que sí había: `SetActorTickEnabled` no apaga los componentes
+
+`UAlsasuaOptimizerSubsystem` hacía, más allá de `AICullDistance`:
+
+```cpp
+NPC->SetActorTickEnabled(false);
+if (NPC->GetController()) NPC->GetController()->SetActorTickEnabled(false);
+```
+
+Eso apaga la función `Tick` del **actor** y del controller. No toca los
+componentes, que tienen su propia función de tick. El caro es
+`UCharacterMovementComponent`: simula gravedad, rozamiento y navegación cada
+frame por cada peatón, esté a 5 m o a 3 km.
+
+Con 600 peatones, `Exclusive/GameThread/CharacterMovement` salía a **4,96 ms** de
+mediana — más que `TickActors` (2,63) y `Animation` (0,69) juntos. El culling de
+§8.3 llevaba corriendo desde siempre sin tocar lo único que importaba.
+
+La malla esquelética se deja a propósito fuera del apagado: la animación son
+0,69 ms, y de ella ya se ocupa `ApplyLOD` con `VisibilityBasedAnimTickOption`,
+que es la vía del motor. Apagarle el tick pisaría esa decisión y congelaría los
+montajes.
+
+### Resultado medido
+
+| métrica | antes | después | |
+|---|---:|---:|---:|
+| `FrameTime` | 33,75 ms | **24,88 ms** | −26,3% (29,6 → 40,2 FPS) |
+| `RenderThreadTime` | 21,63 | 15,56 | −28,0% |
+| `GameThreadTime` | 13,27 | 11,38 | −14,2% |
+| `GT/CharacterMovement` | 4,96 | **3,73** | −24,8% |
+| `GT/TickActors` | 2,63 | 1,84 | −30,0% |
+| `RHI/DrawCalls` | 6657 | 5569 | −16,3% |
+| `GPUTime` | 11,50 | 13,96 | **+21,3%** |
+
+**Cómo leer esto con cuidado.** La corrida nueva tiene 885 muestras y la vieja
+229, y la cámara no está fijada entre sesiones: la dirección es sólida, la
+magnitud exacta no es rigurosa. Para un A/B de verdad hace falta una cámara
+guionizada; sin ella, cualquier comparación futura arrastra el mismo margen.
+
+Los draw calls bajan un 16% sin que el cambio los toque directamente, porque los
+NPC lejanos ya no se mueven y su malla se queda en el LOD grueso.
+
+Y `GPUTime` **sube**: al ir el frame más rápido, la GPU pasa a ser la restricción
+que crece. El siguiente techo ya no es el hilo de juego.

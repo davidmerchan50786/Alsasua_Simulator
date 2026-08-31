@@ -32,6 +32,7 @@ private:
 	void Linea(const FString& Texto, float X, float& Y, const FLinearColor& Color);
 	bool PantallaCarga();
 	void DibujarDialogo();
+void DibujarSubtitulosNPC();
 	void DibujarMisiones();
 	bool DibujarMenu();
 	void DibujarRadar();

@@ -1,6 +1,8 @@
 #include "AlsasuaOptimizerSubsystem.h"
 #include "AlsasuaCharacter.h"
 #include "Kismet/GameplayStatics.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/Controller.h"
 
 void UAlsasuaOptimizerSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -36,6 +38,39 @@ void UAlsasuaOptimizerSubsystem::Tick(float DeltaTime)
 	OptimizeCrowd(Player);
 }
 
+/**
+ * Enciende o apaga TODO lo que tica de un NPC, no sólo el actor.
+ *
+ * SetActorTickEnabled(false) apaga la función Tick del actor y nada más: los
+ * componentes tienen su propia función de tick y siguen corriendo. El caro es
+ * UCharacterMovementComponent, que simula gravedad, rozamiento y navegación en
+ * cada frame por cada peatón esté donde esté.
+ *
+ * Medido antes de tocar esto: con 600 peatones, Exclusive/GameThread/
+ * CharacterMovement salía a 4,96 ms de mediana — el mayor coste real del hilo
+ * de juego, más que TickActors (2,63) y Animation (0,69) juntos. El culling de
+ * §8.3 llevaba corriendo todo ese tiempo y no tocaba lo único que importaba.
+ */
+void UAlsasuaOptimizerSubsystem::FijarTick(ACharacter* NPC, bool bActivo)
+{
+	NPC->SetActorTickEnabled(bActivo);
+
+	if (AController* C = NPC->GetController())
+	{
+		C->SetActorTickEnabled(bActivo);
+	}
+
+	if (UCharacterMovementComponent* Mov = NPC->GetCharacterMovement())
+	{
+		Mov->SetComponentTickEnabled(bActivo);
+	}
+
+	// La malla esquelética se deja en paz a propósito: la animación sale a 0,69 ms
+	// en la misma medida, y de ella ya se ocupa ApplyLOD con
+	// VisibilityBasedAnimTickOption, que es la vía del motor para esto. Apagarle
+	// el tick aquí pisaría esa decisión y congelaría también los montajes.
+}
+
 void UAlsasuaOptimizerSubsystem::OptimizeCrowd(AAlsasuaCharacter* Player)
 {
 	FVector PlayerLoc = Player->GetActorLocation();
@@ -54,15 +89,13 @@ void UAlsasuaOptimizerSubsystem::OptimizeCrowd(AAlsasuaCharacter* Player)
 		// Tier 0: beyond cull distance → hide + disable tick
 		if (Dist > AICullDistance)
 		{
-			NPC->SetActorTickEnabled(false);
-			if (NPC->GetController()) NPC->GetController()->SetActorTickEnabled(false);
+			FijarTick(NPC, false);
 			ApplyLOD(NPC, 3);
 			continue;
 		}
 
 		// Enable tick for all NPCs within cull distance
-		NPC->SetActorTickEnabled(true);
-		if (NPC->GetController()) NPC->GetController()->SetActorTickEnabled(true);
+		FijarTick(NPC, true);
 
 		// Determine LOD tier
 		if (Dist > LOD3Distance)

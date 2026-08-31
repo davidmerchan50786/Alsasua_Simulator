@@ -1,6 +1,8 @@
 #include "World/AlsasuaDynamicTrafficSystem.h"
+#include "World/AlsasuaTrafficLightSystem.h"
 #include "World/AlsasuaRedViaria.h"
 #include "World/AlsasuaAIDriverComponent.h"
+#include "AlsasuaServiceRegistry.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "Engine/StaticMeshActor.h"
@@ -16,6 +18,14 @@ void UAlsasuaDynamicTrafficSystem::Initialize(FSubsystemCollectionBase& Collecti
 {
     Super::Initialize(Collection);
     bInicializado = true;
+
+    // Publish as ITrafficService for other modules
+    UWorld* W = GetWorld();
+    if (W)
+    {
+        UAlsasuaServiceRegistry* Reg = UAlsasuaServiceRegistry::Get(W);
+        if (Reg) Reg->Publicar(FName("Traffic"), this);
+    }
 }
 
 void UAlsasuaDynamicTrafficSystem::Tick(float DeltaTime)
@@ -237,4 +247,70 @@ FVector UAlsasuaDynamicTrafficSystem::ObtenerPuntoInicio() const
     FVector P = UAlsasuaGeoData::AbsLocalToUE5(UAlsasuaGeoData::BarrioCenter(TEXT("Herriko")));
     P.Z = UAlsasuaGeoData::AlturaSueloUE5(GetWorld(), P.X, P.Y);
     return P;
+}
+
+// ── ITrafficService ─────────────────────────────────────────────────────────
+
+float UAlsasuaDynamicTrafficSystem::GetDensity() const
+{
+    return MaxVehiculos > 0 ? static_cast<float>(Vehiculos.Num()) / static_cast<float>(MaxVehiculos) : 0.f;
+}
+
+void UAlsasuaDynamicTrafficSystem::SetDensity(float NewDensity)
+{
+    MaxVehiculos = FMath::Max(1, FMath::RoundToInt32(NewDensity * 30.f));
+}
+
+int32 UAlsasuaDynamicTrafficSystem::GetVehicleCount() const
+{
+    return Vehiculos.Num();
+}
+
+bool UAlsasuaDynamicTrafficSystem::IsGreenLight(const FVector& Location) const
+{
+    UWorld* W = GetWorld();
+    if (!W) return true;
+
+    UAlsasuaTrafficLightSystem* TLS = W->GetGameInstance()
+        ? W->GetGameInstance()->GetSubsystem<UAlsasuaTrafficLightSystem>() : nullptr;
+    if (!TLS) return true;
+
+    const TArray<FTrafficLight>& Lights = TLS->GetSemaforos();
+    const float ThresholdSq = FMath::Square(500.f);
+
+    for (const FTrafficLight& L : Lights)
+    {
+        if (FVector::DistSquared(Location, L.Posicion) < ThresholdSq)
+        {
+            return L.Fase == EFaseSemaforo::Verde;
+        }
+    }
+    return true;
+}
+
+float UAlsasuaDynamicTrafficSystem::GetTrafficLightTimeRemaining(const FVector& Location) const
+{
+    UWorld* W = GetWorld();
+    if (!W) return 0.f;
+
+    UAlsasuaTrafficLightSystem* TLS = W->GetGameInstance()
+        ? W->GetGameInstance()->GetSubsystem<UAlsasuaTrafficLightSystem>() : nullptr;
+    if (!TLS) return 0.f;
+
+    const TArray<FTrafficLight>& Lights = TLS->GetSemaforos();
+    const float ThresholdSq = FMath::Square(500.f);
+
+    for (const FTrafficLight& L : Lights)
+    {
+        if (FVector::DistSquared(Location, L.Posicion) < ThresholdSq)
+        {
+            switch (L.Fase)
+            {
+            case EFaseSemaforo::Verde:  return TLS->SegVerde;
+            case EFaseSemaforo::Ambar:  return TLS->SegAmbar;
+            case EFaseSemaforo::Rojo:   return TLS->SegRojo;
+            }
+        }
+    }
+    return 0.f;
 }

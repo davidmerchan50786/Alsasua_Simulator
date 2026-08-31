@@ -14,6 +14,7 @@
 #include "Engine/World.h"
 #include "AlsasuaServiceRegistry.h"
 #include "Engine/GameInstance.h"
+#include "Components/VolumetricCloudComponent.h"
 
 namespace
 {
@@ -98,6 +99,19 @@ void UAlsasuaAtmosphereController::FindOrCreateAtmosphereActors()
 		HeightFog = W->SpawnActor<AExponentialHeightFog>(AExponentialHeightFog::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
 		if (HeightFog) HeightFog->Rename(TEXT("Atmosphere_Fog"));
 	}
+
+	// Find or create volumetric cloud actor
+	for (TActorIterator<AVolumetricCloud> It(W); It; ++It)
+	{
+		VolumetricCloud = *It;
+		break;
+	}
+	if (!VolumetricCloud)
+	{
+		FActorSpawnParameters Params;
+		VolumetricCloud = W->SpawnActor<AVolumetricCloud>(AVolumetricCloud::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
+		if (VolumetricCloud) VolumetricCloud->Rename(TEXT("Atmosphere_Clouds"));
+	}
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -128,6 +142,11 @@ void UAlsasuaAtmosphereController::ApplyLightSetup()
 			// propiedad pública y el MarkRenderStateDirty de abajo la aplica.
 			DirComp->ContactShadowLength = ContactShadowLength;
 			DirComp->SetVolumetricScatteringIntensity(SunVolumetricScattering);
+
+			// God rays (light shafts): enable occlusion through foliage/buildings
+			DirComp->SetEnableLightShaftOcclusion(true);
+			DirComp->SetLightShaftOverrideDirection(LightShaftDirection);
+
 			DirComp->MarkRenderStateDirty();
 		}
 	}
@@ -331,6 +350,9 @@ void UAlsasuaAtmosphereController::UpdateAtmosphere(float Hour, float DeltaTime)
 	UpdateSkyAtmosphereVisuals(DeltaTime);
 	UpdateFogVisuals(DeltaTime);
 	UpdateCloudVisuals();
+	UpdateCloudLayer(DeltaTime);
+	UpdateStarSky(DeltaTime);
+	UpdateRainShadows(DeltaTime);
 
 	OnTimeOfDayVisualChanged.Broadcast(CurrentSunElevation);
 }
@@ -506,6 +528,83 @@ void UAlsasuaAtmosphereController::UpdateCloudVisuals()
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+//  UpdateRainShadows
+//  During rain: reduce directional light intensity (diffuse overcast),
+//  soften contact shadows, reduce shadow distance. Creates the visual
+//  impression of diffuse, omnidirectional rain lighting.
+// ─────────────────────────────────────────────────────────────────────────────
+void UAlsasuaAtmosphereController::UpdateRainShadows(float DeltaTime)
+{
+	const UWeatherSubsystem* Weather = GetWorld() ? GetWorld()->GetSubsystem<UWeatherSubsystem>() : nullptr;
+	if (!Weather) return;
+
+	const float Rain = Weather->GetRainIntensity();
+	if (Rain <= 0.01f && CurrentRainIntensity <= 0.01f) return;
+
+	// Smooth blend
+	CurrentRainIntensity = FMath::FInterpTo(CurrentRainIntensity, Rain, DeltaTime, 2.0f);
+
+	if (SunLight)
+	{
+		if (UDirectionalLightComponent* DirLight = Cast<UDirectionalLightComponent>(SunLight->GetLightComponent()))
+		{
+			// Reduce direct light: rain makes light more diffuse
+			const float DirectIntensity = FMath::Lerp(1.0f, 0.55f, CurrentRainIntensity);
+			DirLight->SetIntensity(CurrentSunIntensity * DirectIntensity);
+
+			// Soften contact shadows during rain
+			DirLight->ContactShadowLength = FMath::Lerp(0.f, 20.f, CurrentRainIntensity);
+		}
+	}
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  UpdateCloudLayer
+//  Drives VolumetricCloudComponent: layer geometry, tracing quality, and
+//  cloud bottom occlusion — all reactive to weather and time of day.
+// ─────────────────────────────────────────────────────────────────────────────
+void UAlsasuaAtmosphereController::UpdateCloudLayer(float DeltaTime)
+{
+	if (!VolumetricCloud) return;
+
+	UVolumetricCloudComponent* CloudComp = VolumetricCloud->GetRootComponent()
+		? Cast<UVolumetricCloudComponent>(VolumetricCloud->GetRootComponent()) : nullptr;
+	if (!CloudComp) return;
+
+	const UWeatherSubsystem* Weather = GetWorld() ? GetWorld()->GetSubsystem<UWeatherSubsystem>() : nullptr;
+	const bool bRaining = Weather && (Weather->CurrentWeather == EWeatherSubsystemState::Rainy || Weather->CurrentWeather == EWeatherSubsystemState::Thunderstorm);
+
+	// ── Layer geometry: storms push clouds lower ─────────────────────────
+	const float TargetBottom = bRaining ? CloudLayerBottom * 0.7f : CloudLayerBottom;
+	const float TargetHeight = bRaining ? CloudLayerHeight * 1.3f : CloudLayerHeight;
+	CloudComp->SetLayerBottomAltitude(FMath::Lerp(CloudComp->LayerBottomAltitude, TargetBottom, DeltaTime * 0.5f));
+	CloudComp->SetLayerHeight(FMath::Lerp(CloudComp->LayerHeight, TargetHeight, DeltaTime * 0.5f));
+
+	// ── Tracing: more distance during clear sky, less during storms ──────
+	const float TargetTrace = bRaining ? CloudTracingMaxDistance * 0.6f : CloudTracingMaxDistance;
+	CloudComp->SetTracingMaxDistance(FMath::Lerp(CloudComp->TracingMaxDistance, TargetTrace, DeltaTime));
+
+	// ── Sample count: reduce during storms for performance ───────────────
+	const float TargetSamples = bRaining ? CloudSampleCountScale * 0.7f : CloudSampleCountScale;
+	CloudComp->SetViewSampleCountScale(FMath::Lerp(CloudComp->ViewSampleCountScale, TargetSamples, DeltaTime));
+
+	const float TargetShadowSamples = bRaining ? CloudShadowSampleCountScale * 0.5f : CloudShadowSampleCountScale;
+	CloudComp->SetShadowViewSampleCountScale(FMath::Lerp(CloudComp->ShadowViewSampleCountScale, TargetShadowSamples, DeltaTime));
+
+	// ── Bottom occlusion: storms darken cloud undersides ─────────────────
+	const float TargetOcclusion = bRaining ? CloudBottomOcclusion * 2.0f : CloudBottomOcclusion;
+	CloudComp->SetSkyLightCloudBottomOcclusion(FMath::Lerp(CloudComp->SkyLightCloudBottomOcclusion, TargetOcclusion, DeltaTime));
+
+	// ── Transmittance threshold: storms are more opaque ──────────────────
+	const float TargetThreshold = bRaining ? 0.01f : StopTracingTransmittanceThreshold;
+	CloudComp->SetStopTracingTransmittanceThreshold(FMath::Lerp(CloudComp->StopTracingTransmittanceThreshold, TargetThreshold, DeltaTime));
+
+	// ── Shadow tracing: storms have deeper cloud shadows ─────────────────
+	const float TargetShadowDist = bRaining ? ShadowTracingDistance * 1.5f : ShadowTracingDistance;
+	CloudComp->SetShadowTracingDistance(FMath::Lerp(CloudComp->ShadowTracingDistance, TargetShadowDist, DeltaTime));
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 //  UpdateSkyAtmosphereVisuals
 //  Dynamic Rayleigh/Mie/MultiScattering: sky color shifts physically with sun
 //  elevation and weather. No static defaults — every frame is tuned.
@@ -591,4 +690,67 @@ void UAlsasuaAtmosphereController::UpdateSkyAtmosphereVisuals(float DeltaTime)
 
 	AtmoComp->SetMultiScatteringFactor(CurrentMultiScattering);
 	AtmoComp->SetGroundAlbedo(FColor(26, 26, 26));
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  UpdateStarSky
+//  Night sky visual: star visibility, Milky Way glow, moon corona, sky
+//  luminance tint. Stars fade with daylight and cloud cover. Moon washout
+//  reduces faint star visibility during full moon.
+// ─────────────────────────────────────────────────────────────────────────────
+void UAlsasuaAtmosphereController::UpdateStarSky(float DeltaTime)
+{
+	// ── Star visibility ──────────────────────────────────────────────────
+	// Stars only visible below civil twilight, fade out completely at dawn
+	const float NightT = FMath::Clamp(1.f - FMath::Clamp(CurrentSunElevation / CivilTwilightDeg, 0.f, 1.f), 0.f, 1.f);
+	const float MoonPhase = ComputeMoonPhase();
+	const float MoonWashout = FMath::Lerp(1.f, MoonWashoutFactor, MoonPhase);
+	const float CloudBlock = 1.f - GetCloudAttenuation();
+	const float StarVisibility = NightT * MoonWashout * CloudBlock * StarIntensity;
+
+	// ── SkyAtmosphere: star-like luminance tint at night ─────────────────
+	if (SkyAtmosphere)
+	{
+		USkyAtmosphereComponent* AtmoComp = SkyAtmosphere->GetRootComponent() ? Cast<USkyAtmosphereComponent>(SkyAtmosphere->GetRootComponent()) : nullptr;
+		if (AtmoComp)
+		{
+			// SkyLuminanceFactor: subtle warm white at night (stars), invisible at day
+			const FLinearColor StarLuminance = FLinearColor(0.1f, 0.1f, 0.15f) * StarVisibility;
+			AtmoComp->SetSkyLuminanceFactor(StarLuminance);
+
+			// Milky Way: diffuse blue-white glow on the sky dome
+			const FLinearColor MilkyGlow = FLinearColor(0.05f, 0.05f, 0.08f) * MilkyWayIntensity * StarVisibility;
+			AtmoComp->SetGroundAlbedo(FColor(
+				FMath::Clamp(static_cast<int32>((0.1f + MilkyGlow.R) * 255), 0, 255),
+				FMath::Clamp(static_cast<int32>((0.1f + MilkyGlow.G) * 255), 0, 255),
+				FMath::Clamp(static_cast<int32>((0.1f + MilkyGlow.B) * 255), 0, 255)));
+		}
+	}
+
+	// ── Sky Light: star/night ambient glow ───────────────────────────────
+	if (SkyLight)
+	{
+		USkyLightComponent* SLComp = SkyLight->GetLightComponent();
+		if (SLComp)
+		{
+			// Subtle warm tint from starlight at night — more realistic than pure black
+			const FLinearColor StarAmbient = FLinearColor(0.02f, 0.018f, 0.025f) * StarVisibility;
+			const FLinearColor DayColor = FLinearColor::White * CurrentDaylight;
+			SLComp->SetLightColor(StarAmbient + DayColor);
+		}
+	}
+
+	// ── Moon corona: glow around moon from atmospheric scattering ────────
+	// Uses the fog's DirectionalInscattering to create a wide diffuse halo
+	if (HeightFog)
+	{
+		UExponentialHeightFogComponent* FogComp = HeightFog->GetComponent();
+		if (FogComp && CurrentDaylight < 0.1f)
+		{
+			const float MoonGlow = MoonPhase * MoonCoronaIntensity * (1.f - CurrentDaylight) * CloudBlock;
+			const FLinearColor CoronaColor = MoonColor * MoonGlow;
+			FogComp->SetDirectionalInscatteringColor(CoronaColor);
+			FogComp->SetDirectionalInscatteringExponent(MoonCoronaRadius);
+		}
+	}
 }
