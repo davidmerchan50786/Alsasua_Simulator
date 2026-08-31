@@ -65,7 +65,7 @@ void UAlsasuaTreePlacer::InicializarEspecies()
     Haya.AlturaMedia = 25.0f;
     Haya.RadioCopa = 10.0f;
     Haya.ColorFollaje = TEXT("Verde brillante");
-    Haya.AssetPath = TEXT("/Game/AssetsImportados/MeshyAI/Arbol_Haya.Arbol_Haya");
+    Haya.AssetPath = TEXT("/Game/AssetsImportados/MeshyAI_Altsasu/Arbol_Haya.Arbol_Haya");
     Especies.Add(Haya);
 
     FTreeSpecies Abedul;
@@ -75,7 +75,7 @@ void UAlsasuaTreePlacer::InicializarEspecies()
     Abedul.AlturaMedia = 18.0f;
     Abedul.RadioCopa = 5.0f;
     Abedul.ColorFollaje = TEXT("Verde claro");
-    Abedul.AssetPath = TEXT("/Game/AssetsImportados/MeshyAI/Arbol_Abedul.Arbol_Abedul");
+    Abedul.AssetPath = TEXT("/Game/AssetsImportados/MeshyAI_Altsasu/Arbol_Abedul.Arbol_Abedul");
     Especies.Add(Abedul);
 
     FTreeSpecies Sauce;
@@ -115,7 +115,7 @@ void UAlsasuaTreePlacer::InicializarEspecies()
     Roble.AlturaMedia = 22.0f;
     Roble.RadioCopa = 8.0f;
     Roble.ColorFollaje = TEXT("Verde oscuro");
-    Roble.AssetPath = TEXT("/Game/AssetsImportados/MeshyAI/Arbol_Roble.Arbol_Roble");
+    Roble.AssetPath = TEXT("/Game/AssetsImportados/MeshyAI_Altsasu/Arbol_Roble.Arbol_Roble");
     Especies.Add(Roble);
 
     FTreeSpecies Alamo;

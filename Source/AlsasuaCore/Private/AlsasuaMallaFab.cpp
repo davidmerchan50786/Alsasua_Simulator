@@ -3,6 +3,7 @@
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetRegistry/ARFilter.h"
 #include "Modules/ModuleManager.h"
+#include "Misc/PackageName.h"
 
 namespace
 {
@@ -197,8 +198,59 @@ namespace
 	 * mallas: una iglesia y una ikastola no pueden ser el mismo cubo, pero un
 	 * juzgado y una biblioteca sí comparten volumen.
 	 */
+	/**
+	 * Modelo hecho a medida para ESTE edificio, si lo hay.
+	 *
+	 * Meshy generó los landmarks del pueblo con su nombre real
+	 * (Ayuntamiento_Altsasu, Iglesia_Jasokundeko, Fronton_Pelota,
+	 * Estacion_Tren_Altsasu). Estaban en el disco —47 MB el ayuntamiento— y no
+	 * los pedía nadie: ArquetipoLandmarkDe devolvía directamente los
+	 * /Game/Landmarks/SM_*, que son cajas de 12 KB. El pueblo salía con
+	 * volúmenes genéricos teniendo sus propios edificios al lado.
+	 *
+	 * Se comprueba con DoesPackageExist, que mira el disco sin cargar nada: si
+	 * el paquete no está —los uassets de AssetsImportados no se versionan— se
+	 * devuelve nullptr y el llamante sigue con el arquetipo genérico. Esa es la
+	 * degradación elegante de §6 de CLAUDE.md: el proyecto tiene que arrancar
+	 * sin los assets pesados.
+	 */
+	const TCHAR* LandmarkAMedidaDe(const FString& Tipo)
+	{
+		const TCHAR* Ruta = nullptr;
+		if (Tipo == TEXT("iglesia"))
+			Ruta = TEXT("/Game/AssetsImportados/MeshyAI_Altsasu/Iglesia_Jasokundeko.Iglesia_Jasokundeko");
+		else if (Tipo == TEXT("fronton"))
+			Ruta = TEXT("/Game/AssetsImportados/MeshyAI_Altsasu/Fronton_Pelota.Fronton_Pelota");
+		else if (Tipo == TEXT("ayuntamiento"))
+			Ruta = TEXT("/Game/AssetsImportados/MeshyAI_Altsasu/Ayuntamiento_Altsasu.Ayuntamiento_Altsasu");
+		else if (Tipo == TEXT("estacion_tren"))
+			Ruta = TEXT("/Game/AssetsImportados/MeshyAI_Altsasu/Estacion_Tren_Altsasu.Estacion_Tren_Altsasu");
+		// Nave diáfana de cubierta ligera: el modelo ferroviario es justo eso.
+		else if (Tipo == TEXT("polideportivo") || Tipo == TEXT("mercado"))
+			Ruta = TEXT("/Game/AssetsImportados/MeshyAI_Altsasu/Nave_Industrial_Ferroviario.Nave_Industrial_Ferroviario");
+		// Equipamiento cívico: bloque moderno de varias plantas.
+		else if (Tipo == TEXT("juzgado") || Tipo == TEXT("centro_salud") || Tipo == TEXT("biblioteca"))
+			Ruta = TEXT("/Game/AssetsImportados/MeshyAI_Altsasu/Edificio_Moderno_Intxostia.Edificio_Moderno_Intxostia");
+		// Docentes y culturales: el volumen tradicional del casco.
+		else if (Tipo == TEXT("ikastola") || Tipo == TEXT("colegio") ||
+		         Tipo == TEXT("escuela_publica") || Tipo == TEXT("casa_cultura") ||
+		         Tipo == TEXT("gaztetxe"))
+			Ruta = TEXT("/Game/AssetsImportados/MeshyAI_Altsasu/Edificio_Herriko_Tradicional.Edificio_Herriko_Tradicional");
+
+		if (!Ruta) return nullptr;
+
+		// El paquete es la ruta sin el ".Objeto" del final.
+		FString Paquete(Ruta);
+		int32 Punto;
+		if (Paquete.FindLastChar(TEXT('.'), Punto)) Paquete.LeftInline(Punto);
+		return FPackageName::DoesPackageExist(Paquete) ? Ruta : nullptr;
+	}
+
 	const TCHAR* ArquetipoLandmarkDe(const FString& Tipo)
 	{
+		// Primero el edificio de verdad; si no está importado, el arquetipo.
+		if (const TCHAR* AMedida = LandmarkAMedidaDe(Tipo)) return AMedida;
+
 		if (Tipo == TEXT("iglesia"))          return TEXT("/Game/Landmarks/SM_Iglesia.SM_Iglesia");
 		if (Tipo == TEXT("fronton"))          return TEXT("/Game/Landmarks/SM_Fronton.SM_Fronton");
 		if (Tipo == TEXT("ayuntamiento"))     return TEXT("/Game/Landmarks/SM_Ayuntamiento.SM_Ayuntamiento");

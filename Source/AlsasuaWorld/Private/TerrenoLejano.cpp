@@ -171,10 +171,21 @@ int32 ATerrenoLejano::Construir()
 	// justo el agujero que este actor existe para tapar. Un solape se esconde bajo
 	// el terreno; un hueco se ve.
 	const double BordeEnCeldas = (SemiladoCm - HuecoCm) / CeldaCm;
-	const int32 HuecoIni = FMath::CeilToInt(BordeEnCeldas);
+
+	// La tolerancia antes de redondear hacia arriba no es cosmética: con los
+	// valores por defecto el borde cae en 176.00000384 celdas —un pelo por
+	// encima de 176 porque EscalaXY (178.5714) es 1250/7 truncado a cuatro
+	// decimales—, y un CeilToInt a pelo saltaba a 177. Eso es una celda entera:
+	// 150 m de anillo metidos bajo el terreno sin necesidad, y el aviso de abajo
+	// disparándose en el caso que precisamente SÍ divide bien.
+	//
+	// 1e-4 celdas son 1,5 cm con CeldaM=150: muy por encima del ruido de coma
+	// flotante (4e-6) y muy por debajo de cualquier solape que importe.
+	constexpr double ToleranciaCeldas = 1e-4;
+	const int32 HuecoIni = FMath::CeilToInt(BordeEnCeldas - ToleranciaCeldas);
 	const int32 HuecoFin = NCeldas - HuecoIni;   // simétrico
 
-	if (!FMath::IsNearlyEqual(BordeEnCeldas, (double)HuecoIni, 1e-6))
+	if (!FMath::IsNearlyEqual(BordeEnCeldas, (double)HuecoIni, ToleranciaCeldas))
 	{
 		UE_LOG(LogTemp, Warning,
 			TEXT("TerrenoLejano: CeldaM=%.0f no divide exacto el borde del terreno (%.3f celdas); ")
