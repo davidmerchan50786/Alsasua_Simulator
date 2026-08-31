@@ -1,5 +1,8 @@
-#include "Systems/Disguise/DisguiseComponent.h"
+#include "Gameplay/Disguise/DisguiseComponent.h"
 #include "Engine/World.h"
+#include "GameFramework/Character.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Materials/MaterialInterface.h"
 
 UDisguiseComponent::UDisguiseComponent()
 {
@@ -79,6 +82,7 @@ void UDisguiseComponent::EquipDisguise(EDisguiseType Type, bool bConsumableIn, f
 	const FDisguiseTypeInfo& Cfg = GetConfigForType(Type);
 	Durability = (InitialDurability > 0.f) ? FMath::Min(InitialDurability, Cfg.MaxDurability) : Cfg.MaxDurability;
 
+	AplicarTinte(1);
 	OnDisguiseChanged.Broadcast(Type, OldType);
 	OnDurabilityChanged.Broadcast(Durability);
 }
@@ -99,6 +103,7 @@ void UDisguiseComponent::UnequipDisguise()
 	bIsSprinting = false;
 	bNearGuard = false;
 
+	AplicarTinte(0);
 	OnDisguiseChanged.Broadcast(EDisguiseType::None, OldType);
 }
 
@@ -215,6 +220,39 @@ float UDisguiseComponent::GetDurabilityPercent() const
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+//  Visual: tiñe el mesh del jugador al encubrirse y lo restaura al quitarse.
+// ═══════════════════════════════════════════════════════════════════════════
+void UDisguiseComponent::AplicarTinte(uint8 bOn)
+{
+	const ACharacter* Char = Cast<ACharacter>(GetOwner());
+	USkeletalMeshComponent* Mesh = Char ? Char->GetMesh() : nullptr;
+	if (!Mesh) return;
+
+	if (bOn)
+	{
+		if (OriginalMaterials.Num() == 0)
+		{
+			for (int32 i = 0; i < Mesh->GetNumMaterials(); ++i)
+				OriginalMaterials.Add(Mesh->GetMaterial(i));
+		}
+		for (int32 i = 0; i < Mesh->GetNumMaterials(); ++i)
+		{
+			if (UMaterialInstanceDynamic* MID = Mesh->CreateAndSetMaterialInstanceDynamic(i))
+			{
+				MID->SetVectorParameterValue(FName("Tint"), TintColor);
+				MID->SetVectorParameterValue(FName("BaseColor"), TintColor);
+			}
+		}
+	}
+	else
+	{
+		for (int32 i = 0; i < OriginalMaterials.Num() && i < Mesh->GetNumMaterials(); ++i)
+			Mesh->SetMaterial(i, OriginalMaterials[i]);
+		OriginalMaterials.Reset();
+	}
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 //  Config lookup
 // ═══════════════════════════════════════════════════════════════════════════
 const FDisguiseTypeInfo& UDisguiseComponent::GetConfigForType(EDisguiseType Type) const
@@ -277,6 +315,7 @@ void UDisguiseComponent::BreakDisguise()
 	bIsSprinting = false;
 	bNearGuard = false;
 
+	AplicarTinte(0);
 	OnDisguiseBroken.Broadcast(BrokenType);
 	OnDisguiseChanged.Broadcast(EDisguiseType::None, BrokenType);
 }

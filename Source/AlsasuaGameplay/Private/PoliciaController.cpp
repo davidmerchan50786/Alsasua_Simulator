@@ -5,7 +5,7 @@
 #include "AlsasuaNPC.h"
 #include "WantedSubsystem.h"
 #include "DiaNocheSubsystem.h"
-#include "DisfrazSubsystem.h"
+#include "Gameplay/Disguise/DisguiseComponent.h"
 #include "ManifestacionSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Pawn.h"
@@ -122,10 +122,9 @@ bool AAlsasuaPoliciaController::VeJugador(APawn*& OutJugador) const
 	float Factor = 1.f;
 	if (const UWorld* W = GetWorld())
 		if (const UGameInstance* GI = W->GetGameInstance())
-		{
 			if (const UDiaNocheSubsystem* Dn = GI->GetSubsystem<UDiaNocheSubsystem>()) Factor *= Dn->DeteccionSigilo();
-			if (const UDisfrazSubsystem* Dis = GI->GetSubsystem<UDisfrazSubsystem>()) Factor *= Dis->FactorReconocimiento();
-		}
+	if (const UDisguiseComponent* Dis = OutJugador ? OutJugador->FindComponentByClass<UDisguiseComponent>() : nullptr)
+		Factor *= Dis->GetEffectiveDetectionMultiplier();
 	const float Radio = RadioVision * Factor;
 
 	const FVector Ojo = Yo->GetActorLocation() + FVector(0, 0, 80);

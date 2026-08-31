@@ -3,7 +3,7 @@
 #include "DrogasSubsystem.h"
 #include "WantedSubsystem.h"
 #include "ConsecuenciasSubsystem.h"
-#include "DisfrazSubsystem.h"
+#include "Gameplay/Disguise/DisguiseComponent.h"
 #include "AlsasuaPlayerCharacter.h"
 #include "Character/Stealth/GuardDetectionComponent.h"
 #include "PoblacionSubsystem.h"
@@ -276,8 +276,9 @@ void UArmasComponent::DispararFuego(int32 Dano, int32 Perdigones, float Dispersi
 	OnAmmoChanged.Broadcast(MunicionActual());
 
 	// Disparar te delata (se cae el disfraz).
-	if (UGameInstance* GI = W->GetGameInstance())
-		if (UDisfrazSubsystem* Dis = GI->GetSubsystem<UDisfrazSubsystem>()) Dis->Delatar();
+	if (AActor* Ow = GetOwner())
+		if (UDisguiseComponent* Dis = Ow->FindComponentByClass<UDisguiseComponent>())
+			Dis->UnequipDisguise();
 
 	FVector Origen, Dir;
 	if (!ObtenerMira(Origen, Dir)) return;
