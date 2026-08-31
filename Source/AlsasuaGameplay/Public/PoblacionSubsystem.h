@@ -34,8 +34,20 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Poblacion")
 	void HuirDe(FVector Location);
 
+	/** Startle civilians within StartleRadius of Location (e.g., fast car passing). */
+	UFUNCTION(BlueprintCallable, Category="Poblacion")
+	void StartlePeds(FVector Location);
+
 	/** Static: fires on loud noise. Pedestrians flee. */
 	static FOnNoiseAtLocation OnLoudNoise;
+
+	/** Scream sound played by a nearby civilian when panic/flee triggers. */
+	UPROPERTY(EditAnywhere, Category="Poblacion|Reaction")
+	class USoundBase* SScream = nullptr;
+
+	/** Startle radius (cm): fast cars / explosions within this cause a startled hop + flee. */
+	UPROPERTY(EditAnywhere, Category="Poblacion|Reaction")
+	float StartleRadius = 1200.f;
 
 private:
 	float Acum = 0.f;
@@ -48,4 +60,5 @@ private:
 	void HandleLoudNoise(FVector Location);
 	void Mantener();
 	bool PuntoEnAnillo(const FVector& Centro, FVector& OutPunto) const;
+	void StartleNearFastVehicles(const FVector& PlayerLoc);
 };

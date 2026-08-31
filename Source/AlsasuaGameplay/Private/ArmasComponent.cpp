@@ -3,7 +3,7 @@
 #include "DrogasSubsystem.h"
 #include "WantedSubsystem.h"
 #include "ConsecuenciasSubsystem.h"
-#include "DisfrazSubsystem.h"
+#include "Gameplay/Disguise/DisguiseComponent.h"
 #include "AlsasuaPlayerCharacter.h"
 #include "Character/Stealth/GuardDetectionComponent.h"
 #include "PoblacionSubsystem.h"
@@ -82,6 +82,9 @@ void UArmasComponent::InitAmmoArrays()
 void UArmasComponent::TickComponent(float DeltaTime, ELevelTick, FActorComponentTickFunction*)
 {
 	if (Cooldown > 0.f) Cooldown -= DeltaTime;
+
+	// Recoil recovers when not firing.
+	if (RecoilStack > 0.f) RecoilStack = FMath::Max(0.f, RecoilStack - RecoilDecay * DeltaTime);
 
 	if (bReloading)
 	{
@@ -273,8 +276,9 @@ void UArmasComponent::DispararFuego(int32 Dano, int32 Perdigones, float Dispersi
 	OnAmmoChanged.Broadcast(MunicionActual());
 
 	// Disparar te delata (se cae el disfraz).
-	if (UGameInstance* GI = W->GetGameInstance())
-		if (UDisfrazSubsystem* Dis = GI->GetSubsystem<UDisfrazSubsystem>()) Dis->Delatar();
+	if (AActor* Ow = GetOwner())
+		if (UDisguiseComponent* Dis = Ow->FindComponentByClass<UDisguiseComponent>())
+			Dis->UnequipDisguise();
 
 	FVector Origen, Dir;
 	if (!ObtenerMira(Origen, Dir)) return;
@@ -303,24 +307,41 @@ void UArmasComponent::DispararFuego(int32 Dano, int32 Perdigones, float Dispersi
 		if (Disp > 0.f)
 			D = FRotator(FMath::FRandRange(-Disp, Disp), FMath::FRandRange(-Disp, Disp), 0.f).RotateVector(Dir);
 
+		// Bullet penetration: trace along the full path and process every hit.
+		// Pass through up to MaxPenetration non-damageable obstacles (thin walls),
+		// stop on the first damageable target like a real bullet.
 		FHitResult Hit;
-		if (W->LineTraceSingleByChannel(Hit, Origen, Origen + D * 30000.f, ECC_Visibility, Q))
+		FVector TraceStart = Origen;
+		int32 Penetrated = 0;
+		bool bHitSomething = false;
+
+		while (true)
 		{
-			// Headshot: hit bone at or under "head". Damage falloff by distance.
-			const float Dist = Hit.Distance;
-			float FinalDano = (float)Dano;
-			if (Dist > DamageFalloffStart)
-				FinalDano *= FMath::Clamp(1.f - (Dist - DamageFalloffStart) / DamageFalloffRange, 0.25f, 1.f);
+			if (!W->LineTraceSingleByChannel(Hit, TraceStart, Origen + D * 30000.f, ECC_Visibility, Q))
+				break;
 
-			bool bHeadshot = false;
-			const FString BoneStr = Hit.BoneName.ToString();
-			bHeadshot = BoneStr.Contains(TEXT("head"), ESearchCase::IgnoreCase)
-				|| BoneStr.Contains(TEXT("cabeza"), ESearchCase::IgnoreCase)
-				|| BoneStr.Contains(TEXT("neck"), ESearchCase::IgnoreCase);
-			if (bHeadshot) FinalDano *= HeadshotMultiplier;
+			bHitSomething = true;
+			TraceStart = Hit.ImpactPoint + D * 2.f;
 
-			if (IDamageable* Dmg = Cast<IDamageable>(Hit.GetActor()))
-				if (!Dmg->EstaMuerto())
+			IDamageable* Dmg = Cast<IDamageable>(Hit.GetActor());
+			const bool bIsDamageable = Dmg && !Dmg->EstaMuerto();
+
+			if (bIsDamageable || !bStopOnFirstHit)
+			{
+				// Headshot: hit bone at or under "head". Damage falloff by distance.
+				const float Dist = Hit.Distance;
+				float FinalDano = (float)Dano;
+				if (Dist > DamageFalloffStart)
+					FinalDano *= FMath::Clamp(1.f - (Dist - DamageFalloffStart) / DamageFalloffRange, 0.25f, 1.f);
+
+				bool bHeadshot = false;
+				const FString BoneStr = Hit.BoneName.ToString();
+				bHeadshot = BoneStr.Contains(TEXT("head"), ESearchCase::IgnoreCase)
+					|| BoneStr.Contains(TEXT("cabeza"), ESearchCase::IgnoreCase)
+					|| BoneStr.Contains(TEXT("neck"), ESearchCase::IgnoreCase);
+				if (bHeadshot) FinalDano *= HeadshotMultiplier;
+
+				if (bIsDamageable)
 				{
 					Dmg->RecibirDano((int32)FinalDano, Hit.ImpactPoint, ETipoDano::Bala);
 				Consecuencias(Hit.GetActor());
@@ -328,18 +349,26 @@ void UArmasComponent::DispararFuego(int32 Dano, int32 Perdigones, float Dispersi
 				if (NSSangre) UNiagaraFunctionLibrary::SpawnSystemAtLocation(W, NSSangre, Hit.ImpactPoint, (-D).Rotation());
 				}
 
-		if (NSImpacto)
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(W, NSImpacto, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
-		if (SImpacto)
-			UGameplayStatics::PlaySoundAtLocation(W, SImpacto, Hit.ImpactPoint);
-	}
-}
+			if (NSImpacto)
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(W, NSImpacto, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
+			if (SImpacto)
+				UGameplayStatics::PlaySoundAtLocation(W, SImpacto, Hit.ImpactPoint);
+			}
 
-	// Retroceso.
+			// Stop conditions: hit a damageable target, or exhausted penetration.
+			if (bStopOnFirstHit && bIsDamageable)
+				break;
+			if (++Penetrated >= MaxPenetration)
+				break;
+		}
+	}
+
+	// Retroceso (progressive recoil pattern: climbs with continuous fire).
 	if (APawn* P = Cast<APawn>(GetOwner()))
 		if (APlayerController* PC = Cast<APlayerController>(P->GetController()))
 		{
-			float Kick = 0.6f + DispersionGrados * 0.15f;
+			RecoilStack = FMath::Min(RecoilStack + RecoilPerShot, RecoilMax);
+			float Kick = (0.6f + DispersionGrados * 0.15f) * (1.f + RecoilStack);
 			if (const AAlsasuaPlayerCharacter* Ch = Cast<AAlsasuaPlayerCharacter>(P)) if (Ch->EstaApuntando()) Kick *= 0.5f;
 			PC->AddPitchInput(-Kick);
 			PC->AddYawInput(FMath::FRandRange(-Kick, Kick) * 0.3f);
@@ -358,8 +387,66 @@ bool UArmasComponent::ObtenerMira(FVector& OutOrigen, FVector& OutDir) const
 		{
 			FRotator R; C->GetPlayerViewPoint(OutOrigen, R);
 			OutDir = R.Vector();
+
+			// GTA controller aim assist: soft lock-on only when aiming a firearm.
+			const bool bIsWeaponLinear = (ArmaActual == ETipoArma::Pistola || ArmaActual == ETipoArma::Escopeta || ArmaActual == ETipoArma::Fusil || ArmaActual == ETipoArma::Tirachinas);
+			if (bAimAssistEnabled && bIsWeaponLinear)
+				ApplyAimAssist(OutDir, OutOrigen);
+
 			return true;
 		}
+	return false;
+}
+
+bool UArmasComponent::ApplyAimAssist(FVector& OutDir, const FVector& Origen) const
+{
+	const UWorld* W = GetWorld();
+	if (!W) return false;
+
+	// Only when the player is actually ADS'ing.
+	const AAlsasuaPlayerCharacter* Ch = Cast<AAlsasuaPlayerCharacter>(GetOwner());
+	if (!Ch || !Ch->EstaApuntando()) return false;
+
+	// Find the nearest hostile/relevant damageable pawn inside the cone.
+	AActor* Best = nullptr;
+	float BestDot = FMath::Cos(FMath::DegreesToRadians(AimAssistCone));
+	float BestDist = AimAssistRadius;
+	const FVector ViewDir = OutDir;
+
+	TArray<FOverlapResult> Overlaps;
+	FCollisionShape Shape = FCollisionShape::MakeSphere(AimAssistRadius);
+	FCollisionQueryParams Q; Q.AddIgnoredActor(GetOwner());
+	if (!W->OverlapMultiByChannel(Overlaps, Origen, FQuat::Identity, ECC_Pawn, Shape, Q))
+		return false;
+
+	for (const FOverlapResult& Ov : Overlaps)
+	{
+		AActor* A = Ov.GetActor();
+		if (!IsValid(A) || A == GetOwner()) continue;
+		// Prefer last known enemies — cops, guards, any pawn. Skip the player and peds via IGameplay? 
+		// Lazy proxy: any IDamageable that isn't the player is a valid lock target.
+		IDamageable* Dmg = Cast<IDamageable>(A);
+		if (!Dmg || Dmg->EstaMuerto()) continue;
+		if (A->ActorHasTag(FName("Player"))) continue;
+
+		const FVector To = (A->GetActorLocation() - Origen).GetSafeNormal();
+		const float Dot = FVector::DotProduct(ViewDir, To);
+		if (Dot < BestDot) continue;   // outside cone
+		const float Dist = FVector::Dist(Origen, A->GetActorLocation());
+		if (Dist > BestDist) continue;
+
+		Best = A;
+		BestDot = Dot;
+		BestDist = Dist;
+	}
+
+	if (Best)
+	{
+		// Blend the view direction toward the target (snap, capped by cone).
+		const FVector ToTarget = (Best->GetActorLocation() - Origen).GetSafeNormal();
+		OutDir = (ViewDir + ToTarget).GetSafeNormal();
+		return true;
+	}
 	return false;
 }
 

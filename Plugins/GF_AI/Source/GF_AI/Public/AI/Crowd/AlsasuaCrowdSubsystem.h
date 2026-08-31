@@ -231,9 +231,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Multitud|Visual")
 	TObjectPtr<UMaterialInterface> AgentMaterial;
 
-	/** Componente ISMC principal para el renderizado GPU instanced. */
+	/** ISMCs por color de la paleta para renderizado GPU instanced con variación de color. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Multitud|Visual")
-	TObjectPtr<UInstancedStaticMeshComponent> InstancedMeshComponent;
+	TArray<TObjectPtr<UInstancedStaticMeshComponent>> ColorISMCs;
 
 	/** Parámetros de flocking globales. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Multitud|Flocking")
@@ -249,11 +249,15 @@ protected:
 
 	/** Escala visual de los agentes instanced. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Multitud|Visual", meta = (ClampMin = "0.01"))
-	FVector AgentScale = FVector(0.35f, 0.35f, 0.875f);
+	FVector AgentScale = FVector::OneVector;
 
 	/** Offset vertical del mesh del agente sobre la posición lógica. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Multitud|Visual")
 	float VisualOffsetZ = 87.5f;
+
+	/** Si true, spawnea una marcha de demostración en Herriko Plaza al arrancar. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Multitud|Demo")
+	bool bDemoCrowdAutoStart = true;
 
 private:
 	// ── Datos internos ──────────────────────────────────────────────────────
@@ -267,8 +271,14 @@ private:
 	/** Waypoints aplanados (ruta global de la marcha). */
 	TArray<FVector> RouteWaypoints;
 
-	/** Colores por instancia para variación visual. */
+	/** Colores por instancia para variación visual (relleno informativo). */
 	TArray<FLinearColor> AgentColors;
+
+	/** Índice de color de la paleta por agente (paralelo a Agents: 0..ColorPalette.Num()-1). */
+	TArray<int32> AgentColorIdx;
+
+	/** Índice de instancia de cada agente dentro de su ISMC de color (paralelo a Agents). */
+	TArray<int32> AgentInstanceIndex;
 
 	/** Temporizador para la frecuencia de actualización. */
 	float UpdateTimer = 0.f;
@@ -324,8 +334,8 @@ private:
 	/** Inicializa el ISMC y crea la malla por defecto si no se asignó. */
 	void SetupInstancedRendering();
 
-	/** Crea una malla de cápsula procedural (port de ObtenerMeshCapsula). */
-	UStaticMesh* CreateDefaultCapsuleMesh() const;
+	/** Crea un humanoid procedural (cuerpo+cabeza) como malla estática por defecto. */
+	UStaticMesh* CreateDefaultHumanoidMesh() const;
 
 	/** Inicializa agentes en formación alrededor de un punto. */
 	void InitializeAgentsInFormation(int32 StartIndex, int32 Count,
@@ -343,6 +353,9 @@ private:
 	/** Sincroniza las transformaciones del ISMC con los datos de agentes. */
 	void SyncInstancedTransforms();
 
+	/** Reconstruye todos los ISMCs de color (clear + re-add) con los agentes actuales. */
+	void RebuildAllInstances();
+
 	/** Asigna un color de la paleta a cada agente. */
 	void AssignAgentColors();
 
@@ -355,4 +368,7 @@ private:
 	/** Wiring: respond to tactic changes from TacticManager. */
 	UFUNCTION()
 	void HandleTacticChanged(EAlsasuaTactic NewTactic);
+
+	/** Spawnea la marcha de demostración en Herriko Plaza. */
+	void DemoSpawnHerrikoPlaza();
 };

@@ -7,8 +7,10 @@
 #include "Vehicles/AlsasuaPoliceVan.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Pawn.h"
+#include "GameFramework/Controller.h"
 #include "Engine/World.h"
 #include "Engine/GameInstance.h"
+#include "Logging/LogMacros.h"
 
 void URefuerzosSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
@@ -166,7 +168,18 @@ void URefuerzosSubsystem::SpawnVehiculoPolicia(FVector Centro, FRotator Rotacion
 
 	FActorSpawnParameters P;
 	P.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-	W->SpawnActor<APawn>(Clase, Centro, Rotacion, P);
+	if (APawn* Vehiculo = W->SpawnActor<APawn>(Clase, Centro, Rotacion, P))
+	{
+		// Order the spawned police vehicle to pursue the player. Call the
+		// BlueprintCallable StartPursuit reflectively (GF_Vehiculos is not a
+		// compile-time dependency of this module).
+		if (AActor* Target = UGameplayStatics::GetPlayerPawn(W, 0))
+			if (AController* C = Vehiculo->GetController())
+			{
+				const FString Cmd = FString::Printf(TEXT("StartPursuit %s"), *Target->GetName());
+				C->CallFunctionByNameWithArguments(*Cmd, *GLog, nullptr);
+			}
+	}
 }
 
 void URefuerzosSubsystem::SpawnPoliceVan()

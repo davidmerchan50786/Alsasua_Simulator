@@ -8,6 +8,7 @@ public class GF_AI : ModuleRules
         CppStandard = CppStandardVersion.Cpp20;
         bEnableExceptions = true;
         PublicDependencyModuleNames.AddRange(new string[] {
-			"AlsasuaKernel", "Core", "CoreUObject", "Engine", "AlsasuaCore", "GF_NPCs", "NavigationSystem", "AIModule", "Niagara", "GF_Social" });
+			"AlsasuaKernel", "Core", "CoreUObject", "Engine", "AlsasuaCore", "GF_NPCs", "NavigationSystem", "AIModule", "Niagara", "GF_Social",
+			"MeshDescription", "MeshConversion" });
     }
 }

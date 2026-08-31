@@ -10,6 +10,7 @@
 #include "GameFramework/Pawn.h"
 #include "Engine/World.h"
 #include "Engine/GameInstance.h"
+#include "Engine/OverlapResult.h"
 #include "AIController.h"
 
 FOnNoiseAtLocation UPoblacionSubsystem::OnLoudNoise;
@@ -55,6 +56,20 @@ void UPoblacionSubsystem::HandleLoudNoise(FVector Location)
 	}
 }
 
+void UPoblacionSubsystem::StartlePeds(FVector Location)
+{
+	if (!GetWorld()) return;
+	for (APeatonActor* Pe : Peatones)
+	{
+		if (!IsValid(Pe)) continue;
+		if (FVector::Dist(Pe->GetActorLocation(), Location) > StartleRadius) continue;
+		// Startled civilian hops away a short distance.
+		const FVector Away = Pe->GetActorLocation() + (Pe->GetActorLocation() - Location).GetSafeNormal2D() * 1200.f;
+		if (AAIController* AIC = Cast<AAIController>(Pe->GetController()))
+			AIC->MoveToLocation(Away);
+	}
+}
+
 void UPoblacionSubsystem::OnWantedChange(int32 Nivel)
 {
 	bPanicMode = Nivel >= 2;
@@ -72,6 +87,10 @@ void UPoblacionSubsystem::OnWantedChange(int32 Nivel)
 
 void UPoblacionSubsystem::HuirDe(FVector Location)
 {
+	// GTA-style panic response: scream from a nearby civilian (pseudo-random
+	// audible reaction), then peds scatter. Panic spreads via a follow-up
+	// quiet noise that chained peds react to.
+	bool bPlayedScream = false;
 	for (APeatonActor* Pe : Peatones)
 	{
 		if (!IsValid(Pe)) continue;
@@ -85,6 +104,27 @@ void UPoblacionSubsystem::HuirDe(FVector Location)
 		FVector Away = Pe->GetActorLocation() + (Pe->GetActorLocation() - Location).GetSafeNormal2D() * 3000.f;
 		if (AAIController* AIC = Cast<AAIController>(Pe->GetController()))
 			AIC->MoveToLocation(Away);
+
+		// One nearby civilian screams (audible panic cue).
+		if (!bPlayedScream && FVector::Dist(Pe->GetActorLocation(), Location) < 1500.f && SScream)
+		{
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), SScream, Pe->GetActorLocation(), 1.f, 1.2f, 0.f, nullptr, nullptr, nullptr);
+			bPlayedScream = true;
+		}
+	}
+
+	// Panic spread: a fraction of peds far from the source also react,
+	// simulating panic propagating through a crowd (deeper flee).
+	for (int32 i = 0; i < FMath::Min(6, Peatones.Num()); ++i)
+	{
+		APeatonActor* Pe = Peatones[FMath::RandRange(0, Peatones.Num() - 1)];
+		if (!IsValid(Pe)) continue;
+		if (FVector::Dist(Pe->GetActorLocation(), Location) > 3500.f)
+		{
+			FVector Away = Pe->GetActorLocation() + FVector(FMath::FRandRange(0.f, 2.f * PI), 0.f, 0.f).GetSafeNormal2D() * 2000.f;
+			if (AAIController* AIC = Cast<AAIController>(Pe->GetController()))
+				AIC->MoveToLocation(Away);
+		}
 	}
 }
 
@@ -113,6 +153,29 @@ bool UPoblacionSubsystem::PuntoEnAnillo(const FVector& Centro, FVector& Out) con
 	return false;
 }
 
+void UPoblacionSubsystem::StartleNearFastVehicles(const FVector& PlayerLoc)
+{
+	UWorld* W = GetWorld();
+	if (!W) return;
+
+	// Scan for fast-moving vehicles within the populated ring and startle peds
+	// near them. Uses pawn velocity as a proxy for vehicle speed.
+	TArray<FOverlapResult> Overlaps;
+	FCollisionShape Shape = FCollisionShape::MakeSphere(RadioMax);
+	FCollisionQueryParams Q;
+	W->OverlapMultiByChannel(Overlaps, PlayerLoc, FQuat::Identity, ECC_Pawn, Shape, Q);
+
+	const float FastSpeed = 1800.f; // ~66 km/h
+	for (const FOverlapResult& Ovl : Overlaps)
+	{
+		APawn* V = Cast<APawn>(Ovl.GetActor());
+		if (!V) continue;
+		const float Speed = V->GetVelocity().Size2D();
+		if (Speed < FastSpeed) continue;
+		StartlePeds(V->GetActorLocation());
+	}
+}
+
 void UPoblacionSubsystem::Mantener()
 {
 	UWorld* W = GetGameInstance() ? GetGameInstance()->GetWorld() : nullptr;
@@ -134,6 +197,9 @@ void UPoblacionSubsystem::Mantener()
 
 	// Panic mode: stop spawning, existing peds flee.
 	if (bPanicMode) return;
+
+	// Startle: fast-moving vehicles near civilians trigger a startled hop.
+	StartleNearFastVehicles(P);
 
 	// Night: fewer civilians on the streets (60% of max).
 	int32 EffectiveMax = MaxPeatones;

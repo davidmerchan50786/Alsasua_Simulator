@@ -1,9 +1,12 @@
 // CargadorPOI.cpp
 #include "CargadorPOI.h"
+#include "EdificioGenerado.h"
 #include "Components/TextRenderComponent.h"
 #include "Components/BillboardComponent.h"
 #include "Engine/StaticMeshActor.h"
 #include "Engine/World.h"
+#include "Materials/MaterialInterface.h"
+#include "ProceduralMeshComponent.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "Serialization/JsonReader.h"
@@ -57,6 +60,7 @@ int32 UCargadorPOI::Cargar()
 		Data.Id = O->GetStringField(TEXT("id"));
 		Data.Nombre = O->GetStringField(TEXT("nombre"));
 		Data.Tipo = O->GetStringField(TEXT("tipo"));
+		Data.TipoReal = O->HasField(TEXT("tipo_real")) ? O->GetStringField(TEXT("tipo_real")) : FString();
 		Data.Subtipo = O->GetStringField(TEXT("subtipo"));
 		Data.Calle = O->HasField(TEXT("calle")) ? O->GetStringField(TEXT("calle")) : FString();
 		Data.Descripcion = O->HasField(TEXT("descripcion")) ? O->GetStringField(TEXT("descripcion")) : FString();
@@ -149,6 +153,42 @@ void UCargadorPOI::ColocarPOI(const FPOIData& Data)
 #if WITH_EDITOR
 	Actor->SetActorLabel(Data.Nombre);
 #endif
+
+	// Comisarías (p. ej. el cuartel de la Guardia Civil) se muestran además con
+	// un edificio real; sin él son un texto flotando sobre el suelo.
+	if (Data.TipoReal == TEXT("comisaria"))
+	{
+		const FVector P = Data.PosicionMundo;
+		FActorSpawnParameters SP;
+		SP.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		AEdificioGenerado* E = World->SpawnActor<AEdificioGenerado>(
+			AEdificioGenerado::StaticClass(), P, FRotator::ZeroRotator, SP);
+		if (E)
+		{
+			E->NombreEdificio = Data.Nombre;
+			E->Plantas = 2;
+			E->TipoEdificio = ETipoEdificio::Publico;
+			// Cuartel: caja institucional sobria, 18 x 12 m, fachada detallada.
+			const float Lx = 900.f, Ly = 600.f;
+			FFachadaConfig Cfg;
+			Cfg.ColorMuro = FColor(200, 195, 185);
+			Cfg.ColorPuerta = FColor(60, 55, 50);
+			Cfg.bPonerPuerta = true;
+			E->ConstruirConDetalle(
+				{ FVector2D(-Lx / 2, -Ly / 2), FVector2D(Lx / 2, -Ly / 2),
+				  FVector2D(Lx / 2, Ly / 2), FVector2D(-Lx / 2, Ly / 2) },
+				900.f, Cfg);
+			if (E->Malla)
+			{
+				if (UMaterialInterface* M = LoadObject<UMaterialInterface>(nullptr,
+						TEXT("/Game/Materiales/M_Fachada.M_Fachada")))
+					E->Malla->SetMaterial(0, M);
+				if (UMaterialInterface* MT = LoadObject<UMaterialInterface>(nullptr,
+						TEXT("/Game/Materiales/M_Tejado_Orto.M_Tejado_Orto")))
+					E->Malla->SetMaterial(1, MT);
+			}
+		}
+	}
 }
 
 TArray<FPOIData> UCargadorPOI::GetPOIsByTipo(const FString& Tipo) const

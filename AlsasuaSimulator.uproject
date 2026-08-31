@@ -81,7 +81,12 @@
     },
     {
       "Name": "InterchangeEditor",
-      "Enabled": true
+      "Enabled": true,
+      "SupportedTargetPlatforms": [
+        "Win64",
+        "Linux",
+        "Mac"
+      ]
     },
     {
       "Name": "PythonScriptPlugin",
@@ -141,10 +146,6 @@
     },
     {
       "Name": "GF_Ferrocarril",
-      "Enabled": true
-    },
-    {
-      "Name": "GF_Misiones",
       "Enabled": true
     },
     {

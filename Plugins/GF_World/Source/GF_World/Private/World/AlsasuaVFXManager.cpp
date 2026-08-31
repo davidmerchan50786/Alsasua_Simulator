@@ -36,7 +36,14 @@ UNiagaraSystem* UAlsasuaVFXManager::Resolver(TObjectPtr<UNiagaraSystem>& Cache,
 void UAlsasuaVFXManager::SpawnRainParticles(float Intensity)
 {
     UNiagaraSystem* Rain = Resolver(RainSystem, TEXT("/Game/Effects/NS_Rain"), bRainIntentado);
-    if (!Rain || Intensity < 0.05f) return;
+    if (!Rain) return;
+
+    // Sin lluvia, la pieza se apaga sola (antes se quedaba colgada al cuajar).
+    if (Intensity < 0.05f)
+    {
+        if (ActiveRain) { ActiveRain->Deactivate(); ActiveRain = nullptr; }
+        return;
+    }
 
     UWorld* World = GetWorld();
     if (!World) return;

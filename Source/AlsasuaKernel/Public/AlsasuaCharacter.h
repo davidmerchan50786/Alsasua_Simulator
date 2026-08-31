@@ -159,7 +159,8 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<class UGameplayPostProcessComponent> PostProcessFX;
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Disfraz", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UDisguiseComponent> DisguiseComponent;
 	void InitializeGAS();
 
 	// ── ADS ────────────────────────────────────────────────────────────────

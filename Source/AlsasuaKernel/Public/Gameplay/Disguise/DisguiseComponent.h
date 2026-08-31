@@ -23,7 +23,7 @@ enum class EDisguiseType : uint8
  * Editable desde Blueprint o datos.
  */
 USTRUCT(BlueprintType)
-struct GF_SOCIAL_API FDisguiseTypeInfo
+struct ALSASUAKERNEL_API FDisguiseTypeInfo
 {
 	GENERATED_BODY()
 
@@ -71,8 +71,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDisguiseDurabilityChanged, float,
 /**
  * UDisguiseComponent — sistema de disfraz unificado.
  *
- * Componente per-actor que gestiona equipamiento, degradación contextual
- * y efectos de detección para IA. Reemplaza el antiguo UDisfrazSubsystem.
+ * Componente per-actor que gestiona equipamiento, degradación contextual,
+ * efectos de detección para IA y el cambio visual (tinte del mesh).
+ * Único sistema de disfraz del juego (sustituyó a UDisfrazSubsystem).
  *
  * Uso:
  *   1. Colocar en el Character del jugador.
@@ -81,7 +82,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDisguiseDurabilityChanged, float,
  *   4. Consultar GetEffectiveDetectionMultiplier() desde GuardDetectionComponent.
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class GF_SOCIAL_API UDisguiseComponent : public UActorComponent, public IAlsasuaStealthProfile
+class ALSASUAKERNEL_API UDisguiseComponent : public UActorComponent, public IAlsasuaStealthProfile
 {
 	GENERATED_BODY()
 
@@ -193,6 +194,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Disguise|Config")
 	FDisguiseTypeInfo PressConfig;
 
+	// ── Tinte visual del mesh ──────────────────────────────────────────────
+
+	/** Color que tiñe ropa/cuerpo del jugador al encubrirse. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Disguise|Visual")
+	FLinearColor TintColor = FLinearColor(0.4f, 0.45f, 0.55f);
+
 	// ── Delegados ──────────────────────────────────────────────────────────
 
 	/** Se emite al cambiar de disfraz (incluye quitar). */
@@ -220,10 +227,17 @@ private:
 	bool bIsSprinting = false;
 	bool bNearGuard = false;
 
+	UPROPERTY(Transient)
+	TArray<TObjectPtr<class UMaterialInterface>> OriginalMaterials;
+
 	// ── Config lookup ──────────────────────────────────────────────────────
 
 	const FDisguiseTypeInfo& GetConfigForType(EDisguiseType Type) const;
 	void BreakDisguise();
+
+	// ── Visual ─────────────────────────────────────────────────────────────
+
+	void AplicarTinte(uint8 bOn);
 
 	// ── Tick helpers ───────────────────────────────────────────────────────
 

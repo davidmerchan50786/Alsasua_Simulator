@@ -24,6 +24,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Engine/GameInstance.h"
 #include "Character/GameplayPostProcessComponent.h"
+#include "Gameplay/Disguise/DisguiseComponent.h"
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Ajustes de ratón del menú de opciones.
@@ -65,6 +66,7 @@ AAlsasuaCharacter::AAlsasuaCharacter()
 	AbilitySystemComponent = CreateDefaultSubobject<UAlsasuaAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 	AttributeSet = CreateDefaultSubobject<UAlsasuaAttributeSet>(TEXT("AttributeSet"));
 	PostProcessFX = CreateDefaultSubobject<UGameplayPostProcessComponent>(TEXT("PostProcessFX"));
+	DisguiseComponent = CreateDefaultSubobject<UDisguiseComponent>(TEXT("DisguiseComponent"));
 
 	GetCapsuleComponent()->InitCapsuleSize(40.f, 90.f);
 	bUseControllerRotationYaw = false;

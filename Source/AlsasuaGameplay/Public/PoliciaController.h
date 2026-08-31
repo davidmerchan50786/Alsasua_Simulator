@@ -24,6 +24,11 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="IA") float TiempoBusqueda = 15.f;   // s buscando tras perder de vista
 
+	/** Combat cover: after taking damage, how often to strafe to a new firing position. */
+	UPROPERTY(EditAnywhere, Category="IA|Cover") float StrafeInterval = 2.5f;
+	/** Health fraction below which the officer starts taking cover. */
+	UPROPERTY(EditAnywhere, Category="IA|Cover") float CoverHealthPct = 0.8f;
+
 private:
 	enum class EEstado : uint8 { Patrulla, Persigue, Ataca, Busca, Dispersion };
 	EEstado Estado = EEstado::Patrulla;
@@ -31,8 +36,11 @@ private:
 	float TimerBusqueda = 0.f;
 	FVector UltimaPosVista = FVector::ZeroVector;
 	float TimerDispersion = 0.f;
+	float TimerStrafe = 0.f;
+	int32 LastHealth = -1;
 
 	bool VeJugador(APawn*& OutJugador) const;
 	void Disparar(APawn* Jugador);
 	bool DetectarManifestacion(FVector& OutCentro) const;
+	void MaybeTakeCover(APawn* Jugador, float DeltaTime);
 };

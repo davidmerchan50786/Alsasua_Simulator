@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Systems/Disguise/DisguiseComponent.h"
+#include "Gameplay/Disguise/DisguiseComponent.h"
 #include "SafehouseActor.generated.h"
 
 UCLASS()

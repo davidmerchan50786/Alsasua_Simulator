@@ -7,7 +7,7 @@
 #include "DiaNocheSubsystem.h"
 #include "MisionesSubsystem.h"
 #include "RespawnSubsystem.h"
-#include "DisfrazSubsystem.h"
+#include "Gameplay/Disguise/DisguiseComponent.h"
 #include "AlsasuaCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Pawn.h"
@@ -89,14 +89,6 @@ bool UGuardadoSubsystem::GuardarEnSlot(int32 Slot)
 		S->RespawnPos = Rs->Punto;
 	}
 
-	if (const UDisfrazSubsystem* Df = GI->GetSubsystem<UDisfrazSubsystem>())
-	{
-		S->DisfrazType = Df->bEncubierto ? 1 : 0;
-		// DisfrazDurability se queda con su valor por defecto: no hay sistema de
-		// durabilidad que lo alimente. Escribir aquí un 1.0f fijo sólo servía
-		// para que pareciera que se guardaba algo. El porqué, en el header.
-	}
-
 	if (APawn* Jug = UGameplayStatics::GetPlayerPawn(W, 0))
 	{
 		S->PlayerPos = Jug->GetActorLocation();
@@ -105,6 +97,11 @@ bool UGuardadoSubsystem::GuardarEnSlot(int32 Slot)
 		{
 			S->PlayerVida = C->GetVida();
 		}
+		if (const UDisguiseComponent* Df = Jug->FindComponentByClass<UDisguiseComponent>())
+			S->DisfrazType = Df->IsDisguised() ? 1 : 0;
+		// DisfrazDurability se queda con su valor por defecto: no hay sistema de
+		// durabilidad que lo alimente. Escribir aquí un 1.0f fijo sólo servía
+		// para que pareciera que se guardaba algo. El porqué, en el header.
 	}
 
 	const bool bOk = UGameplayStatics::SaveGameToSlot(S, NombreSlot(Slot), 0);
@@ -166,15 +163,14 @@ bool UGuardadoSubsystem::CargarDeSlot(int32 Slot)
 	// encubierto reaparecía a cara descubierta, con la policía reconociéndole
 	// otra vez. DisfrazType es 1 encubierto y 0 a cara descubierta, tal y como
 	// lo escribe GuardarEnSlot.
-	// Se asigna el estado, no se llama a Alternar(): esa es la acción de juego y
-	// se niega a encubrirte mientras corre el enfriamiento de haberte delatado,
-	// así que restaurar una partida podría fallar en silencio según cuándo se
-	// cargue. DisfrazType es 1 encubierto y 0 a cara descubierta, como lo
-	// escribe GuardarEnSlot.
-	if (UDisfrazSubsystem* Df = GI->GetSubsystem<UDisfrazSubsystem>())
-	{
-		Df->bEncubierto = (S->DisfrazType == 1);
-	}
+	if (APawn* Jug = UGameplayStatics::GetPlayerPawn(W, 0))
+		if (UDisguiseComponent* Df = Jug->FindComponentByClass<UDisguiseComponent>())
+		{
+			if (S->DisfrazType == 1)
+				Df->EquipDisguise(EDisguiseType::Momotxorro);
+			else
+				Df->UnequipDisguise();
+		}
 
 	if (UMisionesSubsystem* Mi = GI->GetSubsystem<UMisionesSubsystem>())
 	{

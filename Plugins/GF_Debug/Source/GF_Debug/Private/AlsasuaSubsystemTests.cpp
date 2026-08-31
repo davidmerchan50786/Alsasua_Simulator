@@ -5,7 +5,7 @@
 #include "Systems/Dialog/DialogInstance.h"
 #include "Systems/Dialog/DialogAsset.h"
 #include "Systems/Dialog/DialogTypes.h"
-#include "Mision/MisionData.h"
+#include "MisionTipos.h"
 
 #if WITH_AUTOMATION_WORKER
 
@@ -69,38 +69,40 @@ namespace AlsasuaTests
         return true;
     }
 
-    // ── MisionData Tests ────────────────────────────────────────────────
+    // ── MisionDef Tests (esquema vivo UMisionDef/FObjetivoMision) ────────
 
-    IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMisionDataTest,
-        "Alsasua.Mision.DataStructure",
+    IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMisionDefTest,
+        "Alsasua.Mision.DefStructure",
         EAutomationTestFlags_ApplicationContextMask | EAutomationTestFlags::ProductFilter)
 
-    bool FMisionDataTest::RunTest(const FString& Parameters)
+    bool FMisionDefTest::RunTest(const FString& Parameters)
     {
-        FMissionData Mission;
-        Mission.MissionID = FName("M00");
-        Mission.MissionName = FText::FromString(TEXT("Tutorial"));
-        Mission.DifficultyLevel = 1;
-        Mission.Reward.Money = 500.f;
-        Mission.Reward.PopularSupport = 10.f;
+        UMisionDef* Def = NewObject<UMisionDef>();
+        Def->Id = FName("M00");
+        Def->Titulo = TEXT("Esnatu, Altsasu");
+        Def->Dificultad = 1;
+        Def->RecompensaDinero = 500;
+        Def->RecompensaApoyo = 10.f;
 
-        FMisionObjective Obj0;
-        Obj0.ObjectiveID = FName("Obj_Move");
-        Obj0.ObjectiveText = FText::FromString(TEXT("Muévete 5 metros"));
-        Mission.Objectives.Add(Obj0);
+        FObjetivoMision Obj0;
+        Obj0.Id = FName("mover");
+        Obj0.Descripcion = TEXT("Muévete 5 metros");
+        Obj0.Meta = 1;
+        Def->Objetivos.Add(Obj0);
 
-        FMisionObjective Obj1;
-        Obj1.ObjectiveID = FName("Obj_Plaza");
-        Obj1.ObjectiveText = FText::FromString(TEXT("Llega a la plaza"));
-        Mission.Objectives.Add(Obj1);
+        FObjetivoMision Obj1;
+        Obj1.Id = FName("plaza");
+        Obj1.Descripcion = TEXT("Llega a la plaza");
+        Obj1.Meta = 1;
+        Def->Objetivos.Add(Obj1);
 
-        TestEqual(TEXT("Mission has 2 objectives"), Mission.Objectives.Num(), 2);
-        TestEqual(TEXT("Mission reward is 500"), Mission.Reward.Money, 500.f);
-        TestFalse(TEXT("Obj0 not completed"), Mission.Objectives[0].bCompleted);
+        TestEqual(TEXT("Mission has 2 objectives"), Def->Objetivos.Num(), 2);
+        TestEqual(TEXT("Mission reward is 500"), Def->RecompensaDinero, 500);
+        TestFalse(TEXT("Obj0 not completed"), Def->Objetivos[0].Completado());
 
-        Mission.Objectives[0].bCompleted = true;
-        TestTrue(TEXT("Obj0 now completed"), Mission.Objectives[0].bCompleted);
-        TestFalse(TEXT("Obj1 still not completed"), Mission.Objectives[1].bCompleted);
+        Def->Objetivos[0].Progreso = 1;
+        TestTrue(TEXT("Obj0 now completed"), Def->Objetivos[0].Completado());
+        TestFalse(TEXT("Obj1 still not completed"), Def->Objetivos[1].Completado());
 
         return true;
     }

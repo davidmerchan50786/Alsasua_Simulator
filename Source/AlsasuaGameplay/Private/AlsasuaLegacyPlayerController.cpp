@@ -2,7 +2,7 @@
 #include "AlsasuaLegacyPlayerController.h"
 #include "ArmasComponent.h"
 #include "DrogasSubsystem.h"
-#include "DisfrazSubsystem.h"
+#include "Gameplay/Disguise/DisguiseComponent.h"
 #include "DialogoSubsystem.h"
 #include "ManifestacionSubsystem.h"
 #include "GuardadoSubsystem.h"
@@ -288,9 +288,14 @@ void AAlsasuaLegacyPlayerController::TomarTripi() { if (UDrogasSubsystem* D = Dr
 
 void AAlsasuaLegacyPlayerController::AlternarDisfraz()
 {
-	if (GetGameInstance())
-		if (UDisfrazSubsystem* Dis = GetGameInstance()->GetSubsystem<UDisfrazSubsystem>())
-			Dis->Alternar();
+	if (APawn* P = GetPawn())
+		if (UDisguiseComponent* Dis = P->FindComponentByClass<UDisguiseComponent>())
+		{
+			if (Dis->IsDisguised())
+				Dis->UnequipDisguise();
+			else
+				Dis->EquipDisguise(EDisguiseType::Momotxorro);
+		}
 }
 
 void AAlsasuaLegacyPlayerController::SetMouseSensitivity(float X, float Y)

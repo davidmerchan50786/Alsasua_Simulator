@@ -53,6 +53,25 @@ public:
 	/** Damage scales linearly to 0 over this range past DamageFalloffStart. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Armas") float DamageFalloffRange = 20000.f;
 
+	/** Recoil pattern: extra kick per consecutive shot (climbs while firing). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Armas") float RecoilPerShot = 0.08f;
+	/** Recoil climbs toward this cap while firing continuously. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Armas") float RecoilMax = 0.8f;
+	/** Recoil decays this fast per second when not firing. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Armas") float RecoilDecay = 1.5f;
+
+	/** How many non-damageable obstacles a bullet passes through (penetration). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Armas") int32 MaxPenetration = 1;
+	/** Stop the bullet on the first damageable target (no over-penetration). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Armas") bool bStopOnFirstHit = true;
+
+	/** Aim assist (controller): soft lock-on when aiming a firearm. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Armas|AimAssist") bool bAimAssistEnabled = true;
+	/** Max deviation from the view ray a target can be and still snap (degrees). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Armas|AimAssist") float AimAssistCone = 8.f;
+	/** Max range of aim assist target acquisition. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Armas|AimAssist") float AimAssistRadius = 25000.f;
+
 	UFUNCTION(BlueprintCallable, Category="Armas") void CambiarArma(ETipoArma Arma);
 	UFUNCTION(BlueprintCallable, Category="Armas") void RecogerArma(ETipoArma Arma, int32 Cantidad);
 	UFUNCTION(BlueprintCallable, Category="Armas") void RecogerMunicion(ETipoArma Arma, int32 Cantidad);
@@ -78,6 +97,7 @@ protected:
 private:
 	float Cooldown = 0.f;
 	float ReloadTimer = 0.f;
+	float RecoilStack = 0.f;
 	bool bBombaLapaActive = false;
 	FVector BombaLapaLocation;
 
@@ -110,6 +130,7 @@ private:
 	void FinishReload();
 
 	bool ObtenerMira(FVector& OutOrigen, FVector& OutDir) const;
+	bool ApplyAimAssist(FVector& OutDir, const FVector& Origen) const;
 	float MultDispersionActual() const;
 	void SubirBusqueda(int32 Cantidad) const;
 	void Consecuencias(AActor* Victima) const;
