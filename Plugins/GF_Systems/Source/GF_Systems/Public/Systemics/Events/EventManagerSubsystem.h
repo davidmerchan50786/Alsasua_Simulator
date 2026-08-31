@@ -58,4 +58,15 @@ private:
     const float CheckInterval = 5.0f; // Evalúa cada 5 segundos para ahorrar CPU
 
     void EvaluateWorldState();
+
+    // ── Calendario de festividades (eventos programados) ──────────────────
+    // Reloj de juego acelerado: 1 minuto real = 1 hora de juego, meses de 30
+    // días. Hace avanzar el día y dispara las fiestas reales de Alsasua.
+    float FestivoGameHours = 0.f;
+    int32 FestivoDay = 1;
+    int32 FestivoMonth = 1;
+
+    void TickFestivals(float DeltaTime);
+    void CheckFestivalDay();
+    void StartFestival(const FText& Nombre, const FText& Descripcion);
 };
