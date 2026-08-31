@@ -15,7 +15,7 @@ static const TCHAR** ListaPlugins(int32& Num)
 		TEXT("GF_Abilities"), TEXT("GF_AI"), TEXT("GF_Audio"),
 		TEXT("GF_Carreteras"), TEXT("GF_Clima"), TEXT("GF_Core"),
 		TEXT("GF_Debug"), TEXT("GF_Dialogos"), TEXT("GF_Edificios"),
-		TEXT("GF_Ferrocarril"), TEXT("GF_Misiones"), TEXT("GF_NPCs"),
+		TEXT("GF_Ferrocarril"), TEXT("GF_NPCs"),
 		TEXT("GF_Optimization"), TEXT("GF_Politica"), TEXT("GF_Social"),
 		TEXT("GF_Systems"), TEXT("GF_Trafico"), TEXT("GF_UI"),
 		TEXT("GF_Vehiculos"), TEXT("GF_Vegetacion"), TEXT("GF_World"),

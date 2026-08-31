@@ -22,10 +22,6 @@
     },
     {
       "Enabled": true,
-      "Name": "GF_Misiones"
-    },
-    {
-      "Enabled": true,
       "Name": "GF_NPCs"
     },
     {
@@ -44,7 +40,6 @@
   "Dependencies": [
     "GF_Core",
     "GF_Dialogos",
-    "GF_Misiones",
     "GF_NPCs",
     "GF_Politica",
     "GF_Social",
