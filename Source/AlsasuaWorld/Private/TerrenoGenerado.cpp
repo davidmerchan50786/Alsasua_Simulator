@@ -141,7 +141,17 @@ uint16 ATerrenoGenerado::LeerAltura(int32 PxX, int32 PxY) const
 {
 	PxX = FMath::Clamp(PxX, 0, ResolucionRAW - 1);
 	PxY = FMath::Clamp(PxY, 0, ResolucionRAW - 1);
-	return AlturasRAW[PxY * ResolucionRAW + PxX];
+
+	// La fila 0 del .r16 es el NORTE, y aquí PxY crece hacia el norte
+	// (AlturaWorld hace WY = OriginWorld.Y + PxY * EscalaXY, e Y es norte en UE).
+	// Sin invertir, el pueblo entero salía espejado norte-sur.
+	//
+	// Medido, no supuesto: correlando este heightmap contra
+	// alsasua_relieve_lejano_2048.r16 —cuyos cuatro sectores sí caen donde toca:
+	// Aizkorri 1543 m al oeste, San Donato 1491 m al este, Aralar al norte,
+	// Urbasa al sur— sale +0,9997 con la inversión y +0,2104 sin ella.
+	const int32 FilaNorte = ResolucionRAW - 1 - PxY;
+	return AlturasRAW[FilaNorte * ResolucionRAW + PxX];
 }
 
 float ATerrenoGenerado::AlturaWorld(int32 PxX, int32 PxY) const
