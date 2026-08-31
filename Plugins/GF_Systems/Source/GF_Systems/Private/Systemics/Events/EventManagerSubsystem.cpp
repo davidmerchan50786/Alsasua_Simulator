@@ -5,9 +5,48 @@
 #include "Systems/Media/RadioSubsystem.h"
 #include "AI/AlsasuaCrowdSentiment.h"
 #include "Kismet/GameplayStatics.h"
+#include "Engine/Engine.h"
+
+// Consola: `Alsasua.Evento [1|2]` dispara un evento de muestra por el bus del HUD.
 
 void UEventManagerSubsystem::Initialize(FSubsystemCollectionBase& Collection) {
     Super::Initialize(Collection);
+}
+
+static FAutoConsoleCommand CmdEventoDemo(
+	TEXT("Alsasua.Evento"),
+	TEXT("Dispara un evento de mundo de muestra (demo/showcase):"
+	     " transmite por OnDirectorAction al HUD + radio. Valores: 1 muestra, 2 festividad."),
+	FConsoleCommandWithArgsDelegate::CreateLambda([](const TArray<FString>& Args)
+	{
+		if (UWorld* World = GEngine ? GEngine->GetCurrentPlayWorld() : nullptr)
+		{
+			if (UEventManagerSubsystem* Ev = World->GetSubsystem<UEventManagerSubsystem>())
+			{
+				const FText Msg = Args.Num() > 0 && Args[0] == TEXT("2")
+					? FText::FromString(TEXT("¡Festividad en marcha! El pueblo celebra en la Herriko Plaza."))
+					: FText::FromString(TEXT("Evento de muestra: la tensión social crece en Altsasu."));
+				Ev->ForzarEvento(Msg);
+			}
+		}
+	}));
+
+void UEventManagerSubsystem::ForzarEvento(const FText& Mensaje)
+{
+    UWorld* World = GetWorld();
+
+    // Push breaking news to radio.
+    if (URadioSubsystem* Radio = World ? World->GetSubsystem<URadioSubsystem>() : nullptr)
+        Radio->TriggerUrgentNews(FText::FromString(TEXT("Noticias de última hora")), Mensaje);
+
+    // Sube seguidores y tension para que se note en el HUD/mundo.
+    if (USocialMediaSubsystem* Social = World ? World->GetSubsystem<USocialMediaSubsystem>() : nullptr)
+        Social->AddFollowers(500);
+    if (UUrbanStateSubsystem* Urban = World ? World->GetSubsystem<UUrbanStateSubsystem>() : nullptr)
+        Urban->IncreaseTension("Global", 10.f);
+
+    // Transmite por el bus del HUD (OnDirectorAction -> AAlsasuaHUD::HandleWorldEvent).
+    OnDirectorAction.Broadcast(Mensaje);
 }
 
 void UEventManagerSubsystem::TickDirector(float DeltaTime) {

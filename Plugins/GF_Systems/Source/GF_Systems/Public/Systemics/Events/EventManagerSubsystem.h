@@ -46,6 +46,11 @@ public:
     UFUNCTION(BlueprintCallable, Category="AAA|Director")
     void HandleEvidenceCollected(AActor* Owner, FName Tag);
 
+    // Trigger un evento del mundo a peticion (demo/showcase): lo transmite por
+    // el bus OnDirectorAction (HUD + radio). La consola `Alsasua.Evento N` lo llama.
+    UFUNCTION(BlueprintCallable, Category="AAA|Director")
+    void ForzarEvento(const FText& Mensaje);
+
     // UHT no resuelve typedefs en UPROPERTY: tipo real del contrato kernel.
     UPROPERTY(BlueprintAssignable)
     FAlsasuaEventoMundo OnDirectorAction;
