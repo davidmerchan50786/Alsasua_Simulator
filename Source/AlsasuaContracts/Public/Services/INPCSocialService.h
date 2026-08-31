@@ -35,4 +35,8 @@ public:
      */
     UFUNCTION(BlueprintCallable, Category = "Alsasua|Contracts|NPCSocial")
     virtual int32 ReclutarPropensos(const FVector& Punto, float Radio, int32 MaxN) = 0;
+
+    /** Devuelve a su rutina a los peatones movilizados por ReclutarPropensos. */
+    UFUNCTION(BlueprintCallable, Category = "Alsasua|Contracts|NPCSocial")
+    virtual void LiberarReclutados() = 0;
 };

@@ -192,6 +192,10 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Alsasua|NPCs|Social")
     virtual int32 ReclutarPropensos(const FVector& Punto, float Radio, int32 MaxN) override;
 
+    /** Devuelve a su rutina a los peatones movilizados por ReclutarPropensos. */
+    UFUNCTION(BlueprintCallable, Category = "Alsasua|NPCs|Social")
+    virtual void LiberarReclutados() override;
+
     /** NPC-NPC conversation radius */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|NPCs|Social")
     float RadioConversacion = 350.0f;
@@ -236,7 +240,9 @@ public:
     void Tick(float DeltaTime);
 
 private:
-    TArray<FNPCPedestrian> NPCs;
+TArray<FNPCPedestrian> NPCs;
+/** Índices movilizados por ReclutarPropensos; LiberarReclutados los revierte. */
+TSet<int32> ReclutadosTemporales;
     bool bInitialized = false;
     TArray<TArray<FVector>> CallesCache;
     int32 TickIndex = 0;  // Round-robin tick index

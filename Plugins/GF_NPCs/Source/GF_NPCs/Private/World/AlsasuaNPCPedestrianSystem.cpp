@@ -652,9 +652,23 @@ int32 UAlsasuaNPCPedestrianSystem::ReclutarPropensos(const FVector& Punto, float
         if (NPC.ActorAsociado.IsValid()) NPC.ActorAsociado->SetActorHiddenInGame(false);
         ReproducirVoz(NPC.PosicionInicio, NPC.Persona.VozPitch);
         OnNPCHabla.Broadcast(NPC.Persona.Nombre, NPC.Persona.FraseFavorita, NPC.Persona.VozPitch);
+        ReclutadosTemporales.Add(i);
         ++Reclutados;
     }
     return Reclutados;
+}
+
+void UAlsasuaNPCPedestrianSystem::LiberarReclutados()
+{
+    for (const int32 i : ReclutadosTemporales)
+    {
+        if (!NPCs.IsValidIndex(i)) continue;
+        FNPCPedestrian& NPC = NPCs[i];
+        NPC.bEsManifestante = false;
+        NPC.DuracionActividad = FMath::RandRange(1.f, 3.f); // retoma la rutina pronto
+        NPC.Velocidad = FMath::RandRange(40.f, 90.f);
+    }
+    ReclutadosTemporales.Reset();
 }
 
 const FNPCPersona& UAlsasuaNPCPedestrianSystem::GetPersona(int32 Index) const

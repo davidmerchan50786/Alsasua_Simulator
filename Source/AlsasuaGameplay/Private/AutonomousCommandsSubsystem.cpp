@@ -121,6 +121,14 @@ void UAutonomousCommandsSubsystem::DetenerAsamblea()
 {
 	bAsambleaActiva = false;
 	OnAccionAutonoma.Broadcast(FName("Asamblea"), false);
+
+	// La gente convocada se dispersa: vuelve a su vida.
+	if (UWorld* W = GetWorld())
+		if (UGameInstance* GI = W->GetGameInstance())
+			if (UAlsasuaServiceRegistry* Reg = GI->GetSubsystem<UAlsasuaServiceRegistry>())
+				if (INPCSocialService* Peds = Reg->PedirComo<INPCSocialService>(FName("NPCPedestrians")))
+					Peds->LiberarReclutados();
+
 	UE_LOG(LogTemp, Log, TEXT("[Autonomia] Asamblea finalizada"));
 }
 
@@ -187,6 +195,15 @@ void UAutonomousCommandsSubsystem::DetenerSecuestro()
 {
 	bSecuestroActivo = false;
 	OnAccionAutonoma.Broadcast(FName("Secuestro"), false);
+
+	// Los reclutados vuelven a su rutina: la escena acaba, no se quedan
+	// plantados como manifestantes para siempre.
+	if (UWorld* W = GetWorld())
+		if (UGameInstance* GI = W->GetGameInstance())
+			if (UAlsasuaServiceRegistry* Reg = GI->GetSubsystem<UAlsasuaServiceRegistry>())
+				if (INPCSocialService* Peds = Reg->PedirComo<INPCSocialService>(FName("NPCPedestrians")))
+					Peds->LiberarReclutados();
+
 	UE_LOG(LogTemp, Log, TEXT("[Autonomia] Secuestro finalizado"));
 }
 
