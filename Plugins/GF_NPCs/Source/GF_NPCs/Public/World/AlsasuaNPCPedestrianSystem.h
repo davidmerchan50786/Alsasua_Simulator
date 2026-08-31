@@ -249,6 +249,7 @@ TSet<int32> ReclutadosTemporales;
 
     UPROPERTY() USkeletalMesh* MeshHombre = nullptr;
     UPROPERTY() USkeletalMesh* MeshMujer = nullptr;
+    UPROPERTY() USkeletalMesh* MeshFab = nullptr;
     UPROPERTY() UAnimSequence* AnimCaminar = nullptr;
     UPROPERTY() UAnimSequence* AnimIdle = nullptr;
 

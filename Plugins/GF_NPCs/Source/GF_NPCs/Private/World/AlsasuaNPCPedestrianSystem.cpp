@@ -264,14 +264,20 @@ void UAlsasuaNPCPedestrianSystem::CargarAssetsPersonaje()
     MeshMujer = LoadObject<USkeletalMesh>(nullptr,
         TEXT("/Game/FreeAnimationLibrary/Demo/Characters/Mannequins/Meshes/SKM_Manny_Simple"));
 
+    // 2º cuerpo: personaje skinned de Fab (meta/AssetsImportados). Si carga,
+    // da una 2ª silueta para romper la uniformidad de los clones. GPU bajo.
+    MeshFab = LoadObject<USkeletalMesh>(nullptr,
+        TEXT("/Game/AssetsImportados/Fab/Personaje_Riggeado"));
+
     AnimCaminar = LoadObject<UAnimSequence>(nullptr,
         TEXT("/Game/FreeAnimationLibrary/Animations/Walk/anim_Walk_Fwd_Loop_R"));
     AnimIdle = LoadObject<UAnimSequence>(nullptr,
         TEXT("/Game/FreeAnimationLibrary/Animations/Idle/anim_Idle"));
 
-    UE_LOG(LogTemp, Log, TEXT("NPCPedestrians: Mesh hombre=%s, mujer=%s, anim=%s, idle=%s"),
+    UE_LOG(LogTemp, Log, TEXT("NPCPedestrians: Mesh hombre=%s, mujer=%s, fab=%s, anim=%s, idle=%s"),
         MeshHombre ? TEXT("OK") : TEXT("NULL"),
         MeshMujer ? TEXT("OK") : TEXT("NULL"),
+        MeshFab ? TEXT("OK") : TEXT("NULL"),
         AnimCaminar ? TEXT("OK") : TEXT("NULL"),
         AnimIdle ? TEXT("OK") : TEXT("NULL"));
 }
@@ -776,7 +782,11 @@ void UAlsasuaNPCPedestrianSystem::CrearNPCEnPunto(FNPCPedestrian& NPC)
     NPCActor->GetRootComponent()->SetMobility(EComponentMobility::Movable);
 
     USkeletalMesh* MeshAUsar = nullptr;
-    if (NPC.GrupoEdad <= 1)
+    // ~30% de los NPCs usan el cuerpo de Fab (2ª silueta) para romper los clones;
+    // el resto alterna mannequin por grupo de edad como antes.
+    if (MeshFab && (GetTypeHash(NPC.Nombre) % 10) < 3)
+        MeshAUsar = MeshFab;
+    else if (NPC.GrupoEdad <= 1)
         MeshAUsar = MeshHombre;
     else
         MeshAUsar = MeshMujer;
