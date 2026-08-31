@@ -105,6 +105,16 @@ void UCargadorVias::Encolar(const FString& RutaRel, FName Tag, float EpsilonCm,
 		}
 		if (T.PuntosMundo.Num() < 2) continue;
 
+		// Los senderos de monte de caminos_unity.json vienen de una pasada de
+		// datos aproximada que los dejó a kilómetros al norte (Aralar, Urbasa,
+		// Larraitz en Z 11000-15800 frente al pueblo en Z~8500). Aparecían como
+		// trazas flotando fuera del terreno jugable. Se descartan por el primer
+		// punto, igual que PasoPresupuesto elige el centro del trazado.
+		if (Tag == TEXT("Camino")
+			&& !UAlsasuaGeoData::DentroDelTerreno(
+				FVector(T.PuntosMundo[0].X, T.PuntosMundo[0].Y, 0.f)))
+			continue;
+
 		double AnchoM = AnchoDefectoM;
 		if (bAnchoPorTracks)
 		{

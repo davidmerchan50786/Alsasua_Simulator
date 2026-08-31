@@ -15,6 +15,7 @@ struct FPOIData
 	UPROPERTY(BlueprintReadOnly) FString Id;
 	UPROPERTY(BlueprintReadOnly) FString Nombre;
 	UPROPERTY(BlueprintReadOnly) FString Tipo;
+	UPROPERTY(BlueprintReadOnly) FString TipoReal;
 	UPROPERTY(BlueprintReadOnly) FString Subtipo;
 	UPROPERTY(BlueprintReadOnly) FString Calle;
 	UPROPERTY(BlueprintReadOnly) FString Descripcion;
