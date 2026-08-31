@@ -26,8 +26,6 @@ void UAlsasuaFoliagePainter::Deinitialize()
 
 void UAlsasuaFoliagePainter::InicializarTipos()
 {
-    const FString Base = TEXT("/Game/AssetsImportados/Naturaleza");
-
     // El pack Naturaleza trae cinco rocas, cinco setos y cinco matas de maleza, y
     // aquí se usaban dos, dos y una. El resto llevaba descargado sin que nadie lo
     // pidiera, y la zona verde salía con la misma piedra repetida por todas
@@ -38,39 +36,58 @@ void UAlsasuaFoliagePainter::InicializarTipos()
     // La densidad es relativa entre tipos, no absoluta: manda el reparto, así que
     // al añadir variantes de un mismo tipo se baja la de cada una para que la
     // familia siga pesando lo mismo en el conjunto.
-    struct FReceta { const TCHAR* Nombre; const TCHAR* Ruta; float Min; float Max; float Densidad; const TCHAR* Tipo; };
+    struct FReceta { const TCHAR* Nombre; const TCHAR* Raiz; const TCHAR* Ruta; float Min; float Max; float Densidad; const TCHAR* Tipo; };
+    // Raíz común del pack Naturaleza; las familias de otros packs llevan la suya.
+    const TCHAR* N = TEXT("/Game/AssetsImportados/Naturaleza");
+    const TCHAR* FW = TEXT("/Game/OWD_Flowers_Pack");
+    const TCHAR* SR = TEXT("/Game/GV_FreeShrubsPack");
     static const FReceta Recetas[] = {
         // Hierba: la capa base, la más densa.
-        // No hay grass_02: "diffus" era la textura, no la malla.
-        { TEXT("Hierba_Larga"),  TEXT("/multi_stylized_grass/01_d"), 0.5f, 1.5f, 3.0f, TEXT("hierba") },
-        { TEXT("Hierba_Media"),  TEXT("/multi_stylized_grass/02_d"), 0.5f, 1.3f, 2.0f, TEXT("hierba") },
-        // La malla repite el nombre de la carpeta.
-        { TEXT("Hierba_Corta"),  TEXT("/grass_07/grass_07"),         0.3f, 1.0f, 4.0f, TEXT("hierba") },
+        { TEXT("Hierba_Larga"),  N, TEXT("/multi_stylized_grass/01_d"), 0.5f, 1.5f, 3.0f, TEXT("hierba") },
+        { TEXT("Hierba_Media"),  N, TEXT("/multi_stylized_grass/02_d"), 0.5f, 1.3f, 2.0f, TEXT("hierba") },
+        // La malla no repite el nombre de la carpeta: grass_07 no se importó,
+        // la capa lleva los mechones cortos de hierba que sí hay.
+        { TEXT("Hierba_Corta"),  N, TEXT("/grass_07/grass_01"),         0.3f, 1.0f, 4.0f, TEXT("hierba") },
+        // Hierba con flores ya incrustadas (OWD): manchas de color en el prado.
+        { TEXT("Hierba_Floreada"), FW, TEXT("/Add_Props/Grass/Meshes/SM_Grass_08_3"), 0.6f, 1.6f, 2.0f, TEXT("hierba") },
+
+        // Flores (OWD): el acento de color que convierte el prado en pradera.
+        { TEXT("Flor_01"), FW, TEXT("/Meshes/SM_Flower_09_1"), 0.5f, 1.0f, 0.15f, TEXT("flor") },
+        { TEXT("Flor_02"), FW, TEXT("/Meshes/SM_Flower_10_1"), 0.5f, 1.0f, 0.15f, TEXT("flor") },
+        { TEXT("Flor_03"), FW, TEXT("/Meshes/SM_Flower_05_4"), 0.5f, 1.0f, 0.15f, TEXT("flor") },
+        { TEXT("Flor_04"), FW, TEXT("/Meshes/SM_Flower_07_2"), 0.5f, 1.0f, 0.15f, TEXT("flor") },
+        { TEXT("Flor_05"), FW, TEXT("/Meshes/SM_Flower_02_4"), 0.5f, 1.0f, 0.15f, TEXT("flor") },
+        { TEXT("Flor_06"), FW, TEXT("/Meshes/SM_Flower_03_2"), 0.5f, 1.0f, 0.15f, TEXT("flor") },
 
         // Setos: los cinco del pack. Los Round rematan esquinas y dan variedad de
         // silueta en el mismo seto largo.
-        { TEXT("Seto_Largo"),        TEXT("/Hedges/Long/HedgeLong"),           0.8f, 1.2f, 0.25f, TEXT("seto") },
-        { TEXT("Seto_Largo_Round"),  TEXT("/Hedges/LongRound/HedgeLongRound"), 0.8f, 1.2f, 0.25f, TEXT("seto") },
-        { TEXT("Seto_Pequeno"),      TEXT("/Hedges/Small/HedgeSmall"),         0.6f, 1.0f, 0.35f, TEXT("seto") },
-        { TEXT("Seto_Peq_Round"),    TEXT("/Hedges/SmallRound/HedgeSmallRound"), 0.6f, 1.0f, 0.35f, TEXT("seto") },
+        { TEXT("Seto_Largo"),        N, TEXT("/Hedges/Long/HedgeLong"),           0.8f, 1.2f, 0.25f, TEXT("seto") },
+        { TEXT("Seto_Largo_Round"),  N, TEXT("/Hedges/LongRound/HedgeLongRound"), 0.8f, 1.2f, 0.25f, TEXT("seto") },
+        { TEXT("Seto_Pequeno"),      N, TEXT("/Hedges/Small/HedgeSmall"),         0.6f, 1.0f, 0.35f, TEXT("seto") },
+        { TEXT("Seto_Peq_Round"),    N, TEXT("/Hedges/SmallRound/HedgeSmallRound"), 0.6f, 1.0f, 0.35f, TEXT("seto") },
+
+        // Arbustos (GV_FreeShrubs): masa estructural, lo que falta a un prado.
+        { TEXT("Shrub_A"), SR, TEXT("/Meshes/Shrubs/Wind/Shrub_A/GV_Vol7_Shrub_A_full_type1"), 0.8f, 1.6f, 0.09f, TEXT("arbusto") },
+        { TEXT("Shrub_B"), SR, TEXT("/Meshes/Shrubs/Wind/Shrub_B/GV_Vol7_Shrub_B_full_type1"), 0.8f, 1.6f, 0.09f, TEXT("arbusto") },
+        { TEXT("Shrub_E"), SR, TEXT("/Meshes/Shrubs/Wind/Shrub_E/GV_Vol7_Shrub_E_full_type1_A"), 0.8f, 1.6f, 0.09f, TEXT("arbusto") },
 
         // Rocas: las cinco. rock_05 viene con el nombre de fichero con dos puntos
         // (rock_05..fbx) y el .obj sin ellos, así que se apunta al nombre limpio,
         // que es lo que deja el importador.
-        { TEXT("Roca_01"), TEXT("/rocks/01/rock_01"), 0.5f, 2.0f, 0.06f, TEXT("roca") },
-        { TEXT("Roca_02"), TEXT("/rocks/02/rock_02"), 0.5f, 1.8f, 0.06f, TEXT("roca") },
-        { TEXT("Roca_03"), TEXT("/rocks/03/rock_03"), 0.3f, 1.5f, 0.06f, TEXT("roca") },
-        { TEXT("Roca_04"), TEXT("/rocks/04/rock_04"), 0.4f, 1.6f, 0.06f, TEXT("roca") },
-        { TEXT("Roca_05"), TEXT("/rocks/05/rock_05"), 0.4f, 1.7f, 0.06f, TEXT("roca") },
+        { TEXT("Roca_01"), N, TEXT("/rocks/01/rock_01"), 0.5f, 2.0f, 0.06f, TEXT("roca") },
+        { TEXT("Roca_02"), N, TEXT("/rocks/02/rock_02"), 0.5f, 1.8f, 0.06f, TEXT("roca") },
+        { TEXT("Roca_03"), N, TEXT("/rocks/03/rock_03"), 0.3f, 1.5f, 0.06f, TEXT("roca") },
+        { TEXT("Roca_04"), N, TEXT("/rocks/04/rock_04"), 0.4f, 1.6f, 0.06f, TEXT("roca") },
+        { TEXT("Roca_05"), N, TEXT("/rocks/05/rock_05"), 0.4f, 1.7f, 0.06f, TEXT("roca") },
 
         // Maleza: las cinco de tiny_weeds_2.
-        { TEXT("Maleza_01"), TEXT("/tiny_weeds_2/01"), 0.3f, 0.8f, 0.4f, TEXT("maleza") },
-        { TEXT("Maleza_02"), TEXT("/tiny_weeds_2/02"), 0.3f, 0.8f, 0.4f, TEXT("maleza") },
-        { TEXT("Maleza_03"), TEXT("/tiny_weeds_2/03"), 0.3f, 0.8f, 0.4f, TEXT("maleza") },
-        { TEXT("Maleza_04"), TEXT("/tiny_weeds_2/04"), 0.3f, 0.8f, 0.4f, TEXT("maleza") },
-        { TEXT("Maleza_05"), TEXT("/tiny_weeds_2/05"), 0.3f, 0.8f, 0.4f, TEXT("maleza") },
+        { TEXT("Maleza_01"), N, TEXT("/tiny_weeds_2/01"), 0.3f, 0.8f, 0.4f, TEXT("maleza") },
+        { TEXT("Maleza_02"), N, TEXT("/tiny_weeds_2/02"), 0.3f, 0.8f, 0.4f, TEXT("maleza") },
+        { TEXT("Maleza_03"), N, TEXT("/tiny_weeds_2/03"), 0.3f, 0.8f, 0.4f, TEXT("maleza") },
+        { TEXT("Maleza_04"), N, TEXT("/tiny_weeds_2/04"), 0.3f, 0.8f, 0.4f, TEXT("maleza") },
+        { TEXT("Maleza_05"), N, TEXT("/tiny_weeds_2/05"), 0.3f, 0.8f, 0.4f, TEXT("maleza") },
 
-        { TEXT("Hiedra"),    TEXT("/tiny_weeds_3/ivy/ivy_default"), 0.5f, 1.0f, 1.0f, TEXT("hiedra") },
+        { TEXT("Hiedra"),    N, TEXT("/tiny_weeds_3/ivy/ivy_default"), 0.5f, 1.0f, 1.0f, TEXT("hiedra") },
     };
 
     Tipos.Empty(UE_ARRAY_COUNT(Recetas));
@@ -78,7 +95,7 @@ void UAlsasuaFoliagePainter::InicializarTipos()
     {
         FFoliageTypeData D;
         D.Nombre = R.Nombre;
-        D.AssetPath = Base + R.Ruta;
+        D.AssetPath = FString(R.Raiz) + R.Ruta;
         D.EscalaMin = R.Min;
         D.EscalaMax = R.Max;
         D.Densidad = R.Densidad;

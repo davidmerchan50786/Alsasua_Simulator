@@ -55,7 +55,7 @@ public:
     /** Tope de instancias en todo el pueblo. Cada una lleva un trazo vertical
      *  para apoyarse, y ése es el coste que hay que acotar, no el de dibujarlas. */
     UPROPERTY(EditAnywhere, Category = "Alsasua|Foliage")
-    int32 MaxInstancias = 12000;
+    int32 MaxInstancias = 20000;
 
     /** Instancias por cada 100 m² de zona verde, antes de repartir por tipo. */
     UPROPERTY(EditAnywhere, Category = "Alsasua|Foliage")
