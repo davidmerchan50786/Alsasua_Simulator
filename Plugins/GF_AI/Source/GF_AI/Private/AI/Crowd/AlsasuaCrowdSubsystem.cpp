@@ -12,6 +12,7 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "MeshDescriptionBuilder.h"
 #include "MeshDescription.h"
+#include "StaticMeshAttributes.h"
 #include "AlsasuaCore.h"
 #include "Engine/World.h"
 #include "Engine/StaticMesh.h"
@@ -204,6 +205,11 @@ UStaticMesh* UAlsasuaCrowdSubsystem::CreateDefaultHumanoidMesh() const
 	// con origen en el centro (suelo en Z=-87.5, coronilla en Z=+87.5 → ~175cm).
 	// Reemplaza el cilindro por defecto para que la multitud lea como gente.
 	FMeshDescription MeshDesc;
+	// Sin registrar los atributos base (posición, UV, normal, tangente, color,
+	// nombre de slot de material) el builder opera sobre un attribute set
+	// vacío/invalido: SetNumUVLayers revienta dentro del motor (MeshConversion)
+	// con un access violation en vez de fallar con un error legible.
+	FStaticMeshAttributes(MeshDesc).Register();
 	FMeshDescriptionBuilder Builder;
 	Builder.SetMeshDescription(&MeshDesc);
 	Builder.SetNumUVLayers(1);
