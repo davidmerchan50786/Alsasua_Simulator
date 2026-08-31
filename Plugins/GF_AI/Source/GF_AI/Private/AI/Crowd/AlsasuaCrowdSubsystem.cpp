@@ -68,7 +68,39 @@ void UAlsasuaCrowdSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 		// Wire TacticManager → crowd behavior.
 		if (UAlsasuaTacticManager* TacticMgr = World->GetSubsystem<UAlsasuaTacticManager>())
 			TacticMgr->OnTacticChanged.AddDynamic(this, &UAlsasuaCrowdSubsystem::HandleTacticChanged);
+
+		// Demo de multitud: marcha que arranca sola alrededor de Herriko Plaza.
+		if (bDemoCrowdAutoStart)
+		{
+			DemoSpawnHerrikoPlaza();
+		}
 	}
+}
+
+// ── Demo: multitud que arranca sola ────────────────────────────────────────
+void UAlsasuaCrowdSubsystem::DemoSpawnHerrikoPlaza()
+{
+	FVector Plaza(191800.f, 857000.f, 0.f); // Herriko Plaza (mismo centro que el spawn del jugador)
+
+	// Ruta circular alrededor de la plaza para que la marcha dé vueltas.
+	TArray<FVector> Ruta;
+	const int32 Seg = 8;
+	const float Radio = 1200.f;
+	for (int32 i = 0; i < Seg; ++i)
+	{
+		const float Ang = (float)i / Seg * 2.f * PI;
+		Ruta.Add(Plaza + FVector(FMath::Cos(Ang) * Radio, FMath::Sin(Ang) * Radio, 0.f));
+	}
+
+	FCrowdSpawnRequest Req;
+	Req.RoutePoints = Ruta;
+	Req.SpawnCenter = Plaza + FVector(0.f, 0.f, 40.f);
+	Req.SpawnRadius = 400.f;
+	Req.NumAgents = 500;
+	Req.FlockingParams.FormationWidth = 20;
+
+	SpawnCrowdAgents(Req);
+	UE_LOG(LogAlsasuaAI, Log, TEXT("[AlsasuaCrowdSubsystem] Demo de multitud arrancada: %d agentes en Herriko Plaza."), GetAliveAgentCount());
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -255,6 +255,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Multitud|Visual")
 	float VisualOffsetZ = 87.5f;
 
+	/** Si true, spawnea una marcha de demostración en Herriko Plaza al arrancar. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Multitud|Demo")
+	bool bDemoCrowdAutoStart = true;
+
 private:
 	// ── Datos internos ──────────────────────────────────────────────────────
 
@@ -355,4 +359,7 @@ private:
 	/** Wiring: respond to tactic changes from TacticManager. */
 	UFUNCTION()
 	void HandleTacticChanged(EAlsasuaTactic NewTactic);
+
+	/** Spawnea la marcha de demostración en Herriko Plaza. */
+	void DemoSpawnHerrikoPlaza();
 };
