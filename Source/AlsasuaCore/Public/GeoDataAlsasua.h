@@ -184,8 +184,23 @@ public:
     static constexpr double OX = 1918.0;
     static constexpr double OZ = 8570.0;
 
-    // Altura de Herriko Plaza sobre el nivel del mar (cm).
-    static constexpr float CotaPlazaCm = 53194.0f;
+    /**
+     * Z DE MUNDO de Herriko Plaza, en cm. No es su altitud.
+     *
+     * Valía 53194, que son los 531,94 m de altitud multiplicados por 100. Pero
+     * esto no se usa como altitud: se usa como Z de mundo —es el respaldo de
+     * AlturaSueloUE5 cuando el raycast no encuentra suelo, y HerrikoPlazaGenerator
+     * coloca su actor justo ahí—. Y el mundo no cuenta metros sobre el mar:
+     * worldZ_cm = 100*alt_m - 51133 (CLAUDE.md §5b, y es lo que aplica
+     * ATerrenoLejano). Con 531,94 m eso da 2061 cm.
+     *
+     * Con el valor viejo, todo lo que caía en el respaldo aparecía 511 m por
+     * encima del pueblo. Se notaba poco porque el terreno tenía a su vez el
+     * doble de escala vertical (EscalaZ=200 en vez de 100), que empujaba el
+     * suelo hacia arriba y disimulaba parte del error; corregido eso, este
+     * quedaba al descubierto.
+     */
+    static constexpr float CotaPlazaCm = 2061.0f;
 
     // Límites para raycasts de suelo (trace vertical desde/to).
     static constexpr float TraceUp = 500000.0f;

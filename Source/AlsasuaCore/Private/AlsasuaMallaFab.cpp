@@ -38,8 +38,8 @@ namespace
 		// Iglesia_Jasokundeko, Fronton_Pelota...), y después el término inglés
 		// del catálogo de Fab/Megascans. Con sólo el inglés fallaban 21 de 29.
 		{ TEXT("banco"),             TEXT("banco_parque|banco|modular_street_seating|bench|park_bench") },
-		{ TEXT("papelera"),          TEXT("papelera|contenedor_reciclaje|metal_trash_can|trash|litter|waste|bin") },
-		{ TEXT("bollard"),           TEXT("bolardo|pilona|bollard") },
+		{ TEXT("papelera"),          TEXT("papelera|contenedor_reciclaje|lisbonbuilding_garbage-cans|metal_trash_can|trash|litter|waste|bin") },
+		{ TEXT("bollard"),           TEXT("bolardo|pilona|lisbonbuilding_bollard|bollard") },
 		{ TEXT("parada_bus"),        TEXT("parada_autobus|parada_bus|bus_stop|busstop|shelter") },
 		{ TEXT("boca_incendio"),     TEXT("boca_incendio|hidrante|fire_hydrant|hydrant") },
 		{ TEXT("tapa_alcantarilla"), TEXT("tapa_alcantarilla|alcantarilla|water_manhole_cover|manhole|rejilla|drain|sewer") },
@@ -50,9 +50,28 @@ namespace
 		{ TEXT("señal_stop"),        TEXT("stop_senal|senal_stop|stop_sign|road_sign") },
 		{ TEXT("señal_velocidad"),   TEXT("senal_calle|senal_velocidad|speed_sign|traffic_sign") },
 		{ TEXT("placa_calle"),       TEXT("placa_calle|senal_calle|street_plate|street_name") },
-		{ TEXT("cuadro_electrico"),  TEXT("cuadro_electrico|deposito_agua|electrical_box|utility_box|cabinet") },
-		{ TEXT("guarda_barandas"),   TEXT("barandilla_puente|barandilla|guardrail|railing") },
-		{ TEXT("semaforo"),          TEXT("semaforo_urbano|semaforo|traffic_light") },
+		{ TEXT("cuadro_electrico"),  TEXT("cuadro_electrico|deposito_agua|lisbonbuilding_electrical-box|electrical_box|utility_box|cabinet") },
+		{ TEXT("guarda_barandas"),   TEXT("barandilla_puente|barandilla|lisbonbuilding_fence|guardrail|railing") },
+		// ── Piezas del pack Lisbon_Building de Fab ─────────────────────────
+		// El FBX no venia como un edificio entero sino descompuesto en piezas
+		// urbanas sueltas, que es mas util: se reparten por tipo en vez de
+		// plantar un bloque de Lisboa en medio del casco de Altsasu.
+		{ TEXT("cono_trafico"),      TEXT("lisbonbuilding_traffic-cone|cono|traffic_cone") },
+		{ TEXT("muro_jardin"),       TEXT("lisbonbuilding_garden-wall|muro_jardin|garden_wall") },
+		{ TEXT("patinete"),          TEXT("lisbonbuilding_electric-scooter|patinete|scooter") },
+		{ TEXT("losa_acera"),        TEXT("lisbonbuilding_flagstone|lisbonbuilding_path|flagstone") },
+
+		// ── Kit modular de bloque de viviendas (Apartment_Complex, Fab) ────
+		// Cinco piezas que componen manzana: centro, esquina, esquina doble y
+		// dos portales. Para relleno de barrio, no para landmarks: los
+		// singulares del pueblo tienen su modelo propio de Meshy.
+		{ TEXT("bloque_centro"),     TEXT("bloque_centro|build_middle") },
+		{ TEXT("bloque_esquina"),    TEXT("bloque_esquina|build_corner") },
+		{ TEXT("bloque_portal"),     TEXT("bloque_portal|build_entrance") },
+		{ TEXT("planta_edificio"),   TEXT("lisbonbuilding_floor_01|lisbonbuilding_floor_02|lisbonbuilding_floor-shop") },
+		{ TEXT("atico"),             TEXT("lisbonbuilding_penthouse|atico|penthouse") },
+
+		{ TEXT("semaforo"),          TEXT("semaforo_urbano|semaforo|lisbonbuilding_traffic-light|traffic_light") },
 
 		// ── Vehículos ──────────────────────────────────────────────────────
 		// Meshy generó cuatro para este pueblo y no los usaba nadie: no había
