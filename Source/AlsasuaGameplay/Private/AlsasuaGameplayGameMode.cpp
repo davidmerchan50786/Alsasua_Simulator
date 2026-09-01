@@ -11,6 +11,21 @@
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerStart.h"
+#include "GeoDataAlsasua.h"
+
+namespace
+{
+    // Herriko Plaza en coordenadas de mundo. AHerrikoPlazaGenerator centra ahí
+    // su fuente: pilón de 3 m de radio y columna de 40 cm que sube hasta 260 cm
+    // sobre la cota de la plaza. Soltar al jugador en el centro exacto lo mete
+    // DENTRO de la columna —la cámara acaba viendo las caras interiores, que se
+    // leen como un manchón blanco/negro a pantalla completa, y con AA temporal
+    // encima degenera en bloques de colores—. Se aparta al borde sur del pilón,
+    // sobre el pavimento (la plaza mide ~68x40 m), mirando a la fuente.
+    constexpr float PlazaX = 191800.f;
+    constexpr float PlazaY = 857000.f;
+    constexpr float RadioSeguroFuenteCm = 900.f;   // 9 m: fuera del pilón de 3 m
+}
 
 AAlsasuaGameplayGameMode::AAlsasuaGameplayGameMode()
 {
@@ -94,8 +109,11 @@ void AAlsasuaGameplayGameMode::Tick(float DeltaSeconds)
         const double T = World->GetTimeSeconds();
         if (T > 3.0f && T < 3.5f)
         {
-            const FVector Plaza(191800.f, 857000.f, 260.f);
-            if (APlayerStart* PS = World->SpawnActor<APlayerStart>(APlayerStart::StaticClass(), Plaza, FRotator::ZeroRotator))
+            // Z: la cota de mundo de la plaza (2061 cm), no 260 —eso son 18 m
+            // por debajo del suelo, o sea el start enterrado—. Ver CotaPlazaCm.
+            const FVector Plaza(PlazaX, PlazaY + RadioSeguroFuenteCm,
+                                UAlsasuaGeoData::CotaPlazaCm + 200.f);
+            if (APlayerStart* PS = World->SpawnActor<APlayerStart>(APlayerStart::StaticClass(), Plaza, FRotator(0.f, -90.f, 0.f)))
             {
                 UE_LOG(LogTemp, Log, TEXT("AlsasuaGameplayGameMode: PlayerStart de respaldo en Herriko Plaza."));
             }
@@ -116,9 +134,10 @@ void AAlsasuaGameplayGameMode::Tick(float DeltaSeconds)
         return;
     }
 
-    const FVector Plaza(191800.f, 857000.f, 0.f);
+    const FVector Plaza(PlazaX, PlazaY + RadioSeguroFuenteCm, 0.f);
     const float Z = Terreno->AlturaEnMundo(Plaza.X, Plaza.Y) + 200.f;
     Pawn->SetActorLocation(FVector(Plaza.X, Plaza.Y, Z));
+    // Yaw -90 mira hacia -Y, o sea de vuelta a la fuente y al resto de la plaza.
     PC->SetControlRotation(FRotator(0.f, -90.f, 0.f));
     bPendienteColocarJugador = false;
     UE_LOG(LogTemp, Log, TEXT("AlsasuaGameplayGameMode: Jugador colocado en Herriko Plaza (%.1f, %.1f, %.1f)."), Plaza.X, Plaza.Y, Z);
