@@ -73,7 +73,12 @@ bool UManifestacionSubsystem::Convocar(FVector Punto, const TArray<FVector>& Rut
 	for (int32 i = 0; i < Tam; ++i)
 	{
 		const float Ang = FMath::FRandRange(0.f, 2.f * PI);
-		const float Dist = FMath::FRandRange(0.f, RadioConcentracion);
+		// sqrt para que el reparto sea uniforme por AREA: sorteando la
+		// distancia en lineal se apelotonan todos en el centro, que es
+		// justo donde esta la camara cuando convoca la mision.
+		const float RMin = FMath::Min(RadioMinimoConcentracion, RadioConcentracion);
+		const float T = FMath::Sqrt(FMath::FRand());
+		const float Dist = RMin + T * (RadioConcentracion - RMin);
 		FVector Cand = Punto + FVector(FMath::Cos(Ang) * Dist, FMath::Sin(Ang) * Dist, 0.f);
 
 		FNavLocation Loc;
