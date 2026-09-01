@@ -124,16 +124,46 @@ void UAlsasuaDynamicTrafficSystem::SpawnVehiculoEnCalle()
     UStaticMesh* CubeMesh = LoadObject<UStaticMesh>(nullptr,
         TEXT("/Engine/BasicShapes/Cube.Cube"));
 
-    // Intentar meshes reales del VehicleVarietyPack por tipo de vehículo.
-    static const TCHAR* RutasVehiculo[] = {
+    // Meshes reales por tipo. Varios modelos por tipo: con uno solo el pueblo
+    // entero circulaba con el mismo coche clonado. Vol2 es un pack aparte y
+    // puede no estar, asi que se prueban en orden y vale el primero que cargue.
+    static const TCHAR* CochesRutas[] = {
         TEXT("/Game/VehicleVarietyPack/Meshes/SM_Hatchback.SM_Hatchback"),
-        TEXT("/Game/VehicleVarietyPack/Meshes/SM_SUV.SM_SUV"),
-        TEXT("/Game/VehicleVarietyPack/Meshes/SM_Truck_Box.SM_Truck_Box"),
+        TEXT("/Game/VehicleVarietyVol2/Meshes/SM_Sedan_01a.SM_Sedan_01a"),
     };
-    const int32 IdxVeh = (Veh.Tipo == ETipoVehiculo::Camion) ? 2
-                       : (Veh.Tipo == ETipoVehiculo::Furgoneta) ? 1 : 0;
-    if (UStaticMesh* Real = LoadObject<UStaticMesh>(nullptr, RutasVehiculo[IdxVeh]))
-        CubeMesh = Real;
+    static const TCHAR* FurgosRutas[] = {
+        TEXT("/Game/VehicleVarietyPack/Meshes/SM_SUV.SM_SUV"),
+        TEXT("/Game/VehicleVarietyVol2/Meshes/SM_SUV_01a.SM_SUV_01a"),
+        TEXT("/Game/VehicleVarietyVol2/Meshes/SM_Campervan_01a.SM_Campervan_01a"),
+    };
+    static const TCHAR* CamionesRutas[] = {
+        TEXT("/Game/VehicleVarietyPack/Meshes/SM_Truck_Box.SM_Truck_Box"),
+        TEXT("/Game/VehicleVarietyVol2/Meshes/SM_BoxTruck_01a.SM_BoxTruck_01a"),
+    };
+
+    const TCHAR* const* Candidatas = CochesRutas;
+    int32 NumCandidatas = UE_ARRAY_COUNT(CochesRutas);
+    if (Veh.Tipo == ETipoVehiculo::Camion)
+    {
+        Candidatas = CamionesRutas; NumCandidatas = UE_ARRAY_COUNT(CamionesRutas);
+    }
+    else if (Veh.Tipo == ETipoVehiculo::Furgoneta)
+    {
+        Candidatas = FurgosRutas; NumCandidatas = UE_ARRAY_COUNT(FurgosRutas);
+    }
+
+    // Por Semilla, no por FRand: el reparto de modelos tiene que repetirse
+    // entre arranques o el CSV de perfilado deja de ser comparable (§11).
+    const uint32 Mezcla = (uint32)Veh.Semilla * 2654435761u + 0x5EEDu;
+    const int32 Inicio = NumCandidatas > 0 ? (int32)(Mezcla % (uint32)NumCandidatas) : 0;
+    for (int32 k = 0; k < NumCandidatas; ++k)
+    {
+        if (UStaticMesh* Real = LoadObject<UStaticMesh>(nullptr, Candidatas[(Inicio + k) % NumCandidatas]))
+        {
+            CubeMesh = Real;
+            break;
+        }
+    }
 
     if (CubeMesh)
         VehActor->GetStaticMeshComponent()->SetStaticMesh(CubeMesh);

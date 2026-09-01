@@ -89,14 +89,46 @@ void AAlsasuaCharacter::BeginPlay()
 	Super::BeginPlay();
 	if (USkeletalMeshComponent* CharacterMesh = GetMesh(); CharacterMesh && !CharacterMesh->GetSkeletalMeshAsset())
 	{
-		if (USkeletalMesh* Body = LoadObject<USkeletalMesh>(nullptr, TEXT("/Game/Man/Demo/Mesh/SK_Mannequin.SK_Mannequin")))
+		// Motion matching primero, mannequin clasico como respaldo (CLAUDE.md §6:
+		// el proyecto tiene que arrancar sin los packs pesados).
+		//
+		// La malla y el AnimBP van EN PAREJA a proposito: ABP_SandboxCharacter
+		// apunta al esqueleto SK_UEFN_Mannequin y ABP_Manny al SK_Mannequin —
+		// verificado leyendo el target_skeleton de cada uno—. Cruzarlos deja al
+		// personaje en T-pose, asi que si falta la malla de un par no se usa
+		// tampoco su AnimBP.
+		struct FCuerpo { const TCHAR* Malla; const TCHAR* AnimBP; };
+		static const FCuerpo Cuerpos[] = {
+			// Game Animation Sample: locomocion por motion matching.
+			{ TEXT("/Game/Characters/UEFN_Mannequin/Meshes/SKM_UEFN_Mannequin.SKM_UEFN_Mannequin"),
+			  TEXT("/Game/Blueprints/ABP_SandboxCharacter.ABP_SandboxCharacter_C") },
+			// Respaldo: idle/walk/run del pack Man + Shrubs.
+			{ TEXT("/Game/Man/Demo/Mesh/SK_Mannequin.SK_Mannequin"),
+			  TEXT("/Game/GV_FreeShrubsPack/Demo/Mannequin/Animations/ABP_Manny.ABP_Manny_C") },
+		};
+
+		for (const FCuerpo& C : Cuerpos)
 		{
+			USkeletalMesh* Body = LoadObject<USkeletalMesh>(nullptr, C.Malla);
+			if (!Body) continue;
+
 			CharacterMesh->SetSkeletalMesh(Body);
 			CharacterMesh->SetRelativeLocationAndRotation(FVector(0.f, 0.f, -90.f), FRotator(0.f, -90.f, 0.f));
-
-			// AnimBP real con idle/walk/run integrado (paquete externo Man + Shrubs).
-			if (UClass* AnimBP = LoadObject<UClass>(nullptr, TEXT("/Game/GV_FreeShrubsPack/Demo/Mannequin/Animations/ABP_Manny.ABP_Manny_C")))
+			if (UClass* AnimBP = LoadObject<UClass>(nullptr, C.AnimBP))
 				CharacterMesh->SetAnimInstanceClass(AnimBP);
+
+			UE_LOG(LogTemp, Log, TEXT("AlsasuaCharacter: cuerpo %s"), C.Malla);
+			break;
+		}
+
+		// GASP lee la trayectoria del movimiento para elegir pose; sin este
+		// componente el AnimBP se queda en idle aunque el personaje ande.
+		if (!FindComponentByClass<UCharacterTrajectoryComponent>())
+		{
+			if (UCharacterTrajectoryComponent* Tray = NewObject<UCharacterTrajectoryComponent>(this, TEXT("TrayectoriaGASP")))
+			{
+				Tray->RegisterComponent();
+			}
 		}
 	}
 	InitializeGAS();

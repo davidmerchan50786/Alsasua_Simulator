@@ -1,5 +1,6 @@
 #include "AlsasuaGameplayGameMode.h"
 #include "AlsasuaGameplayHUD.h"
+#include "AlsasuaCharacter.h"
 #include "DirectorArranque.h"
 #include "TerrenoGenerado.h"
 #include "ArranqueMundo.h"
@@ -30,6 +31,18 @@ namespace
 AAlsasuaGameplayGameMode::AAlsasuaGameplayGameMode()
 {
     HUDClass = AAlsasuaGameplayHUD::StaticClass();
+
+    // Sin esto el jugador salia como ADefaultPawn —la camara voladora del
+    // motor—: sin cuerpo, sin animacion y sin caminar por el suelo. Estaba
+    // puesto SOLO en DefaultEngine.ini
+    // ([/Script/AlsasuaGameplay.AlsasuaGameplayGameMode] DefaultPawnClass),
+    // y ahi no se aplica: DefaultPawnClass de AGameModeBase no es una
+    // propiedad `config`, asi que el ini no la toca y quedaba el valor por
+    // defecto de la clase base. Verificado en runtime: el log de colocacion
+    // decia Pawn=/Script/Engine.DefaultPawn. AAlsasuaGameMode (Kernel) ya lo
+    // hacia asi; este, que es el GameMode que arranca de verdad, no.
+    DefaultPawnClass = AAlsasuaCharacter::StaticClass();
+
     PrimaryActorTick.bCanEverTick = true;
 }
 
@@ -140,5 +153,6 @@ void AAlsasuaGameplayGameMode::Tick(float DeltaSeconds)
     // Yaw -90 mira hacia -Y, o sea de vuelta a la fuente y al resto de la plaza.
     PC->SetControlRotation(FRotator(0.f, -90.f, 0.f));
     bPendienteColocarJugador = false;
-    UE_LOG(LogTemp, Log, TEXT("AlsasuaGameplayGameMode: Jugador colocado en Herriko Plaza (%.1f, %.1f, %.1f)."), Plaza.X, Plaza.Y, Z);
+    UE_LOG(LogTemp, Log, TEXT("AlsasuaGameplayGameMode: Jugador colocado en Herriko Plaza (%.1f, %.1f, %.1f). Pawn=%s"),
+        Plaza.X, Plaza.Y, Z, *Pawn->GetClass()->GetPathName());
 }
