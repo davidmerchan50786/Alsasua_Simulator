@@ -14,6 +14,7 @@
 #include "MeshDescription.h"
 #include "StaticMeshAttributes.h"
 #include "AlsasuaCore.h"
+#include "GeoDataAlsasua.h"
 #include "Engine/World.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/Engine.h"
@@ -74,7 +75,10 @@ void UAlsasuaCrowdSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 			TacticMgr->OnTacticChanged.AddDynamic(this, &UAlsasuaCrowdSubsystem::HandleTacticChanged);
 
 		// Demo de multitud: marcha que arranca sola alrededor de Herriko Plaza.
-		if (bDemoCrowdAutoStart)
+		// El mundo "Untitled" que -game crea antes de viajar al mapa real
+		// tambien es GameWorld, asi que sin filtrar aqui la demo arrancaba dos
+		// veces —1000 agentes en vez de 500, la mitad en un mundo que muere—.
+		if (bDemoCrowdAutoStart && !World->GetName().Contains(TEXT("Untitled")))
 		{
 			DemoSpawnHerrikoPlaza();
 		}
@@ -84,7 +88,20 @@ void UAlsasuaCrowdSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 // ── Demo: multitud que arranca sola ────────────────────────────────────────
 void UAlsasuaCrowdSubsystem::DemoSpawnHerrikoPlaza()
 {
-	FVector Plaza(191800.f, 857000.f, 0.f); // Herriko Plaza (mismo centro que el spawn del jugador)
+	// Z=0 es cota de mundo cero, ~21 m POR DEBAJO del pavimento de la plaza
+	// (que esta a CotaPlazaCm): los 500 agentes salian enterrados. La posicion
+	// —incluida la cota— la da GeoData, que ya suma OX/OZ y apoya en el suelo.
+	FVector Plaza = UAlsasuaGeoData::HerrikoPlaza();
+	if (const float ZSuelo = UAlsasuaGeoData::AlturaSueloUE5(GetWorld(), Plaza.X, Plaza.Y); ZSuelo != 0.f)
+	{
+		Plaza.Z = ZSuelo;
+	}
+
+	// La marcha da vueltas a 12 m del centro y el jugador aparece a 9 m: sin
+	// apartarla, la ronda le pasa por encima de la camara y lo unico que se ve
+	// son NPCs de colores a bocajarro. 30 m deja la plaza despejada y la
+	// multitud visible como multitud.
+	const FVector CentroMarcha = Plaza + FVector(0.f, -3000.f, 0.f);
 
 	// Ruta circular alrededor de la plaza para que la marcha dé vueltas.
 	TArray<FVector> Ruta;
@@ -93,12 +110,12 @@ void UAlsasuaCrowdSubsystem::DemoSpawnHerrikoPlaza()
 	for (int32 i = 0; i < Seg; ++i)
 	{
 		const float Ang = (float)i / Seg * 2.f * PI;
-		Ruta.Add(Plaza + FVector(FMath::Cos(Ang) * Radio, FMath::Sin(Ang) * Radio, 0.f));
+		Ruta.Add(CentroMarcha + FVector(FMath::Cos(Ang) * Radio, FMath::Sin(Ang) * Radio, 0.f));
 	}
 
 	FCrowdSpawnRequest Req;
 	Req.RoutePoints = Ruta;
-	Req.SpawnCenter = Plaza + FVector(0.f, 0.f, 40.f);
+	Req.SpawnCenter = CentroMarcha + FVector(0.f, 0.f, 40.f);
 	Req.SpawnRadius = 400.f;
 	Req.NumAgents = 500;
 	Req.FlockingParams.FormationWidth = 20;
