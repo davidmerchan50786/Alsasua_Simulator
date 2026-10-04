@@ -53,6 +53,7 @@ private:
 
 	bool bInit = false;
 	UPROPERTY() AExponentialHeightFog* Niebla_ = nullptr;
+	float EsperaBusquedaNiebla = 0.f;
 	UPROPERTY() UNiagaraComponent* LluviaVFX = nullptr;
 
 	// Tormenta (relámpagos/truenos).

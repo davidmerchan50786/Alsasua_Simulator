@@ -21,6 +21,9 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category="Apoyo") float Apoyo = 50.f;     // 0-100
 	UPROPERTY(BlueprintReadOnly, Category="Apoyo") float Paranoia = 0.f;   // 0-100
+
+	// Tiempo acumulado desde el último barrido de NPC (ver Tick).
+	float AcumBarrido = 0.f;
 	UPROPERTY(EditAnywhere, Category="Apoyo")      float DecayApoyo = 0.5f;
 
 	UPROPERTY(BlueprintAssignable, Category="Apoyo") FOnApoyoCambia OnApoyoCambia;

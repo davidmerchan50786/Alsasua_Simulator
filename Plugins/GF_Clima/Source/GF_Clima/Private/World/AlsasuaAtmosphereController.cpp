@@ -185,8 +185,11 @@ void UAlsasuaAtmosphereController::Tick(float DeltaTime)
 	// tormenta que no se limpió, un actor colocado a mano, etc.) no la ve. Al
 	// ritmo de UpdateInterval (mismo throttle que el resto de este Tick, ver
 	// §8.2 de CLAUDE.md) volvemos a comprobar y a destruir cualquier extra.
-	if (SunLight)
+	// Cada 2 s y no cada 0,1: el barrido recorre todos los actores del mundo.
+	EsperaBarridoLuces -= Elapsed;
+	if (SunLight && EsperaBarridoLuces <= 0.f)
 	{
+		EsperaBarridoLuces = 2.f;
 		for (TActorIterator<ADirectionalLight> It(GetWorld()); It; ++It)
 		{
 			if (*It != SunLight) It->Destroy();

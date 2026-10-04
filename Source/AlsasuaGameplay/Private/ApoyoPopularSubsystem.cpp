@@ -51,10 +51,15 @@ void UApoyoPopularSubsystem::Tick(float DeltaTime)
 	const float ParanoiaAntes = Paranoia;
 	Paranoia = FMath::Max(0.f, Paranoia - DeltaTime);
 
-	// Aggregate per-NPC paranoia into global level every tick (cheap — NPCs are nearby).
+	// Promedio de paranoia de los NPC. TActorIterator recorre TODOS los actores
+	// del mundo (miles), así que no por fotograma: a 2 Hz basta para un promedio
+	// que además se suaviza con FInterpTo, y se le pasa el tiempo acumulado.
+	AcumBarrido += DeltaTime;
 	UWorld* W = GetWorld();
-	if (W)
+	if (W && AcumBarrido >= 0.5f)
 	{
+		const float DtBarrido = AcumBarrido;
+		AcumBarrido = 0.f;
 		float TotalParanoia = 0.f;
 		int32 NPCCount = 0;
 		for (TActorIterator<AAlsasuaNPC> It(W); It; ++It)
@@ -71,7 +76,7 @@ void UApoyoPopularSubsystem::Tick(float DeltaTime)
 		if (NPCCount > 0)
 		{
 			const float AvgParanoia = TotalParanoia / NPCCount;
-			Paranoia = FMath::FInterpTo(Paranoia, AvgParanoia, DeltaTime, 0.5f);
+			Paranoia = FMath::FInterpTo(Paranoia, AvgParanoia, DtBarrido, 0.5f);
 		}
 	}
 

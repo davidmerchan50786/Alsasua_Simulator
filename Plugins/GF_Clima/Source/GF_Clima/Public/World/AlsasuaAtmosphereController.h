@@ -92,6 +92,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere", meta = (ClampMin = "0.0"))
 	float UpdateInterval = 0.1f;
 
+	/** Espera hasta el próximo barrido de luces direccionales sobrantes (ver Tick). */
+	float EsperaBarridoLuces = 0.f;
+
 	// ── Sun ──────────────────────────────────────────────────────────────────
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alsasua|Atmosphere|Sun")
