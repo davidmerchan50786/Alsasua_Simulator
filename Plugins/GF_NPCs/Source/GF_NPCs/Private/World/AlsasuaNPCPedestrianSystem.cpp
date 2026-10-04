@@ -1,5 +1,6 @@
 #include "World/AlsasuaNPCPedestrianSystem.h"
 #include "World/AlsasuaRedViaria.h"
+#include "AlsasuaEscala.h"
 #include "AlsasuaServiceRegistry.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
@@ -394,11 +395,13 @@ void UAlsasuaNPCPedestrianSystem::GenerarNPCs()
     float PesoTotal = 0.0f;
     for (const FBarrioNPC& B : Barrios) PesoTotal += B.Peso;
 
+    // Tope según el perfil gráfico (1.0 en Ultra: sin cambio respecto a MaxNPCs).
+    const int32 Tope = AlsasuaEscala::Escalar(MaxNPCs);
     int32 NPCCount = 0;
     for (const FBarrioNPC& B : Barrios)
     {
-        const int32 N = FMath::Max(1, FMath::RoundToInt32(MaxNPCs * B.Peso / PesoTotal));
-        for (int32 i = 0; i < N && NPCCount < MaxNPCs; ++i, ++NPCCount)
+        const int32 N = FMath::Max(1, FMath::RoundToInt32(Tope * B.Peso / PesoTotal));
+        for (int32 i = 0; i < N && NPCCount < Tope; ++i, ++NPCCount)
         {
             FNPCPedestrian NPC;
             NPC.Nombre = FString::Printf(TEXT("NPC_%04d"), NPCCount);

@@ -1,4 +1,5 @@
 #include "World/AlsasuaDynamicTrafficSystem.h"
+#include "AlsasuaEscala.h"
 #include "World/AlsasuaTrafficLightSystem.h"
 #include "World/AlsasuaRedViaria.h"
 #include "World/AlsasuaAIDriverComponent.h"
@@ -57,7 +58,8 @@ void UAlsasuaDynamicTrafficSystem::IniciarTrafico()
 
     Vehiculos.Empty();
 
-    for (int32 i = 0; i < MaxVehiculos; i++)
+    // Tope según el perfil gráfico (1.0 en Ultra: sin cambio respecto a MaxVehiculos).
+    for (int32 i = 0; i < AlsasuaEscala::Escalar(MaxVehiculos); i++)
     {
         SpawnVehiculoEnCalle();
     }
@@ -69,7 +71,7 @@ void UAlsasuaDynamicTrafficSystem::ActualizarTrafico(float DeltaTime)
 {
     TiempoDesdeUltimoSpawn += DeltaTime;
 
-    if (TiempoDesdeUltimoSpawn >= FrecuenciaSpawn && Vehiculos.Num() < MaxVehiculos)
+    if (TiempoDesdeUltimoSpawn >= FrecuenciaSpawn && Vehiculos.Num() < AlsasuaEscala::Escalar(MaxVehiculos))
     {
         SpawnVehiculoEnCalle();
         TiempoDesdeUltimoSpawn = 0.0f;
