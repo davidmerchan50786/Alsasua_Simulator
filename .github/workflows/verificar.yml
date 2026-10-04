@@ -25,10 +25,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # Los verificadores leen Content/Datos/*.json y Content/Terreno/, que
-          # están en LFS. Sin esto se descargan como punteros de texto y
-          # VerificarDatasets falla al parsearlos.
-          lfs: true
+          # Los verificadores leen Content/Datos/*.json y Content/Terreno/*.r16,
+          # que NO están en LFS (.gitattributes sólo marca las ortofotos PNG y
+          # los uassets pesados, que ningún verificador abre). Con lfs: true el
+          # checkout intenta bajar ese LFS, y con el presupuesto de la cuenta
+          # agotado el paso muere en segundos y tumba el job entero.
+          lfs: false
 
       - uses: actions/setup-python@v5
         with:

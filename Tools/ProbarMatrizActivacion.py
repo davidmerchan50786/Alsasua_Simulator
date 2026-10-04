@@ -150,7 +150,7 @@ def main():
     exe = os.path.join(raiz_motor, "Engine", "Binaries", "Win64",
                        "UnrealEditor-Cmd.exe")
     if not os.path.exists(exe):
-        print("Define UE_ROOT con la raiz del motor (p.ej. set UE_ROOT=C:\\Program Files\\Epic Games\\UE_5.8)")
+        print("Define UE_ROOT con la raiz del motor (la carpeta UE_5.8 de tu instalacion de Epic Games)")
         return 2
 
     resultados = []

@@ -1,12 +1,14 @@
 """
 Test: import 1 FBX to verify UE 5.8 Python API works.
-Run in UE5 Output Log: exec(open(r'H:\Temp\opencode\AlsasuaUE5Clean\Tools\TestImport.py').read())
+Run in UE5 Output Log: exec(open(unreal.Paths.project_dir() + 'Tools/TestImport.py').read())
 """
 import os
 import unreal
 
-# Pick the smallest FBX we found
-TEST_FILE = r'H:\Temp\opencode\AlsasuaUE5Clean\Content\ImportedAssets\Vegetation\multi stylized grass\06_s.FBX'
+# Primer FBX que haya bajo Content/AssetsImportados del propio proyecto.
+import glob
+_candidatos = sorted(glob.glob(os.path.join(unreal.Paths.project_dir(), 'Content', 'AssetsImportados', '**', '*.FBX'), recursive=True))
+TEST_FILE = _candidatos[0] if _candidatos else ''
 DEST = '/Game/ImportedAssets/Vegetation/Test'
 
 task = unreal.AssetImportTask()

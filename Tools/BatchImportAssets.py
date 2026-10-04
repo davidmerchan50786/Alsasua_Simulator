@@ -1,6 +1,6 @@
 """
 Batch FBX importer for Alsasua Simulator (UE 5.8).
-Run in UE5 Output Log: exec(open(r'H:\Temp\opencode\AlsasuaUE5Clean\Tools\BatchImportAssets.py').read())
+Run in UE5 Output Log: exec(open(unreal.Paths.project_dir() + 'Tools/BatchImportAssets.py').read())
 """
 import os
 import unreal
@@ -11,10 +11,10 @@ import unreal
 # saltan solas (find_fbx comprueba os.path.isdir antes de recorrerlas):
 # ajusta esta lista a donde tengas tu propia biblioteca, no hace falta que
 # existan estas rutas exactas.
-SOURCE_DIRS = [
-    r'H:\UnrealProjects\AlsasuaSimulator\Content\AssetsImportados',
-    r'J:\assets',
-]
+# Por defecto sólo Content/AssetsImportados del propio proyecto; las demás van
+# en ALSASUA_FBX_DIRS (separadas por os.pathsep), no en el código.
+SOURCE_DIRS = [os.path.join(unreal.Paths.project_dir(), 'Content', 'AssetsImportados')]
+SOURCE_DIRS += [d for d in os.environ.get('ALSASUA_FBX_DIRS', '').split(os.pathsep) if d]
 
 # Destination mapping — where each category lives in-game
 DEST_MAP = {
