@@ -9,6 +9,7 @@
 #include "Components/SkyLightComponent.h"
 #include "Components/SkyAtmosphereComponent.h"
 #include "Components/VolumetricCloudComponent.h"
+#include "HAL/IConsoleManager.h"
 
 bool UGuardianIluminacion::ShouldCreateSubsystem(UObject* Outer) const
 {
@@ -177,3 +178,83 @@ void UGuardianIluminacion::ExposicionSana(UWorld& W)
         }
     }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Consola, para usar en mitad de una partida negra:
+//    Alsasua.Luz          vuelca al log el estado de toda la iluminación
+//    Alsasua.Luz.Forzar   pone un mediodía a la fuerza (sol, cielo, exposición)
+//  Sirve para separar «el arranque la dejó mal» de «algo la estropea después»:
+//  si Forzar la arregla y al rato vuelve a negro, hay un sistema que la pisa.
+// ─────────────────────────────────────────────────────────────────────────────
+static void VolcarLuz(UWorld* W)
+{
+    if (!W) return;
+    int32 N = 0;
+    for (TActorIterator<ADirectionalLight> It(W); It; ++It, ++N)
+    {
+        const ULightComponent* L = It->GetLightComponent();
+        UE_LOG(LogTemp, Warning, TEXT("Alsasua.Luz: sol %s pitch=%.1f yaw=%.1f intensidad=%.2f visible=%d"),
+            *It->GetName(), It->GetActorRotation().Pitch, It->GetActorRotation().Yaw,
+            L ? L->Intensity : -1.f, (L && L->IsVisible()) ? 1 : 0);
+    }
+    if (N == 0) UE_LOG(LogTemp, Warning, TEXT("Alsasua.Luz: NO hay ninguna luz direccional."));
+    for (TActorIterator<ASkyLight> It(W); It; ++It)
+    {
+        const USkyLightComponent* SL = It->GetLightComponent();
+        UE_LOG(LogTemp, Warning, TEXT("Alsasua.Luz: luz de cielo %s intensidad=%.2f visible=%d"),
+            *It->GetName(), SL ? SL->Intensity : -1.f, (SL && SL->IsVisible()) ? 1 : 0);
+    }
+    for (TActorIterator<APostProcessVolume> It(W); It; ++It)
+    {
+        const FPostProcessSettings& S = It->Settings;
+        UE_LOG(LogTemp, Warning, TEXT("Alsasua.Luz: post-process %s unbound=%d prioridad=%.1f peso=%.2f metodo=%d bias=%.2f(ov %d)"),
+            *It->GetName(), It->bUnbound ? 1 : 0, It->Priority, It->BlendWeight,
+            (int32)S.AutoExposureMethod, S.AutoExposureBias, S.bOverride_AutoExposureBias ? 1 : 0);
+    }
+}
+
+static FAutoConsoleCommandWithWorld GCmdLuz(
+    TEXT("Alsasua.Luz"),
+    TEXT("Vuelca al log el estado de soles, luces de cielo y post-process."),
+    FConsoleCommandWithWorldDelegate::CreateStatic(&VolcarLuz));
+
+static FAutoConsoleCommandWithWorld GCmdLuzForzar(
+    TEXT("Alsasua.Luz.Forzar"),
+    TEXT("Pone un mediodía a la fuerza: un sol a -45 y 10 lux, cielo recapturado, exposición automática."),
+    FConsoleCommandWithWorldDelegate::CreateLambda([](UWorld* W)
+    {
+        if (!W) return;
+        ADirectionalLight* Sol = nullptr;
+        for (TActorIterator<ADirectionalLight> It(W); It; ++It) { Sol = *It; break; }
+        if (!Sol) Sol = W->SpawnActor<ADirectionalLight>(ADirectionalLight::StaticClass(), FVector::ZeroVector, FRotator(-45.f, 30.f, 0.f));
+        if (Sol)
+        {
+            if (ULightComponent* L = Sol->GetLightComponent())
+            {
+                L->SetMobility(EComponentMobility::Movable);
+                L->SetVisibility(true);
+                L->SetIntensity(FMath::Max(L->Intensity, 10.f));
+            }
+            Sol->SetActorRotation(FRotator(-45.f, Sol->GetActorRotation().Yaw, 0.f));
+        }
+        for (TActorIterator<ASkyLight> It(W); It; ++It)
+        {
+            if (USkyLightComponent* SL = It->GetLightComponent())
+            {
+                SL->SetMobility(EComponentMobility::Movable);
+                SL->SetVisibility(true);
+                SL->SetIntensity(FMath::Max(SL->Intensity, 1.f));
+                SL->RecaptureSky();
+            }
+        }
+        for (TActorIterator<APostProcessVolume> It(W); It; ++It)
+        {
+            FPostProcessSettings& S = It->Settings;
+            S.bOverride_AutoExposureMethod = false;
+            S.bOverride_AutoExposureBias = false;
+            S.bOverride_AutoExposureMinBrightness = false;
+            S.bOverride_AutoExposureMaxBrightness = false;
+        }
+        UE_LOG(LogTemp, Warning, TEXT("Alsasua.Luz.Forzar: mediodía aplicado; estado tras forzar:"));
+        VolcarLuz(W);
+    }));
