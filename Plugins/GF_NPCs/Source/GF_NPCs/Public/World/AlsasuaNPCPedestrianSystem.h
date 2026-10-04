@@ -251,6 +251,7 @@ TSet<int32> ReclutadosTemporales;
     UPROPERTY() USkeletalMesh* MeshMujer = nullptr;
     UPROPERTY() USkeletalMesh* MeshFab = nullptr;
     UPROPERTY() UAnimSequence* AnimCaminar = nullptr;
+    UPROPERTY() UAnimSequence* AnimCaminar2 = nullptr;
     UPROPERTY() UAnimSequence* AnimIdle = nullptr;
 
     void CargarAssetsPersonaje();

@@ -107,10 +107,22 @@ def main():
 
     vistos = set()
     edificios = []
+    fallos = []
     for j in range(TESELAS):
         for i in range(TESELAS):
             bb = (e0 + i * paso, n0 + j * paso, e0 + (i + 1) * paso, n0 + (j + 1) * paso)
-            gml = pedir_tesela(*bb)
+            # Una tesela que agota los reintentos no debe tirar el script entero:
+            # se registra como fallida y se sigue, igual que hace el downloader de
+            # edificios del pipeline de Sakana (Tools/vegetacion/7_bajar_edificios.py).
+            # Sin esto, un solo bbox inalcanzable dejaba sin escribir el JSON entero
+            # aunque las otras 35 teselas hubieran bajado bien.
+            try:
+                gml = pedir_tesela(*bb)
+            except RuntimeError as e:
+                fallos.append([i, j])
+                print("  tesela %2d/%d FALLA tras reintentos: %s"
+                      % (j * TESELAS + i + 1, TESELAS * TESELAS, e), flush=True)
+                continue
             nuevos = 0
             for ed in parsear(gml):
                 # Las teselas comparten borde y un edificio puede salir dos
@@ -140,6 +152,7 @@ def main():
                   "Coordenadas en UTM30N/EPSG:25830 y en cm de mundo "
                   "((UTM - (%.0f, %.0f)) * 100)." % (ORIGEN_E, ORIGEN_N)),
         "_bbox_utm": [e0, n0, e0 + 2 * SEMILADO_M, n0 + 2 * SEMILADO_M],
+        "_teselas_fallidas": fallos,
         "edificios": edificios,
     }
     with open(SALIDA, "w", encoding="utf-8") as fh:
@@ -149,6 +162,9 @@ def main():
     print("\n%d edificios -> %s" % (len(edificios), SALIDA))
     print("superficie construida total: %.0f m2 (media %.0f m2)"
           % (area, area / max(1, len(edificios))))
+    if fallos:
+        print("%d teselas fallidas tras reintentos (ver _teselas_fallidas en el JSON): %s"
+              % (len(fallos), fallos))
     print("hecho en %.0f s" % (time.time() - t0))
 
 
@@ -190,13 +206,20 @@ def descargar_alturas():
     paso = (2 * SEMILADO_M) / TESELAS
 
     puntos, vistos = [], set()
+    fallos = []
     for j in range(TESELAS):
         for i in range(TESELAS):
             bb = (e0 + i * paso, n0 + j * paso, e0 + (i + 1) * paso, n0 + (j + 1) * paso)
             url = ("%s?service=WFS&version=2.0.0&request=GetFeature&typenames=%s"
                    "&bbox=%f,%f,%f,%f,EPSG:25830&count=1000"
                    % (WFS, CAPA_ALTURAS, bb[0], bb[1], bb[2], bb[3]))
-            gml = _get(url)
+            try:
+                gml = _get(url)
+            except RuntimeError as e:
+                fallos.append([i, j])
+                print("  tesela %2d/%d FALLA tras reintentos: %s"
+                      % (j * TESELAS + i + 1, TESELAS * TESELAS, e), flush=True)
+                continue
             for feat in re.findall(
                     r"<IDENA:CARTO1_Txt_20AlturaEd[ >].*?</IDENA:CARTO1_Txt_20AlturaEd>",
                     gml, re.S):
@@ -226,6 +249,7 @@ def descargar_alturas():
         "_nota": ("CADTEXT en notación cartográfica: romanos = plantas sobre rasante, "
                   "S+/SS+ = sótanos (no suman altura visible), Por/Pr = porche, "
                   "+T = remate. 'plantas' ya viene interpretado."),
+        "_teselas_fallidas": fallos,
         "puntos": puntos,
     }
     with open(SALIDA_ALTURAS, "w", encoding="utf-8") as fh:
@@ -234,6 +258,9 @@ def descargar_alturas():
     con = sum(1 for p in puntos if p["plantas"])
     print("%d puntos de altura (%d con plantas legibles) -> %s"
           % (len(puntos), con, SALIDA_ALTURAS))
+    if fallos:
+        print("%d teselas fallidas tras reintentos (ver _teselas_fallidas en el JSON): %s"
+              % (len(fallos), fallos))
     return puntos
 
 

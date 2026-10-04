@@ -34,14 +34,24 @@ inline UMaterialParameterCollection* CargarMPCClima()
 // VT mask) estan presentes en el proyecto. Si falta alguna, el MI se carga pero
 // compila a Default Material (gris) sin que LoadObject falle. Estos gates detectan
 // la ausencia para caer a los materiales propios en vez de renderizar gris.
+//
+// OJO CON LAS RUTAS: las cinco apuntaban a una disposicion de carpetas que ya
+// no existe —/Game/Megascans/..., /Game/Material/MaterialFunction/...,
+// /Game/Textures/...—. Megascans se importa bajo Content/External/Megascans/
+// Megascans/ (el nombre se repite: es la carpeta del Bridge dentro de
+// External) y las tres piezas de CitySample viven en UnrealDrive_CitySample.
+// Con las rutas viejas DoesPackageExist fallaba siempre, asi que el gate daba
+// falso aunque estuviera todo, y la libreria Road entera —asfaltos, aceras,
+// bordillos, marcas— caia a los materiales planos de respaldo. Verificado
+// contra el disco: son las rutas reales de los cinco assets.
 inline bool MaterialesAAADisponibles()
 {
 	static const TCHAR* const Gates[] = {
-		TEXT("/Game/Megascans/Atlases/Debris_Manmade_00/shmpulh_8K_Albedo"),
-		TEXT("/Game/Megascans/Surfaces/Dirty_Sidewalk_2x2_M_00/ugxjcdpn_4K_Albedo"),
-		TEXT("/Game/Material/MaterialFunction/MF_WorldNoise"),
-		TEXT("/Game/Textures/SurfaceFeature/T_AsphaltNoise_packedA"),
-		TEXT("/Game/Textures/T_Black_Mask_VT"),
+		TEXT("/Game/External/Megascans/Megascans/Atlases/Debris_Manmade_00/shmpulh_8K_Albedo"),
+		TEXT("/Game/External/Megascans/Megascans/Surfaces/Dirty_Sidewalk_2x2_M_00/ugxjcdpn_4K_Albedo"),
+		TEXT("/Game/UnrealDrive_CitySample/MasterMaterials/MaterialFunction/MF_WorldNoise"),
+		TEXT("/Game/UnrealDrive_CitySample/Textures/SurfaceFeature/T_AsphaltNoise_packedA"),
+		TEXT("/Game/UnrealDrive_CitySample/Textures/Base/T_Black_Mask_VT"),
 	};
 	for (const TCHAR* G : Gates)
 		if (!FPackageName::DoesPackageExist(G)) return false;

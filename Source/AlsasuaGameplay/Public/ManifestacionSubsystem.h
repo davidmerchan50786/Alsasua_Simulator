@@ -29,6 +29,15 @@ public:
 	UPROPERTY(EditAnywhere, Category="Manifestacion") int32 TamMin = 10;
 	UPROPERTY(EditAnywhere, Category="Manifestacion") int32 TamMax = 150;
 	UPROPERTY(EditAnywhere, Category="Manifestacion") float RadioConcentracion = 1200.f;
+	/**
+	 * Hueco libre en el centro de la concentracion. MisionesSubsystem convoca
+	 * en la posicion EXACTA del jugador, asi que sin minimo el sorteo de
+	 * distancia (0..RadioConcentracion) planta manifestantes a cero metros de
+	 * la camara: se ve un NPC gigante a pantalla completa en vez del pueblo.
+	 * 4 m tambien es lo que hace una concentracion real: nadie se pone encima
+	 * de quien convoca.
+	 */
+	UPROPERTY(EditAnywhere, Category="Manifestacion") float RadioMinimoConcentracion = 400.f;
 	UPROPERTY(EditAnywhere, Category="Manifestacion") float TasaApoyoPorSeg = 0.4f;
 	UPROPERTY(EditAnywhere, Category="Manifestacion") float DuracionConcentracion = 20.f;
 	UPROPERTY(EditAnywhere, Category="Manifestacion") float VelocidadMarcha = 250.f;

@@ -55,6 +55,16 @@ int32 UAlsasuaGuardrailSystem::ColocarBarandillas()
     UHierarchicalInstancedStaticMeshComponent* Capa =
         NewObject<UHierarchicalInstancedStaticMeshComponent>(Host, TEXT("ISM_Barandillas"));
     Capa->SetStaticMesh(Malla);
+    // El material que trae la malla (MS_DefaultMaterial, de UnrealDrive_CitySample)
+    // depende de /Game/Textures/DefaultWhiteGrid_VT, que no está en el repo:
+    // compilaría a Default Material gris, y el gate genérico de
+    // MaterialesAAADisponibles() no lo detecta porque es esta textura concreta.
+    // Material propio directo, una vez, fuera del bucle de colocación.
+    if (UMaterialInterface* Mat = LoadObject<UMaterialInterface>(nullptr,
+        TEXT("/Game/Materiales/M_Metal_Guardia.M_Metal_Guardia")))
+    {
+        Capa->SetMaterial(0, Mat);
+    }
     Capa->SetupAttachment(Host->GetRootComponent());
     Capa->SetMobility(EComponentMobility::Static);
     // Colisión sí: una barandilla que no para es peor que ninguna.
