@@ -266,7 +266,6 @@ TSet<int32> ReclutadosTemporales;
     void GenerarPersona(FNPCPedestrian& NPC);
     void TradeConversacion(FNPCPedestrian& A, FNPCPedestrian& B);
     FString LineaDeConversacion(const FNPCPersona& Persona, bool bRangoEdadDiferente) const;
-    FString NombreAleatorio(bool bMujer) const;
     FString FraseFavoritaPara(ENPCPersonalidad P) const;
     void ReproducirVoz(const FVector& Posicion, float Pitch);
 

@@ -28,9 +28,32 @@ FUENTE = os.path.join(RAIZ, "Source")
 HERRAMIENTAS = os.path.dirname(os.path.abspath(__file__))
 RUNALL = os.path.join(HERRAMIENTAS, "RunAll.py")
 DIRECTOR = os.path.join(FUENTE, "AlsasuaWorld", "Private", "DirectorArranque.cpp")
-MUNDO_H = os.path.join(FUENTE, "AlsasuaManifa", "Public", "World")
+PLUGINS = os.path.join(RAIZ, "Plugins")
 
-RE_CLASE = re.compile(r'class ALSASUAMANIFA_API ([UA]\w+)\s*:\s*public\s+(\w+)')
+
+def raices_de_fuente():
+    """Source/ y Plugins/*/Source/: Manifa se partió en plugins GF_*."""
+    r = [FUENTE]
+    if os.path.isdir(PLUGINS):
+        r += [os.path.join(PLUGINS, p, "Source") for p in sorted(os.listdir(PLUGINS))]
+    return [x for x in r if os.path.isdir(x)]
+
+
+def recorrer_fuente():
+    for raiz in raices_de_fuente():
+        yield from os.walk(raiz)
+
+
+def cabeceras_de_mundo():
+    """Rutas de todo .h bajo un Public/World de cualquier módulo."""
+    out = []
+    for base, _, ficheros in recorrer_fuente():
+        if base.replace(os.sep, "/").endswith("/Public/World"):
+            out += [os.path.join(base, f) for f in sorted(ficheros) if f.endswith(".h")]
+    return out
+
+
+RE_CLASE = re.compile(r'class (?:ALSASUA\w+|GF_\w+)_API ([UA]\w+)\s*:\s*public\s+(\w+)')
 RE_DATASET = re.compile(r'Datos/([A-Za-z_0-9]+\.json)')
 
 # Puntos de entrada que llama el MOTOR, sin que nadie los invoque desde el
@@ -56,8 +79,10 @@ PASIVAS = ("UActorComponent", "USceneComponent", "UPrimitiveComponent", "AActor"
 
 def cuerpo(clase):
     """Ruta del .cpp de una clase, si está donde toca."""
-    p = os.path.join(FUENTE, "AlsasuaManifa", "Private", "World", clase[1:] + ".cpp")
-    return p if os.path.exists(p) else None
+    for base, _, ficheros in recorrer_fuente():
+        if clase[1:] + ".cpp" in ficheros:
+            return os.path.join(base, clase[1:] + ".cpp")
+    return None
 
 
 def main():
@@ -66,10 +91,8 @@ def main():
 
     # Datasets que ya toca alguien enchufado en la cadena.
     clases = {}
-    for nombre in sorted(os.listdir(MUNDO_H)):
-        if not nombre.endswith(".h"):
-            continue
-        with open(os.path.join(MUNDO_H, nombre), encoding="utf-8", errors="ignore") as fh:
+    for ruta_h in cabeceras_de_mundo():
+        with open(ruta_h, encoding="utf-8", errors="ignore") as fh:
             texto = fh.read()
         for m in RE_CLASE.finditer(texto):
             clases[m.group(1)] = m.group(2)
@@ -89,6 +112,15 @@ def main():
                     if e not in entradas_de[c]:
                         entradas_de[c].append(e)
 
+    # Desde la partición en plugins, el arranque lo reparten los pilares
+    # (IAlsasuaPilarArranque::EjecutarArranque), no sólo el director.
+    for base, _, ficheros in recorrer_fuente():
+        for nombre in ficheros:
+            if nombre.endswith(".cpp"):
+                with open(os.path.join(base, nombre), encoding="utf-8", errors="ignore") as fh:
+                    t = fh.read()
+                if "EjecutarArranque" in t:
+                    director += "\n" + t
     enchufados = [c for c in clases if c in director]
     huerfanos = [c for c in clases if c not in director]
 
@@ -123,7 +155,7 @@ def main():
             if re.search(r'\b%s\b' % re.escape(c[1:]), texto):
                 adjuntadores[c].add((modulo, en_runall))
 
-    for base, _, ficheros in os.walk(FUENTE):
+    for base, _, ficheros in recorrer_fuente():
         for nombre in ficheros:
             if not nombre.endswith((".cpp", ".h")):
                 continue

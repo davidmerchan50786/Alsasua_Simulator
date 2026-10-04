@@ -73,5 +73,8 @@ private:
 	void UpdatePostProcess(float DeltaTime);
 
 	float PPVolumeRefreshTimer = 0.f;
-	TArray<AActor*> CachedPPVolumes;
+	// Bajo UPROPERTY: sin él el GC no ve estos volúmenes y, si se destruye uno
+	// entre refrescos (cada 5 s), el puntero queda colgando (CLAUDE.md §9).
+	UPROPERTY()
+	TArray<TObjectPtr<AActor>> CachedPPVolumes;
 };

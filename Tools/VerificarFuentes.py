@@ -86,6 +86,33 @@ import sys
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FUENTE = os.path.join(RAIZ, "Source")
+PLUGINS = os.path.join(RAIZ, "Plugins")
+
+
+def caminar(raiz):
+    """
+    os.walk que, pedido sobre Source/, recorre también Plugins/.
+
+    El módulo AlsasuaManifa se partió en ~20 plugins GF_* y 447 ficheros C++
+    pasaron de Source/ a Plugins/<GF_X>/Source/<GF_X>/. Los verificadores sólo
+    miraban Source/, así que dejaron de ver más de la mitad del código sin
+    avisar: cada include "retirado" era en realidad uno mudado, y una CVar
+    "sin registrar" estaba registrada en un plugin. Un verificador que se queda
+    ciego en silencio dice "sin hallazgos" igual que uno que mira.
+    """
+    yield from os.walk(raiz)
+    if os.path.abspath(raiz) == os.path.abspath(FUENTE) and os.path.isdir(PLUGINS):
+        yield from os.walk(PLUGINS)
+
+
+def modulo_de(base):
+    """Módulo UBT de una carpeta: el segmento que sigue a 'Source'."""
+    partes = os.path.relpath(base, RAIZ).split(os.sep)
+    if "Source" in partes:
+        i = partes.index("Source")
+        if len(partes) > i + 1:
+            return partes[i + 1]
+    return ""
 
 # UnityaUnreal(FVector(este, arriba, norte)). Se mira el argumento del medio: si
 # no es un cero literal, lo que hay ahí es casi seguro la coordenada norte.
@@ -160,7 +187,7 @@ RE_CVAR_REG = re.compile(r'TAutoConsoleVariable<[^>]+>\s*\w+\(\s*\n?\s*TEXT\("(g
 
 def cvars_sin_registrar(raiz):
     usadas, registradas = {}, set()
-    for base, _, ficheros in os.walk(raiz):
+    for base, _, ficheros in caminar(raiz):
         for nombre in ficheros:
             if not nombre.endswith((".cpp", ".h")):
                 continue
@@ -210,7 +237,7 @@ def cabeceras_del_proyecto(raiz):
     la misma cabecera. Se indexan las dos, y también los sufijos intermedios.
     """
     validas = set()
-    for base, _, ficheros in os.walk(raiz):
+    for base, _, ficheros in caminar(raiz):
         for nombre in ficheros:
             if not nombre.endswith(".h"):
                 continue
@@ -311,7 +338,7 @@ def parametros_mpc(raiz):
     except (OSError, ValueError):
         pass
 
-    for base, _, ficheros in os.walk(raiz):
+    for base, _, ficheros in caminar(raiz):
         for nombre in sorted(ficheros):
             if not nombre.endswith(".cpp"):
                 continue
@@ -372,9 +399,8 @@ def declaradas_sin_definir(raiz):
     cualificadas = {}   # Clase::Metodo
     libres = {}         # funciones a secas
     cabeceras = []
-    for base, _, ficheros in os.walk(raiz):
-        partes = os.path.relpath(base, raiz).split(os.sep)
-        modulo = partes[0] if partes and partes[0] != "." else ""
+    for base, _, ficheros in caminar(raiz):
+        modulo = modulo_de(base)
         for nombre in sorted(ficheros):
             ruta = os.path.join(base, nombre)
             if nombre.endswith(".cpp"):
@@ -459,7 +485,7 @@ RE_MIEMBRO_UOBJ = re.compile(
 def punteros_sin_uproperty(raiz):
     """UObject* miembro sin UPROPERTY (CLAUDE.md §9)."""
     fallos = []
-    for base, _, ficheros in os.walk(raiz):
+    for base, _, ficheros in caminar(raiz):
         for nombre in sorted(ficheros):
             if not nombre.endswith(".h"):
                 continue
@@ -500,7 +526,7 @@ def main():
     # Las .generated.h las escribe UHT en Intermediate/, no están en Source/.
     generadas = {h.replace(".h", ".generated.h") for h in validas}
 
-    for base, _, ficheros in os.walk(FUENTE):
+    for base, _, ficheros in caminar(FUENTE):
         for nombre in sorted(ficheros):
             if not nombre.endswith((".cpp", ".h")):
                 continue
