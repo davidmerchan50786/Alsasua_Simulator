@@ -3,6 +3,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Engine/World.h"
 #include "Misc/ConfigCacheIni.h"
+#include "AlsasuaEscala.h"
 
 namespace
 {
@@ -23,12 +24,13 @@ namespace
     // todos los mundos. Config/ está versionado y afinado (RESUMEN_TECNICO.md);
     // un subsistema que le sobreescribe media docena de r.* al abrir el nivel
     // hace que dos arranques con el mismo ini midan cosas distintas.
+    //
+    // PerfilArranque=-1 (Auto) lo decide la VRAM dedicada; la cuenta vive en
+    // AlsasuaEscala::PerfilEfectivo (Core), que es lo que usan también la
+    // multitud y el tráfico, para que gráficos y población no discrepen.
     int32 LeerPerfilDeArranque()
     {
-        int32 Perfil = (int32)EAlsasuaGraphicsProfile::Ultra;
-        GConfig->GetInt(TEXT("/Script/GF_World.AlsasuaGraphicsSettingsSubsystem"),
-                        TEXT("PerfilArranque"), Perfil, GGameIni);
-        return FMath::Clamp(Perfil, 0, 3);
+        return AlsasuaEscala::PerfilEfectivo();
     }
 }
 
@@ -119,6 +121,19 @@ void UAlsasuaGraphicsSettingsSubsystem::ApplyGraphicsProfile(EAlsasuaGraphicsPro
     UKismetSystemLibrary::ExecuteConsoleCommand(W, FString::Printf(TEXT("r.VolumetricFog.GridSizeZ %d"),     Level <= 1 ? 32 : 64));
     UKismetSystemLibrary::ExecuteConsoleCommand(W, FString::Printf(TEXT("r.VolumetricFog.HistoryWeight %d"), Level >= 2 ? 9 : 7));
 
+    // Presupuesto de texturas en VRAM. El pool de streaming es la partida más
+    // grande que se puede fijar: se reserva de la VRAM y lo demás (Nanite,
+    // Lumen, VSM, render targets) compite por lo que quede. Con LimitPoolSizeToVRAM
+    // el motor nunca pide más de lo que hay; en una tarjeta pequeña degrada
+    // mips en vez de paginar.
+    static const int32 PoolMB[] = {800, 1200, 2000, 3000};
+    UKismetSystemLibrary::ExecuteConsoleCommand(W, TEXT("r.Streaming.LimitPoolSizeToVRAM 1"));
+    UKismetSystemLibrary::ExecuteConsoleCommand(W, FString::Printf(TEXT("r.Streaming.PoolSize %d"), PoolMB[Level]));
+
+    // Niebla volumétrica fuera en Low: su rejilla 3D es memoria fija por
+    // resolución, y en una tarjeta de 4 GB es de lo primero que sobra.
+    UKismetSystemLibrary::ExecuteConsoleCommand(W, FString::Printf(TEXT("r.VolumetricFog %d"), Level >= 1 ? 1 : 0));
+
     // Distance Fields
     UKismetSystemLibrary::ExecuteConsoleCommand(W, FString::Printf(TEXT("r.DistanceFieldShadowing %d"), Level >= 1 ? 1 : 0));
     UKismetSystemLibrary::ExecuteConsoleCommand(W, FString::Printf(TEXT("r.DistanceFieldAO %d"),        Level >= 2 ? 1 : 0));
@@ -150,7 +165,11 @@ void UAlsasuaGraphicsSettingsSubsystem::SetNaniteBudget(int32 Level)
 {
     if (IConsoleVariable* CVar = IConsoleManager::Get().FindConsoleVariable(TEXT("r.Nanite.MaxPixelsPerEdge")))
     {
-        float Values[] = {2.0f, 1.5f, 1.0f, 0.5f};
+        // Ultra estaba en 0,5: la mitad de píxeles por arista son ~4x clusters
+        // visibles, y el motor no admite más de 16 M (MAX_CLUSTERS). Al pasarse,
+        // Nanite deja de dibujar trozos y el mundo sale con agujeros. 1,0 es el
+        // valor por defecto de Epic y ya es detalle de píxel.
+        float Values[] = {2.0f, 1.5f, 1.0f, 1.0f};
         CVar->Set(Values[FMath::Clamp(Level, 0, 3)]);
     }
     if (IConsoleVariable* CVar = IConsoleManager::Get().FindConsoleVariable(TEXT("r.Nanite.ProxyTriangleThreshold")))
