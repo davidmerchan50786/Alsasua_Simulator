@@ -44,8 +44,10 @@ RE_FALLO = re.compile(r"(Failed to load|Can't find file|Couldn't find file|Faile
 RE_PAQUETE = re.compile(r"/Game/[A-Za-z0-9_\-/ ]+[A-Za-z0-9_\-]")
 
 # Carpetas que no tiene sentido recorrer.
-SALTAR = {"windows", "$recycle.bin", "system volume information", "programdata",
-          "intermediate", "deriveddatacache", "binaries", "saved", ".git", "node_modules"}
+SALTAR = {"windows", "$recycle.bin", "system volume information", ".git",
+          "intermediate", "deriveddatacache", "binaries", "saved", "node_modules"}
+# ProgramData y AppData NO se saltan a propósito: ahí guardan los packs el
+# Epic Launcher (VaultCache) y Fab, y es donde suele estar lo que se bajó.
 
 
 def es_puntero_lfs(ruta):

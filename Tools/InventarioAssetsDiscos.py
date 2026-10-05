@@ -29,9 +29,10 @@ RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONTENT = os.path.join(RAIZ, "Content")
 SALIDA = os.path.join(RAIZ, "Saved", "InventarioAssets.md")
 EXT = (".uasset", ".umap")
-SALTAR = {"windows", "$recycle.bin", "system volume information", "programdata",
-          "intermediate", "deriveddatacache", "binaries", "saved", ".git",
-          "node_modules", "appdata"}
+SALTAR = {"windows", "$recycle.bin", "system volume information", ".git",
+          "intermediate", "deriveddatacache", "binaries", "saved", "node_modules"}
+# ProgramData y AppData NO se saltan a propósito: ahí guardan los packs el
+# Epic Launcher (VaultCache) y Fab, y es donde suele estar lo que se bajó.
 
 
 def discos(lista):
