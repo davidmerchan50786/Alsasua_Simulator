@@ -110,8 +110,13 @@ def main():
     print("  -> %s (%dx%d)" % (OUT_FULL, full.width, full.height), flush=True)
     report["full"] = {"file": OUT_FULL, "size": [full.width, full.height]}
 
-    print("[2/2] Detalle urbano 2750m...", flush=True)
-    town = mosaic(BOX_TOWN, GRID)
+    # --alta: la urbana a 16384^2 (8x8 tiles), 0,17 m/px, al nivel del PNOA
+    # nativo (~0,25 m). Cuesta ~128 MB más de VRAM que a 8192 y se ve donde se
+    # juega. El nombre del fichero no cambia, para que ImportSatellite.py y el
+    # material lo recojan sin tocar nada más.
+    grid_town = (8, 8) if "--alta" in sys.argv else GRID
+    print("[2/2] Detalle urbano 2750m (%d^2)..." % (grid_town[0] * TILE), flush=True)
+    town = mosaic(BOX_TOWN, grid_town)
     town = town.transpose(Image.FLIP_TOP_BOTTOM)
     town.save(OUT_TOWN)
     print("  -> %s (%dx%d)" % (OUT_TOWN, town.width, town.height), flush=True)

@@ -30,6 +30,11 @@ using ML = UMaterialEditingLibrary;
 namespace {
 static const float SAT_XMIN_CM = -168200.f, SAT_RANGO_CM = 720000.f;
 static const float SAT_YMIN_CM = 497000.f;
+
+// Ortofoto urbana (Tools/DescargarOrtofotoPNOA.py, BOX_TOWN 2750x2750 m centrada
+// en la plaza): misma convención, 2,6x más nítida que la general (0,34 m/px
+// frente a 0,88). Se superpone dentro de su caja, que es donde se juega.
+static const float URB_XMIN_CM = 54300.f, URB_YMIN_CM = 719500.f, URB_RANGO_CM = 275000.f;
 }
 
 bool UCreadorMaterialTerrenoOrto::CrearMaterialTerrenoOrto()
@@ -83,6 +88,26 @@ bool UCreadorMaterialTerrenoOrto::CrearMaterialTerrenoOrto()
 	ML::ConnectMaterialExpressions(tex, TEXT("RGB"), base, TEXT("B"));
 	ML::ConnectMaterialExpressions(dentro, TEXT(""), base, TEXT("Alpha"));
 
+	// --- Ortofoto urbana encima, dentro de su caja, con borde suave (~45 m) ---
+	UMaterialExpression* color = base;
+	if (UTexture2D* TU = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Textures/T_Ortofoto.T_Ortofoto")))
+	{
+		auto* u2 = Mul(Sub(wX, Const(URB_XMIN_CM, 700), 700), Const(1.f / URB_RANGO_CM, 700), 700);
+		auto* v2 = Mul(Sub(wY, Const(URB_YMIN_CM, 760), 760), Const(1.f / URB_RANGO_CM, 760), 760);
+		auto* uv2 = Bin(UMaterialExpressionAppendVector::StaticClass(), u2, v2, 730);
+		auto* texU = Cast<UMaterialExpressionTextureSampleParameter2D>(New(UMaterialExpressionTextureSampleParameter2D::StaticClass(), 820));
+		texU->ParameterName = TEXT("OrtofotoUrbana");
+		texU->Texture = TU;
+		ML::ConnectMaterialExpressions(uv2, TEXT(""), texU, TEXT("UVs"));
+		auto* mU2 = Sat(Mul(Sub(Const(0.5f, 880), Abs(Sub(u2, Const(0.5f, 880), 880), 880), 880), Const(60.f, 880), 880), 880);
+		auto* mV2 = Sat(Mul(Sub(Const(0.5f, 940), Abs(Sub(v2, Const(0.5f, 940), 940), 940), 940), Const(60.f, 940), 940), 940);
+		auto* urb = Cast<UMaterialExpressionLinearInterpolate>(New(UMaterialExpressionLinearInterpolate::StaticClass(), 900));
+		ML::ConnectMaterialExpressions(base, TEXT(""), urb, TEXT("A"));
+		ML::ConnectMaterialExpressions(texU, TEXT("RGB"), urb, TEXT("B"));
+		ML::ConnectMaterialExpressions(Mul(mU2, mV2, 910), TEXT(""), urb, TEXT("Alpha"));
+		color = urb;
+	}
+
 	// --- Detalle de cerca: textura tileada que modula el brillo, fundida por distancia ---
 	// La ortofoto (25 cm/px) se ve borrosa a ras de suelo; este detalle le da nitidez sin
 	// cambiar el color medio. Lejos se desvanece para no ver el patrón repetido.
@@ -90,18 +115,32 @@ bool UCreadorMaterialTerrenoOrto::CrearMaterialTerrenoOrto()
 		Mul(wX, Const(1.f / 200.f, 360), 360), Mul(wY, Const(1.f / 200.f, 420), 420), 390);   // tile 2 m
 	auto* det = Cast<UMaterialExpressionTextureSampleParameter2D>(New(UMaterialExpressionTextureSampleParameter2D::StaticClass(), 480));
 	det->ParameterName = TEXT("Detalle");
-	det->Texture = LoadObject<UTexture2D>(nullptr, TEXT("/Engine/EngineResources/DefaultTexture.DefaultTexture"));
-	ML::ConnectMaterialExpressions(dUV, TEXT(""), det, TEXT("UVs"));
-	auto* dLum = Cast<UMaterialExpressionComponentMask>(New(UMaterialExpressionComponentMask::StaticClass(), 540)); dLum->R=true; dLum->G=false; dLum->B=false; dLum->A=false;
-	ML::ConnectMaterialExpressions(det, TEXT("RGB"), dLum, TEXT(""));
-	auto* centrado = Sub(dLum, Const(0.5f, 540), 540);   // [-0.5..0.5]
+	// Era /Engine/EngineResources/DefaultTexture —la cuadrícula gris del motor—
+	// puesta de marcador y nunca cambiada: a menos de 60 m el suelo salía con un
+	// damero de ±50 % de brillo encima de la foto. Ahora es tierra real
+	// (Tools/ImportTexturasPBR.py) y, si no está importada, no hay detalle.
+	UTexture2D* TexDetalle = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Textures/T_Ground_Color.T_Ground_Color"));
+	if (TexDetalle)
+	{
+		det->Texture = TexDetalle;
+		ML::ConnectMaterialExpressions(dUV, TEXT(""), det, TEXT("UVs"));
+		auto* dLum = Cast<UMaterialExpressionComponentMask>(New(UMaterialExpressionComponentMask::StaticClass(), 540)); dLum->R=true; dLum->G=false; dLum->B=false; dLum->A=false;
+		ML::ConnectMaterialExpressions(det, TEXT("RGB"), dLum, TEXT(""));
+		// Albedo de tierra ~0,25-0,55: alrededor de 0,4 y a 0,6 da ±10 % de
+		// brillo, que es grano, no un cambio de color.
+		auto* centrado = Mul(Sub(dLum, Const(0.4f, 540), 540), Const(0.6f, 540), 540);
 
-	// Fundido por distancia: cerca 1, lejos 0 (a partir de ~60 m).
-	auto* depth = New(UMaterialExpressionPixelDepth::StaticClass(), 600);
-	auto* fade  = Sat(Mul(Sub(Const(6000.f, 600), depth, 600), Const(1.f / 4000.f, 600), 600), 600);
+		// Fundido por distancia: cerca 1, lejos 0 (a partir de ~60 m).
+		auto* depth = New(UMaterialExpressionPixelDepth::StaticClass(), 600);
+		auto* fade  = Sat(Mul(Sub(Const(6000.f, 600), depth, 600), Const(1.f / 4000.f, 600), 600), 600);
 
-	auto* factor = Add(Const(1.f, 460), Mul(centrado, fade, 500), 480);   // 1 ± detalle*fade
-	ML::ConnectMaterialProperty(Mul(base, factor, 60), TEXT(""), MP_BaseColor);
+		auto* factor = Add(Const(1.f, 460), Mul(centrado, fade, 500), 480);   // 1 ± detalle*fade
+		ML::ConnectMaterialProperty(Mul(color, factor, 60), TEXT(""), MP_BaseColor);
+	}
+	else
+	{
+		ML::ConnectMaterialProperty(color, TEXT(""), MP_BaseColor);
+	}
 
 	// Relieve de cerca: normal map tileado, fundido a plano (0,0,1) por distancia.
 	auto* plano = Cast<UMaterialExpressionConstant3Vector>(New(UMaterialExpressionConstant3Vector::StaticClass(), 660)); plano->Constant = FLinearColor(0, 0, 1);
