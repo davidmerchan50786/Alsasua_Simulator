@@ -98,10 +98,19 @@ void UClimaSubsystem::Tick(float DeltaTime)
 {
 	if (!ArranqueMundo::BaselineListo) return;
 
-	// Busca la niebla cada frame hasta encontrarla (el ciclo visual la crea aparte).
+	// Busca la niebla hasta encontrarla (el ciclo visual la crea aparte). A 1 Hz:
+	// si nunca existe, un TActorIterator por fotograma recorre todos los actores
+	// del mundo para siempre.
 	if (!Niebla_)
-		if (UWorld* W = GetGameInstance() ? GetGameInstance()->GetWorld() : nullptr)
-			for (TActorIterator<AExponentialHeightFog> It(W); It; ++It) { Niebla_ = *It; break; }
+	{
+		EsperaBusquedaNiebla -= DeltaTime;
+		if (EsperaBusquedaNiebla <= 0.f)
+		{
+			EsperaBusquedaNiebla = 1.f;
+			if (UWorld* W = GetGameInstance() ? GetGameInstance()->GetWorld() : nullptr)
+				for (TActorIterator<AExponentialHeightFog> It(W); It; ++It) { Niebla_ = *It; break; }
+		}
+	}
 
 	if (!bInit)
 	{
@@ -190,7 +199,19 @@ void UClimaSubsystem::GestionarTormenta(float DeltaTime)
 
 	// ¿Hay tormenta? (lluvia fuerte + muy nublado)
 	const bool bTormenta = Cur.Lluvia > 0.7f && Cur.Nubosidad > 0.75f;
-	if (!bTormenta) return;
+	if (!bTormenta)
+	{
+		// Sin esto Relampago se queda para siempre como segunda luz
+		// direccional (apagada pero activa), y el renderer se pone a avisar
+		// de "Multiple directional lights are competing..." el resto de la
+		// partida aunque no vuelva a tronar.
+		if (Relampago && FlashTimer <= 0.f)
+		{
+			Relampago->Destroy();
+			Relampago = nullptr;
+		}
+		return;
+	}
 
 	ProxRayo -= DeltaTime;
 	if (ProxRayo > 0.f) return;

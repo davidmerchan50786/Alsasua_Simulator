@@ -34,7 +34,13 @@ FVector UAlsasuaGeoData::UnrealaUnity(const FVector& UnrealPos)
 
 FVector UAlsasuaGeoData::HerrikoPlaza()
 {
-    return FVector(0.0, 0.0, CotaPlazaCm);
+    // Herriko Plaza está en el origen (0,0) de las coordenadas LOCALES
+    // RELATIVAS, no del mundo UE5 — para pasar a UE5 hace falta sumar
+    // OX/OZ (ver RelLocalToUE5). Devolver (0,0,CotaPlazaCm) tal cual ponía
+    // el actor 1918/8570 m fuera del pueblo, en el origen del engine.
+    FVector Pos = RelLocalToUE5(FVector(0.0, 0.0, 0.0));
+    Pos.Z = CotaPlazaCm;
+    return Pos;
 }
 
 // ============================================================

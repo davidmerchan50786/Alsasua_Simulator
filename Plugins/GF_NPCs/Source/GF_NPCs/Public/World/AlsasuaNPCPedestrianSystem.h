@@ -251,6 +251,7 @@ TSet<int32> ReclutadosTemporales;
     UPROPERTY() USkeletalMesh* MeshMujer = nullptr;
     UPROPERTY() USkeletalMesh* MeshFab = nullptr;
     UPROPERTY() UAnimSequence* AnimCaminar = nullptr;
+    UPROPERTY() UAnimSequence* AnimCaminar2 = nullptr;
     UPROPERTY() UAnimSequence* AnimIdle = nullptr;
 
     void CargarAssetsPersonaje();
@@ -266,7 +267,6 @@ TSet<int32> ReclutadosTemporales;
     void GenerarPersona(FNPCPedestrian& NPC);
     void TradeConversacion(FNPCPedestrian& A, FNPCPedestrian& B);
     FString LineaDeConversacion(const FNPCPersona& Persona, bool bRangoEdadDiferente) const;
-    FString NombreAleatorio(bool bMujer) const;
     FString FraseFavoritaPara(ENPCPersonalidad P) const;
     void ReproducirVoz(const FVector& Posicion, float Pitch);
 

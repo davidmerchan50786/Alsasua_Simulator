@@ -76,6 +76,26 @@
       "Enabled": true
     },
     {
+      "Name": "PoseSearch",
+      "Enabled": true
+    },
+    {
+      "Name": "Chooser",
+      "Enabled": true
+    },
+    {
+      "Name": "MotionWarping",
+      "Enabled": true
+    },
+    {
+      "Name": "AnimationWarping",
+      "Enabled": true
+    },
+    {
+      "Name": "AnimationLocomotionLibrary",
+      "Enabled": true
+    },
+    {
       "Name": "Fab",
       "Enabled": true
     },
@@ -146,6 +166,10 @@
     },
     {
       "Name": "GF_Ferrocarril",
+      "Enabled": true
+    },
+    {
+      "Name": "GF_Misiones",
       "Enabled": true
     },
     {

@@ -18,7 +18,7 @@ def add_wind_to_foliage():
         "/Script/Engine.FoliageInstancedStaticMeshComponent")
 
     wind_class = unreal.load_class(
-        "/Script/AlsasuaManifa.AlsasuaFoliageWindComponent")
+        "/Script/AlsasuaKernel.AlsasuaFoliageWindComponent")
 
     if not wind_class:
         unreal.log_error("[FoliageWind] No se pudo cargar UAlsasuaFoliageWindComponent")
@@ -48,7 +48,7 @@ def add_wind_to_foliage():
 def add_wind_to_tree_actors():
     """Añade viento a actores de árboles individuales."""
     wind_class = unreal.load_class(
-        "/Script/AlsasuaManifa.AlsasuaFoliageWindComponent")
+        "/Script/AlsasuaKernel.AlsasuaFoliageWindComponent")
     if not wind_class:
         return
 

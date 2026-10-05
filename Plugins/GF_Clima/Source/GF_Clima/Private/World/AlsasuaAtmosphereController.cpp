@@ -81,6 +81,17 @@ void UAlsasuaAtmosphereController::FindOrCreateAtmosphereActors()
 	ENCUENTRA_O_CREA(AVolumetricCloud,      VolumetricCloud, "Atmosphere_Clouds",        FRotator::ZeroRotator);
 
 #undef ENCUENTRA_O_CREA
+
+	// El nombre fijo evita duplicar el que crea ESTE controller, pero no cubre
+	// una ADirectionalLight que otro sistema deje suelta con otro nombre (el
+	// Relampago de tormenta si no se limpia, un actor colocado a mano...). El
+	// renderer sólo soporta una para forward shading/niebla volumétrica y
+	// avisa en pantalla ("Multiple directional lights are competing...") si
+	// hay más — destruimos cualquier extra que no sea la nuestra.
+	for (TActorIterator<ADirectionalLight> It(W); It; ++It)
+	{
+		if (*It != SunLight) It->Destroy();
+	}
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -168,6 +179,22 @@ void UAlsasuaAtmosphereController::Tick(float DeltaTime)
 
 	const float Elapsed = FMath::Max(UpdateInterval, DeltaTime);
 	TimeToUpdate = UpdateInterval;
+
+	// FindOrCreateAtmosphereActors sólo se ejecuta una vez, al arrancar el
+	// mundo; una luz direccional creada más tarde por otro sistema (rayo de
+	// tormenta que no se limpió, un actor colocado a mano, etc.) no la ve. Al
+	// ritmo de UpdateInterval (mismo throttle que el resto de este Tick, ver
+	// §8.2 de CLAUDE.md) volvemos a comprobar y a destruir cualquier extra.
+	// Cada 2 s y no cada 0,1: el barrido recorre todos los actores del mundo.
+	EsperaBarridoLuces -= Elapsed;
+	if (SunLight && EsperaBarridoLuces <= 0.f)
+	{
+		EsperaBarridoLuces = 2.f;
+		for (TActorIterator<ADirectionalLight> It(GetWorld()); It; ++It)
+		{
+			if (*It != SunLight) It->Destroy();
+		}
+	}
 
 	UpdateAtmosphere(TimeMgr->CurrentTime, Elapsed);
 }

@@ -1,5 +1,6 @@
 #include "World/AlsasuaNPCPedestrianSystem.h"
 #include "World/AlsasuaRedViaria.h"
+#include "AlsasuaEscala.h"
 #include "AlsasuaServiceRegistry.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
@@ -271,14 +272,17 @@ void UAlsasuaNPCPedestrianSystem::CargarAssetsPersonaje()
 
     AnimCaminar = LoadObject<UAnimSequence>(nullptr,
         TEXT("/Game/FreeAnimationLibrary/Animations/Walk/anim_Walk_Fwd_Loop_R"));
+    AnimCaminar2 = LoadObject<UAnimSequence>(nullptr,
+        TEXT("/Game/FreeAnimationLibrary/Animations/Walk/anim_Walk_Fwd_Loop_L"));
     AnimIdle = LoadObject<UAnimSequence>(nullptr,
         TEXT("/Game/FreeAnimationLibrary/Animations/Idle/anim_Idle"));
 
-    UE_LOG(LogTemp, Log, TEXT("NPCPedestrians: Mesh hombre=%s, mujer=%s, fab=%s, anim=%s, idle=%s"),
+    UE_LOG(LogTemp, Log, TEXT("NPCPedestrians: Mesh hombre=%s, mujer=%s, fab=%s, anim=%s/%s, idle=%s"),
         MeshHombre ? TEXT("OK") : TEXT("NULL"),
         MeshMujer ? TEXT("OK") : TEXT("NULL"),
         MeshFab ? TEXT("OK") : TEXT("NULL"),
         AnimCaminar ? TEXT("OK") : TEXT("NULL"),
+        AnimCaminar2 ? TEXT("OK") : TEXT("NULL"),
         AnimIdle ? TEXT("OK") : TEXT("NULL"));
 }
 
@@ -391,11 +395,13 @@ void UAlsasuaNPCPedestrianSystem::GenerarNPCs()
     float PesoTotal = 0.0f;
     for (const FBarrioNPC& B : Barrios) PesoTotal += B.Peso;
 
+    // Tope según el perfil gráfico (1.0 en Ultra: sin cambio respecto a MaxNPCs).
+    const int32 Tope = AlsasuaEscala::Escalar(MaxNPCs);
     int32 NPCCount = 0;
     for (const FBarrioNPC& B : Barrios)
     {
-        const int32 N = FMath::Max(1, FMath::RoundToInt32(MaxNPCs * B.Peso / PesoTotal));
-        for (int32 i = 0; i < N && NPCCount < MaxNPCs; ++i, ++NPCCount)
+        const int32 N = FMath::Max(1, FMath::RoundToInt32(Tope * B.Peso / PesoTotal));
+        for (int32 i = 0; i < N && NPCCount < Tope; ++i, ++NPCCount)
         {
             FNPCPedestrian NPC;
             NPC.Nombre = FString::Printf(TEXT("NPC_%04d"), NPCCount);
@@ -798,9 +804,14 @@ void UAlsasuaNPCPedestrianSystem::CrearNPCEnPunto(FNPCPedestrian& NPC)
     {
         NPCActor->GetSkeletalMeshComponent()->SetSkeletalMesh(MeshAUsar);
 
-        if (NPC.ActividadActual == ENPCActivity::Walk && AnimCaminar)
+        if (NPC.ActividadActual == ENPCActivity::Walk)
         {
-            NPCActor->GetSkeletalMeshComponent()->PlayAnimation(AnimCaminar, true);
+            // Alterna entre las 2 variantes de caminar (izq/dcha) por NPC para
+            // romper la sincronía de los clones sin assets extra.
+            UAnimSequence* Ani = (AnimCaminar2 && (GetTypeHash(NPC.Nombre) % 2))
+                ? AnimCaminar2 : AnimCaminar;
+            if (Ani)
+                NPCActor->GetSkeletalMeshComponent()->PlayAnimation(Ani, true);
         }
 
         // Variación visual: tinte de ropa por estilo + género sobre el mannequin.

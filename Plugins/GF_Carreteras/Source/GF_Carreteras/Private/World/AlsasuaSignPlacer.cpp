@@ -2,10 +2,10 @@
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "Engine/StaticMeshActor.h"
-#include "Components/StaticMeshComponent.h"
-#include "Components/TextRenderComponent.h"
-#include "Materials/MaterialInstanceDynamic.h"
 #include "Engine/StaticMesh.h"
+#include "Components/StaticMeshComponent.h"
+#include "AlsasuaMallaFab.h"
+#include "AjusteMallaComun.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "Serialization/JsonReader.h"
@@ -79,56 +79,75 @@ int32 UAlsasuaSignPlacer::ColocarSenalesEnMundo()
     UWorld* World = GetWorld();
     if (!World) return 0;
 
-    int32 Placed = 0;
+    // Estos actores se creaban sin malla: aunque hubieran caído donde tocaba,
+    // habrían sido actores vacíos e invisibles. Cada tipo de signage_data.json
+    // resuelve el suyo por AlsasuaMallaFab, y lo que devuelva se ajusta a la
+    // altura real de la pieza, que es la medida que manda en una señal.
+    // Los seis tipos que trae de verdad signage_data.json, por frecuencia:
+    // señal_comercio 56, señal_informativa 21, calle 20, señal_calle 19,
+    // señal_transito 6, señal_turistica 4.
+    auto MallaDe = [](const FString& Tipo) -> const TCHAR*
+    {
+        if (Tipo.Contains(TEXT("comercio")))  return TEXT("cartel_pared");
+        if (Tipo.Contains(TEXT("transito")))  return TEXT("señal_velocidad");
+        if (Tipo.Contains(TEXT("calle")))     return TEXT("placa_calle");
+        return TEXT("cartel_pared");   // informativa y turística: panel
+    };
 
-    UStaticMesh* CubeMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube.Cube"));
-    UStaticMesh* PlaneMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Plane.Plane"));
+    struct FModelo { UStaticMesh* Malla; AjusteMalla::FColocacion Col; };
+    TMap<FString, FModelo> Cache;
 
+    // 30 de las 126 señales de signage_data.json traen coordenadas basura: hasta
+    // 123 km al oeste y 215 km al sur, todas de tipo señal_comercio o
+    // señal_informativa, que son las que el generador situaba por dirección
+    // cuando la encontraba. No hay forma de colocarlas bien —no se sabe dónde
+    // van—, así que se dejan fuera y se dice cuántas: colocarlas estira los
+    // límites del mundo y su trazo de suelo no encuentra terreno.
+    // La caja del terreno vive en UAlsasuaGeoData; estaba copiada aquí a mano.
+    int32 Placed = 0, Descartadas = 0;
     for (const FSignEntry& S : Senales)
     {
-        FVector Loc = UAlsasuaGeoData::UnityaUnreal(FVector(S.X, S.Z, 0));
-        Loc.Z += S.AlturaM * 100.0f;
+        if (!UAlsasuaGeoData::DentroDelTerreno(UAlsasuaGeoData::AbsLocalToUE5(FVector(S.X, 0.0, S.Z))))
+        {
+            ++Descartadas;
+            continue;
+        }
+
+        const FString Clave = MallaDe(S.Tipo);
+        FModelo& M = Cache.FindOrAdd(Clave);
+        if (!M.Malla)
+        {
+            M.Malla = AlsasuaMallaFab::Resolver(*Clave, TEXT("/Engine/BasicShapes/Cube.Cube"));
+            M.Col = AjusteMalla::Calcular(M.Malla,
+                FVector(FMath::Max(0.2f, S.AnchoM), 0.12f, FMath::Max(0.2f, S.AltoM)),
+                AlsasuaMallaFab::VieneDeFab(Clave), AjusteMalla::EEncaje::Alto);
+        }
+        if (!M.Col.bValido) continue;
+
+        // Aquí se llamaba a UnityaUnreal(X, Z, 0), que mete la coordenada norte
+        // en el eje vertical: las 126 señales salían sobre la línea norte=0 y
+        // flotando a la altura de su coordenada norte. Y el "+= AlturaM" sumaba
+        // sobre una Z que ya venía mal. signage_data.json es local ABSOLUTO.
+        FVector Loc = UAlsasuaGeoData::AbsLocalToUE5(FVector(S.X, 0.0, S.Z));
+        Loc.Z = UAlsasuaGeoData::AlturaSueloUE5(World, Loc.X, Loc.Y)
+              + S.AlturaM * 100.0f + M.Col.SubirCm;
 
         AStaticMeshActor* SignActor = World->SpawnActor<AStaticMeshActor>(
-            AStaticMeshActor::StaticClass(), Loc, FRotator::ZeroRotator);
-        if (!SignActor) continue;
-
-        SignActor->SetMobility(EComponentMobility::Movable);
-
-        if (UStaticMeshComponent* SMC = SignActor->GetStaticMeshComponent())
+            AStaticMeshActor::StaticClass(), Loc, FRotator(0.f, M.Col.YawExtra, 0.f));
+        if (SignActor)
         {
-            SMC->SetStaticMesh(PlaneMesh);
-            SMC->SetWorldScale3D(FVector(S.AnchoM * 100.f, 2.f, S.AltoM * 100.f));
-            SMC->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-            FLinearColor SignColor = FLinearColor(0.95f, 0.95f, 0.9f);
-            if (S.Tipo.Contains(TEXT("calle")))
-                SignColor = FLinearColor(0.1f, 0.1f, 0.6f);
-            else if (S.Tipo.Contains(TEXT("tienda")) || S.Tipo.Contains(TEXT("negocio")))
-                SignColor = FLinearColor(0.8f, 0.2f, 0.1f);
-            else if (S.Tipo.Contains(TEXT("senal_transito")))
-                SignColor = FLinearColor(0.1f, 0.5f, 0.1f);
-
-            UMaterialInstanceDynamic* Dyn = SMC->CreateDynamicMaterialInstance(0);
-            if (Dyn) Dyn->SetVectorParameterValue(FName("Color"), SignColor);
+            SignActor->SetMobility(EComponentMobility::Movable);
+            SignActor->SetActorScale3D(M.Col.Escala);
+            SignActor->GetStaticMeshComponent()->SetStaticMesh(M.Malla);
+#if WITH_EDITOR
+            SignActor->SetActorLabel(*FString::Printf(TEXT("Sign_%s_%s"), *S.Tipo, *S.Texto));
+#endif
+            Placed++;
         }
-
-        UTextRenderComponent* TextComp = NewObject<UTextRenderComponent>(SignActor);
-        if (TextComp)
-        {
-            TextComp->SetupAttachment(SignActor->GetRootComponent());
-            TextComp->SetText(FText::FromString(S.Texto));
-            TextComp->SetWorldSize(S.AltoM * 70.f);
-            TextComp->SetHorizontalAlignment(EHTA_Center);
-            TextComp->SetRelativeLocation(FVector(0, 10.f, 0));
-            TextComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-            TextComp->RegisterComponent();
-        }
-
-        SignActor->SetActorLabel(*FString::Printf(TEXT("Sign_%s_%s"), *S.Tipo, *S.Texto.Left(12)));
-        Placed++;
     }
 
-    UE_LOG(LogTemp, Log, TEXT("SignPlacer: %d senales colocadas en el mundo"), Placed);
+    UE_LOG(LogTemp, Log,
+        TEXT("SignPlacer: %d señales colocadas, %d descartadas por caer fuera del terreno"),
+        Placed, Descartadas);
     return Placed;
 }

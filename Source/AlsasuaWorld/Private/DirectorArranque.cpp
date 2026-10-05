@@ -34,11 +34,24 @@
 void ADirectorArranque::BeginPlay()
 {
     Super::BeginPlay();
-    IniciarConstruccion();
+
+    // La construcción es síncrona (~52 fases) y bloquea el hilo de juego hasta el
+    // final: si arrancaba aquí mismo, no se pintaba ni un fotograma y la
+    // pantalla de carga nunca llegaba a verse — negro total, indistinguible de
+    // un cuelgue. Se deja marcado el arranque ya (el gate del HUD es
+    // !BaselineListo, y HayDirector evita que el GameMode spawnee otro director)
+    // y se aplaza la obra medio segundo, para que el HUD pinte "Cargando..." una
+    // vez antes de que el hilo se ocupe.
+    ArranqueMundo::HayDirector = true;
+    ArranqueMundo::BaselineListo = false;
+    ArranqueMundo::SetProgress(0.f);
+    GetWorldTimerManager().SetTimer(TimerArranque, this,
+        &ADirectorArranque::IniciarConstruccion, 0.5f, false);
 }
 
 void ADirectorArranque::IniciarConstruccion()
 {
+    GetWorldTimerManager().ClearTimer(TimerArranque);   // por si se llama a mano antes de que salte
     ArranqueMundo::HayDirector = true;
     ArranqueMundo::BaselineListo = false;
     ArranqueMundo::SetProgress(0.f);

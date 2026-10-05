@@ -256,7 +256,10 @@ void UAlsasuaZonePostProcess::UpdatePostProcessVolume(float DeltaTime)
     {
         PPVolumeRefreshTimer = 0.f;
         CachedPPVolumes.Empty();
-        UGameplayStatics::GetAllActorsOfClass(W, APostProcessVolume::StaticClass(), CachedPPVolumes);
+        // GetAllActorsOfClass pide TArray<AActor*>&, no el contenedor reflejado.
+        TArray<AActor*> Encontrados;
+        UGameplayStatics::GetAllActorsOfClass(W, APostProcessVolume::StaticClass(), Encontrados);
+        CachedPPVolumes.Append(Encontrados);
     }
     APostProcessVolume* PPV = CachedPPVolumes.Num() > 0 ? Cast<APostProcessVolume>(CachedPPVolumes[0]) : nullptr;
     if (!PPV) return;

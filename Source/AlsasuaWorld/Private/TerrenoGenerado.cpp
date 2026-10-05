@@ -283,7 +283,14 @@ float ATerrenoGenerado::SampleLidarBicubic(double WorldXcm, double WorldYcm) con
 	const float R3 = CatmullRom(Tx, GetH(Iy + 2, Ix - 1), GetH(Iy + 2, Ix), GetH(Iy + 2, Ix + 1), GetH(Iy + 2, Ix + 2));
 
 	const float AltMReal = CatmullRom(Ty, R0, R1, R2, R3);
-	return AltMReal * 100.f; // metros → cm (mismo espacio absoluto que AltoDTM)
+
+	// El mundo no cuenta metros sobre el mar: worldZ_cm = alt_m*100 - 51133
+	// (mismo datum que AltoDTM vía LocZ, ver TerrenoGenerado.h, y que
+	// ATerrenoLejano/CotaPlazaCm). Sin restarlo, toda la zona con cobertura
+	// LIDAR —el centro del pueblo— queda 511 m por encima del DTM que la
+	// rodea: un escalón del tamaño de una montaña justo donde empieza/acaba
+	// la fusión.
+	return AltMReal * 100.f - 51133.f;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -320,8 +327,11 @@ void ATerrenoGenerado::ValidarTerrenoRMSE()
 		// lidar_ground.xyz está en coords absolutas del mundo (m): X este, Z norte, Y altura.
 		const double WX = X * 100.0;
 		const double WY = Z * 100.0;
-		const float AltoTerreno = AlturaEnMundo((float)WX, (float)WY); // cm
-		const float AltoRealCm = (float)(Y * 100.0);
+		const float AltoTerreno = AlturaEnMundo((float)WX, (float)WY); // cm, datum de mundo
+		// AlturaEnMundo ya viene en el datum de mundo (worldZ_cm = alt_m*100 -
+		// 51133, ver SampleLidarBicubic); Y es altitud real sobre el nivel del
+		// mar y hay que pasarla por el mismo datum antes de comparar.
+		const float AltoRealCm = (float)(Y * 100.0) - 51133.f;
 
 		const float Delta = (AltoTerreno - AltoRealCm) / 100.f; // error en metros
 		SumSq += Delta * Delta;

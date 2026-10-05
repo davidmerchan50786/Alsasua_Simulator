@@ -37,9 +37,23 @@ RE_CADENA = re.compile(r'"(\w+)"')
 RE_CICLO_OK = re.compile(r'CircularlyReferencedDependentModules\.Add\(\s*"(\w+)"\s*\)')
 
 
+PLUGINS = os.path.join(RAIZ, "Plugins")
+DIR = {}   # módulo -> carpeta; los módulos de plugin viven en Plugins/*/Source/*
+
+
 def modulos_del_proyecto():
-    return sorted(d for d in os.listdir(FUENTE)
-                  if os.path.isdir(os.path.join(FUENTE, d)))
+    """Source/* y Plugins/*/Source/*: la partición en plugins sacó los módulos de Source/."""
+    DIR.clear()
+    raices = [FUENTE]
+    if os.path.isdir(PLUGINS):
+        raices += [os.path.join(PLUGINS, p, "Source") for p in sorted(os.listdir(PLUGINS))]
+    for r in raices:
+        if not os.path.isdir(r):
+            continue
+        for d in os.listdir(r):
+            if os.path.isdir(os.path.join(r, d)):
+                DIR.setdefault(d, os.path.join(r, d))
+    return sorted(DIR)
 
 
 def duenio_de_cabecera(modulos):
@@ -51,11 +65,11 @@ def duenio_de_cabecera(modulos):
     """
     duenio = {}
     for m in modulos:
-        for base, _, ficheros in os.walk(os.path.join(FUENTE, m)):
+        for base, _, ficheros in os.walk(DIR[m]):
             for nombre in ficheros:
                 if not nombre.endswith(".h"):
                     continue
-                rel = os.path.relpath(os.path.join(base, nombre), os.path.join(FUENTE, m))
+                rel = os.path.relpath(os.path.join(base, nombre), DIR[m])
                 partes = rel.replace(os.sep, "/").split("/")
                 for i, p in enumerate(partes):
                     if p in ("Public", "Private"):
@@ -70,7 +84,7 @@ def declaradas(modulos):
     """{módulo: (dependencias declaradas, ciclos confesados)}"""
     fuera = {}
     for m in modulos:
-        ruta = os.path.join(FUENTE, m, "%s.Build.cs" % m)
+        ruta = os.path.join(DIR[m], "%s.Build.cs" % m)
         if not os.path.exists(ruta):
             continue
         texto = open(ruta, encoding="utf-8", errors="ignore").read()
@@ -111,7 +125,7 @@ def main():
     for m in modulos:
         if m not in decl:
             continue
-        for base, _, ficheros in os.walk(os.path.join(FUENTE, m)):
+        for base, _, ficheros in os.walk(DIR[m]):
             for nombre in ficheros:
                 if not nombre.endswith((".cpp", ".h")):
                     continue
